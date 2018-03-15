@@ -10,7 +10,9 @@ import site.* ;
 
 import java.util.Random ;
 
-import com.sun.media.jfxmedia.logging.Logger;
+//import com.sun.media.jfxmedia.logging.Logger;
+import java.lang.reflect.*;
+
 
 import java.util.ArrayList;
 //import java.util.List;
@@ -51,18 +53,27 @@ public abstract class Agent {
 	// number of relationships willing to maintain at once
 	private int promiscuity ;
 	
+	// probability of choosing each Relationship subclass
+	// odds of Monogomous, Regular and Casual
+	int monogomousOdds = rand.nextInt(10) ;
+	int regularOdds = rand.nextInt(10 - monogomousOdds) ;
+	int casualOdds = 10 - monogomousOdds - regularOdds ;
+	
 	// probability of cheating on a monogomous spouse
 	private double infidelity;
 	
 	// current partners
-	private ArrayList<Integer> currentPartners = new ArrayList<Integer>() ;
+	private ArrayList<Integer> currentPartnerIds = new ArrayList<Integer>() ;
 
 
 	private ArrayList<Relationship> currentRelationships ;
 	
 	private int lowerAgentId = 0 ;
 
-	// number of Regular Relationships
+	// number of Casual Relationships
+	private int casualNumber = 0 ;
+	
+        // number of Regular Relationships
 	private int regularNumber = 0 ;
 	
 	// whether currently in a Monogomous Relationship 
@@ -77,21 +88,9 @@ public abstract class Agent {
 	// infection and symptomatic status' , respectively
 	private boolean infectedStatus ;
 	private boolean symptomatic ;
-	
-	public static int[] chooseTwoAgents(ArrayList<Integer> availability) 
-	{
-		Random randInt = new Random() ;
-		int nbAvailable = availability.size() ;
-		// Randomly choose two available agents
-		int agentNb0 = (int) availability.get(randInt.nextInt(nbAvailable)) ;
-		int agentNb1 = (int) availability.get(randInt.nextInt(nbAvailable)) ;
-		while (agentNb1 == agentNb0) 
-		{
-			agentNb1 = availability.get(randInt.nextInt(nbAvailable)) ;    
-		}
-		return new int[] {agentNb0,agentNb1} ;
-	}
-	
+
+        java.util.logging.Logger logger = java.util.logging.Logger.getLogger("agent") ;
+
 	public static Site[] chooseSites(Agent agent0, Agent agent1)
 	{
 		Site site0 = agent0.chooseSite() ;
@@ -128,7 +127,9 @@ public abstract class Agent {
 		//Check that setSites(Site[]) was properly implemented by agent Subclass 
 		if (!(sites.length >= 1)) System.err.println("ERROR: Agent subClass.setSites(Site[]) must initialise Sites") ;
 		
-		setPromiscuity() ;
+		initPromiscuity() ;
+		initInfidelity() ;
+		
 		Class<?> clazz = this.getClass() ;
 		agent = clazz.asSubclass(clazz).getSimpleName() ;
 		return ;
@@ -174,10 +175,15 @@ public abstract class Agent {
 		return currentRelationships ;
 	}
 	
+	public ArrayList<Integer> getCurrentPartnerIds()
+	{
+		return currentPartnerIds;
+	}
+	
 	/**
 	 * Randomly choose the number of simultaneous relationships an agent may have
 	 */
-	private void setPromiscuity()
+	private void initPromiscuity()
 	{
 		promiscuity = rand.nextInt(getMaxRelationships()) + 1 ;
 		return ;
@@ -188,10 +194,25 @@ public abstract class Agent {
 		return promiscuity ;
 	}
 	
+	public int getMonogomousOdds()
+	{
+		return monogomousOdds ;
+	}
+	
+	public int getRegularOdds()
+	{
+		return regularOdds ;
+	}
+	
+	public int getCasualOdds()
+	{
+		return casualOdds ;
+	}
+	
 	/**
 	 * Randomly choose the agent's probability of cheating on a monogomous spouse
 	 */
-	private void setInfidelity()
+	private void initInfidelity()
 	{
 		infidelity = 0.1 * rand.nextInt(getMaxRelationships()) ;
 		return ;
@@ -221,10 +242,10 @@ public abstract class Agent {
 	}
 	
 	/**
-	 * TODO: Perhaps replace Site[] with Iterator
+	 * 
 	 * @return Site[] sites
 	 */
-	private Site[] getSites()
+	public Site[] getSites()
 	{
 		return sites ;
 	}
@@ -319,7 +340,7 @@ public abstract class Agent {
 	 * May be overridden for specific agent subclasses with specific screening behaviours 
 	 * @return Probability of screening when symptomatic is false
 	 */
-	public double getScreenProbability()
+	public double getScreenProbability(String[] args)
 	{
 		return SCREEN_PROBABILITY ;
 	}
@@ -364,19 +385,20 @@ public abstract class Agent {
 	}
 	
 	/**
-	 * Whether to enter a proposed relationship.
-	 * Currently according to the number of relationships already entered 
-	 * compared to promiscuity.
-	 * TODO: Consider adding random component to decision
+	 * Whether to enter a proposed relationship of class relationshipClazz .
+	 * Currently according to whether in a monogomous relationship and 
+	 * the number of relationships already entered compared to promiscuity.
+	 * 
 	 * @return true if accept and false otherwise
 	 */
-	public boolean consent()
+	public boolean consent(String[] args)
 	{
-		if (inMonogomous)
-		{
-			if (rand.nextDouble() > infidelity) return false ;
-		}
-		return available ;
+            if (inMonogomous)
+            {
+                if (rand.nextDouble() > infidelity) 
+                    return false ;
+            }
+            return available ;
 	}
 	
 	/**
@@ -386,13 +408,13 @@ public abstract class Agent {
 	 */
 	protected boolean setAvailable()
 	{
-		available = (nbRelationships < promiscuity) ;
-		return available ;
+	    available = (nbRelationships < promiscuity) ;
+	    return available ;
 	}
 	
 	protected boolean getAvailable()
 	{
-		return available ;
+	    return available ;
 	}
 	
 	/**
@@ -402,14 +424,19 @@ public abstract class Agent {
 	 */
 	public String enterRelationship(Relationship relationship)
 	{
-		String report = "agentId:" + Integer.toString(agentId) + " " ;
+		String report = Integer.toString(agentId) + ":" ;
+		int partnerId = relationship.getPartnerId(agentId) ;
+		report += Integer.toString(partnerId) + ":" ;
+		report += relationship.getRelationship() + " " ;
 		
 		currentRelationships.add(relationship) ;
+		currentPartnerIds.add(partnerId) ;
 		nbRelationships++ ;
-		
+                
+                
 		setAvailable() ;
 		
-		report += "nbRelationships:" + Integer.toString(currentRelationships.size()) + " " ;
+		report = relationship.getReport() ;
 		return report ;
 	}
 	
@@ -433,7 +460,7 @@ public abstract class Agent {
 	
 	public void enterRelationship(int agentNb)
 	{
-		currentPartners.add(agentNb) ;
+		currentPartnerIds.add(agentNb) ;
 		
 		nbRelationships++ ;
 		
@@ -463,48 +490,102 @@ public abstract class Agent {
 	}
 
 	/**
-	 * Removes relationship and modifies nbRelationships count by -1
+	 * Removes relationship and partner and modifies nbRelationships count by -1
 	 * @param relationship
 	 */
 	public void leaveRelationship(Relationship relationship)
 	{
-		currentRelationships.remove(relationship) ;
-    	nbRelationships-- ;
+            // Leave specific relationship subclass
+            try
+            {
+                String leaveMethodName = "leave" + relationship.getRelationship() ;
+                Method leaveRelationshipMethod = Relationship.class.getMethod(leaveMethodName, Relationship.class) ;
+            }
+            catch ( NoSuchMethodException nsme )
+            {
+                logger.info(nsme.getLocalizedMessage()) ;
+            }
+            
+	    currentPartnerIds.remove((Object) relationship.getPartnerId(agentId)) ;
+	    currentRelationships.remove(relationship) ;
+    	    nbRelationships-- ;
 	    return ;
 	}
 	
-	public void leaveRelationship(int agentNb)
+	private void leaveRelationship(int agentNb)
 	{
 		//Convert agentNb to Object so not treated as index
-		currentPartners.remove((Object) agentNb) ;
+		currentPartnerIds.remove((Object) agentNb) ;
 		//lostPartners.add((Object) agentNb) ;
 		
 		nbRelationships-- ;
 		return ;
 	}
 	
-	protected void enterRegular(int agentNb)
+	protected void enterCasual(Relationship relationship)
+	{
+		enterRelationship(relationship) ;
+		casualNumber++ ;
+		return ;
+	}
+
+	protected void enterRegular(Relationship relationship)
+	{
+		enterRelationship(relationship) ;
+		regularNumber++ ;
+		return ;
+	}
+
+	private void enterRegular(int agentNb)
 	{
 		enterRelationship(agentNb) ;
 		regularNumber++ ;
 		return ;
 	}
 
-	protected void enterMonogomous(int agentNb)
+	protected void enterMonogomous(Relationship relationship)
 	{
-		enterRelationship(agentNb) ;
-		inMonogomous = true ;
-		return ;
+            enterRelationship(relationship) ;
+            inMonogomous = true ;
+            return ;
 	}
 
-	protected void leaveRegular(int agentNb)
+	private void enterMonogomous(int agentNb)
+	{
+            enterRelationship(agentNb) ;
+            inMonogomous = true ;
+            return ;
+	}
+
+	protected void leaveCasual(Relationship relationship)
+	{
+            leaveRelationship(relationship) ;
+            casualNumber-- ;
+	    return ;
+        }
+	
+	protected void leaveRegular(Relationship relationship)
+	{
+            leaveRelationship(relationship) ;
+            regularNumber-- ;
+	    return ;
+        }
+	
+	private void leaveRegular(int agentNb)
 	{
 		leaveRelationship(agentNb) ;
 		regularNumber-- ;
 		return ;
 	}
 
-	protected void leaveMonogomous(int agentNb)
+	protected void leaveMonogomous(Relationship relationship)
+	{
+            leaveRelationship(relationship) ;
+            inMonogomous = false ;
+            return ;
+        }
+	
+	private void leaveMonogomous(int agentNb)
 	{
 		leaveRelationship(agentNb) ;
 		inMonogomous = false ;
@@ -520,8 +601,21 @@ public abstract class Agent {
 	{
 		// double risk = Math.exp(-age*Math.log(2)/halfLife) ;
 		double risk = (maxLife - age)/maxLife ;
-		return (rand.nextDouble() > risk) ;
+		if (rand.nextDouble() > risk) 
+		{
+			clearRelationships() ;
+		}
+	    return false ;
 	}
+	
+	protected void clearRelationships()
+	{
+        for (Relationship relationship : currentRelationships)
+        {
+         	leaveRelationship(relationship) ;
+        }
+        return ;
+    }
 	
     /**
      * 

@@ -1,5 +1,7 @@
 package community;
 
+import agent.* ;
+
 class Casual extends Relationship {
     private double breakupProbability = 1.0 ;
     

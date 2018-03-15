@@ -12,7 +12,7 @@ import site.* ;
 public class MSM extends Agent {
 	
     // The maximum number of relationships an agent may be willing to sustain
-    static int maxRelationships = 100;
+    static int maxRelationships = 20;
     
     // Potential infection sites
 	private Rectum rectum ;
@@ -21,14 +21,18 @@ public class MSM extends Agent {
 	
 	// Status' for HIV infection, antiviral treatment if infected
 	private boolean statusHIV ;
-	private boolean statusAntivirals ;
+        // Whether currently being treated with antiretrovial medication
+	private boolean antiViralStatus ;
 	// Whether discloses HIV +ve status
 	private boolean discloseStatusHIV ;
+        // Whether currently taking PrEP
+        private boolean prepStatus ;
 	
     // Associated probabilities for the above
 	static double probabilityHIV = 0.05 ;
-	static double probabilityAntivirals = 0.7 ;
+	static double antiViralProbability = 0.7 ;
 	static double probabilityDiscloseHIV = 0.8 ;
+        static double probabilityPrep = 0.2 ;
 	
 	// Transmission probabilities fromsiteTosite
 	static double PENISRECTUM = 0.8 ;
@@ -76,6 +80,10 @@ public class MSM extends Agent {
     
 	public MSM(int startAge) {
 		super(startAge) ;
+                statusHIV = (rand.nextDouble() < probabilityHIV) ;
+                antiViralStatus = (rand.nextDouble() < antiViralProbability) ;
+                discloseStatusHIV = (rand.nextDouble() < probabilityDiscloseHIV) ;
+                prepStatus = (rand.nextDouble() < probabilityPrep) ;
 	}
 
 	/* (non-Javadoc)
@@ -95,39 +103,76 @@ public class MSM extends Agent {
 	
 	protected Site chooseSite()
 	{
-		int index = rand.nextInt(3) ;
-		if (index == 0) return rectum ;
-		else if (index == 1) return penis ;
-		else return pharynx ;
+            int index = rand.nextInt(3) ;
+            if (index == 0) 
+                return rectum ;
+            else if (index == 1) 
+                return penis ;
+            else 
+                return pharynx ;
 	}
 	
 	protected Site chooseSite(Site site)
 	{
-		if (site.getSite().equals("rectum"))
-		{
-			int index = rand.nextInt(2) ;
-			if (index == 0) return penis ;
-			else return pharynx ;
-		}
-		else
-		{
-			return chooseSite() ;
-		}
+            if (site.getSite().equals("rectum"))
+            {
+                int index = rand.nextInt(2) ;
+                if (index == 0) return penis ;
+                else return pharynx ;
+            }
+            else
+            {
+                return chooseSite() ;
+            }
 	}
 	
 	protected Rectum getRectum()
 	{
-		return rectum ;
+	    return rectum ;
 	}
 	
 	protected Penis getPenis()
 	{
-		return penis ;		
+	    return penis ;		
 	}
 	
 	protected Pharynx getPharynx()
 	{
-		return pharynx ;
+            return pharynx ;
+	}
+	
+        private boolean getStatusHIV()
+        {
+            return statusHIV ;
+        }
+        
+        private boolean getAntiViralStatus()
+        {
+            return antiViralStatus ;
+        }
+        
+        private boolean getDiscloseStatusHIV()
+        {
+            return discloseStatusHIV ;
+        }
+        
+        private boolean getPrepStatus()
+        {
+            return prepStatus ;
+        }
+        
+	public double getScreenProbability(String[] args)
+	{
+            if (antiViralStatus)
+            {
+                int cycle = Integer.valueOf(args[0]) ;
+                // Those on antivirals test every three months (92 days) on a given day
+                if ( Math.floorMod(cycle, 92) == 0)
+                    return 1.0 ;
+                else
+                    return 0.0 ;
+            }
+            return super.getScreenProbability(args) ;
 	}
 
 }

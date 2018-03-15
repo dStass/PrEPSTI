@@ -36,9 +36,9 @@ public class Community {
 	static Random rand = new Random() ;
 	
 	// List of indices in agents of available agents. Repetition indicates promiscuity
-	ArrayList<Integer> availableAgentsIds = new ArrayList<Integer>() ;
+	//ArrayList<Integer> availableAgentsIds = new ArrayList<Integer>() ;
 	
-	private ArrayList<Relationship> relationships = new ArrayList<Relationship>() ;
+	//private ArrayList<Relationship> relationships = new ArrayList<Relationship>() ;
 	
 	// The number of years covered in the simulation
 	private static int year = 0 ;
@@ -63,6 +63,9 @@ public class Community {
 		String encounterReport ;
 		String clearanceReport ;
 		String screenReport ;
+		String birthReport ;
+		String deathReport ;
+		
 		String cycleString ;
 		
 		// simulation of maxCycles cycles
@@ -77,7 +80,10 @@ public class Community {
 			clearanceReport = cycleString + community.clearRelationships();
 			
 			// treat symptomatic agents
-			screenReport = cycleString + community.screenAgents() ;
+			screenReport = cycleString + community.screenAgents(cycle) ;
+			
+			birthReport = cycleString + community.births() ;
+			deathReport = cycleString + community.grimReaper() ;
 			
 			community.submitReports(generateReport,encounterReport,clearanceReport,screenReport) ;
 			
@@ -114,14 +120,6 @@ public class Community {
 			//newAgent = (Agent) agentConstructor.newInstance(id) ; 
 			MSM newAgent = new MSM(-1) ;
 			agents.add(newAgent) ;
-			
-			// The number of relationships each agent is willing to maintain is indicated by
-			// repetition
-			int promiscuity = newAgent.getPromiscuity() ;
-			for (int coupling = 0; coupling < promiscuity; coupling++ )
-			{
-				availableAgentsIds.add(id) ;
-			}
 		}
 		String relationshipReport = generateRelationships() ;
 		return ;
@@ -129,10 +127,10 @@ public class Community {
 	
 	/**
 	 * Generate relationships within the community. 
-	 * The number of introductions is the difference between the current number 
-	 * of relationships and the maximum number allowed.
-	 * TODO: Improve reporting
-	 * TODO: Type of relationship
+	 * The agents are shuffled and then split in half, with the first
+	 * half in relationship proposals with the second half.
+         * 
+         * @return (String) report of Relationships generated
 	 */
 	protected String generateRelationships()
 	{
@@ -140,59 +138,85 @@ public class Community {
 		
 		Collections.shuffle(agents) ;
 		int halfAgents = Math.floorDiv(agents.size(), 2) ;
+		try
+		{
 		for (int index = 0 ; index < halfAgents ; index++ )
 		{
 			Agent agent0 = agents.get(index) ;
 			Agent agent1 = agents.get(index + halfAgents) ;
 			
-			if (agent0.consent() && agent1.consent())
+			// Have only one Relationship between two given Agents
+			if (agent1.getCurrentPartnerIds().contains(agent0.getId()))
+				continue ;
+
+			// Tell Agents which type of Relationship is being proposed.
+			String relationshipClazzName = Relationship.chooseRelationship(agent0, agent1) ;
+			String[] consentArgs = {relationshipClazzName} ;
+			if (agent0.consent(consentArgs) && agent1.consent(consentArgs))
 			{
-				Relationship relationship = new Relationship(agent0,agent1) ;
-				nbRelationships++ ;
-						
-				agent0.enterRelationship(relationship) ;
-				agent1.enterRelationship(relationship) ;
-				
-				report += Integer.toString(nbRelationships) + ":" ;
-				report += Integer.toString(agent0.getId()) + " " ;
-				report += Integer.toString(agent1.getId()) + " " ;
+			    Class<?> relationshipClazz = Class.forName(relationshipClazzName) ;
+                            String enterMethodName = "enter" + relationshipClazzName ;
+                            Method enterRelationshipMethod = relationshipClazz.getMethod(enterMethodName, Relationship.class ) ;
+                            
+                            Relationship relationship = (Relationship) relationshipClazz.newInstance();
+                            //Relationship relationship = (Relationship) relationshipClazz.getConstructor().newInstance();
+                            relationship.addAgents(agent0, agent1);
+                            nbRelationships++ ;
+                            
+                            enterRelationshipMethod.invoke(agent0, relationship) ;
+                            enterRelationshipMethod.invoke(agent1, relationship) ;
+
+                            // report contains relationship subclass and agentIds
+                            report += agent0.enterRelationship(relationship) ;
+                            agent1.enterRelationship(relationship) ;
+
+                            // report += relationship.getReport() + " " ;
 
 			}
 		}
+		}
+                catch ( NoSuchMethodException nsme )
+                {
+                    logger.info(nsme.getLocalizedMessage());
+                }
+                catch ( ClassNotFoundException cnfe )
+                {
+                    logger.info(cnfe.getLocalizedMessage());
+                }
+		catch ( IllegalAccessException iae )
+                {
+                    logger.info(iae.getMessage());
+                }
+                catch ( InstantiationException ie)
+                {
+                    logger.info(ie.getLocalizedMessage()) ;
+                }
+                catch ( InvocationTargetException ite )
+                {
+                    logger.info(ite.getLocalizedMessage());
+                }
 
 		return report ;
 	}
-	
-	/**
-	 * Choose two agents with likelihood proportional to their promiscuity and
-	 * generate a Relationship between them if they both consent 
-	 * TODO: Generalise to include agents other than MSM.
-	 * TODO: Use Reflect to dynamically choose MSM, perhaps Community.agentClass
-	 * 
-	 * @return true if relationship is formed, false otherwise
-	 */
-	private boolean startRelationship()
-	{
-		int[] agentNbs = MSM.chooseTwoAgents(availableAgentsIds) ;
-		int agentNb0 = agentNbs[0] ;
-		int agentNb1 = agentNbs[1] ;
-		
-		Agent agent0 = agents.get(agentNb0) ;
-		Agent agent1 = agents.get(agentNb1) ;
-		
-		//TODO: consider random process of accept/reject
-		
-		if (agent0.consent() && agent1.consent())
-		{
-			agent0.enterRelationship(agentNb1) ;
-			agent1.enterRelationship(agentNb0) ;
-			
-			relationships.add(new Relationship(agent0,agent1)) ;
-			
-			return true;
-		}
 
-		return false ;
+
+	/**
+	 * Handles introduction of new Agents every cycle
+	 * Agents are 'born' to the simulation at 16-20 years old
+	 * @return String of agentId for each agent born
+	 */
+	private String births()
+	{
+		String report = "born:" ;
+		int currentPopulation = agents.size() ;
+		for (int birth = 0 ; birth < birthRate ; birth++ )
+		{
+			agents.add(new MSM(0)) ;
+		    report += Integer.toString(currentPopulation) + " " ;
+			currentPopulation++ ;
+		}
+		
+		return report ;
 	}
 
 	private String grimReaper()
@@ -233,29 +257,46 @@ public class Community {
 	{
 		String report = "" ;
 		// logger.info("nb relationships: " + relationships.size());
-		for (Relationship relationship : relationships)
+		for (Agent agent : agents)
 		{
-			try
+			// Might this agent have the lower agentId
+			// TODO: Improve precision
+			if (agent.getLowerAgentId() == 0)
+				continue ;
+			
+			for (Relationship relationship : agent.getCurrentRelationships())
 			{
-				Agent[] agents = relationship.getAgents() ;
-				report += "agentId0:" + Integer.toString(agents[0].getId()) + " " ;
-				report += "agentId1:" + Integer.toString(agents[1].getId()) + " " ;
-				report += relationship.encounter() ;
-			}
-			catch (NoSuchMethodException nsme)
-			{
-				com.sun.media.jfxmedia.logging.Logger.logMsg(0, nsme.getLocalizedMessage());
-				report += nsme.getCause(); //  .getMessage() ;
-			}
-			catch (InvocationTargetException ite)
-			{
-				com.sun.media.jfxmedia.logging.Logger.logMsg(0, ite.getLocalizedMessage());
-				//report += ite.getMessage() ;
-			}
-			catch (IllegalAccessException iae)
-			{
-				com.sun.media.jfxmedia.logging.Logger.logMsg(0, iae.getLocalizedMessage());
-				report += iae.getMessage() ;
+				// Avoid checking relationship twice by accessing only through the 
+				// agent with the lower agentId
+				// TODO: Incorporate this into Agent.Method()
+				int agentId = agent.getId() ;
+				int partnerId = relationship.getPartnerId(agentId) ;
+				if (partnerId < agentId)
+					continue ;
+				try
+				{
+					
+					//Agent[] agents = relationship.getAgents() ;
+					// TODO: Perhaps replace "agentId0/1" with "agentIds"
+					report += "agentId0:" + Integer.toString(agentId) + " " ;
+					report += "agentId1:" + Integer.toString(partnerId) + " " ;
+					report += relationship.encounter() ;
+				}
+				catch (NoSuchMethodException nsme)
+				{
+					com.sun.media.jfxmedia.logging.Logger.logMsg(0, nsme.getLocalizedMessage());
+					report += nsme.getCause(); //  .getMessage() ;
+				}
+				catch (InvocationTargetException ite)
+				{
+					com.sun.media.jfxmedia.logging.Logger.logMsg(0, ite.getLocalizedMessage());
+					//report += ite.getMessage() ;
+				}
+				catch (IllegalAccessException iae)
+				{
+					com.sun.media.jfxmedia.logging.Logger.logMsg(0, iae.getLocalizedMessage());
+					report += iae.getMessage() ;
+				}
 			}
 		}
 		return report ;
@@ -299,10 +340,8 @@ public class Community {
 	
 	/**
 	 * Check every agent and treat those who are symptomatic
-	 * TODO: Make seeking of symptomatic treatment probabilistic?
-	 * TODO: Completely remove agent.recordPartners()
 	 */
-	private String screenAgents()
+	private String screenAgents(int cycle)
 	{
 		String report = "" ;
 		for (Agent agent : agents)
@@ -314,11 +353,10 @@ public class Community {
 			{
 				report += "treatment:" + Boolean.toString(agent.treat()) ;
 			}
-			else if (agent.getScreenProbability() < rand.nextDouble()) 
+			else if (agent.getScreenProbability(new String[] {Integer.toString(cycle)}) < rand.nextDouble()) 
 			{
 				report += "treatment:" + Boolean.toString(agent.treat()) ;
 			}
-			//agent.recordPartners() ;
 		}
 		return report ;
 	}

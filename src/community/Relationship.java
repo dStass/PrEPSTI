@@ -4,7 +4,7 @@ import agent.* ;
 import site.* ;
 
 import java.util.Random ;
-import java.util.logging.Logger;
+//import java.util.logging.Logger;
 import java.lang.reflect.*;
 
 /*********************************************************************
@@ -35,8 +35,48 @@ public class Relationship {
     
     // Probability of breakup() in a given cycle
     private double breakupProbability ;
+    
+    /**
+     * Randomly chooses one of the available Relationship subclasses. 
+     * The odds of each subclass are the mean of the corresponding odds for each agent 
+     * @param agent0
+     * @param agent1
+     * @return relationshipSubclass.class
+     */
+    static String chooseRelationship(Agent agent0, Agent agent1 )
+    {
+    	int monogomousOdds = agent0.getMonogomousOdds() + agent1.getMonogomousOdds() ;
+    	int regularOdds = agent0.getRegularOdds() + agent1.getRegularOdds() ;
+    	int casualOdds = agent0.getRegularOdds() + agent1.getRegularOdds() ;
+    	int totalOdds = monogomousOdds + regularOdds + casualOdds ;
+    	
+    	int choice = rand.nextInt(totalOdds) ;
+    	if (choice < monogomousOdds)
+    		return "Monogomous" ;
+    	if (choice < (monogomousOdds + regularOdds))
+    		return "Regular" ;
+    	return "Casual" ;
+    }
    
+    protected Relationship()
+    {
+    	Class<?> clazz = this.getClass() ;
+    	relationship = clazz.asSubclass(clazz).getName() ;
+    }
+    
     protected Relationship(Agent agent0, Agent agent1) {
+    	addAgents(agent0, agent1) ;
+    	Class<?> clazz = this.getClass() ;
+    	relationship = clazz.asSubclass(clazz).getName() ;
+    }
+    
+    /**
+     * Adds Agents to Relationship and establishes which has the lower AgentId
+     * @param agent0
+     * @param agent1
+     */
+    protected void addAgents(Agent agent0, Agent agent1)
+    {
     	this.agent0 = agent0 ;
     	this.agent1 = agent1 ;
     	
@@ -44,9 +84,7 @@ public class Relationship {
     		agent0.augmentLowerAgentId() ;
     	else 
     		agent1.augmentLowerAgentId() ;
-    	
-    	Class<?> clazz = this.getClass() ;
-    	relationship = clazz.asSubclass(clazz).getName() ;
+    	return ;
     }
     
     /**
@@ -82,8 +120,8 @@ public class Relationship {
     {
     	if (rand.nextDouble() < breakupProbability)
 		{
-			agent0.leaveRelationship(agent1.getId()) ;
-			agent1.leaveRelationship(agent0.getId()) ;
+			agent0.leaveRelationship(this) ;  //(agent1.getId()) ;
+			agent1.leaveRelationship(this) ;  //(agent0.getId()) ;
 			return true ;
 		}
 		
@@ -193,7 +231,11 @@ public class Relationship {
     	return report ;
     }
 
-    protected String getRelationship()
+    /**
+     * 
+     * @return (String) name of Relationship.subClass of relationship
+     */
+    public String getRelationship()
     {
     	return relationship ;
     }

@@ -104,11 +104,11 @@ public class Reporter {
 	 */
 	protected String presentElement(Object mapList, Object elementNb)
 	{
-		if (mapList instanceof HashMap)
-        {
-			return getElement((HashMap<?,?>) mapList, elementNb).toString() ;
-        }
-		return getElement((ArrayList<?>) mapList, (int) elementNb).toString() ;
+	    if (mapList instanceof HashMap)
+            {
+		return getElement((HashMap<?,?>) mapList, elementNb).toString() ;
+            }
+	return getElement((ArrayList<?>) mapList, (Integer) elementNb).toString() ;
 	}
 	
 	/**

@@ -5,7 +5,7 @@ package site;
 
 import java.util.Random ;
 /**
- * @author MichaelWalker
+ * @author Michael Walker
  *
  *Refers to Site of body at which infection takes place
  */

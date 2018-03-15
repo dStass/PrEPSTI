@@ -3,7 +3,6 @@
  */
 package site;
 
-import community.Site;
 
 /**
  * @author MichaelWalker
