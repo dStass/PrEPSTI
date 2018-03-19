@@ -52,7 +52,7 @@ public class Community {
 	
 
 	// Logger
-	java.util.logging.Logger logger = java.util.logging.Logger.getLogger("reporter") ;
+	static final java.util.logging.Logger LOGGER = java.util.logging.Logger.getLogger("reporter") ;
 	
 	public static void main(String[] args)
 	{
@@ -113,17 +113,60 @@ public class Community {
 	 */
 	public Community() {
 		// Populate community with agents
+                String agentReport = "" ;
 		for (int id = 0 ; id < population ; id++ ) {
 			//Class<?> AgentClazz = Class.forName("MSM") ; 
 			//Agent newAgent = (Agent) AgentClazz.newInstance() ;
 			//Constructor<?> agentConstructor = AgentClazz.getDeclaredConstructors()[0] ;
-			//newAgent = (Agent) agentConstructor.newInstance(id) ; 
-			MSM newAgent = new MSM(-1) ;
+			
+                        // Call generateAgent to get randomly chosen combination of Agent subclasses
+			MSM newAgent = generateAgent() ;  //new MSM(-1) ;
 			agents.add(newAgent) ;
+                        
+                        // Record newAgent for later reporting
+                        agentReport += newAgent.getId() + ":" ;
+                        agentReport += newAgent.getAgent() + " " ;
 		}
 		String relationshipReport = generateRelationships() ;
 		return ;
 	}
+        
+        /**
+         * Calls chooseMSM() to decide which MSM are RiskyMSM and safeMSM.
+         * TODO: Generalise to more general types of Agent
+         * @return MSM newAgent OR new MSM() if error occurs
+         */
+        private MSM generateAgent()
+        {
+            String agentClazzName = MSM.chooseMSM() ;
+            try
+            {
+	    //Class<?> agentClazz = Class.forName(agentClazzName) ;
+            MSM newAgent = (MSM) Class.forName(agentClazzName).getConstructor(int.class).newInstance(-1);
+            return newAgent ;
+            }
+            catch ( NoSuchMethodException nsme )
+            {
+                LOGGER.info(nsme.getLocalizedMessage());
+            }
+            catch ( InstantiationException ie )
+            {
+                LOGGER.info(ie.getLocalizedMessage());
+            }
+            catch ( IllegalAccessException iae )
+            {
+                LOGGER.info(iae.getLocalizedMessage());
+            }
+            catch ( InvocationTargetException ite )
+            {
+                LOGGER.info(ite.getLocalizedMessage());
+            }
+            catch ( ClassNotFoundException cnfe )
+            {
+                LOGGER.info(cnfe.getLocalizedMessage());
+            }
+            return new MSM(-1) ;
+        }
 	
 	/**
 	 * Generate relationships within the community. 
@@ -151,8 +194,9 @@ public class Community {
 
 			// Tell Agents which type of Relationship is being proposed.
 			String relationshipClazzName = Relationship.chooseRelationship(agent0, agent1) ;
-			String[] consentArgs = {relationshipClazzName} ;
-			if (agent0.consent(consentArgs) && agent1.consent(consentArgs))
+                        
+                        // Argument String[] for Agent.consent 
+			if (agent0.consent(relationshipClazzName,agent1) && agent1.consent(relationshipClazzName,agent0))
 			{
 			    Class<?> relationshipClazz = Class.forName(relationshipClazzName) ;
                             String enterMethodName = "enter" + relationshipClazzName ;
@@ -177,23 +221,23 @@ public class Community {
 		}
                 catch ( NoSuchMethodException nsme )
                 {
-                    logger.info(nsme.getLocalizedMessage());
+                    LOGGER.info(nsme.getLocalizedMessage());
                 }
                 catch ( ClassNotFoundException cnfe )
                 {
-                    logger.info(cnfe.getLocalizedMessage());
+                    LOGGER.info(cnfe.getLocalizedMessage());
                 }
 		catch ( IllegalAccessException iae )
                 {
-                    logger.info(iae.getMessage());
+                    LOGGER.info(iae.getMessage());
                 }
                 catch ( InstantiationException ie)
                 {
-                    logger.info(ie.getLocalizedMessage()) ;
+                    LOGGER.info(ie.getLocalizedMessage()) ;
                 }
                 catch ( InvocationTargetException ite )
                 {
-                    logger.info(ite.getLocalizedMessage());
+                    LOGGER.info(ite.getLocalizedMessage());
                 }
 
 		return report ;
@@ -256,7 +300,7 @@ public class Community {
 	protected String runEncounters()
 	{
 		String report = "" ;
-		// logger.info("nb relationships: " + relationships.size());
+		// LOGGER.info("nb relationships: " + relationships.size());
 		for (Agent agent : agents)
 		{
 			// Might this agent have the lower agentId
@@ -284,17 +328,17 @@ public class Community {
 				}
 				catch (NoSuchMethodException nsme)
 				{
-					com.sun.media.jfxmedia.logging.Logger.logMsg(0, nsme.getLocalizedMessage());
+					LOGGER.info(nsme.getLocalizedMessage());
 					report += nsme.getCause(); //  .getMessage() ;
 				}
 				catch (InvocationTargetException ite)
 				{
-					com.sun.media.jfxmedia.logging.Logger.logMsg(0, ite.getLocalizedMessage());
+					LOGGER.info(ite.getLocalizedMessage());
 					//report += ite.getMessage() ;
 				}
 				catch (IllegalAccessException iae)
 				{
-					com.sun.media.jfxmedia.logging.Logger.logMsg(0, iae.getLocalizedMessage());
+					LOGGER.info(iae.getLocalizedMessage());
 					report += iae.getMessage() ;
 				}
 			}
@@ -364,7 +408,7 @@ public class Community {
 	private void submitReports(String generateReport, String encounterReport, String clearReport, String screenReport)
 	{
 		generateReports.add(generateReport) ;
-		//logger.info(encounterReport);
+		//LOGGER.info(encounterReport);
 		encounterReports.add(encounterReport) ;
 		clearReports.add(clearReport) ;
 		screenReports.add(screenReport) ;
