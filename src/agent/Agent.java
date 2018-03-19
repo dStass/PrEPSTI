@@ -89,7 +89,7 @@ public abstract class Agent {
 	private boolean infectedStatus ;
 	private boolean symptomatic ;
 
-        java.util.logging.Logger logger = java.util.logging.Logger.getLogger("agent") ;
+        static final java.util.logging.Logger LOGGER = java.util.logging.Logger.getLogger("agent") ;
 
 	public static Site[] chooseSites(Agent agent0, Agent agent1)
 	{
@@ -265,8 +265,8 @@ public abstract class Agent {
 	{
 		return chooseSite() ;
 	}
-	
-	/**
+        
+        /**
 	 * Called every 365 cycles to age the agent by one year.
 	 * @return String description of agentId, age, and any altered quantities if any, 
 	 *     empty otherwise
@@ -389,9 +389,11 @@ public abstract class Agent {
 	 * Currently according to whether in a monogomous relationship and 
 	 * the number of relationships already entered compared to promiscuity.
 	 * 
+         * @param relationshipClazzName - name relationship subclass
+         * @param partner - agent for sharing proposed relationship
 	 * @return true if accept and false otherwise
 	 */
-	public boolean consent(String[] args)
+	public boolean consent(String relationshipClazzName, Agent partner)
 	{
             if (inMonogomous)
             {
@@ -488,7 +490,30 @@ public abstract class Agent {
 
         return report ;
 	}
+        
+        /**
+         * 
+         * @return String indicating disease (HIV) status
+         */
+        public String discloseStatus()
+        {
+            return "none" ;
+        }
 
+        /**
+         * Override and call in subclass if details about possible partners are 
+         * needed.
+         * @param relationshipClazzName
+         * @param agent
+         * @return String[] args of relationshipClazzName and other Properties 
+         * relevant to deciding consent()
+         */
+        public String[] consentArgs(String relationshipClazzName, Agent agent) 
+        {
+            String[] consentArgs = {relationshipClazzName} ;
+            return consentArgs ;
+        }
+        
 	/**
 	 * Removes relationship and partner and modifies nbRelationships count by -1
 	 * @param relationship
@@ -503,10 +528,10 @@ public abstract class Agent {
             }
             catch ( NoSuchMethodException nsme )
             {
-                logger.info(nsme.getLocalizedMessage()) ;
+                LOGGER.info(nsme.getLocalizedMessage()) ;
             }
             
-	    currentPartnerIds.remove((Object) relationship.getPartnerId(agentId)) ;
+	    currentPartnerIds.remove(relationship.getPartnerId(agentId)) ;
 	    currentRelationships.remove(relationship) ;
     	    nbRelationships-- ;
 	    return ;
@@ -515,7 +540,7 @@ public abstract class Agent {
 	private void leaveRelationship(int agentNb)
 	{
 		//Convert agentNb to Object so not treated as index
-		currentPartnerIds.remove((Object) agentNb) ;
+		currentPartnerIds.remove(agentNb) ;
 		//lostPartners.add((Object) agentNb) ;
 		
 		nbRelationships-- ;
@@ -621,7 +646,7 @@ public abstract class Agent {
      * 
      * @return subclass.getName() of agent type
      */
-	protected String getAgent()
+	public String getAgent()
 	{
 		return agent ;
 	}
