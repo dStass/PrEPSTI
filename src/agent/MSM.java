@@ -154,14 +154,14 @@ public class MSM extends Agent {
          */
         private void initStatus()
         {
-            seroSort = (rand.nextDouble() < probabilitySeroSort) ;
-            seroPosition = (rand.nextDouble() < probabilitySeroPosition) ;
             requireDiscloseStatusHIV = (rand.nextDouble() < probabilityRequireDiscloseHIV) ;
             statusHIV = (rand.nextDouble() < probabilityHIV) ;
             antiViralStatus = (rand.nextDouble() < antiViralProbability) ;
             discloseStatusHIV = (rand.nextDouble() < probabilityDiscloseHIV) ;
             prepStatus = (rand.nextDouble() < probabilityPrep) ;
-	    return ;
+	    seroSort = ((rand.nextDouble() < probabilitySeroSort) && discloseStatusHIV) ;
+            seroPosition = ((rand.nextDouble() < probabilitySeroPosition) && discloseStatusHIV) ;
+            return ;
         }
 
 	/* (non-Javadoc)
@@ -179,7 +179,11 @@ public class MSM extends Agent {
 		return ;
 	}
 	
-	protected Site chooseSite()
+    /**
+     * Used when choosing Site for sexual encounter
+     * @return randomly choice of rectum, penis or pharynx
+     */
+    protected Site chooseSite()
 	{
             int index = rand.nextInt(3) ;
             if (index == 0) 
@@ -190,127 +194,178 @@ public class MSM extends Agent {
                 return pharynx ;
 	}
 	
-	protected Site chooseSite(Site site)
-	{
-            if (site.getSite().equals("rectum"))
-            {
-                int index = rand.nextInt(2) ;
-                if (index == 0) return penis ;
-                else return pharynx ;
-            }
-            else
-            {
-                return chooseSite() ;
-            }
-	}
-	
-        protected Site chooseNotPenisSite() 
+    protected Site chooseSite(Site site)
+    {
+        if (site.getSite().equals("rectum"))
         {
             int index = rand.nextInt(2) ;
-            if (index == 0)
-                return rectum ;
-            return pharynx ;
+            if (index == 0) return penis ;
+            else return pharynx ;
         }
-        
-	protected Rectum getRectum()
-	{
-	    return rectum ;
-	}
-	
-	protected Penis getPenis()
-	{
-	    return penis ;		
-	}
-	
-	protected Pharynx getPharynx()
-	{
-            return pharynx ;
-	}
-	
-        private boolean getStatusHIV()
+        else
         {
-            return statusHIV ;
+            return chooseSite() ;
         }
-        
-        public boolean getSeroSort()
-        {
-            return seroSort ;
-        }
-        
-        public boolean getSeroPosition()
-        {
-            return seroPosition ;
-        }
-        
-        private boolean getAntiViralStatus()
-        {
-            return antiViralStatus ;
-        }
-        
-        private boolean getDiscloseStatusHIV()
-        {
-            return discloseStatusHIV ;
-        }
-        
-        private boolean getPrepStatus()
-        {
-            return prepStatus ;
-        }
-        
-        public String discloseStatus()
-        {
-            if (discloseStatusHIV)
-                return Boolean.toString(statusHIV) ;
-            return "none" ;
-        }
-        
-        /**
-         * Consent also affected by sero- Sorting and Position and
-         * partners disclosure of statusHIV 
-         * TODO: FIXME: Find way to pass relevant partner information to
-         * consent()
-         * @param relationshipClazzName
-         * @param agent
-         * @return 
-         */
+    }
+
+    protected Site chooseNotPenisSite() 
+    {
+        int index = rand.nextInt(2) ;
+        if (index == 0)
+            return rectum ;
+        return pharynx ;
+    }
+
+    protected Rectum getRectum()
+    {
+        return rectum ;
+    }
+
+    protected Penis getPenis()
+    {
+        return penis ;		
+    }
+
+    protected Pharynx getPharynx()
+    {
+        return pharynx ;
+    }
+
+    private boolean getStatusHIV()
+    {
+        return statusHIV ;
+    }
+    
+    /**
+     * Setter of statusHIV, used for unit testing
+     * @param status 
+     */
+    public void setStatusHIV(boolean status)
+    {
+        statusHIV = status ;
+        return ;
+    }
+
+    public boolean getSeroSort()
+    {
+        return seroSort ;
+    }
+    
+    /**
+     * Setter of seroSort, used for unit testing
+     * @param sort 
+     */
+    public void setSeroSort(boolean sort)
+    {
+        discloseStatusHIV = (discloseStatusHIV || sort) ;
+        seroSort = sort ;
+        return ;
+    }
+
+    public boolean getSeroPosition()
+    {
+        return seroPosition ;
+    }
+    
+    /**
+     * Setter of seroPosition. Used for unit testing.
+     * Changes discloseStatus to true if (position == true)
+     * @param position 
+     */
+    public void setSeroPosition(boolean position)
+    {
+        discloseStatusHIV = (discloseStatusHIV || position) ;
+        seroPosition = position ;
+        return ;
+    }
+
+    private boolean getAntiViralStatus()
+    {
+        return antiViralStatus ;
+    }
+    
+    public void setAntiViralStatus(boolean status)
+    {
+        antiViralStatus = status ;
+        return ;
+    }
+
+    private boolean getDiscloseStatusHIV()
+    {
+        return discloseStatusHIV ;
+    }
+    
+    /**
+     * Setter of discloseStatusHIV. Used for unit testing
+     * @param disclose 
+     */
+    public void setDiscloseStatusHIV(boolean disclose)
+    {
+        discloseStatusHIV = disclose ;
+        return ;
+    }
+
+    private boolean getPrepStatus()
+    {
+        return prepStatus ;
+    }
+    
+    /**
+     * Setter of prepStatus. Used for unit testing
+     * @param prep 
+     */
+    public void setPrepStatus(boolean prep)
+    {
+        prepStatus = prep ;
+        return ;
+    }
+
+    /**
+     * How would the MSM respond if asked to disclose their statusHIV
+     * @return String representation of statusHIV if (discloseStatusHIV), otherwise 'none'
+     */
+    public String declareStatus()
+    {
+        if (discloseStatusHIV)
+            return Boolean.toString(statusHIV) ;
+        return "none" ;
+    }
+
+    /**
+     * Consent also affected by sero- Sorting and Position and
+     * partners disclosure of statusHIV 
+     * TODO: FIXME: Find way to pass relevant partner information to
+     * consent()
+     * @param relationshipClazzName
+     * @param agent
+     * @return 
+     */
     @Override
-        public boolean consent(String relationshipClazzName, Agent agent)
+    public boolean consent(String relationshipClazzName, Agent agent)
+    {
+        if (! super.consent(relationshipClazzName, agent))
+            return false;
+        MSM partner = (MSM) agent ;
+        String partnerDisclosure = partner.declareStatus() ;
+        Boolean partnerSeroPosition = partner.getSeroPosition() ;
+        if (seroSort)
         {
-            if (! super.consent(relationshipClazzName, agent))
-                return false;
-            MSM partner = (MSM) agent ;
-            String partnerDisclosure = partner.discloseStatus() ;
-            Boolean partnerSeroPosition = partner.getSeroPosition() ;
-            if (seroSort)
-            {
-                if ("none".equalsIgnoreCase(partnerDisclosure))
-                    return false ;
-                else
-                    return (statusHIV == Boolean.getBoolean(partnerDisclosure)) ;
-            }
-            if (seroPosition)
-            {
-                if ("none".equalsIgnoreCase(partnerDisclosure))
-                    return false ;
-                else 
-                    return partnerSeroPosition ;
-            }
-            return true ;
+            // not if partner does not disclose
+            if ("none".equalsIgnoreCase(partnerDisclosure))
+                return false ;
+            else    // check for serodiscordance
+                return (statusHIV == Boolean.getBoolean(partnerDisclosure)) ;
         }
-        
-        /**
-         * Override and call in subclass if details about possible partners are 
-         * needed.
-         * @param relationshipClazzName
-         * @return String[] args of relationshipClazzName and other Properties 
-         * relevant to deciding consent()
-         */
-        public String[] consentArgs(String relationshipClazzName) 
+        if (seroPosition)
         {
-            String[] consentArgs = {relationshipClazzName,discloseStatus(),String.valueOf(seroSort)} ;
-            return consentArgs ;
+            // not if partner does not disclose
+            if ("none".equalsIgnoreCase(partnerDisclosure))
+                return false ;
+            else 
+                return partnerSeroPosition ;
         }
-        
+        return true ;
+    }
 	
         
     @Override
