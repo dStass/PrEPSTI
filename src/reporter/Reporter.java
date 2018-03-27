@@ -171,12 +171,12 @@ public class Reporter {
      * @param string
      * @return (String) value of valueName
      */
-    protected static String extractValue(String valueName, String string)
+    public static String extractValue(String valueName, String string)
     {
         return extractValue(valueName, string, 0) ;
     }
 
-    protected static ArrayList<String> extractAllValues(String propertyName, String string, int startIndex)
+    public static ArrayList<String> extractAllValues(String propertyName, String string, int startIndex)
     {
         ArrayList<String> values = new ArrayList<String>() ;
         while ( startIndex >= 0 )
@@ -193,7 +193,7 @@ public class Reporter {
      * @param startIndex - string index of value, assumed exact if > 0, otherwise search
      * @return (String) value of valueName as stored in string
      */
-    protected static String extractValue(String propertyName, String string, int startIndex)
+    public static String extractValue(String propertyName, String string, int startIndex)
     {
         // Find value of valueName in string
         String valueString = "null" ;
