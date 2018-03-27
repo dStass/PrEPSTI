@@ -26,8 +26,8 @@ public class Presenter {
     
     private Reporter reporter ;
     
-    private ArrayList<String> categoryData ;
-    private ArrayList<String> scoreData ;
+    protected ArrayList<String> categoryData ;
+    protected ArrayList<String> scoreData ;
     private String applicationTitle ;
     private String chartTitle ;
     
@@ -36,13 +36,18 @@ public class Presenter {
 
     static final java.util.logging.Logger LOGGER = java.util.logging.Logger.getLogger("presenter") ;
     
-    public void Presenter(String applicationTitle, String chartTitle)
+    public Presenter()
+    {
+        
+    }
+    
+    public Presenter(String applicationTitle, String chartTitle)
     {
         chart_awt = new BarChart_AWT(applicationTitle, chartTitle) ;
         
     }
     
-    public void Presenter(String applicationTitle, String chartTitle, Reporter reporter)
+    public Presenter(String applicationTitle, String chartTitle, Reporter reporter)
     {
         chart_awt = new BarChart_AWT(applicationTitle, chartTitle) ;
         setReporter(reporter) ;
@@ -63,6 +68,18 @@ public class Presenter {
         // Get full report reportName
         ArrayList<String> reportArray = getReportArray(reportName) ;
         
+        callPlotChartDefault(scoreName, reportArray) ;
+        return ;
+    }
+    
+
+    /**
+     * Presents reportArray as a function of time/cycle
+     * @param scoreName
+     * @param reportArray 
+     */
+    protected void callPlotChartDefault(String scoreName, ArrayList<String> reportArray)
+    {
         // Extract data from reportArray
         parseReportArray(scoreName, reportArray) ;
         
@@ -72,7 +89,7 @@ public class Presenter {
     }
     
     /**
-     * Presents scoreName as a function of categoryName from reportArray[cycle]
+     * Presents scoreName as a function of categoryName after calling prepareReportNameReport()
      * @param categoryName
      * @param scoreName
      * @param reportName
@@ -82,6 +99,20 @@ public class Presenter {
     {
         // Get report from cycle
         ArrayList<String> reportArray = getReportArray(reportName) ;
+        
+        callPlotChartDefault(categoryName, scoreName, reportArray, cycle) ;
+    }
+    
+    
+    /**
+     * Presents scoreName as a function of categoryName from reportArray[cycle]
+     * @param categoryName
+     * @param scoreName
+     * @param reportArray
+     * @param cycle 
+     */
+    protected void callPlotChartDefault(String categoryName, String scoreName, ArrayList<String> reportArray, int cycle)
+    {
         String report = reportArray.get(cycle) ;
         
         // Extract data from report
@@ -92,6 +123,29 @@ public class Presenter {
         return ;
     }
     
+    protected ArrayList<String> prepareEventsPerCycle(ArrayList<ArrayList<String>> reportArray)
+    {
+        ArrayList<String> eventsPerCycle = new ArrayList<String>() ;
+        
+        
+        for (ArrayList<String> report : reportArray)
+        {
+            eventsPerCycle.add(Integer.toString(report.size())) ;
+        }
+        
+        return eventsPerCycle ;
+        
+    }
+    
+    public void plotEventsPerCycle(String scoreName, ArrayList<ArrayList<String>> reportArray)
+    {
+        ArrayList<String> eventsPerCycle = prepareEventsPerCycle(reportArray) ;
+        
+        callPlotChartDefault(scoreName,eventsPerCycle) ;
+        
+        return ;
+    }
+
     /**
      * Uses reflect to call Method prepareReportNameReport()
      * @param reportName
