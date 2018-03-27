@@ -23,6 +23,46 @@ public class PopulationReporter extends Reporter {
 
     /**
      * 
+     * @return ArrayList of ArrayLists of (String) agentIds of agents 'born'
+     * in each cycle
+     */
+    public ArrayList<ArrayList<String>> prepareAgentBirthReport()
+    {
+        ArrayList<ArrayList<String>> agentBirthReport = new ArrayList<ArrayList<String>>() ;
+        
+        ArrayList<String> birthReport = prepareBirthReport() ;
+        
+        for (int reportNb = 0 ; reportNb < birthReport.size() ; reportNb++ )
+        {
+            String report = birthReport.get(reportNb) ;
+            int startIndex = report.indexOf("agendId") ;
+            agentBirthReport.add(extractAllValues("agentId", report, startIndex)) ;
+        }
+        return agentBirthReport ;
+    }
+    
+    /**
+     * 
+     * @return ArrayList of ArrayLists of (String) ages-at-birth of agents 'born'
+     * in each cycle
+     */
+    public ArrayList<ArrayList<String>> prepareAgeBirthReport()
+    {
+        ArrayList<ArrayList<String>> ageBirthReport = new ArrayList<ArrayList<String>>() ;
+        
+        ArrayList<String> birthReport = prepareBirthReport() ;
+        
+        for (int reportNb = 0 ; reportNb < birthReport.size() ; reportNb++ )
+        {
+            String report = birthReport.get(reportNb) ;
+            int startIndex = report.indexOf("age") ;
+            ageBirthReport.add(extractAllValues("age", report, startIndex)) ;
+        }
+        return ageBirthReport ;
+    }
+    
+    /**
+     * 
      * @return ArrayList of ArrayLists of (String) agentIds of agents who died 
      * in each cycle
      */
