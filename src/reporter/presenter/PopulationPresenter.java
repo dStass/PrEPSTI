@@ -34,24 +34,42 @@ public class PopulationPresenter extends Presenter{
         setReporter(reporter) ;
     }
     
+    /**
+     * Overrides super.setReporter() because reporter is now PopulationReporter
+     * @param reporter 
+     */
     public void setReporter(PopulationReporter reporter)
     {
         this.reporter = reporter ;
     }
 
-    
+    /**
+     * Find and plot the number of deaths as a function of time/cycle
+     */
     public void plotDeathsPerCycle()
     {
         ArrayList<ArrayList<String>> agentDeathReport = reporter.prepareAgentDeathReport() ;
         
         // ArrayList<String> deathsPerCycle = prepareDeathsPerCycle() ;
         
-        plotEventsPerCycle("Number of deaths",agentDeathReport) ;
+        plotEventsPerCycle("Deaths",agentDeathReport) ;
         
         return ;
+    }
 
-}
-
+/**
+     * Find and plot the number of deaths as a function of time/cycle
+     */
+    public void plotBirthsPerCycle()
+    {
+        ArrayList<ArrayList<String>> agentBirthReport = reporter.prepareAgentBirthReport() ;
+        
+        // ArrayList<String> deathsPerCycle = prepareDeathsPerCycle() ;
+        
+        plotEventsPerCycle("Births",agentBirthReport) ;
+        
+        return ;
+    }
 
 
 }
