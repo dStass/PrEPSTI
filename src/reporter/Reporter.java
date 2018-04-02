@@ -23,10 +23,10 @@ public class Reporter {
     //ArrayList<String> encounterReports ;
     //ArrayList<String> clearReports ;
     //ArrayList<String> screenReports ;
-    ArrayList<String> input ;
+    protected ArrayList<String> input ;
 
     // Output report
-    ArrayList<String> output ;
+    protected ArrayList<String> output ;
 
     // The number of Community cycles to pass between reports 
     protected int outputCycle = 1 ;
@@ -55,6 +55,12 @@ public class Reporter {
     {
         report = addReportLabel(label,report) ;
         return report + value + " " ;
+    }
+        
+    public static final String addReportProperty(String label, int value, String report)
+    {
+        report = addReportLabel(label,report) ;
+        return report + Integer.toString(value) + " " ;
     }
         
     
@@ -176,12 +182,22 @@ public class Reporter {
         return extractValue(valueName, string, 0) ;
     }
 
+    /**
+     * 
+     * @param propertyName
+     * @param string
+     * @param startIndex
+     * @return ArrayList of (String) values of propertyName from String string
+     */
     public static ArrayList<String> extractAllValues(String propertyName, String string, int startIndex)
     {
         ArrayList<String> values = new ArrayList<String>() ;
-        while ( startIndex >= 0 )
+        int index = startIndex ;
+        
+        while ( index >= 0 )
         {
             values.add(extractValue(propertyName, string, startIndex)) ;
+            index = string.indexOf(propertyName, index+1) ;
         }
         return values ;
     }
@@ -197,6 +213,7 @@ public class Reporter {
     {
         // Find value of valueName in string
         String valueString = "null" ;
+        LOGGER.info(propertyName) ;
         int valueEndIndex ; 
 
         // Do we already know the starting index of valueName?
