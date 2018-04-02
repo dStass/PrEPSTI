@@ -36,6 +36,12 @@ public class Relationship {
     // Probability of breakup() in a given cycle
     private double breakupProbability ;
     
+    public Relationship()
+    {
+    	Class<?> clazz = this.getClass() ;
+    	relationship = clazz.asSubclass(clazz).getSimpleName() ;
+    }
+    
     /**
      * Randomly chooses one of the available Relationship subclasses. 
      * The odds of each subclass are the mean of the corresponding odds for each agent 
@@ -43,7 +49,7 @@ public class Relationship {
      * @param agent1
      * @return relationshipSubclass.class
      */
-    static String chooseRelationship(Agent agent0, Agent agent1 )
+    static Class chooseRelationship(Agent agent0, Agent agent1 )
     {
     	int monogomousOdds = agent0.getMonogomousOdds() + agent1.getMonogomousOdds() ;
     	int regularOdds = agent0.getRegularOdds() + agent1.getRegularOdds() ;
@@ -52,19 +58,13 @@ public class Relationship {
     	
     	int choice = rand.nextInt(totalOdds) ;
     	if (choice < monogomousOdds)
-    		return "Monogomous" ;
+    		return Monogomous.class ;
     	if (choice < (monogomousOdds + regularOdds))
-    		return "Regular" ;
-    	return "Casual" ;
+    		return Regular.class ;
+    	return Casual.class ;
     }
    
-    protected Relationship()
-    {
-    	Class<?> clazz = this.getClass() ;
-    	relationship = clazz.asSubclass(clazz).getName() ;
-    }
-    
-    protected Relationship(Agent agent0, Agent agent1) {
+    public Relationship(Agent agent0, Agent agent1) {
     	addAgents(agent0, agent1) ;
     	Class<?> clazz = this.getClass() ;
     	relationship = clazz.asSubclass(clazz).getName() ;
