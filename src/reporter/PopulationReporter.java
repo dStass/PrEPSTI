@@ -75,7 +75,7 @@ public class PopulationReporter extends Reporter {
         for (int reportNb = 0 ; reportNb < deathReport.size() ; reportNb++ )
         {
             String report = deathReport.get(reportNb) ;
-            int startIndex = report.indexOf("agendId") ;
+            int startIndex = report.indexOf("agentId") ;
             agentDeathReport.add(extractAllValues("agentId", report, startIndex)) ;
         }
         return agentDeathReport ;
@@ -112,7 +112,13 @@ public class PopulationReporter extends Reporter {
         for (int reportNb = 0 ; reportNb < input.size() ; reportNb += outputCycle )
         {
             report = input.get(reportNb) ;
-            deathReport.add(report.substring(report.indexOf("death"))) ;
+            agentIndex = report.indexOf("death") ;
+            LOGGER.info(report) ;
+            if (agentIndex < 0)
+            {
+                continue ;
+            }
+            deathReport.add(report.substring(agentIndex)) ;
             LOGGER.log(Level.INFO, "prepare: {0}", report) ;
         }
         return deathReport ;
