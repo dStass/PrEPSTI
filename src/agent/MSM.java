@@ -24,7 +24,7 @@ public class MSM extends Agent {
     // Whether MSM seropositions, +ve statusHIV never inserts to -ve statusHIV
     private boolean seroPosition ;
     // Whether MSM requires partner to discloseStatusHIV before sex
-    private boolean requireDiscloseStatusHIV ;
+    //private boolean requireDiscloseStatusHIV ;
     // Status' for HIV infection, antiviral treatment if infected
     private boolean statusHIV ;
     // Whether currently being treated with antiretrovial medication
@@ -50,6 +50,14 @@ public class MSM extends Agent {
     static double RECTUMPHARYNX = 0.1 ;
     static double PHARYNXPENIS = 0.2 ;
     static double PHARYNXRECTUM = 0.2 ;
+    
+    // How often do MSM on PrEP get screened
+    private static int screenCycle = 92 ;
+    // getter() for screenCycle
+    public static int getScreenCycle()
+    {
+        return screenCycle ;
+    }
 
     /**
      * 
@@ -124,15 +132,15 @@ public class MSM extends Agent {
     
     /**
      * Choose whether MSM is RiskyMSM or SafeMSM
-     * @return String which decides subclass.getSimpleName()
+     * @return Class - one of subclass RiskyMSM or SafeMSM
      */
-    public static String chooseMSM()
+    public static Class chooseMSM()
     {
     	int totalOdds = riskyOdds + safeOdds ;
     	int choice = rand.nextInt(totalOdds) ;
     	if (choice < safeOdds)
-    		return "SafeMSM" ;
-    	return "RiskyMSM" ;
+    		return SafeMSM.class ;
+    	return RiskyMSM.class ;
     }
    
 
@@ -154,20 +162,36 @@ public class MSM extends Agent {
          */
         private void initStatus()
         {
-            requireDiscloseStatusHIV = (rand.nextDouble() < probabilityRequireDiscloseHIV) ;
+            //requireDiscloseStatusHIV = (rand.nextDouble() < probabilityRequireDiscloseHIV) ;
             statusHIV = (rand.nextDouble() < probabilityHIV) ;
-            antiViralStatus = (rand.nextDouble() < antiViralProbability) ;
+            if (statusHIV)
+            {
+                antiViralStatus = (rand.nextDouble() < antiViralProbability) ;
+                prepStatus = false ;
+            }
+            else
+            {
+                prepStatus = (rand.nextDouble() < probabilityPrep) ;
+                antiViralStatus = false ;
+            }
             discloseStatusHIV = (rand.nextDouble() < probabilityDiscloseHIV) ;
-            prepStatus = (rand.nextDouble() < probabilityPrep) ;
-	    seroSort = ((rand.nextDouble() < probabilitySeroSort) && discloseStatusHIV) ;
-            seroPosition = ((rand.nextDouble() < probabilitySeroPosition) && discloseStatusHIV) ;
+            if (discloseStatusHIV)
+            {
+        	seroSort = ((rand.nextDouble() < probabilitySeroSort) && discloseStatusHIV) ;
+                seroPosition = ((rand.nextDouble() < probabilitySeroPosition) && discloseStatusHIV) ;
+            }
+            else    // Cannot seroSort or SeroPosition without disclosing statusHIV
+            {
+                seroSort = false ;
+                seroPosition = false ;
+            }
             return ;
         }
 
-	/* (non-Javadoc)
-	 * @see community.Agent#setSites()
-	 */
-	@Override
+	/**
+         * Adds Sites rectum, penis, and pharynx
+         */
+        @Override
 	protected void setSites() {
 		rectum = new Rectum() ;
 		penis = new Penis() ;
@@ -367,20 +391,25 @@ public class MSM extends Agent {
         return true ;
     }
 	
-        
+    /**
+     * Probability of MSM screening on that day. Same as Agent unless prepStatus true
+     * @param args
+     * @return for PrEP users, 1.0 if cycle multiple of screenCycle, 0.0 otherwise
+     *     for non-PrEP users, random double between 0.0 and 1.0
+     */    
     @Override
-	public double getScreenProbability(String[] args)
-	{
-            if (prepStatus && (! statusHIV))
-            {
-                int cycle = Integer.valueOf(args[0]) ;
-                // Those on antivirals test every three months (92 days) on a given day
-                if ( Math.floorMod(cycle, 92) == 0)
-                    return 1.0 ;
-                else
-                    return 0.0 ;
-            }
-            return super.getScreenProbability(args) ;
-	}
+    public double getScreenProbability(String[] args)
+    {
+        if (prepStatus)
+        {
+            int cycle = Integer.valueOf(args[0]) ;
+            // Those on antivirals test every three months (92 days) on a given day
+            if ( Math.floorMod(cycle, screenCycle) == 0)
+                return 1.0 ;
+            else
+                return 0.0 ;
+        }
+        return super.getScreenProbability(args) ;
+    }
 
 }
