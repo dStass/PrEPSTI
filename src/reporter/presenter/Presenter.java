@@ -15,6 +15,7 @@ import org.jfree.data.general.* ;
 import java.lang.reflect.* ;
 import java.util.Arrays ;
 import java.util.ArrayList ;
+import java.util.logging.Level;
 
 
 /**
@@ -26,8 +27,8 @@ public class Presenter {
     
     private Reporter reporter ;
     
-    protected ArrayList<String> categoryData ;
-    protected ArrayList<String> scoreData ;
+    protected ArrayList<String> categoryData = new ArrayList<String>() ;
+    protected ArrayList<String> scoreData = new ArrayList<String>() ;
     private String applicationTitle ;
     private String chartTitle ;
     
@@ -123,14 +124,15 @@ public class Presenter {
         return ;
     }
     
-    protected ArrayList<String> prepareEventsPerCycle(ArrayList<ArrayList<String>> reportArray)
+    protected ArrayList<String> prepareEventsPerCycle(String scoreName, ArrayList<ArrayList<String>> reportArray)
     {
         ArrayList<String> eventsPerCycle = new ArrayList<String>() ;
-        
+        scoreName += ":" ;
         
         for (ArrayList<String> report : reportArray)
         {
-            eventsPerCycle.add(Integer.toString(report.size())) ;
+            LOGGER.log(Level.INFO, "{0}{1}", new Object[]{scoreName, Integer.toString(report.size())});
+            eventsPerCycle.add(scoreName + Integer.toString(report.size()) + " ") ;
         }
         
         return eventsPerCycle ;
@@ -139,7 +141,7 @@ public class Presenter {
     
     public void plotEventsPerCycle(String scoreName, ArrayList<ArrayList<String>> reportArray)
     {
-        ArrayList<String> eventsPerCycle = prepareEventsPerCycle(reportArray) ;
+        ArrayList<String> eventsPerCycle = prepareEventsPerCycle(scoreName,reportArray) ;
         
         callPlotChartDefault(scoreName,eventsPerCycle) ;
         
@@ -194,9 +196,14 @@ public class Presenter {
      */
     private void parseReportArray(String scoreName, ArrayList<String> reports)
     {       
+        LOGGER.info("parseReportArray") ;
+        //scoreData.clear();
         for (String report : reports)
         {
-            scoreData.add(Reporter.extractValue(scoreName,report)) ;
+            LOGGER.info(report);
+            //LOGGER.info(Integer.toString(scoreData.size()));
+            String value = Reporter.extractValue(scoreName,report) ;
+            scoreData.add(value) ;
         }
         return ;
     }
@@ -253,6 +260,8 @@ public class Presenter {
             ChartPanel chartPanel = new ChartPanel( barChart );        
             chartPanel.setPreferredSize(new java.awt.Dimension( 560 , 367 ) );        
             setContentPane( chartPanel ); 
+            pack() ;
+            setVisible(true) ;
         }
         
         /**
