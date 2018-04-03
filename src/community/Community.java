@@ -5,6 +5,7 @@ package community;
 
 import agent.* ;
 import reporter.* ; 
+import reporter.presenter.* ;
 
 import java.util.Random;
 
@@ -26,7 +27,7 @@ public class Community {
     private int population = 100;
 
     // Number of new population members and also average number of deaths per year
-    private int birthRate = 1 ;
+    private int birthRate = 4 ;
 
     // Current number of relationships in the community
     private int nbRelationships = 0; 
@@ -46,12 +47,12 @@ public class Community {
     // The number of cycles (days) since the current year began
     private static int cyclesModYear = 0 ; 
 
-    private ArrayList<String> Reports = new ArrayList<String>() ;
+    private ArrayList<String> reports = new ArrayList<String>() ;
     private ArrayList<String> relationshipReports = new ArrayList<String>() ;
     private ArrayList<String> encounterReports = new ArrayList<String>() ;
     private ArrayList<String> clearReports = new ArrayList<String>() ;
     private ArrayList<String> screenReports = new ArrayList<String>() ;
-    private ArrayList<String> CensusReports = new ArrayList<String>() ;
+    private ArrayList<String> censusReports = new ArrayList<String>() ;
     
 
 
@@ -93,7 +94,8 @@ public class Community {
             //deathReport = cycleString
             populationReport += community.grimReaper() ;
 
-            community.submitReports(relationshipReport,encounterReport,clearanceReport,screenReport) ;
+            community.submitReports(relationshipReport,encounterReport,
+                    clearanceReport,screenReport,populationReport) ;
 
             cyclesModYear++ ;
             if (cyclesModYear > 363)
@@ -106,12 +108,16 @@ public class Community {
                 }
             }
         }
-        EncounterReporter partnersReporter = new EncounterReporter("testPairs",community.encounterReports) ;
+        PopulationReporter censusReporter = new PopulationReporter("death plot",community.censusReports) ;
+        PopulationPresenter censusPresenter = new PopulationPresenter("death plot","death plot",censusReporter) ;
+        censusPresenter.plotDeathsPerCycle();
+        
+        //EncounterReporter partnersReporter = new EncounterReporter("testPairs",community.encounterReports) ;
         //Reporter partnersReporter = new Reporter("testPairs",community.generateReports,
                 //	community.encounterReports,community.clearReports,community.screenReports) ;
-        ArrayList<HashMap<Integer,ArrayList<Integer>>> partnersReport = partnersReporter.preparePartnersReport() ;
-        System.out.println(partnersReport.get(0).get(0).size()) ; //  toString());
-        System.out.println(partnersReport.get(0).get(4).size()) ; // .toString());
+        //ArrayList<HashMap<Integer,ArrayList<Integer>>> partnersReport = partnersReporter.preparePartnersReport() ;
+        //System.out.println(partnersReport.get(0).get(0).size()) ; //  toString());
+        //System.out.println(partnersReport.get(0).get(4).size()) ; // .toString());
     }
 
     /**
@@ -146,33 +152,40 @@ public class Community {
          */
         private MSM generateAgent()
         {
-            String agentClazzName = MSM.chooseMSM() ;
+            Class agentClazz = MSM.chooseMSM() ;
             try
             {
-	    //Class<?> agentClazz = Class.forName(agentClazzName) ;
-            MSM newAgent = (MSM) Class.forName(agentClazzName).getConstructor(int.class).newInstance(-1);
+	    //Class<?> agentClazz = Class.  .forName(agentClazzName) ;
+            MSM newAgent = (MSM) agentClazz.getConstructor(int.class).newInstance(-1);
             return newAgent ;
             }
             catch ( NoSuchMethodException nsme )
             {
                 LOGGER.info(nsme.getLocalizedMessage());
+                LOGGER.info("nsme");
             }
             catch ( InstantiationException ie )
             {
                 LOGGER.info(ie.getLocalizedMessage());
+                LOGGER.info("ie");
             }
             catch ( IllegalAccessException iae )
             {
                 LOGGER.info(iae.getLocalizedMessage());
+                LOGGER.info("iae");
             }
             catch ( InvocationTargetException ite )
             {
                 LOGGER.info(ite.getLocalizedMessage());
+                LOGGER.info("ite");
             }
-            catch ( ClassNotFoundException cnfe )
+            /*catch ( ClassNotFoundException cnfe )
             {
-                LOGGER.info(cnfe.getLocalizedMessage());
+                LOGGER.info(cnfe.getMessage());
+                LOGGER.info("cnfe " + agentClazzName);
             }
+            */
+            LOGGER.info("Problem in community generateAgent()");
             return new MSM(-1) ;
         }
 	
@@ -201,26 +214,25 @@ public class Community {
                             continue ;
 
                     // Tell Agents which type of Relationship is being proposed.
-                    String relationshipClazzName = Relationship.chooseRelationship(agent0, agent1) ;
+                        Class<?> relationshipClazz = Relationship.chooseRelationship(agent0, agent1) ;
+                    String relationshipClazzName = relationshipClazz.getSimpleName() ;
 
                     // Argument String[] for Agent.consent 
                     if (agent0.consent(relationshipClazzName,agent1) && agent1.consent(relationshipClazzName,agent0))
                     {
-                        Class<?> relationshipClazz = Class.forName(relationshipClazzName) ;
                         String enterMethodName = "enter" + relationshipClazzName ;
-                        Method enterRelationshipMethod = relationshipClazz.getMethod(enterMethodName, Relationship.class ) ;
+                        Method enterRelationshipMethod = Agent.class.getDeclaredMethod(enterMethodName, Relationship.class ) ;
 
                         Relationship relationship = (Relationship) relationshipClazz.newInstance();
-                        //Relationship relationship = (Relationship) relationshipClazz.getConstructor().newInstance();
                         relationship.addAgents(agent0, agent1);
                         nbRelationships++ ;
 
-                        enterRelationshipMethod.invoke(agent0, relationship) ;
+                        report += enterRelationshipMethod.invoke(agent0, relationship) ;
                         enterRelationshipMethod.invoke(agent1, relationship) ;
 
                         // report contains relationship subclass and agentIds
-                        report += agent0.enterRelationship(relationship) ;
-                        agent1.enterRelationship(relationship) ;
+                        //report += agent0.enterRelationship(relationship) ;
+                        //agent1.enterRelationship(relationship) ;
 
                         // report += relationship.getReport() + " " ;
 
@@ -229,23 +241,23 @@ public class Community {
             }
             catch ( NoSuchMethodException nsme )
             {
-                LOGGER.info(nsme.getLocalizedMessage());
-            }
-            catch ( ClassNotFoundException cnfe )
-            {
-                LOGGER.info(cnfe.getLocalizedMessage());
+                LOGGER.info(nsme.getMessage());
+            LOGGER.info("nsme");
             }
             catch ( IllegalAccessException iae )
             {
                 LOGGER.info(iae.getMessage());
+            LOGGER.info("iae");
             }
             catch ( InstantiationException ie)
             {
                 LOGGER.info(ie.getLocalizedMessage()) ;
+            LOGGER.info("ie");
             }
             catch ( InvocationTargetException ite )
             {
-                LOGGER.info(ite.getLocalizedMessage());
+                //LOGGER.info(ite.getLocalizedMessage());
+                LOGGER.info("ite");
             }
 
             return report ;
@@ -311,13 +323,14 @@ public class Community {
                 Agent agent = agents.get(agentInd) ; 
                 if (grimReaper(agent))
                 {
-                    report += "agentId:" + Integer.toString(agent.getId()) + " " ;
-                    report += "age:" + Integer.toString(agent.getAge()) + " " ;
+                    report = Reporter.addReportProperty("agentId", agent.getId(), report) ;
+                    report = Reporter.addReportProperty("age", agent.getAge(), report) ;
                 }
             }
             //prepare report
             if (! report.isEmpty())
                 report = "death:" + report ;
+            
 
             return report ;
 	}
@@ -332,7 +345,7 @@ public class Community {
 	{
 		if (agent.death())
 		{
-			agents.remove((Object) agent) ;
+			agents.remove(agent) ;
 			return true ;
 		}
 		return false ;
@@ -452,13 +465,14 @@ public class Community {
 		return report ;
 	}
 	
-	private void submitReports(String generateReport, String encounterReport, String clearReport, String screenReport)
+	private void submitReports(String generateReport, String encounterReport, String clearReport, String screenReport, String populationReport)
 	{
 		relationshipReports.add(generateReport) ;
 		//LOGGER.info(encounterReport);
 		encounterReports.add(encounterReport) ;
 		clearReports.add(clearReport) ;
 		screenReports.add(screenReport) ;
+                censusReports.add(populationReport) ;
 		return ;
 	}
 }
