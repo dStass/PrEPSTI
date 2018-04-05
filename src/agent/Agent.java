@@ -137,6 +137,9 @@ public abstract class Agent {
 
             initPromiscuity() ;
             initInfidelity() ;
+            
+            if (casualOdds < 0)
+                LOGGER.info(String.valueOf(agentId) + " " + String.valueOf(casualOdds)) ;
 
             Class<?> clazz = this.getClass() ;
             agent = clazz.asSubclass(clazz).getSimpleName() ;
@@ -592,6 +595,15 @@ public abstract class Agent {
         {
             String leaveMethodName = "leave" + relationship.getRelationship() ;
             Method leaveRelationshipMethod = Agent.class.getMethod(leaveMethodName, Relationship.class) ;
+            leaveRelationshipMethod.invoke(this, relationship) ;
+        }
+        catch ( IllegalAccessException iae)
+        {
+            LOGGER.info(iae.getLocalizedMessage());
+        }
+        catch ( InvocationTargetException ite )
+        {
+            LOGGER.info(ite.getLocalizedMessage());
         }
         catch ( NoSuchMethodException nsme )
         {
@@ -613,6 +625,7 @@ public abstract class Agent {
         return ;
     }
 
+    //TODO: Clean up leaveRelationshipType(int agentNb)
     private void leaveRelationship(int agentNb)
     {
             //Convert agentNb to Object so not treated as index
@@ -670,44 +683,44 @@ public abstract class Agent {
 
     public void leaveCasual(Relationship relationship)
     {
-        leaveRelationship(relationship) ;
+        //leaveRelationship(relationship) ;
         casualNumber-- ;
         return ;
     }
 
     public void leaveCasual(int agentNb)
     {
-            leaveCasual(agentNb) ;
-            casualNumber-- ;
-            return ;
+        leaveCasual(agentNb) ;
+        casualNumber-- ;
+        return ;
     }
 
     public void leaveRegular(Relationship relationship)
     {
-        leaveRelationship(relationship) ;
+        //leaveRelationship(relationship) ;
         regularNumber-- ;
         return ;
     }
 
     private void leaveRegular(int agentNb)
     {
-            leaveRelationship(agentNb) ;
-            regularNumber-- ;
-            return ;
+        //leaveRelationship(agentNb) ;
+        regularNumber-- ;
+        return ;
     }
 
     public void leaveMonogomous(Relationship relationship)
     {
-        leaveRelationship(relationship) ;
+        //leaveRelationship(relationship) ;
         inMonogomous = false ;
         return ;
     }
 
     private void leaveMonogomous(int agentNb)
     {
-            leaveRelationship(agentNb) ;
-            inMonogomous = false ;
-            return ;
+        //leaveRelationship(agentNb) ;
+        inMonogomous = false ;
+        return ;
     }
 
     /**
@@ -718,22 +731,27 @@ public abstract class Agent {
     public boolean death()
     {
         // double risk = Math.exp(-age*Math.log(2)/halfLife) ;
-        double risk = (maxLife - age)/((double) maxLife) ;
-        LOGGER.info(Double.toString(risk));
+        double risk = Math.pow(((maxLife - age)/((double) maxLife)),2) ;
         if (rand.nextDouble() > risk ) 
         {
             clearRelationships() ;
             return true ;
         }
+        //LOGGER.log(Level.INFO,"{0} {1}",new Object[]{String.valueOf(risk),String.valueOf(age)});
         return false ;
     }
 
     protected void clearRelationships()
     {
+        Relationship relationship ;
+        int partnerId ;
+        
         for (int relationshipIndex = (nbRelationships - 1) ; relationshipIndex >= 0 ; 
                 relationshipIndex-- )
         {
-            leaveRelationship(currentRelationships.get(relationshipIndex)) ;
+            relationship = currentRelationships.get(relationshipIndex) ;
+            Agent agent = relationship.getLowerIdAgent() ;
+            agent.endRelationship(relationship) ;
         }
         return ;
     }
