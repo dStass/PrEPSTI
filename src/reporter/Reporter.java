@@ -62,7 +62,31 @@ public class Reporter {
         report = addReportLabel(label,report) ;
         return report + Integer.toString(value) + " " ;
     }
-        
+     
+    /**
+     * Avoid having to add ":" whenever the index of a property name is needed.
+     * Used when startIndex is zero or not given
+     * @param property
+     * @param report
+     * @return indexOf(property + ":")
+     */
+    public static final int indexOfProperty(String property, String report)
+    {
+        return indexOfProperty(property,0,report) ;
+    }
+    
+    /**
+     * Avoid having to add ":" whenever the index of a property name is needed
+     * @param property
+     * @param startIndex
+     * @param report
+     * @return indexOf(property + ":")
+     */
+    public static final int indexOfProperty(String property, int startIndex, String report)
+    {
+        property += ":" ;
+        return report.indexOf(property,startIndex) ;
+    }
     
     /**
      * 
@@ -121,18 +145,23 @@ public class Reporter {
      */
     protected static String boundedStringByValue(String propertyName, String value, String bound, String string)
     {
-        int indexStart = string.indexOf(bound) ;
+        int indexStart = indexOfProperty(bound,string) ;
         String boundedOutput = "" ;
         String boundedString ;
         while (indexStart >= 0)
         {
-            indexStart++ ;
-            boundedString = extractBoundedString(string, bound, indexStart) ;
-            if (compareValue(propertyName,value,boundedString,indexStart)) 
-            {
-                boundedOutput += bound + boundedString ;
-            }
-            indexStart = string.indexOf(bound,indexStart+1) ;
+            //indexStart++ ;
+            boundedString = extractBoundedString(bound, string, indexStart) ;
+            
+            // This if statement moved to compareValue()
+            //if (indexOfProperty(propertyName,boundedString) >= 0)
+            //{
+                if (compareValue(propertyName,value,boundedString)) 
+                {
+                    boundedOutput += bound + ":" + boundedString ;
+                }
+            //}
+            indexStart = indexOfProperty(bound,indexStart+1,string) ;
         }
         return boundedOutput ;
     }
@@ -150,7 +179,7 @@ public class Reporter {
         while (indexStart >= 0) 
         {
             outputArray.add(extractBoundedString(string, bound, indexStart)) ;
-            indexStart = string.indexOf(bound, indexStart+1) ;
+            indexStart = indexOfProperty(bound, indexStart+1, string) ;
         }
         return outputArray ;
     }
@@ -164,8 +193,8 @@ public class Reporter {
      */
     protected static String extractBoundedString(String bound, String string, int indexStart)
     {
-        int index0 = string.indexOf(bound, indexStart) + bound.length() ;
-        int index1 = string.indexOf(bound,index0) ;
+        int index0 = indexOfProperty(bound, indexStart, string) + bound.length() + 1 ;
+        int index1 = indexOfProperty(bound,index0,string) ;
         if (index1 == -1) index1 = string.length() ;
         return string.substring(index0, index1) ;
 
@@ -197,7 +226,7 @@ public class Reporter {
         while ( index >= 0 )
         {
             values.add(extractValue(propertyName, string, startIndex)) ;
-            index = string.indexOf(propertyName, index+1) ;
+            index = indexOfProperty(propertyName, index+1, string) ;
         }
         return values ;
     }
@@ -213,19 +242,18 @@ public class Reporter {
     {
         // Find value of valueName in string
         String valueString = "null" ;
-        LOGGER.info(propertyName) ;
         int valueEndIndex ; 
 
         // Do we already know the starting index of valueName?
         if (startIndex > 0 ) 
         {
-            startIndex+= propertyName.length() + 1 ;    // +1 is for ":" following valueName
+            startIndex+= propertyName.length() + 1 ;    // +1 is for ":" following propertyName
             valueEndIndex = string.indexOf(" ", startIndex) ;
             valueString = string.substring(startIndex, valueEndIndex) ;
         }
         else 
         {
-            int valueStartIndex = string.indexOf(propertyName) + propertyName.length() + 1 ;
+            int valueStartIndex = indexOfProperty(propertyName,string) + propertyName.length() + 1 ;
             valueEndIndex = string.indexOf(" ",valueStartIndex) ;
             valueString = string.substring(valueStartIndex, valueEndIndex) ;
         }
@@ -243,9 +271,22 @@ public class Reporter {
      */
     protected static boolean compareValue(String propertyName, String value, String string, int startIndex)
     {
-        return extractValue(propertyName, string, startIndex).equals(value) ;
+        if (indexOfProperty(propertyName,string) >= 0)
+            return extractValue(propertyName, string, startIndex).equals(value) ;
+        return false ;
     }
     
+    /**
+     * Compares the String representation of the value of propertyName to @param value
+     * @param propertyName
+     * @param value
+     * @param string
+     * @return true if the String representation of the value of propertyName equals (String) value
+     */
+    protected static boolean compareValue(String propertyName, String value, String string)
+    {
+        return compareValue(propertyName, value, string, 0) ;
+    }
     /**
      * Puts entries into HashMap whose keys are the agentIds
      * and values are arrays of their partners Ids. 
@@ -271,6 +312,30 @@ public class Reporter {
         entryArray.add(entry) ;
         valueMap.put(key, entryArray) ;
 
+        
+        return valueMap ;
+    }
+		
+    /**
+     * Puts entries into HashMap whose keys are the agentIds
+     * and values are arrays of their partners Ids. 
+     * Creates key and associated int[] if necessary.
+     * @param key - usually agentId but need not be.
+     * @param valueMap - Adding entry and sometimes key to this HashMap
+     * @return partnerMap - HashMap indicating partnerIds of each agent (key: agentId)
+     */
+    protected static HashMap<String,Integer> incrementHashMap(String key, HashMap<String,Integer> valueMap)
+    {
+        //HashMap<Integer,ArrayList<Integer>> partnerMap = new HashMap<Integer,ArrayList<Integer>>() ;
+        
+        if (valueMap.containsKey(key))
+        {
+            valueMap.put(key, valueMap.get(key) + 1) ;
+        }
+        else
+        {
+            valueMap.put(key, 1) ;
+        }
         
         return valueMap ;
     }
