@@ -157,9 +157,7 @@ public class Reporter {
             //if (indexOfProperty(propertyName,boundedString) >= 0)
             //{
                 if (compareValue(propertyName,value,boundedString)) 
-                {
                     boundedOutput += bound + ":" + boundedString ;
-                }
             //}
             indexStart = indexOfProperty(bound,indexStart+1,string) ;
         }
@@ -221,11 +219,11 @@ public class Reporter {
     public static ArrayList<String> extractAllValues(String propertyName, String string, int startIndex)
     {
         ArrayList<String> values = new ArrayList<String>() ;
-        int index = startIndex ;
+        int index = indexOfProperty(propertyName,startIndex,string) ; 
         
         while ( index >= 0 )
         {
-            values.add(extractValue(propertyName, string, startIndex)) ;
+            values.add(extractValue(propertyName, string, index)) ;
             index = indexOfProperty(propertyName, index+1, string) ;
         }
         return values ;
@@ -241,24 +239,9 @@ public class Reporter {
     public static String extractValue(String propertyName, String string, int startIndex)
     {
         // Find value of valueName in string
-        String valueString = "null" ;
-        int valueEndIndex ; 
-
-        // Do we already know the starting index of valueName?
-        if (startIndex > 0 ) 
-        {
-            startIndex+= propertyName.length() + 1 ;    // +1 is for ":" following propertyName
-            valueEndIndex = string.indexOf(" ", startIndex) ;
-            valueString = string.substring(startIndex, valueEndIndex) ;
-        }
-        else 
-        {
-            int valueStartIndex = indexOfProperty(propertyName,string) + propertyName.length() + 1 ;
-            valueEndIndex = string.indexOf(" ",valueStartIndex) ;
-            valueString = string.substring(valueStartIndex, valueEndIndex) ;
-        }
-
-        return valueString ;
+        startIndex+= propertyName.length() + 1 ;    // +1 is for ":" following propertyName
+        int valueEndIndex = string.indexOf(" ", startIndex) ;
+        return string.substring(startIndex, valueEndIndex) ;
     }
 
     /**
@@ -285,7 +268,7 @@ public class Reporter {
      */
     protected static boolean compareValue(String propertyName, String value, String string)
     {
-        return compareValue(propertyName, value, string, 0) ;
+        return compareValue(propertyName, value, string, indexOfProperty(propertyName,string)) ;
     }
     /**
      * Puts entries into HashMap whose keys are the agentIds
