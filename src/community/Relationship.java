@@ -6,6 +6,7 @@ import site.* ;
 import java.util.Random ;
 //import java.util.logging.Logger;
 import java.lang.reflect.*;
+import java.util.logging.Level;
 
 /*********************************************************************
  * Defines class Relationship with two Agent objects and probabilities
@@ -36,6 +37,9 @@ public class Relationship {
     // Probability of breakup() in a given cycle
     private double breakupProbability ;
     
+    //LOGGER
+    static final java.util.logging.Logger LOGGER = java.util.logging.Logger.getLogger("relationship") ;
+
     public Relationship()
     {
     	Class<?> clazz = this.getClass() ;
@@ -53,11 +57,11 @@ public class Relationship {
     {
     	int monogomousOdds = agent0.getMonogomousOdds() + agent1.getMonogomousOdds() ;
     	int regularOdds = agent0.getRegularOdds() + agent1.getRegularOdds() ;
-    	int casualOdds = agent0.getRegularOdds() + agent1.getRegularOdds() ;
+    	int casualOdds = agent0.getCasualOdds() + agent1.getCasualOdds() ;
     	int totalOdds = monogomousOdds + regularOdds + casualOdds ;
     	
-    	int choice = rand.nextInt(totalOdds) ;
-    	if (choice < monogomousOdds)
+        int choice = rand.nextInt(totalOdds) ;
+        if (choice < monogomousOdds)
     		return Monogomous.class ;
     	if (choice < (monogomousOdds + regularOdds))
     		return Regular.class ;
@@ -72,19 +76,25 @@ public class Relationship {
     
     /**
      * Adds Agents to Relationship and establishes which has the lower AgentId
+     * Arrange that agent0 should always have the lower agentId
      * @param agent0
      * @param agent1
      */
     protected void addAgents(Agent agent0, Agent agent1)
     {
+        if (agent0.getId() < agent1.getId())
+        {
     	this.agent0 = agent0 ;
     	this.agent1 = agent1 ;
-    	
-    	if (agent0.getId() < agent1.getId())
-    		agent0.augmentLowerAgentId() ;
+        	agent0.augmentLowerAgentId() ;
+    	}
     	else 
-    		agent1.augmentLowerAgentId() ;
-    	return ;
+        {
+    	this.agent1 = agent0 ;
+    	this.agent0 = agent1 ;
+        	agent1.augmentLowerAgentId() ;
+        }
+        return ;
     }
     
     /**
@@ -96,7 +106,7 @@ public class Relationship {
     {
     	if (agent0.getId() == agentId)
     		return agent1.getId() ;
-    	return agent1.getId() ;
+    	return agent0.getId() ;
     }
     
     /**
@@ -119,11 +129,11 @@ public class Relationship {
     protected boolean breakup() 
     {
     	if (rand.nextDouble() < breakupProbability)
-		{
-			agent0.leaveRelationship(this) ;  //(agent1.getId()) ;
-			agent1.leaveRelationship(this) ;  //(agent0.getId()) ;
-			return true ;
-		}
+            {
+                agent0.endRelationship(this) ;  //(agent1.getId()) ;
+                //agent1.leaveRelationship(this) ;  //(agent0.getId()) ;
+                return true ;
+            }
 		
     	return false;
     }
@@ -221,6 +231,11 @@ public class Relationship {
     protected Agent[] getAgents()
     {
     	return new Agent[] {agent0,agent1} ;
+    }
+    
+    public Agent getLowerIdAgent()
+    {
+        return agent0 ;
     }
     
     public String getReport()
