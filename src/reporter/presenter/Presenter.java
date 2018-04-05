@@ -9,6 +9,7 @@ import reporter.* ;
 import org.jfree.chart.* ;
 import org.jfree.chart.ui.ApplicationFrame ;
 import org.jfree.chart.plot.PlotOrientation ;
+import org.jfree.chart.ChartUtils ;
 import org.jfree.data.category.* ;
 import org.jfree.data.general.* ;
 
@@ -16,7 +17,10 @@ import java.lang.reflect.* ;
 import java.util.Arrays ;
 import java.util.ArrayList ;
 import java.util.logging.Level;
+import java.util.* ;
 
+import java.io.File ;
+import java.io.IOException ;
 
 /**
  * Created 22/03/2018
@@ -29,8 +33,8 @@ public class Presenter {
     
     protected ArrayList<String> categoryData = new ArrayList<String>() ;
     protected ArrayList<String> scoreData = new ArrayList<String>() ;
-    private String applicationTitle ;
-    private String chartTitle ;
+    protected String applicationTitle ;
+    protected String chartTitle ;
     
     private BarChart_AWT chart_awt ;
     private Dataset dataset ;
@@ -44,12 +48,16 @@ public class Presenter {
     
     public Presenter(String applicationTitle, String chartTitle)
     {
+        this.applicationTitle = applicationTitle ;
+        this.chartTitle = chartTitle ;
         chart_awt = new BarChart_AWT(applicationTitle, chartTitle) ;
         
     }
     
     public Presenter(String applicationTitle, String chartTitle, Reporter reporter)
     {
+        this.applicationTitle = applicationTitle ;
+        this.chartTitle = chartTitle ;
         chart_awt = new BarChart_AWT(applicationTitle, chartTitle) ;
         setReporter(reporter) ;
     }
@@ -85,6 +93,7 @@ public class Presenter {
         parseReportArray(scoreName, reportArray) ;
         
         // Send data to be processed and presented
+        LOGGER.info(chartTitle);
         chart_awt.callPlotChart(chartTitle,scoreData,scoreName) ;
         return ;
     }
@@ -96,7 +105,7 @@ public class Presenter {
      * @param reportName
      * @param cycle 
      */
-    protected void plotChartCycle(String categoryName, String scoreName, String reportName, int cycle)  //  ArrayList<String> reportArray,
+    protected void plotChartCategory(String categoryName, String scoreName, String reportName, int cycle)  //  ArrayList<String> reportArray,
     {
         // Get report from cycle
         ArrayList<String> reportArray = getReportArray(reportName) ;
@@ -104,9 +113,27 @@ public class Presenter {
         callPlotChartDefault(categoryName, scoreName, reportArray, cycle) ;
     }
     
+    protected void plotHashMap(String categoryName, String scoreName, HashMap<String,Integer> hashMapReport )
+    {
+        //ArrayList<String> categoryInteger = new ArrayList<String>() ;
+        ArrayList<Integer> scoreInteger = new ArrayList<Integer>() ;
+        
+        categoryData.clear();
+        for (String key : hashMapReport.keySet())
+        {
+            categoryData.add(key) ;
+        }
+        categoryData.sort(null);
+        for (String key : categoryData)
+        {
+            scoreInteger.add(hashMapReport.get(key)) ;
+        }
+        chart_awt.callPlotChartInteger(chartTitle,categoryData,scoreInteger,scoreName,categoryName) ;
+    }
     
     /**
      * Presents scoreName as a function of categoryName from reportArray[cycle]
+     * or HashMap
      * @param categoryName
      * @param scoreName
      * @param reportArray
@@ -131,7 +158,6 @@ public class Presenter {
         
         for (ArrayList<String> report : reportArray)
         {
-            LOGGER.log(Level.INFO, "{0}{1}", new Object[]{scoreName, Integer.toString(report.size())});
             eventsPerCycle.add(scoreName + Integer.toString(report.size()) + " ") ;
         }
         
@@ -180,7 +206,7 @@ public class Presenter {
      */
     private void parseReport(String categoryName, String scoreName, String report)
     {        
-        int categoryIndex = report.indexOf(categoryName) ;
+        int categoryIndex = Reporter.indexOfProperty(categoryName,report) ;
         
         categoryData = Reporter.extractAllValues(categoryName, report, categoryIndex) ;
         scoreData = Reporter.extractAllValues(scoreName, report, categoryIndex) ;
@@ -196,12 +222,8 @@ public class Presenter {
      */
     private void parseReportArray(String scoreName, ArrayList<String> reports)
     {       
-        LOGGER.info("parseReportArray") ;
-        //scoreData.clear();
         for (String report : reports)
         {
-            LOGGER.info(report);
-            //LOGGER.info(Integer.toString(scoreData.size()));
             String value = Reporter.extractValue(scoreName,report) ;
             scoreData.add(value) ;
         }
@@ -245,6 +267,12 @@ public class Presenter {
             plotChart(chartTitle, dataset, yLabel, xLabel) ;
         }
         
+        private void callPlotChartInteger(String chartTitle, ArrayList<String> categoryArray, ArrayList<Integer> scoreArray, String yLabel, String xLabel)
+        {
+            CategoryDataset dataset = createDatasetInteger(xLabel, categoryArray, scoreArray) ;
+            plotChart(chartTitle, dataset, yLabel, xLabel) ;
+        }
+        
         /**
          * Generates plot of dataset
          * @param chartTitle
@@ -256,12 +284,42 @@ public class Presenter {
         {
             JFreeChart barChart = ChartFactory.createBarChart(chartTitle,xLabel,
                 yLabel,dataset,PlotOrientation.VERTICAL,true, true, false);
-
+            saveChart(barChart,chartTitle) ;
+            displayChart(barChart) ;
+            
+        }
+        
+        private void displayChart(JFreeChart barChart)
+        {
             ChartPanel chartPanel = new ChartPanel( barChart );        
             chartPanel.setPreferredSize(new java.awt.Dimension( 560 , 367 ) );        
             setContentPane( chartPanel ); 
             pack() ;
             setVisible(true) ;
+        }
+        
+        private void saveChart(JFreeChart barChart, String title)
+        {
+            String directory = "../output/test/" ;
+            String address = directory + title + ".jpg" ;
+            int width = 640 ;
+            int height = 480 ;
+            File file = new File(address) ;
+            //File file = new File(directory) ;
+            //String[] files = file.list() ;
+            try
+            {
+            //LOGGER.info(file.getCanonicalPath());
+            //for (String fileName : files)
+              //  LOGGER.info(fileName);
+                ChartUtils.saveChartAsJPEG(file, barChart, width, height);
+            }
+            catch ( IOException ioe)
+            {
+                //LOGGER.log(Level.SEVERE, ioe.getMessage());
+                LOGGER.info(ioe.getLocalizedMessage());
+            }
+            LOGGER.info("saveChart() complete");
         }
         
         /**
@@ -285,6 +343,24 @@ public class Presenter {
             {
                 categoryValue = categoryData.get(index) ;
                 scoreValue = Integer.valueOf(scoreData.get(index)) ;
+                categoryDataset.addValue( scoreValue, category, categoryValue ) ;
+            }
+            return categoryDataset ;
+        }
+        
+        private CategoryDataset createDatasetInteger(String category, ArrayList<String> categoryData, ArrayList<Integer> scoreData)
+        {
+            DefaultCategoryDataset categoryDataset = new DefaultCategoryDataset() ;
+            // ArrayList<String> categoryData = data.get(0) ;
+            // ArrayList<String> scoreData = data.get(1) ;
+            
+            String categoryValue ;
+            int scoreValue ;
+            
+            for (int index = 0 ; index < scoreData.size() ; index++ )
+            {
+                categoryValue = categoryData.get(index) ;
+                scoreValue = scoreData.get(index) ;
                 categoryDataset.addValue( scoreValue, category, categoryValue ) ;
             }
             return categoryDataset ;
