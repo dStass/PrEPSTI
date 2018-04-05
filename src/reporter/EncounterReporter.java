@@ -58,10 +58,9 @@ public class EncounterReporter extends Reporter {
             String report ;
             for (int reportNb = 0 ; reportNb < input.size() ; reportNb += outputCycle )
             {
-                    report = input.get(reportNb) ;
-                    LOGGER.log(Level.INFO, "prepare: {0}", report);
-                    pairArray = reportAgentIdPairs(report) ;
-                    partnersReport.add(agentPartners(pairArray)) ;
+                report = input.get(reportNb) ;
+                pairArray = reportAgentIdPairs(report) ;
+                partnersReport.add(agentPartners(pairArray)) ;
             }
             return partnersReport ;
     }
@@ -117,19 +116,20 @@ public class EncounterReporter extends Reporter {
     {
         LOGGER.info(report);
         ArrayList<String[]> agentIdPairs = new ArrayList<String[]>() ;
-        for (int startIndex = 0 ; startIndex != -1; startIndex = report.indexOf("agentId0", startIndex + 1))
+        for (int startIndex = 0 ; startIndex != -1; startIndex = indexOfProperty("agentId0", startIndex + 1, report))
         {
             String[] agentIdPair = extractAgentIds(report,startIndex) ;
             agentIdPairs.add(agentIdPair) ;
 
             // Find startIndex for next loop
-            //startIndex = report.indexOf("agentId0", startIndex + 1) ;
+            //startIndex = indexOfProperty("agentId0", startIndex + 1,report) ;
         }
         return agentIdPairs ;
     }
 
     /**
-     * Extracts contact reports where propertyName.value = value
+     * Extracts encounter reports where propertyName.value = value for at least 
+     * one contact
      * @param propertyName
      * @param value
      * @param report
@@ -137,80 +137,79 @@ public class EncounterReporter extends Reporter {
      */
     private String encounterByValue(String propertyName, String value, String report)
     {
-            int indexStart = 0 ;
-            int indexContact ;
-            String methodOutput = "" ;
-            String encounterString ;
-            String contactString ;
-            while (indexStart >= 0)
+        int indexStart = 0 ;
+        int indexContact ;
+        String methodOutput = "" ;
+        String encounterString ;
+        String contactString ;
+        while (indexStart >= 0)
+        {
+            // Encounter to study
+            encounterString = extractEncounter(report, indexStart) ;
+
+            // Initialise output for encounter
+            indexContact = indexOfProperty("contact",encounterString) ;
+            String encounterOpening = encounterString.substring(0, indexContact ) ;
+            String encounterOutput = "" ;
+
+            // check contacts for desired value of propertyName
+            while (indexContact >= 0)
             {
-                    // Encounter to study
-                    encounterString = extractEncounter(report, indexStart) ;
-
-                    // Initialise output for encounter
-                    indexContact = encounterString.indexOf("contact:", indexStart) ;
-                    String encounterOpening = encounterString.substring(0, indexContact ) ;
-                    String encounterOutput = "" ;
-
-                    // check contacts for desired value of propertyName
-                    while (indexContact >= 0)
-                    {
-                            contactString = boundedStringByValue(propertyName,value,"contact:",encounterString) ; 
-                            // if contactString contains actual contact information
-                            if (!"contact:".equals(contactString)) 
-                            {
-                                    encounterOutput += contactString ;
-                            }
-                            // Find next contact
-                            indexContact = encounterString.indexOf("contact:", indexContact + 1) ;
-                    }
-                    // Only include encounter in output if any of its contacts are included 
-                    if (encounterOutput.length() > 0)
-                            methodOutput += encounterOpening + encounterOutput ; // Include agentId
-
-                    // Prepare for next loop
-                    indexStart = report.indexOf("agentId0:",indexStart+1) ;
+                contactString = boundedStringByValue(propertyName,value,"contact",encounterString) ; 
+                // if contactString contains actual contact information
+                if (!"contact:".equals(contactString)) 
+                {
+                        encounterOutput += contactString ;
+                }
+                // Find next contact
+                indexContact = indexOfProperty("contact", indexContact + 1, encounterString) ;
             }
-            // If no positive cases are returned
-            if ("".equalsIgnoreCase(methodOutput)) methodOutput = "None" ;
+            // Only include encounter in output if any of its contacts are included 
+            if (encounterOutput.length() > 0)
+                methodOutput += encounterOpening + encounterOutput ; // Include agentId
 
-            return methodOutput ;
+            // Prepare for next loop
+            indexStart = indexOfProperty("agentId0",indexStart+1, report) ;
+        }
+        // If no positive cases are returned
+        if ("".equalsIgnoreCase(methodOutput)) methodOutput = "None" ;
+
+        return methodOutput ;
     }
 
-        
-	    /**
-		 * 
-		 * @param String encounter
-		 * @return substrings corresponding to individual sexual contacts within String encounter
-		 */
-		private String extractContact(String encounter, int indexStart)
-		{
-			return extractBoundedString(encounter, "contact:", indexStart) ;
-		}
-		
-		/**
-		 * 
-		 * @param String string
-		 * @return substrings corresponding to encounters
-		 */
-		private String extractEncounter(String string, int indexStart)
-		{
-			return extractBoundedString(string, "agentId0:", indexStart) ;
-		}
-		
-		/**
-		 * 
-		 * @param report
-		 * @param startIndex
-		 * @return String[] pairs of agentIds corresponding to relationships described in report
-		 */
-		private String[] extractAgentIds(String report, int startIndex)
-		{
-			String agentId0 = extractValue("agentId0", report, startIndex) ;
-			
-			startIndex = report.indexOf("agentId1", startIndex) ;
-			String agentId1 = extractValue("agentId1", report, startIndex) ;
-			return new String[] {agentId0,agentId1} ;
-		}
+    /**
+     * 
+     * @param String encounter
+     * @return substrings corresponding to individual sexual contacts within String encounter
+     */
+    private String extractContact(String encounter, int indexStart)
+    {
+        return extractBoundedString("contact", encounter, indexStart) ;
+    }
+
+    /**
+     * 
+     * @param String string
+     * @return substrings corresponding to encounters
+     */
+    private String extractEncounter(String string, int indexStart)
+    {
+        return extractBoundedString("agentId0", string, indexStart) ;
+    }
+
+    /**
+     * 
+     * @param report
+     * @param startIndex
+     * @return String[] pairs of agentIds corresponding to relationships described in report
+     */
+    private String[] extractAgentIds(String report, int startIndex)
+    {
+            String agentId0 = extractValue("agentId0", report, startIndex) ;
+
+            startIndex = indexOfProperty("agentId1", startIndex, report) ;
+            String agentId1 = extractValue("agentId1", report, startIndex) ;
+            return new String[] {agentId0,agentId1} ;
+    }
 
 }
