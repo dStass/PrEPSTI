@@ -6,6 +6,7 @@
 package reporter;
 
 import java.util.ArrayList;
+import java.util.HashMap ;
 
 import java.util.logging.Level;
 
@@ -35,7 +36,7 @@ public class PopulationReporter extends Reporter {
         for (int reportNb = 0 ; reportNb < birthReport.size() ; reportNb++ )
         {
             String report = birthReport.get(reportNb) ;
-            int startIndex = report.indexOf("agendId") ;
+            int startIndex = indexOfProperty("agendId",report) ;
             agentBirthReport.add(extractAllValues("agentId", report, startIndex)) ;
         }
         return agentBirthReport ;
@@ -55,7 +56,7 @@ public class PopulationReporter extends Reporter {
         for (int reportNb = 0 ; reportNb < birthReport.size() ; reportNb++ )
         {
             String report = birthReport.get(reportNb) ;
-            int startIndex = report.indexOf("age") ;
+            int startIndex = indexOfProperty("age",report) ;
             ageBirthReport.add(extractAllValues("age", report, startIndex)) ;
         }
         return ageBirthReport ;
@@ -75,7 +76,7 @@ public class PopulationReporter extends Reporter {
         for (int reportNb = 0 ; reportNb < deathReport.size() ; reportNb++ )
         {
             String report = deathReport.get(reportNb) ;
-            int startIndex = report.indexOf("agentId") ;
+            int startIndex = indexOfProperty("agentId",report) ;
             agentDeathReport.add(extractAllValues("agentId", report, startIndex)) ;
         }
         return agentDeathReport ;
@@ -95,10 +96,27 @@ public class PopulationReporter extends Reporter {
         for (int reportNb = 0 ; reportNb < deathReport.size() ; reportNb++ )
         {
             String report = deathReport.get(reportNb) ;
-            int startIndex = report.indexOf("age") ;
+            int startIndex = indexOfProperty("age",report) ;
             ageDeathReport.add(extractAllValues("age", report, startIndex)) ;
         }
         return ageDeathReport ;
+    }
+    
+    public HashMap<String,Integer> prepareAgeAtDeathReport()
+    {
+        HashMap<String,Integer> ageAtDeathMap = new HashMap<String,Integer>() ;
+        
+        // Contains age-at-death data
+        ArrayList<ArrayList<String>> ageDeathReport = prepareAgeDeathReport() ;
+        
+        for (ArrayList<String> ageArray : ageDeathReport)
+        {
+            for (String ageString : ageArray)
+            {
+                ageAtDeathMap = incrementHashMap(ageString,ageAtDeathMap) ;
+            }
+        }
+        return ageAtDeathMap ;
     }
     
     private ArrayList<String> prepareDeathReport()
@@ -112,14 +130,12 @@ public class PopulationReporter extends Reporter {
         for (int reportNb = 0 ; reportNb < input.size() ; reportNb += outputCycle )
         {
             report = input.get(reportNb) ;
-            agentIndex = report.indexOf("death") ;
-            LOGGER.info(report) ;
+            agentIndex = indexOfProperty("death",report) ;
             if (agentIndex < 0)
             {
                 continue ;
             }
             deathReport.add(report.substring(agentIndex)) ;
-            LOGGER.log(Level.INFO, "prepare: {0}", report) ;
         }
         return deathReport ;
     }
@@ -135,7 +151,7 @@ public class PopulationReporter extends Reporter {
         for (int reportNb = 0 ; reportNb < input.size() ; reportNb += outputCycle )
         {
             report = input.get(reportNb) ;
-            birthReport.add(report.substring(report.indexOf("birth"),report.indexOf("death"))) ;
+            birthReport.add(report.substring(indexOfProperty("birth",report),indexOfProperty("death",report))) ;
             LOGGER.log(Level.INFO, "prepare: {0}", report) ;
         }
         return birthReport ;
