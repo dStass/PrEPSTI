@@ -8,6 +8,7 @@ package reporter.presenter;
 import reporter.* ;
 
 import java.util.ArrayList ;
+import java.util.HashMap;
 
 /**
  * For presenting results from the PopulationReporter
@@ -57,7 +58,7 @@ public class PopulationPresenter extends Presenter{
         return ;
     }
 
-/**
+    /**
      * Find and plot the number of deaths as a function of time/cycle
      */
     public void plotBirthsPerCycle()
@@ -69,6 +70,16 @@ public class PopulationPresenter extends Presenter{
         plotEventsPerCycle("Births",agentBirthReport) ;
         
         return ;
+    }
+    
+    /**
+     * Plot the number of deaths that occurred for a given age
+     */
+    public void plotAgeAtDeath()
+    {
+        HashMap<String,Integer> ageAtDeathReport = reporter.prepareAgeAtDeathReport() ;
+        
+        plotHashMap("Age", "Number of deaths", ageAtDeathReport ) ;
     }
 
 
