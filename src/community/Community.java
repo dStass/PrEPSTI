@@ -13,6 +13,7 @@ import java.lang.reflect.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.logging.Level;
 
 import org.jfree.chart.* ;
 
@@ -27,7 +28,7 @@ public class Community {
     private int population = 100;
 
     // Number of new population members and also average number of deaths per year
-    private int birthRate = 4 ;
+    private int birthRate = 2 ;
 
     // Current number of relationships in the community
     private int nbRelationships = 0; 
@@ -108,9 +109,14 @@ public class Community {
                 }
             }
         }
-        PopulationReporter censusReporter = new PopulationReporter("death plot",community.censusReports) ;
-        PopulationPresenter censusPresenter = new PopulationPresenter("death plot","death plot",censusReporter) ;
-        censusPresenter.plotDeathsPerCycle();
+        EncounterReporter encounterReporter = new EncounterReporter("Transmitting sites",community.encounterReports) ;
+        EncounterPresenter encounterPresenter = new EncounterPresenter("Transmitting sites","Transmitting Sites", encounterReporter) ;
+        encounterPresenter.plotTransmittingSites(new String[] {"Penis","Rectum","Pharynx"});
+        //PopulationReporter censusReporter = new PopulationReporter("age-at-death",community.censusReports) ;
+        //PopulationPresenter censusPresenter = new PopulationPresenter("age-at-death","age-at-death",censusReporter) ;
+        //censusPresenter.plotAgeAtDeath();
+        //PopulationPresenter censusPresenter = new PopulationPresenter("deaths per cycle","deaths per cycle",censusReporter) ;
+        //censusPresenter.plotDeathsPerCycle();
         
         //EncounterReporter partnersReporter = new EncounterReporter("testPairs",community.encounterReports) ;
         //Reporter partnersReporter = new Reporter("testPairs",community.generateReports,
@@ -157,6 +163,7 @@ public class Community {
             {
 	    //Class<?> agentClazz = Class.  .forName(agentClazzName) ;
             MSM newAgent = (MSM) agentClazz.getConstructor(int.class).newInstance(-1);
+            
             return newAgent ;
             }
             catch ( NoSuchMethodException nsme )
@@ -208,7 +215,7 @@ public class Community {
                 {
                     Agent agent0 = agents.get(index) ;
                     Agent agent1 = agents.get(index + halfAgents) ;
-
+                    
                     // Have only one Relationship between two given Agents
                     if (agent1.getCurrentPartnerIds().contains(agent0.getId()))
                             continue ;
@@ -359,51 +366,51 @@ public class Community {
          */
 	protected String runEncounters()
 	{
-		String report = "" ;
-		// LOGGER.info("nb relationships: " + relationships.size());
-		for (Agent agent : agents)
-		{
-			// Might this agent have the lower agentId
-			// TODO: Improve precision
-			if (agent.getLowerAgentId() == 0)
-				continue ;
-			
-			for (Relationship relationship : agent.getCurrentRelationships())
-			{
-				// Avoid checking relationship twice by accessing only through the 
-				// agent with the lower agentId
-				// TODO: Incorporate this into Agent.Method()
-				int agentId = agent.getId() ;
-				int partnerId = relationship.getPartnerId(agentId) ;
-				if (partnerId < agentId)
-					continue ;
-				try
-				{
-					
-					//Agent[] agents = relationship.getAgents() ;
-					// TODO: Perhaps replace "agentId0/1" with "agentIds"
-					report += "agentId0:" + Integer.toString(agentId) + " " ;
-					report += "agentId1:" + Integer.toString(partnerId) + " " ;
-					report += relationship.encounter() ;
-				}
-				catch (NoSuchMethodException nsme)
-				{
-					LOGGER.info(nsme.getLocalizedMessage());
-					report += nsme.getCause(); //  .getMessage() ;
-				}
-				catch (InvocationTargetException ite)
-				{
-					LOGGER.info(ite.getLocalizedMessage());
-					//report += ite.getMessage() ;
-				}
-				catch (IllegalAccessException iae)
-				{
-					LOGGER.info(iae.getLocalizedMessage());
-					report += iae.getMessage() ;
-				}
-			}
-		}
-		return report ;
+            String report = "" ;
+            // LOGGER.info("nb relationships: " + relationships.size());
+            for (Agent agent : agents)
+            {
+                    // Might this agent have the lower agentId
+                    // TODO: Improve precision
+                    if (agent.getLowerAgentId() == 0)
+                            continue ;
+
+                    for (Relationship relationship : agent.getCurrentRelationships())
+                    {
+                            // Avoid checking relationship twice by accessing only through the 
+                            // agent with the lower agentId
+                            // TODO: Incorporate this into Agent.Method()
+                            int agentId = agent.getId() ;
+                            int partnerId = relationship.getPartnerId(agentId) ;
+                            if (partnerId < agentId)
+                                    continue ;
+                            try
+                            {
+
+                                    //Agent[] agents = relationship.getAgents() ;
+                                    // TODO: Perhaps replace "agentId0/1" with "agentIds"
+                                    report += "agentId0:" + Integer.toString(agentId) + " " ;
+                                    report += "agentId1:" + Integer.toString(partnerId) + " " ;
+                                    report += relationship.encounter() ;
+                            }
+                            catch (NoSuchMethodException nsme)
+                            {
+                                    LOGGER.info(nsme.getLocalizedMessage());
+                                    report += nsme.getCause(); //  .getMessage() ;
+                            }
+                            catch (InvocationTargetException ite)
+                            {
+                                    LOGGER.info(ite.getLocalizedMessage());
+                                    //report += ite.getMessage() ;
+                            }
+                            catch (IllegalAccessException iae)
+                            {
+                                    LOGGER.info(iae.getLocalizedMessage());
+                                    report += iae.getMessage() ;
+                            }
+                    }
+            }
+            return report ;
 	}
 	
 	/**
@@ -417,6 +424,7 @@ public class Community {
 		for (Agent agent : agents)
 		{
 			// Skip agents who can't end relationships
+                        // TODO: Make more precise
 			if (agent.getLowerAgentId() == 0)
 				continue ;
 			
@@ -433,7 +441,7 @@ public class Community {
 	}
 
 	/*****************************************************************
-	 * Calls breakup() of Relationship relationship, which probabilitically
+	 * Calls breakup() of Relationship relationship, which probabilistically
 	 * calls Relationship.del() 
 	 * @param relationship
 	 *****************************************************************/
