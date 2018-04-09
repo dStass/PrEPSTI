@@ -43,6 +43,7 @@ public class MsmTest {
         assert "false".equals(declare0) : "msm0.declareStatus() failed to yield 'false'" ;
         assert "true".equals(declare1) : "msm1.declareStatus() failed to yield 'true'" ;
     }
+    
     public void testConsent()
     {
         boolean consent0 ;
@@ -132,6 +133,35 @@ public class MsmTest {
                 
         return ;
 
+    }
+    
+    public void testGetScreenProbability()
+    {
+        boolean testResult0 ;
+        boolean testResult1 ;
+        
+        // Test for MSM on PrEP
+        msm0.setPrepStatus(true) ;
+        // always test on screening day
+        int prepScreenCycle = 3 * MSM.getScreenCycle() ;
+        String[] testArgs = {Integer.toString(prepScreenCycle)} ;
+        assert (msm0.getScreenProbability(testArgs) == 1.0 ) : 
+                "MSM on PrEP failed to screen on screening day" ;
+        // never screen otherwise
+        String[] testArgs1 = {Integer.toString(prepScreenCycle) + 1} ;
+        assert (msm0.getScreenProbability(testArgs1) == 0.0 ) :
+                "MSM on PrEP screened on non-screening day";
+            
+        // Non-PrEP users
+        msm0.setPrepStatus(false);
+        boolean testNonPrep = (0 < msm0.getScreenProbability(testArgs1)) ;
+        testNonPrep = (testNonPrep && (msm0.getScreenProbability(testArgs1) < 1)) ;
+        assert (testNonPrep) : "NonPrep MSM gave invalid screenProbability" ;
+        
+        return ;
+        
+        // Non-prep users 
+        
     }
     
 private void setStatusHIV(boolean statusHIV0, boolean statusHIV1)
