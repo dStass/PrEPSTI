@@ -9,6 +9,7 @@ import reporter.* ;
 
 import java.util.ArrayList ;
 import java.util.HashMap;
+import java.util.logging.Level;
 
 /**
  * Class to plot data from EncounterReporter
@@ -46,6 +47,8 @@ public class EncounterPresenter extends Presenter {
     /**
      * Generates HashMap whose keys are Site names (String) and values the
      * number of times an infection has been transmitted from that site
+     * TODO: use Agent.getSiteNames() to automatically generate Site names
+     * @param siteNames (String[]) names of body Sites to consider
      */
     public void plotTransmittingSites(String[] siteNames)
     {
@@ -63,24 +66,29 @@ public class EncounterPresenter extends Presenter {
         ArrayList<String> transmissionReport = reporter.prepareTransmissionReport() ;
         
         for (String report : transmissionReport)
-        {
             for (String name : siteNames)
             {
                 infectedStatus = Reporter.extractAllValues(name, report, 0) ;
                 count = 0 ;
                 for (String site : infectedStatus)
-                {
                     count += Integer.valueOf(site) ;
-                }
                 count += transmittingSites.get(name) ;
                 transmittingSites.put(name, count) ;
             }
-            
-        }
         
         plotHashMap("Site","Ongoing transmissions",transmittingSites) ;
         
         return ;
+    }
+    
+    
+    public void plotFromSiteToSite(String[] siteNames)
+    {
+        // HashMap to be plotted
+        // (String) key has format infectedsiteToReceivingsite
+        HashMap<String,Integer> fromSiteToSiteReport = reporter.prepareFromSiteToSiteReport(siteNames) ;
+        plotHashMap("Site to Site","transmissions",fromSiteToSiteReport) ;
+        
     }
     
 }
