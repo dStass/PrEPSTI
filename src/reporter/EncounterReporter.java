@@ -78,10 +78,97 @@ public class EncounterReporter extends Reporter {
         for (int reportNb = 0 ; reportNb < input.size() ; reportNb += outputCycle )
         {
             report = input.get(reportNb) ;
-            LOGGER.log(Level.INFO, "prepare: {0}", report) ;
+            //LOGGER.log(Level.INFO, "prepare: {0}", report) ;
             transmissionReport.add(encounterByValue("transmission","true",report)) ;
         }
         return transmissionReport ;
+    }
+		
+    /**
+     * @param siteNames (String[]) names of body sites in sexual contact
+     * @return String[] report of sexual contacts where STI transmission occurred
+     */    
+    public HashMap<String,Integer> prepareFromSiteToSiteReport(String siteNames[])
+    {
+        // Output HashMap
+        HashMap<String,Integer> fromSiteToSiteReport = new HashMap<String,Integer>() ;
+        int contactIndex = 0 ;
+        //int nameIndex ;
+        // String describing sexual contact
+        String contactString ;
+        // name of transmitting site 
+        String fromName ;
+        // name of site receiving infection
+        String toName ;
+        // HashMap key
+        String key ;
+        // values of site0, site1
+        String value0 ;
+        String value1 ;
+        // report String
+        String report ;
+        
+        ArrayList<String> transmissionReport = prepareTransmissionReport() ;
+
+        // Cycle through reports
+        for (int reportNb = 0 ; reportNb < transmissionReport.size() ; reportNb += outputCycle )
+        {
+            report = transmissionReport.get(reportNb) ;
+            // Extract contacts in which transmission occurs
+            //report = encounterByValue("transmission","true",report) ;
+            
+            // Cycle through contact: substrings, noting fromSite, toSite where 
+            // transmission occurs
+            while (contactIndex >= 0)
+            {
+                contactString = extractBoundedString("contact",report,contactIndex) ;
+                
+                // This reset is needed here
+                fromName = "" ;
+                toName = "" ;
+                
+                //Cycle through all possible site names
+                for (String name0 : siteNames)
+                {
+                    // ! site name in contactString
+                    if (! contactString.contains(name0))
+                        continue ;
+                    //nameIndex = Reporter.indexOfProperty(name0,contactString) ;
+                    value0 = extractValue(name0,contactString) ;
+                    
+                    for (String name1 : siteNames)
+                    {
+                        // nameIndex+1 because both Sites might have the same name
+                        //nameIndex = Reporter.indexOfProperty(name0,nameIndex+1,contactString) ;
+                        if (! contactString.contains(name1) || name1.equals(name0))
+                            continue ;
+                        // Assign toName and fromName
+                        if ("0".equals(value0))
+                        {
+                            toName = name0 ;
+                            fromName = name1 ;
+                        }
+                        else
+                        {
+                            toName = name1 ;
+                            fromName = name0 ;
+                        }
+                        
+                        break ;
+                    }
+                    if ("".equals(toName))  // identical sites in transmission
+                    {
+                        toName = name0 ;
+                        fromName = name0 ;
+                    }
+                    key = fromName + "To" + toName ;
+                    fromSiteToSiteReport = incrementHashMap(key,fromSiteToSiteReport) ;
+                    break ;
+                }
+                contactIndex = indexOfProperty("contact",contactIndex+1,report) ;
+            }
+        }
+        return fromSiteToSiteReport ;
     }
 		
     /**
@@ -114,7 +201,6 @@ public class EncounterReporter extends Reporter {
      */
     private ArrayList<String[]> reportAgentIdPairs(String report)
     {
-        LOGGER.info(report);
         ArrayList<String[]> agentIdPairs = new ArrayList<String[]>() ;
         for (int startIndex = 0 ; startIndex != -1; startIndex = indexOfProperty("agentId0", startIndex + 1, report))
         {
@@ -157,7 +243,7 @@ public class EncounterReporter extends Reporter {
             {
                 contactString = boundedStringByValue(propertyName,value,"contact",encounterString) ; 
                 // if contactString contains actual contact information
-                if (!"contact:".equals(contactString)) 
+                if (!"".equals(contactString)) 
                 {
                         encounterOutput += contactString ;
                 }
@@ -172,11 +258,63 @@ public class EncounterReporter extends Reporter {
             indexStart = indexOfProperty("agentId0",indexStart+1, report) ;
         }
         // If no positive cases are returned
-        if ("".equalsIgnoreCase(methodOutput)) methodOutput = "None" ;
+        if ("".equalsIgnoreCase(methodOutput)) 
+            methodOutput = "None" ;
 
         return methodOutput ;
     }
+    
+    /**
+     * Extracts encounter reports containing propertyName for at least 
+     * one contact
+     * @param propertyName
+     * @param value
+     * @param report
+     * @return 
+     */
+    private String encounterByContents(String propertyName, String report)
+    {
+        int indexStart = 0 ;
+        int indexContact ;
+        String methodOutput = "" ;
+        String encounterString ;
+        String contactString ;
+        while (indexStart >= 0)
+        {
+            // Encounter to study
+            encounterString = extractEncounter(report, indexStart) ;
 
+            // Initialise output for encounter
+            indexContact = indexOfProperty("contact",encounterString) ;
+            String encounterOpening = encounterString.substring(0, indexContact ) ;
+            String encounterOutput = "" ;
+
+            // check contacts for desired value of propertyName
+            while (indexContact >= 0)
+            {
+                contactString = boundedStringByContents(propertyName,"contact",encounterString) ; 
+                // if contactString contains actual contact information
+                if (!"".equals(contactString)) 
+                {
+                        encounterOutput += contactString ;
+                }
+                // Find next contact
+                indexContact = indexOfProperty("contact", indexContact + 1, encounterString) ;
+            }
+            // Only include encounter in output if any of its contacts are included 
+            if (encounterOutput.length() > 0)
+                methodOutput += encounterOpening + encounterOutput ; // Include agentId
+
+            // Prepare for next loop
+            indexStart = indexOfProperty("agentId0",indexStart+1, report) ;
+        }
+        // If no positive cases are returned
+        if ("".equalsIgnoreCase(methodOutput)) 
+            methodOutput = "None" ;
+
+        return methodOutput ;
+    }
+    
     /**
      * 
      * @param String encounter
