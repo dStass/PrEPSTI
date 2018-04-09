@@ -141,7 +141,7 @@ public class Reporter {
      * @param value
      * @param bound - String bounding substrings of interest
      * @param string
-     * @return String output
+     * @return String boundedOutput
      */
     protected static String boundedStringByValue(String propertyName, String value, String bound, String string)
     {
@@ -150,7 +150,6 @@ public class Reporter {
         String boundedString ;
         while (indexStart >= 0)
         {
-            //indexStart++ ;
             boundedString = extractBoundedString(bound, string, indexStart) ;
             
             // This if statement moved to compareValue()
@@ -159,6 +158,28 @@ public class Reporter {
                 if (compareValue(propertyName,value,boundedString)) 
                     boundedOutput += bound + ":" + boundedString ;
             //}
+            indexStart = indexOfProperty(bound,indexStart+1,string) ;
+        }
+        return boundedOutput ;
+    }
+    
+    /**
+     * Extracts bounded substrings containing propertyName as substring
+     * @param propertyName 
+     * @param bound - String bounding substrings of interest
+     * @param string
+     * @return String boundedOutput
+     */
+    protected static String boundedStringByContents(String propertyName, String bound, String string)
+    {
+        int indexStart = indexOfProperty(bound,string) ;
+        String boundedOutput = "" ;
+        String boundedString ;
+        while (indexStart >= 0)
+        {
+            boundedString = extractBoundedString(bound, string, indexStart) ;
+            if (boundedString.contains(propertyName)) ;  //(compareValue(propertyName,value,boundedString)) 
+                boundedOutput += bound + ":" + boundedString ;
             indexStart = indexOfProperty(bound,indexStart+1,string) ;
         }
         return boundedOutput ;
@@ -191,8 +212,8 @@ public class Reporter {
      */
     protected static String extractBoundedString(String bound, String string, int indexStart)
     {
-        int index0 = indexOfProperty(bound, indexStart, string) + bound.length() + 1 ;
-        int index1 = indexOfProperty(bound,index0,string) ;
+        int index0 = indexOfProperty(bound, indexStart, string) ;
+        int index1 = indexOfProperty(bound,index0+1,string) ;
         if (index1 == -1) index1 = string.length() ;
         return string.substring(index0, index1) ;
 
