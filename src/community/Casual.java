@@ -3,10 +3,15 @@ package community;
 import agent.* ;
 
 class Casual extends Relationship {
-    private double breakupProbability = 1.0 ;
+    static double breakupProbability = 1.0 ;
     
-    private double encounterProbability = 1.0 ;
+    static double encounterProbability = 1.0 ;
     
+
+    protected Casual() 
+    {
+        super() ;
+    }
     
 
     protected Casual(Agent agent1, Agent agent2) 
