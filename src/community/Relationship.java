@@ -25,6 +25,7 @@ public class Relationship {
     // Random number generator
     static Random rand = new Random() ;
     
+    // TODO: Move condom variables to MSM
     // Probability of using a condom
     static double CONDOM_USE = 0.5;
     
@@ -35,17 +36,11 @@ public class Relationship {
     //private int contacts ;
     
     // Probability of breakup() in a given cycle
-    private double breakupProbability ;
+    static double breakupProbability ;
     
     //LOGGER
     static final java.util.logging.Logger LOGGER = java.util.logging.Logger.getLogger("relationship") ;
 
-    public Relationship()
-    {
-    	Class<?> clazz = this.getClass() ;
-    	relationship = clazz.asSubclass(clazz).getSimpleName() ;
-    }
-    
     /**
      * Randomly chooses one of the available Relationship subclasses. 
      * The odds of each subclass are the mean of the corresponding odds for each agent 
@@ -68,6 +63,12 @@ public class Relationship {
     	return Casual.class ;
     }
    
+    public Relationship()
+    {
+    	Class<?> clazz = this.getClass() ;
+    	relationship = clazz.asSubclass(clazz).getSimpleName() ;
+    }
+    
     public Relationship(Agent agent0, Agent agent1) {
     	addAgents(agent0, agent1) ;
     	Class<?> clazz = this.getClass() ;
@@ -80,7 +81,7 @@ public class Relationship {
      * @param agent0
      * @param agent1
      */
-    protected void addAgents(Agent agent0, Agent agent1)
+    final protected String addAgents(Agent agent0, Agent agent1)
     {
         if (agent0.getId() < agent1.getId())
         {
@@ -94,7 +95,9 @@ public class Relationship {
     	this.agent0 = agent1 ;
         	agent1.augmentLowerAgentId() ;
         }
-        return ;
+        
+        agent1.enterRelationship(this) ;
+        return agent0.enterRelationship(this) ;
     }
     
     /**
@@ -128,6 +131,7 @@ public class Relationship {
      *********************************************************************/
     protected boolean breakup() 
     {
+        LOGGER.log(Level.INFO, String.valueOf(breakupProbability) );
     	if (rand.nextDouble() < breakupProbability)
             {
                 agent0.endRelationship(this) ;  //(agent1.getId()) ;
