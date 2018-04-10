@@ -3,16 +3,19 @@
  */
 package agent;
 
+import java.util.logging.Level;
 import site.* ;
 
 /**
  * @author Michael Walker
  *
  */
-public class MSM extends Agent {
+abstract public class MSM extends Agent {
 	
     // The maximum number of relationships an agent may be willing to sustain
-    static int maxRelationships = 20;
+    // static int maxRelationships = 20;
+    
+    static String[] siteNames = {"Rectum","Penis","Pharynx"} ;
     
     // Potential infection sites
     private Rectum rectum ;
@@ -34,15 +37,6 @@ public class MSM extends Agent {
     // Whether currently taking PrEP
     private boolean prepStatus ;
 	
-    // Associated probabilities for the above
-    static double probabilitySeroSort = 0.4 ;
-    static double probabilitySeroPosition = 0.4 ;
-    static double probabilityRequireDiscloseHIV = 0.05 ;
-    static double probabilityHIV = 0.05 ;
-    static double antiViralProbability = 0.7 ;
-    static double probabilityDiscloseHIV = 0.8 ;
-    static double probabilityPrep = 0.2 ;
-
     // Transmission probabilities fromsiteTosite
     static double PENISRECTUM = 0.8 ;
     static double PENISPHARYNX = 0.7 ;
@@ -52,13 +46,21 @@ public class MSM extends Agent {
     static double PHARYNXRECTUM = 0.2 ;
     
     // How often do MSM on PrEP get screened
-    private static int screenCycle = 92 ;
-    // getter() for screenCycle
-    public static int getScreenCycle()
+    static int SCREENCYCLE = 92 ;
+
+    // SCREENCYCLE getter()
+    public static int getSCREENCYCLE()
     {
-        return screenCycle ;
+        return SCREENCYCLE ;
     }
 
+        // The number of Agents invited to any given orgy
+        int ORGY_SIZE = 8 ;
+        
+        // The number of orgies in the community in a given cycle
+        int ORGY_NUMBER = 4 ;
+    
+    
     /**
      * 
      * @param infectedAgent
@@ -72,19 +74,19 @@ public class MSM extends Agent {
     		Site infectedSite, Site clearSite)
     {
     	double infectProbability = 0.0 ;
-    	if ("penis".equals(infectedSite.getSite()))
+    	if ("penis".equalsIgnoreCase(infectedSite.getSite()))
     	{
-    		if ("rectum".equals(clearSite.getSite())) infectProbability = PENISRECTUM ;
-    		else if ("pharynx".equals(clearSite.getSite())) infectProbability = PENISPHARYNX ;
+    		if ("rectum".equalsIgnoreCase(clearSite.getSite())) infectProbability = PENISRECTUM ;
+    		else if ("pharynx".equalsIgnoreCase(clearSite.getSite())) infectProbability = PENISPHARYNX ;
     	}
-    	else if ("rectum".equals(clearSite.getSite())) 
+    	else if ("rectum".equalsIgnoreCase(clearSite.getSite())) 
     	{
-    		if ("penis".equals(clearSite.getSite())) infectProbability = RECTUMPENIS ;
-    		else if ("pharynx".equals(clearSite.getSite())) infectProbability = RECTUMPHARYNX ;
+    		if ("penis".equalsIgnoreCase(clearSite.getSite())) infectProbability = RECTUMPENIS ;
+    		else if ("pharynx".equalsIgnoreCase(clearSite.getSite())) infectProbability = RECTUMPHARYNX ;
     	}
-    	else    // "pharynx" == clearSite.getSite()
+    	else    // "pharynx" == infectedSite.getSite()
     	{
-    		if ("penis".equals(clearSite.getSite())) infectProbability = PHARYNXPENIS ;
+    		if ("penis".equalsIgnoreCase(clearSite.getSite())) infectProbability = PHARYNXPENIS ;
     		else infectProbability = PHARYNXRECTUM ;    // "rectum" == clearSite.getSite()
     	}
     	return infectProbability ;
@@ -126,21 +128,33 @@ public class MSM extends Agent {
 
 	
     // Odds of an MSM being safeMSM
-    static int safeOdds = 5 ;
+    static int SAFE_ODDS = 5 ;
     // Odds of an MSM being riskyMSM
-    static int riskyOdds = 5 ;
-    
+    static int RISKY_ODDS = 5 ;
+    // Sum of safeOdds and riskyOdds
+    static int TOTAL_ODDS = RISKY_ODDS + SAFE_ODDS ;
+    	
     /**
      * Choose whether MSM is RiskyMSM or SafeMSM
      * @return Class - one of subclass RiskyMSM or SafeMSM
      */
-    public static Class chooseMSM()
+    public static Object birthMSM(int startAge)
     {
-    	int totalOdds = riskyOdds + safeOdds ;
-    	int choice = rand.nextInt(totalOdds) ;
-    	if (choice < safeOdds)
-    		return SafeMSM.class ;
-    	return RiskyMSM.class ;
+        Class clazz ;
+    	int choice = RAND.nextInt(TOTAL_ODDS) ;
+    	if (choice < SAFE_ODDS)
+    		clazz = SafeMSM.class ;
+        else 
+            clazz = RiskyMSM.class ;
+        try
+        {
+            return clazz.getConstructor(int.class).newInstance(startAge);
+        }
+        catch ( Exception e )
+        {
+            LOGGER.log(Level.SEVERE, e.getLocalizedMessage());
+        }
+        return new Object() ;
     }
    
 
@@ -160,25 +174,25 @@ public class MSM extends Agent {
          * so that subclass static fields can be called
          * TODO: Check that inherited version calls correct static fields
          */
-        private void initStatus()
+        final private void initStatus()
         {
             //requireDiscloseStatusHIV = (rand.nextDouble() < probabilityRequireDiscloseHIV) ;
-            statusHIV = (rand.nextDouble() < probabilityHIV) ;
+            statusHIV = (RAND.nextDouble() < getProbabilityHIV()) ;
             if (statusHIV)
             {
-                antiViralStatus = (rand.nextDouble() < antiViralProbability) ;
+                antiViralStatus = (RAND.nextDouble() < getAntiviralProbability()) ;
                 prepStatus = false ;
             }
             else
             {
-                prepStatus = (rand.nextDouble() < probabilityPrep) ;
+                prepStatus = (RAND.nextDouble() < getProbabilityPrep()) ;
                 antiViralStatus = false ;
             }
-            discloseStatusHIV = (rand.nextDouble() < probabilityDiscloseHIV) ;
+            discloseStatusHIV = (RAND.nextDouble() < getProbabilityDiscloseHIV()) ;
             if (discloseStatusHIV)
             {
-        	seroSort = ((rand.nextDouble() < probabilitySeroSort) && discloseStatusHIV) ;
-                seroPosition = ((rand.nextDouble() < probabilitySeroPosition) && discloseStatusHIV) ;
+        	seroSort = ((RAND.nextDouble() < getProbabilitySeroSort()) && discloseStatusHIV) ;
+                seroPosition = ((RAND.nextDouble() < getProbabilitySeroPosition()) && discloseStatusHIV) ;
             }
             else    // Cannot seroSort or SeroPosition without disclosing statusHIV
             {
@@ -190,6 +204,7 @@ public class MSM extends Agent {
 
 	/**
          * Adds Sites rectum, penis, and pharynx
+         * TODO: Delete this and rely on final super()
          */
         @Override
 	protected void setSites() {
@@ -203,13 +218,19 @@ public class MSM extends Agent {
 		return ;
 	}
 	
+    @Override
+    protected String[] getSiteNames()
+    {
+        return siteNames ;
+    }
+        
     /**
      * Used when choosing Site for sexual encounter
      * @return randomly choice of rectum, penis or pharynx
      */
     protected Site chooseSite()
 	{
-            int index = rand.nextInt(3) ;
+            int index = RAND.nextInt(3) ;
             if (index == 0) 
                 return rectum ;
             else if (index == 1) 
@@ -220,9 +241,9 @@ public class MSM extends Agent {
 	
     protected Site chooseSite(Site site)
     {
-        if (site.getSite().equals("rectum"))
+        if (site.getSite().equals("Rectum"))
         {
-            int index = rand.nextInt(2) ;
+            int index = RAND.nextInt(2) ;
             if (index == 0) return penis ;
             else return pharynx ;
         }
@@ -234,7 +255,7 @@ public class MSM extends Agent {
 
     protected Site chooseNotPenisSite() 
     {
-        int index = rand.nextInt(2) ;
+        int index = RAND.nextInt(2) ;
         if (index == 0)
             return rectum ;
         return pharynx ;
@@ -245,16 +266,31 @@ public class MSM extends Agent {
         return rectum ;
     }
 
+    protected void setRectum(Rectum rectum)
+    {
+        this.rectum = rectum ;
+    }
+    
     protected Penis getPenis()
     {
         return penis ;		
     }
 
+    protected void setPenis(Penis penis)
+    {
+        this.penis = penis ;
+    }
+    
     protected Pharynx getPharynx()
     {
         return pharynx ;
     }
 
+    protected void setPharynx(Pharynx pharynx)
+    {
+        this.pharynx = pharynx ;
+    }
+    
     private boolean getStatusHIV()
     {
         return statusHIV ;
@@ -391,6 +427,44 @@ public class MSM extends Agent {
         return true ;
     }
 	
+    abstract int getMaxRelationships() ;
+    
+    abstract double getProbabilityHIV() ;
+    
+    abstract double getAntiviralProbability() ;
+    
+    abstract double getProbabilityDiscloseHIV() ;
+    
+    abstract double getProbabilityPrep() ;
+    
+    abstract double getProbabilitySeroSort() ;
+
+    abstract double getProbabilitySeroPosition() ;
+
+    /**
+     * 
+     * @return (int) the number of orgies in a MSM community per cycle
+     */
+    public int getOrgyNumber()
+    {
+        return ORGY_NUMBER ;
+    }
+    
+    /**
+     * 
+     * @return (int) number of MSM invited to join any given orgy
+     */
+    public int getOrgySize()
+    {
+        return ORGY_SIZE ;
+    }
+
+    /**
+     * 
+     * @return (double) the probability of MSM joining an orgy when invited
+     */
+    abstract public double getJoinOrgyProbability() ;
+    
     /**
      * Probability of MSM screening on that day. Same as Agent unless prepStatus true
      * @param args
@@ -404,12 +478,13 @@ public class MSM extends Agent {
         {
             int cycle = Integer.valueOf(args[0]) ;
             // Those on antivirals test every three months (92 days) on a given day
-            if ( Math.floorMod(cycle, screenCycle) == 0)
+            if ( Math.floorMod(cycle, SCREENCYCLE) == 0)
                 return 1.0 ;
             else
                 return 0.0 ;
         }
         return super.getScreenProbability(args) ;
     }
-
+    
+    
 }
