@@ -109,9 +109,10 @@ public class Community {
                 }
             }
         }
-        EncounterReporter encounterReporter = new EncounterReporter("Transmitting sites",community.encounterReports) ;
-        EncounterPresenter encounterPresenter = new EncounterPresenter("Transmitting sites","Transmitting Sites", encounterReporter) ;
-        encounterPresenter.plotTransmittingSites(new String[] {"Penis","Rectum","Pharynx"});
+        EncounterReporter encounterReporter = new EncounterReporter("site to site",community.encounterReports) ;
+        EncounterPresenter encounterPresenter = new EncounterPresenter("site to site","site to site", encounterReporter) ;
+        //encounterPresenter.plotTransmittingSites(new String[] {"Penis","Rectum","Pharynx"});
+        encounterPresenter.plotFromSiteToSite(new String[] {"Penis","Rectum","Pharynx"});
         //PopulationReporter censusReporter = new PopulationReporter("age-at-death",community.censusReports) ;
         //PopulationPresenter censusPresenter = new PopulationPresenter("age-at-death","age-at-death",censusReporter) ;
         //censusPresenter.plotAgeAtDeath();
@@ -152,49 +153,16 @@ public class Community {
     }
 
         /**
-         * Calls chooseMSM() to decide which MSM are RiskyMSM and safeMSM.
+         * Calls birthMSM() to generate either RiskyMSM and SafeMSM.
          * TODO: Generalise to more general types of Agent
-         * @return MSM newAgent OR new MSM() if error occurs
+         * @return MSM subclass newAgent 
          */
         private MSM generateAgent()
         {
-            Class agentClazz = MSM.chooseMSM() ;
-            try
-            {
-	    //Class<?> agentClazz = Class.  .forName(agentClazzName) ;
-            MSM newAgent = (MSM) agentClazz.getConstructor(int.class).newInstance(-1);
-            
+            // if Agent.subclass == MSM
+            MSM newAgent = (MSM) MSM.birthMSM(-1);
             return newAgent ;
-            }
-            catch ( NoSuchMethodException nsme )
-            {
-                LOGGER.info(nsme.getLocalizedMessage());
-                LOGGER.info("nsme");
-            }
-            catch ( InstantiationException ie )
-            {
-                LOGGER.info(ie.getLocalizedMessage());
-                LOGGER.info("ie");
-            }
-            catch ( IllegalAccessException iae )
-            {
-                LOGGER.info(iae.getLocalizedMessage());
-                LOGGER.info("iae");
-            }
-            catch ( InvocationTargetException ite )
-            {
-                LOGGER.info(ite.getLocalizedMessage());
-                LOGGER.info("ite");
-            }
-            /*catch ( ClassNotFoundException cnfe )
-            {
-                LOGGER.info(cnfe.getMessage());
-                LOGGER.info("cnfe " + agentClazzName);
-            }
-            */
-            LOGGER.info("Problem in community generateAgent()");
-            return new MSM(-1) ;
-        }
+         }
 	
 	/**
 	 * Generate relationships within the community. 
@@ -225,31 +193,25 @@ public class Community {
                     String relationshipClazzName = relationshipClazz.getSimpleName() ;
 
                     // Argument String[] for Agent.consent 
+                    // TODO: Use Agent.consentArgs()
                     if (agent0.consent(relationshipClazzName,agent1) && agent1.consent(relationshipClazzName,agent0))
                     {
-                        String enterMethodName = "enter" + relationshipClazzName ;
-                        Method enterRelationshipMethod = Agent.class.getDeclaredMethod(enterMethodName, Relationship.class ) ;
+                        //String enterMethodName = "enter" + relationshipClazzName ;
+                        //Method enterRelationshipMethod = Agent.class.getDeclaredMethod(enterMethodName, Relationship.class ) ;
 
                         Relationship relationship = (Relationship) relationshipClazz.newInstance();
-                        relationship.addAgents(agent0, agent1);
+                        report += relationship.addAgents(agent0, agent1);
                         nbRelationships++ ;
 
-                        report += enterRelationshipMethod.invoke(agent0, relationship) ;
-                        enterRelationshipMethod.invoke(agent1, relationship) ;
+                        // These lines now called indirectly from relationship.addAgents() ;
+                        //report += enterRelationshipMethod.invoke(agent0, relationship) ;
+                        //enterRelationshipMethod.invoke(agent1, relationship) ;
 
-                        // report contains relationship subclass and agentIds
-                        //report += agent0.enterRelationship(relationship) ;
-                        //agent1.enterRelationship(relationship) ;
 
-                        // report += relationship.getReport() + " " ;
+                        //report += relationship.getReport() + " " ;
 
                     }
 		}
-            }
-            catch ( NoSuchMethodException nsme )
-            {
-                LOGGER.info(nsme.getMessage());
-            LOGGER.info("nsme");
             }
             catch ( IllegalAccessException iae )
             {
@@ -261,14 +223,71 @@ public class Community {
                 LOGGER.info(ie.getLocalizedMessage()) ;
             LOGGER.info("ie");
             }
-            catch ( InvocationTargetException ite )
-            {
-                //LOGGER.info(ite.getLocalizedMessage());
-                LOGGER.info("ite");
-            }
-
+            
+            // TODO: Uncomment this line when ready to debug
+            // arrangeOrgies() ;
+            
             return report ;
 	}
+        
+        /**
+         * Selects getOrgyNumber() groups of getOrgySize() Agents,
+         * and invites them to join an orgy by calling Agent.joinOrgy() .
+         * Those that return true enter a Casual Relationship with every other
+         * participant.
+         * TODO: Arrange for contacts in arbitrary order
+         * TODO: Enable by calling from generateRelationships()
+         * @return 
+         */
+        private String arrangeOrgies()
+        {
+            String report = "" ;
+            Agent sampleAgent = agents.get(0) ;
+            int orgySize = sampleAgent.getOrgySize() ;
+            int orgyNumber = sampleAgent.getOrgyNumber() ;
+            double joinOrgyProbability = sampleAgent.getJoinOrgyProbability() ;
+            
+            for (int orgyIndex = 0 ; orgyIndex < orgyNumber ; orgyIndex++)
+            {
+                // Invite next orgySize Agents to an orgy
+                int startIndex = orgyIndex * orgySize ;
+                int endIndex = startIndex + orgySize ;
+                // Check that required number of Agents is not too much (unlikely)
+                if (endIndex > agents.size())
+                    break ;
+                
+                // Invited Agents subArrayList of agents
+                ArrayList<Agent> invitedAgents = (ArrayList<Agent>) agents.subList(startIndex, endIndex) ;
+                ArrayList<Agent> orgyAgents = new ArrayList<Agent>() ;
+                for (Agent agent : invitedAgents)
+                {
+                    if (agent.joinOrgy(joinOrgyProbability,null))
+                        orgyAgents.add(agent) ;    // Agent agrees to join orgy
+                }
+                //Require orgies have at least three participants
+                if (orgyAgents.size() < 3)
+                    continue ;
+                
+                // Every Agent in a given orgy has a Casual Relationship with
+                //evey other Agent at that orgy
+                //FIXME: Sexual contacts between pairs are clustered
+                for (Agent agent0 : orgyAgents)
+                {
+                    for (Agent agent1 : orgyAgents)
+                    {
+                        if (agent0 == agent1)
+                            continue ;    // Require two distinct Agents in a Relationship
+                        Casual relationship = new Casual(agent0, agent1);
+                        nbRelationships++ ;
+
+                        report += agent0.enterCasual(relationship) ;
+                        agent1.enterCasual(relationship) ;
+                        report += "orgy:" + String.valueOf(orgyIndex) + " " ;
+                    }
+                }
+            }
+            return report ;
+        }
         
         /**
          * TODO: Implement generalised getCensusData() in Agent and subtypes
@@ -299,7 +318,7 @@ public class Community {
             int currentPopulation = agents.size() ;
             for (int birth = 0 ; birth < birthRate ; birth++ )
             {
-                MSM newAgent = new MSM(0) ;
+                MSM newAgent = (MSM) MSM.birthMSM(0) ;
                 agents.add(newAgent) ;
                 report += "agentId:" + Integer.toString(newAgent.getId()) + " " ;
                 report += "startAge:" + Integer.toString(newAgent.getAge()) + " " ; 
