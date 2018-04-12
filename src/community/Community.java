@@ -4,6 +4,10 @@
 package community;
 
 import agent.* ;
+import java.io.* ;
+//import java.io.FileWriter ;
+//import java.io.IOException;
+
 import reporter.* ; 
 import reporter.presenter.* ;
 
@@ -48,13 +52,14 @@ public class Community {
     // The number of cycles (days) since the current year began
     private static int cyclesModYear = 0 ; 
 
-    private ArrayList<String> reports = new ArrayList<String>() ;
-    private ArrayList<String> relationshipReports = new ArrayList<String>() ;
-    private ArrayList<String> encounterReports = new ArrayList<String>() ;
-    private ArrayList<String> clearReports = new ArrayList<String>() ;
-    private ArrayList<String> screenReports = new ArrayList<String>() ;
-    private ArrayList<String> censusReports = new ArrayList<String>() ;
+    private ArrayList<String> genericReport = new ArrayList<String>() ;
+    private ArrayList<String> relationshipReport = new ArrayList<String>() ;
+    private ArrayList<String> encounterReport = new ArrayList<String>() ;
+    private ArrayList<String> clearReport = new ArrayList<String>() ;
+    private ArrayList<String> screenReport = new ArrayList<String>() ;
+    private ArrayList<String> censusReport = new ArrayList<String>() ;
     
+    private Scribe encounterScribe ;  // = new Scribe() ;
 
 
     // Logger
@@ -65,11 +70,11 @@ public class Community {
         Community community = new Community() ;
 
         // For generating reports
-        String relationshipReport ;
-        String encounterReport ;
-        String clearanceReport ;
-        String screenReport ;
-        String populationReport ;
+        String relationshipRecord ;
+        String encounterRecord ;
+        String clearanceRecord ;
+        String screenRecord ;
+        String populationRecord ;
         //String deathReport ;
         
         // Use this to record the census at every cycle
@@ -77,6 +82,7 @@ public class Community {
 
         String cycleString ;
 
+        community.encounterScribe = community.new Scribe("siteToSiteEncounter") ;
         // simulation of maxCycles cycles
         int maxCycles = 10 ;
         for (int cycle = 0; cycle < maxCycles; cycle++)
@@ -84,19 +90,19 @@ public class Community {
             cycleString = Integer.toString(cycle) + "," ;
 
             // update relationships and perform sexual encounters, report them
-            relationshipReport = cycleString + community.generateRelationships();
-            encounterReport = cycleString + community.runEncounters();
-            clearanceReport = cycleString + community.clearRelationships();
+            relationshipRecord = cycleString + community.generateRelationships();
+            encounterRecord = cycleString + community.runEncounters();
+            clearanceRecord = cycleString + community.clearRelationships();
 
             // treat symptomatic agents
-            screenReport = cycleString + community.screenAgents(cycle) ;
+            screenRecord = cycleString + community.screenAgents(cycle) ;
 
-            populationReport = cycleString + community.births() ;
-            //deathReport = cycleString
-            populationReport += community.grimReaper() ;
+            populationRecord = cycleString + community.births() ;
+            //deathRecord = cycleString
+            populationRecord += community.grimReaper() ;
 
-            community.submitReports(relationshipReport,encounterReport,
-                    clearanceReport,screenReport,populationReport) ;
+            community.submitRecords(relationshipRecord,encounterRecord,
+                    clearanceRecord,screenRecord,populationRecord) ;
 
             cyclesModYear++ ;
             if (cyclesModYear > 363)
@@ -109,19 +115,20 @@ public class Community {
                 }
             }
         }
-        EncounterReporter encounterReporter = new EncounterReporter("site to site",community.encounterReports) ;
+        community.encounterScribe.closeFile();
+        EncounterReporter encounterReporter = new EncounterReporter("site to site",community.encounterReport) ;
         EncounterPresenter encounterPresenter = new EncounterPresenter("site to site","site to site", encounterReporter) ;
         //encounterPresenter.plotTransmittingSites(new String[] {"Penis","Rectum","Pharynx"});
         encounterPresenter.plotFromSiteToSite(new String[] {"Penis","Rectum","Pharynx"});
-        //PopulationReporter censusReporter = new PopulationReporter("age-at-death",community.censusReports) ;
+        //PopulationReporter censusReporter = new PopulationReporter("age-at-death",community.censusReport) ;
         //PopulationPresenter censusPresenter = new PopulationPresenter("age-at-death","age-at-death",censusReporter) ;
         //censusPresenter.plotAgeAtDeath();
         //PopulationPresenter censusPresenter = new PopulationPresenter("deaths per cycle","deaths per cycle",censusReporter) ;
         //censusPresenter.plotDeathsPerCycle();
         
-        //EncounterReporter partnersReporter = new EncounterReporter("testPairs",community.encounterReports) ;
-        //Reporter partnersReporter = new Reporter("testPairs",community.generateReports,
-                //	community.encounterReports,community.clearReports,community.screenReports) ;
+        //EncounterReporter partnersReporter = new EncounterReporter("testPairs",community.encounterReport) ;
+        //Reporter partnersReporter = new Reporter("testPairs",community.generateReport,
+                //	community.encounterReport,community.clearReport,community.screenReport) ;
         //ArrayList<HashMap<Integer,ArrayList<Integer>>> partnersReport = partnersReporter.preparePartnersReport() ;
         //System.out.println(partnersReport.get(0).get(0).size()) ; //  toString());
         //System.out.println(partnersReport.get(0).get(4).size()) ; // .toString());
@@ -148,7 +155,7 @@ public class Community {
             agentReport += newAgent.getId() + ":" ;
             agentReport += newAgent.getAgent() + " " ;
         }
-        String relationshipReport = generateRelationships() ;
+        String relationshipRecord = generateRelationships() ;
         return ;
     }
 
@@ -347,8 +354,9 @@ public class Community {
             {
                 int agentInd = rand.nextInt(agents.size()) ;
                 Agent agent = agents.get(agentInd) ; 
-                if (grimReaper(agent))
+                if (agent.grimReaper())
                 {
+                    agents.remove(agent) ;
                     report = Reporter.addReportProperty("agentId", agent.getId(), report) ;
                     report = Reporter.addReportProperty("age", agent.getAge(), report) ;
                 }
@@ -359,22 +367,6 @@ public class Community {
             
 
             return report ;
-	}
-	
-        /**
-         * Calls agent.death() to see if they die and removes them from agents
-         * if so
-         * @param agent
-         * @return true if agent dies and false otherwise
-         */
-	private boolean grimReaper(Agent agent)
-	{
-		if (agent.death())
-		{
-			agents.remove(agent) ;
-			return true ;
-		}
-		return false ;
 	}
 	
         /**
@@ -439,7 +431,9 @@ public class Community {
 	protected String clearRelationships() 
 	{
 		String report = "" ;
-		
+                ArrayList<Relationship> currentRelationships ;
+		Relationship relationship ;
+                
 		for (Agent agent : agents)
 		{
 			// Skip agents who can't end relationships
@@ -447,12 +441,15 @@ public class Community {
 			if (agent.getLowerAgentId() == 0)
 				continue ;
 			
-			for (Relationship relationship : agent.getCurrentRelationships())
+                        currentRelationships = agent.getCurrentRelationships() ;
+			for (int relationshipIndex = (currentRelationships.size() - 1) ; relationshipIndex >= 0 ; 
+                                relationshipIndex-- )
 			{
-				// Avoid checking relationship twice
-				int agentId = agent.getId() ;
-				if (agentId < relationship.getPartnerId(agentId))
-					endRelationship(relationship) ;
+                            relationship = currentRelationships.get(relationshipIndex) ;
+                            // Avoid checking relationship twice
+                            int agentId = agent.getId() ;
+                            if (agentId < relationship.getPartnerId(agentId))
+                                    endRelationship(relationship) ;
 			}
 		}
 
@@ -492,14 +489,111 @@ public class Community {
 		return report ;
 	}
 	
-	private void submitReports(String generateReport, String encounterReport, String clearReport, String screenReport, String populationReport)
+	private void submitRecords(String generateRecord, String encounterRecord, String clearRecord, String screenRecord, String populationRecord)
 	{
-		relationshipReports.add(generateReport) ;
-		//LOGGER.info(encounterReport);
-		encounterReports.add(encounterReport) ;
-		clearReports.add(clearReport) ;
-		screenReports.add(screenReport) ;
-                censusReports.add(populationReport) ;
+		relationshipReport.add(generateRecord) ;
+		//LOGGER.info(encounterRecord);
+		encounterReport.add(encounterRecord) ;
+                encounterScribe.writeRecord(encounterRecord);
+                
+		clearReport.add(clearRecord) ;
+		screenReport.add(screenRecord) ;
+                censusReport.add(populationRecord) ;
 		return ;
 	}
+        
+        /**
+         * Object to gather data and record it to Files
+         */
+        //public Reporter(String simName, ArrayList<String> generateReports, 
+
+        //	ArrayList<String> encounterReports, ArrayList<String> clearReports, ArrayList<String> screenReports)
+        private class Scribe{
+
+            // The number of Community cycles to pass between reports 
+            int outputCycle ;
+
+            String name ;
+
+            String globalFolder = "../output/test/" ;
+            String fileName = ".txt" ;
+
+            // File paths
+            String logFilePath ;
+            String errorFilePath ;
+            String outputFilePath ;
+
+
+            // File objects
+            BufferedWriter fileWriter ;
+            /*
+            File logFile ;
+            File errorFile ;
+            File outputFile ;
+            */
+
+            private Scribe(String name) 
+            {
+                this.name = name ;
+                fileName = name + fileName ;
+                outputFilePath = globalFolder + fileName ;
+                try
+                {
+                    fileWriter = new BufferedWriter(new FileWriter(outputFilePath,true));
+                } //the true will append the new data
+                catch ( Exception e )
+                {
+                    LOGGER.log(Level.SEVERE, e.getLocalizedMessage());
+                    closeFile() ;
+                }
+            }
+
+
+            //outputCycle = 5 ;
+            
+
+            /*
+            logFilePath = globalFolder + simName ;
+            logFile = new File(logFilePath) ;
+
+            errorFilePath = globalFolder + simName ;
+            errorFile = new File(errorFilePath) ;
+            */
+
+        private void writeRecord(String record)
+        {
+            try
+            {
+                fileWriter.write(record);
+                fileWriter.newLine();
+            }//appends the string to the file
+            catch ( Exception e )
+            {
+                LOGGER.log(Level.SEVERE, e.getLocalizedMessage());
+                closeFile() ;
+            }
+
+
+        }
+
+        private void closeFile()
+        {
+            try
+            {
+                fileWriter.close();
+            }
+            catch ( IOException ioe )
+            {
+                LOGGER.log(Level.SEVERE, ioe.getLocalizedMessage());
+            }
+        }
+
+        private String getOutputFilePath()
+        {
+            return outputFilePath ;
+        }
+        
+    }
+
+
 }
