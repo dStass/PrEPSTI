@@ -5,6 +5,7 @@ package reporter ;
 
 
 import java.io.* ;
+
 import java.lang.reflect.*;
 import java.util.ArrayList ;
 import java.util.HashMap ;
@@ -30,18 +31,6 @@ public class Reporter {
 
     // The number of Community cycles to pass between reports 
     protected int outputCycle = 1 ;
-
-    // File paths
-    private String logFilePath ;
-    private String errorFilePath ;
-    private String outputFilePath ;
-
-    private String globalFolder ;
-
-    // File objects
-    File logFile ;
-    File errorFile ;
-    File outputFile ;
 
     // Logger
     static final java.util.logging.Logger LOGGER = java.util.logging.Logger.getLogger("reporter") ;
@@ -352,6 +341,12 @@ public class Reporter {
         //this.clearReports = clearReports ;
         //this.screenReports = screenReports ;
     }
+    
+    public Reporter(String simname, String reportFilePath)
+    {
+        Reader reader = new Reader(simname,reportFilePath) ;
+        input = reader.getFiledReport() ;
+    }
 
 
     /**
@@ -370,14 +365,38 @@ public class Reporter {
 
 
     /**
-     * Object to gather data and record it to Files
+     * Object to read saved File output and feed it to Reporter
      */
-    //public Reporter(String simName, ArrayList<String> generateReports, 
-    
+    private class Reader
+    {
     //	ArrayList<String> encounterReports, ArrayList<String> clearReports, ArrayList<String> screenReports)
-        /**
-        protected Reporter(String simName) 
+        private ArrayList<String> outputArray = new ArrayList<String>() ;
+        private Reader(String simName, String filePath)
         {
+            String record = "" ;
+            while (record != null)
+            {
+                try
+                {
+                    BufferedReader fileReader = new BufferedReader(new FileReader(filePath)) ;
+                    outputArray.add(fileReader.readLine()) ;
+                }
+                catch ( Exception e )
+                {
+                    LOGGER.log(Level.SEVERE, e.getLocalizedMessage());
+                }
+            }
+            if (outputArray.isEmpty())
+                LOGGER.log(Level.SEVERE, "Empty Report from File at {0}", new Object[]{filePath});
+            
+        }
+        
+        private ArrayList<String> getFiledReport()
+        {
+            return outputArray ;
+        }
+    }
+    /*
                 outputCycle = 5 ;
                 globalFolder = "folder/address/here/" ;
 
