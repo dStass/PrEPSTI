@@ -36,7 +36,7 @@ public class Relationship {
     //private int contacts ;
     
     // Probability of breakup() in a given cycle
-    static double breakupProbability ;
+    static double breakupProbability = -1.0 ;
     
     //LOGGER
     static final java.util.logging.Logger LOGGER = java.util.logging.Logger.getLogger("relationship") ;
@@ -131,8 +131,7 @@ public class Relationship {
      *********************************************************************/
     protected boolean breakup() 
     {
-        LOGGER.log(Level.INFO, String.valueOf(breakupProbability) );
-    	if (rand.nextDouble() < breakupProbability)
+    	if (rand.nextDouble() < this.getBreakupProbability())
             {
                 agent0.endRelationship(this) ;  //(agent1.getId()) ;
                 //agent1.leaveRelationship(this) ;  //(agent0.getId()) ;
@@ -142,7 +141,25 @@ public class Relationship {
     	return false;
     }
 
+    /**
+     * Since breakupProbability is static, this getter allows it to be called
+     * from the Relationship base class
+     * @return (double) the probability of a relationship ending in a given cycle
+     */
+    protected double getBreakupProbability()
+    {
+        return breakupProbability ;
+    }
     
+    /**
+     * Runs through the number of sexual contacts, chooses Sites and tracks STI 
+     * transmission
+     * @return (String) report including agentIds, respective Sites, Site infection status, 
+     * and whether transmission occured
+     * @throws NoSuchMethodException
+     * @throws InvocationTargetException
+     * @throws IllegalAccessException 
+     */
     protected String encounter() throws NoSuchMethodException, InvocationTargetException,
     IllegalAccessException
     {
@@ -227,6 +244,11 @@ public class Relationship {
     
     }
     
+    /**
+     * Chooses the number of sexual contacts for a given relationship in a given
+     * cycle. Called by encounter()
+     * @return 
+     */
     private int chooseNbContacts()
     {
     	return rand.nextInt(3) + 1 ;
