@@ -31,5 +31,18 @@ class Casual extends Relationship {
     	return true ;
     }
 
+    /**
+     * Since breakupProbability is static, this getter allows it to be called
+     * from the Relationship base class.
+     * Probability redundant in Casual subclass since breakup always returns true,
+     * But this is for consistency and future-proofing
+     * @return (double) the probability of a relationship ending in a given cycle
+     */
+    protected double getBreakupProbability()
+    {
+        return breakupProbability ;
+    }
+    
+    
 
 }
