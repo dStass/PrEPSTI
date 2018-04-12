@@ -6,6 +6,8 @@ package agent;
 import java.util.logging.Level;
 import site.* ;
 
+import java.lang.reflect.*;
+
 /**
  * @author Michael Walker
  *
@@ -15,12 +17,21 @@ abstract public class MSM extends Agent {
     // The maximum number of relationships an agent may be willing to sustain
     // static int maxRelationships = 20;
     
-    static String[] siteNames = {"Rectum","Penis","Pharynx"} ;
+    // Site name of Rectum
+    static String RECTUM = "Rectum" ;
+    // Site name of Rectum
+    static String PENIS = "Penis" ;
+    // Site name of Rectum
+    static String PHARYNX = "Pharynx" ;
     
-    // Potential infection sites
-    private Rectum rectum ;
-    private Penis penis ;
-    private Pharynx pharynx ;
+    // Potential infection site Rectum
+    private Rectum rectum = new Rectum() ;
+    // Potential infection site Penis
+    private Penis penis = new Penis() ;
+    // Potential infection site Pharynx
+    private Pharynx pharynx = new Pharynx() ;
+    // Array of infection Sites
+    private Site[] sites = {rectum,penis,pharynx} ;
 
     // Whether MSM serosorts, ie match for statusHIV
     private boolean seroSort ;
@@ -37,13 +48,24 @@ abstract public class MSM extends Agent {
     // Whether currently taking PrEP
     private boolean prepStatus ;
 	
-    // Transmission probabilities fromsiteTosite
+    // Transmission probabilities from Penis to Rectum
     static double PENISRECTUM = 0.8 ;
+    // Transmission probabilities from Penis to Pharynx
     static double PENISPHARYNX = 0.7 ;
+    // Transmission probabilities from Rectum to Penis 
     static double RECTUMPENIS = 0.3 ;
+    // Transmission probabilities from Rectum to Pharynx
     static double RECTUMPHARYNX = 0.1 ;
+    // Transmission probabilities in Pharynx to Penis intercourse
     static double PHARYNXPENIS = 0.2 ;
+    // Transmission probabilities in Pharynx to Rectum intercourse
     static double PHARYNXRECTUM = 0.2 ;
+    // Transmission probabilities in Pharynx to Pharynx intercourse (kissing)
+    static double PHARYNXPHARYNX = 0.4 ;
+    // Transmission probabilities in Penis to Penis intercourse (cockfighting)
+    static double PENISPENIS = 0.1 ;
+    // Transmission probabilities in Rectum to Rectum intercourse
+    static double RECTUMRECTUM = 0.2 ;
     
     // How often do MSM on PrEP get screened
     static int SCREENCYCLE = 92 ;
@@ -73,22 +95,17 @@ abstract public class MSM extends Agent {
     public static double getInfectProbability(Agent infectedAgent, Agent clearAgent, int infectionStatus,
     		Site infectedSite, Site clearSite)
     {
-    	double infectProbability = 0.0 ;
-    	if ("penis".equalsIgnoreCase(infectedSite.getSite()))
-    	{
-    		if ("rectum".equalsIgnoreCase(clearSite.getSite())) infectProbability = PENISRECTUM ;
-    		else if ("pharynx".equalsIgnoreCase(clearSite.getSite())) infectProbability = PENISPHARYNX ;
-    	}
-    	else if ("rectum".equalsIgnoreCase(clearSite.getSite())) 
-    	{
-    		if ("penis".equalsIgnoreCase(clearSite.getSite())) infectProbability = RECTUMPENIS ;
-    		else if ("pharynx".equalsIgnoreCase(clearSite.getSite())) infectProbability = RECTUMPHARYNX ;
-    	}
-    	else    // "pharynx" == infectedSite.getSite()
-    	{
-    		if ("penis".equalsIgnoreCase(clearSite.getSite())) infectProbability = PHARYNXPENIS ;
-    		else infectProbability = PHARYNXRECTUM ;    // "rectum" == clearSite.getSite()
-    	}
+    	double infectProbability = -1.0 ;
+        String probabilityString = infectedSite.getSite().toUpperCase() + clearSite.getSite().toUpperCase() ;
+        try
+        {
+            infectProbability = MSM.class.getDeclaredField(probabilityString).getDouble(null) ;
+        }
+        catch ( Exception e )
+        {
+            LOGGER.log(Level.SEVERE, "{0} : {1}", new Object[]{e.getClass().getName(), e.getLocalizedMessage()});
+            return -1.0 ;
+        }
     	return infectProbability ;
     }
     
@@ -141,7 +158,7 @@ abstract public class MSM extends Agent {
     public static Object birthMSM(int startAge)
     {
         Class clazz ;
-    	int choice = RAND.nextInt(TOTAL_ODDS) ;
+        int choice = RAND.nextInt(TOTAL_ODDS) ;
     	if (choice < SAFE_ODDS)
     		clazz = SafeMSM.class ;
         else 
@@ -152,7 +169,7 @@ abstract public class MSM extends Agent {
         }
         catch ( Exception e )
         {
-            LOGGER.log(Level.SEVERE, e.getLocalizedMessage());
+            LOGGER.log(Level.SEVERE, "{0} {1}", new Object[]{e.getClass().getCanonicalName(), clazz.getCanonicalName()});
         }
         return new Object() ;
     }
@@ -202,26 +219,15 @@ abstract public class MSM extends Agent {
             return ;
         }
 
-	/**
-         * Adds Sites rectum, penis, and pharynx
-         * TODO: Delete this and rely on final super()
-         */
-        @Override
-	protected void setSites() {
-		rectum = new Rectum() ;
-		penis = new Penis() ;
-		pharynx = new Pharynx() ;
-		
-		// Assign sites to Sites[] sites[]
-		Site[] sites = {penis,rectum,pharynx} ;
-		setSites(sites) ;
-		return ;
-	}
-	
+    /**
+     * Should generate Site[] and not call Site[] MSM.sites to avoid error/complications
+     * of ensuring that MSM.sites is updated with every call to setSitename().
+     * @return (Site[]) of Sites belonging to this MSM
+     */
     @Override
-    protected String[] getSiteNames()
+    protected Site[] getSites()
     {
-        return siteNames ;
+        return new Site[] {rectum,penis,pharynx} ;
     }
         
     /**
@@ -241,7 +247,7 @@ abstract public class MSM extends Agent {
 	
     protected Site chooseSite(Site site)
     {
-        if (site.getSite().equals("Rectum"))
+        if (site.getSite().equals(RECTUM))
         {
             int index = RAND.nextInt(2) ;
             if (index == 0) return penis ;
@@ -394,8 +400,6 @@ abstract public class MSM extends Agent {
     /**
      * Consent also affected by sero- Sorting and Position and
      * partners disclosure of statusHIV 
-     * TODO: FIXME: Find way to pass relevant partner information to
-     * consent()
      * @param relationshipClazzName
      * @param agent
      * @return 
@@ -403,6 +407,7 @@ abstract public class MSM extends Agent {
     @Override
     public boolean consent(String relationshipClazzName, Agent agent)
     {
+        // Agent superclass has own criteria
         if (! super.consent(relationshipClazzName, agent))
             return false;
         MSM partner = (MSM) agent ;
