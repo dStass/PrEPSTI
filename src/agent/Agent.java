@@ -49,9 +49,6 @@ public abstract class Agent {
     // The maximum number of relationships an agent may be willing to sustain
     //static int MAX_RELATIONSHIPS = 15;
 
-    // Agent subclasses need their own array of Sites e.g. penis, anus, pharynx
-    private Site[] sites ;
-
     // number of relationships willing to maintain at once
     private int promiscuity ;
 
@@ -133,12 +130,7 @@ public abstract class Agent {
             this.agentId = NB_AGENTS_CREATED ;
             NB_AGENTS_CREATED++ ;
             initAge(startAge) ;
-            setSites() ;
-
-            //Check that setSites(Site[]) was properly implemented by agent Subclass 
-            // TODO: Remove this check once Agent.setSites() is properly implemented
-            if (!(sites.length >= 1)) System.err.println("ERROR: Agent subClass.setSites(Site[]) must initialise Sites") ;
-
+            
             initPromiscuity() ;
             initInfidelity() ;
             
@@ -147,6 +139,7 @@ public abstract class Agent {
 
             Class<?> clazz = this.getClass() ;
             agent = clazz.asSubclass(clazz).getSimpleName() ;
+
             return ;
     }
 
@@ -302,70 +295,12 @@ public abstract class Agent {
         return censusFieldNames ;
     }
 
-    /**
-     * Specifies Site.subclass.getSimpleName()
-     * @return 
-     */
-    abstract String[] getSiteNames() ;
-    
-    /**
-     * Adds relevant body Sites to particular subClass of agent, 
-     * then puts in a Site[] to call setSites(Site[])
-     *  e.g. this.mySite = new MySite() ;
-     * Each such Site requires its own getter() and setter(). 
-     * TODO: Use getSiteNames() to dynamically generate in final Method
-     */
-    //abstract void setSites() ;
-
-    /**
-     * Sets Site[] sites, called from setSites()
-     * @param sites
-     */
-    protected void setSites(Site[] sites)
-    {
-            this.sites = sites ;
-            return ;
-    }
-    
-    //TODO: Remove override in MSM.java and make final
-    protected void setSites() // Site[] sites)
-    {
-        String[] siteNames = getSiteNames() ;
-        String siteName ;
-        String setterName ;
-        Method setMethod ;
-        Site newSite ;
-        //sites = new Site[siteNames.length] ;
-        
-        try
-        {
-            Class agentClazz = Class.forName(agent) ;
-            for (int siteIndex = 0 ; siteIndex < siteNames.length ; siteIndex++)
-            {
-                siteName = siteNames[siteIndex] ;
-                setterName = "set" + siteName ;
-                setMethod = agentClazz.getMethod(setterName, Class.forName(siteName)) ;
-                newSite = Class.forName(siteName).asSubclass(Site.class).newInstance() ;
-                setMethod.invoke(this, newSite) ;
-                sites[siteIndex] = newSite ;
-            }
-        }
-        catch ( Exception e )
-        {
-            LOGGER.log(Level.SEVERE, e.getLocalizedMessage());
-        }
-        return ;
-    }
-
-
+   
     /**
      * 
      * @return Site[] sites
      */
-    final public Site[] getSites()
-    {
-            return sites ;
-    }
+    abstract protected Site[] getSites() ;
     
     /**
      * Used when choosing Site for sexual encounter
@@ -410,20 +345,25 @@ public abstract class Agent {
      */
     private String ageEffects()
     {
-            String report = "" ;
-        if ((age > 30))
+        String report = "" ;
+        if (age > 30)
+        {
+            if (age > 65)
             {
-                    if (promiscuity > 0)
-                    {
-                            promiscuity-- ;
-                            report += "promiscuity:" + promiscuity + " " ;
-                    }
-            if (infidelity > 0.0)
-                    {
-                    infidelity *= 0.5 ;
-                        report += "infidelity" + infidelity + " " ;
-                    }
+                report = death() ;
+                return report ;
             }
+            if (promiscuity > 0)
+            {
+                promiscuity-- ;
+                report += "promiscuity:" + promiscuity + " " ;
+            }
+            if (infidelity > 0.0)
+            {
+                infidelity *= 0.5 ;
+                report += "infidelity" + infidelity + " " ;
+            }
+        }
         return report ;
     }
 
@@ -468,17 +408,18 @@ public abstract class Agent {
      */
     public boolean treat()
     {
-            boolean successful = true ;
-            for (Site site : sites)
-            {
-                    if (site.getSymptomatic())
-                    {
-                            successful = (successful && site.treat()) ;
-                    }
-            }
-            if (successful) 
-                clearSymptomatic();
-            return successful ;
+        Site[] sites = getSites() ;
+        boolean successful = true ;
+        for (Site site : sites)
+        {
+                if (site.getSymptomatic())
+                {
+                        successful = (successful && site.treat()) ;
+                }
+        }
+        if (successful) 
+            clearSymptomatic();
+        return successful ;
     }
 
 
@@ -814,21 +755,36 @@ public abstract class Agent {
     }
 
     /**
-     * Randomly choose whether agent dies on this occassion.
-     * Default based on age, uniform probability with cutoff at maxLife
-     * @return true if they die, false otherwise
+     * Calls agent.death() to see if they die and removes them from agents
+     * if so
+     * @param agent
+     * @return true if agent dies and false otherwise
      */
-    public boolean death()
+    public boolean grimReaper()
     {
         // double risk = Math.exp(-age*Math.log(2)/halfLife) ;
         double risk = Math.pow(((MAX_LIFE - age)/((double) MAX_LIFE)),2) ;
         if (RAND.nextDouble() > risk ) 
         {
-            clearRelationships() ;
+            death() ;
             return true ;
         }
-        //LOGGER.log(Level.INFO,"{0} {1}",new Object[]{String.valueOf(risk),String.valueOf(age)});
         return false ;
+    }
+        
+        
+    /**
+     * Make agent die and clear their Relationships
+     * Default based on age, uniform probability with cutoff at maxLife
+     * @return true if they die, false otherwise
+     */
+    public String death()
+    {
+        // FIXME: Should maybe use Reporter.addReportProperty()
+        String report = "death:" + String.valueOf(age) + " " ;
+        report += "death:agentId:" + String.valueOf(agentId) + " ";
+        clearRelationships() ;
+        return report ;
     }
 
     protected void clearRelationships()
