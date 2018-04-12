@@ -47,5 +47,15 @@ public class Monogomous extends Relationship {
     	return rand.nextInt(3) + 1 ;
     }
     
-  
+    /**
+     * Since breakupProbability is static, this getter allows it to be called
+     * from the Relationship base class
+     * @return (double) the probability of a relationship ending in a given cycle
+     */
+    protected double getBreakupProbability()
+    {
+        return breakupProbability ;
+    }
+    
+    
 }
