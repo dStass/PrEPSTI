@@ -1,10 +1,14 @@
 package community;
 
 import agent.* ;
+import java.util.logging.Level;
+
 
 class Casual extends Relationship {
+    // Probability of breakup() in a given cycle.
     static double breakupProbability = 1.0 ;
     
+    // Probability of sexual encounter in a given cycle.
     static double encounterProbability = 1.0 ;
     
 
@@ -28,7 +32,10 @@ class Casual extends Relationship {
     protected boolean breakup() 
     {
     	// Casual Relationship always ends immediately
-    	return true ;
+        for (Agent agent : getAgents())
+            agent.leaveRelationship(this) ;  
+        
+        return true ;
     }
 
     /**
@@ -38,6 +45,7 @@ class Casual extends Relationship {
      * But this is for consistency and future-proofing
      * @return (double) the probability of a relationship ending in a given cycle
      */
+    @Override
     protected double getBreakupProbability()
     {
         return breakupProbability ;
