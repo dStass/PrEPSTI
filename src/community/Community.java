@@ -29,16 +29,13 @@ public class Community {
     private ArrayList<Agent> agents = new ArrayList<Agent>() ;
     
     // Total number of agents, make larger once testing is complete!
-    private int population = 100;
+    private int population = 30000 ;
 
-    // Number of new population members and also average number of deaths per year
+    // Number of new population members and also average number of deaths per cycle
     private int birthRate = 2 ;
 
     // Current number of relationships in the community
     private int nbRelationships = 0; 
-
-    // Maximum number of allowed relationships
-    private int maxRelationships = population ;    //* (population - 1))/2 ;
 
     static Random rand = new Random() ;
 
@@ -67,6 +64,9 @@ public class Community {
 
     public static void main(String[] args)
     {
+        // Record starting time to measure running time
+        long startTime = System.nanoTime() ;
+        
         Community community = new Community() ;
 
         // For generating reports
@@ -84,10 +84,12 @@ public class Community {
 
         community.encounterScribe = community.new Scribe("siteToSiteEncounter") ;
         // simulation of maxCycles cycles
-        int maxCycles = 10 ;
+        int maxCycles = 50 ;
         for (int cycle = 0; cycle < maxCycles; cycle++)
         {	
             cycleString = Integer.toString(cycle) + "," ;
+            
+            LOGGER.log(Level.INFO, "Cycle no. {0}", cycleString);
 
             // update relationships and perform sexual encounters, report them
             relationshipRecord = cycleString + community.generateRelationships();
@@ -116,6 +118,15 @@ public class Community {
             }
         }
         community.encounterScribe.closeFile();
+        
+        long elapsedTime = System.nanoTime() - startTime ;
+        long milliTime = elapsedTime/1000000 ;
+        int seconds = (int) milliTime/1000 ;
+        int minutes = seconds/60 ;
+        System.out.println("population: " + community.population + ", Cycles: " + maxCycles);
+        System.out.println("Elapsed running time: " + milliTime + "millseconds") ;
+        System.out.println("Elapsed running time: " + seconds + "seconds") ;
+        System.out.println("Elapsed running time: " + minutes + "minutes") ;
         EncounterReporter encounterReporter = new EncounterReporter("site to site",community.encounterReport) ;
         EncounterPresenter encounterPresenter = new EncounterPresenter("site to site","site to site", encounterReporter) ;
         //encounterPresenter.plotTransmittingSites(new String[] {"Penis","Rectum","Pharynx"});
@@ -155,7 +166,7 @@ public class Community {
             agentReport += newAgent.getId() + ":" ;
             agentReport += newAgent.getAgent() + " " ;
         }
-        String relationshipRecord = generateRelationships() ;
+        //String relationshipRecord = generateRelationships() ;
         return ;
     }
 
@@ -196,7 +207,7 @@ public class Community {
                             continue ;
 
                     // Tell Agents which type of Relationship is being proposed.
-                        Class<?> relationshipClazz = Relationship.chooseRelationship(agent0, agent1) ;
+                    Class<?> relationshipClazz = Relationship.chooseRelationship(agent0, agent1) ;
                     String relationshipClazzName = relationshipClazz.getSimpleName() ;
 
                     // Argument String[] for Agent.consent 
@@ -207,9 +218,9 @@ public class Community {
                         //Method enterRelationshipMethod = Agent.class.getDeclaredMethod(enterMethodName, Relationship.class ) ;
 
                         Relationship relationship = (Relationship) relationshipClazz.newInstance();
-                        report += relationship.addAgents(agent0, agent1);
                         nbRelationships++ ;
-
+                        report += relationship.addAgents(agent0, agent1);
+                        
                         // These lines now called indirectly from relationship.addAgents() ;
                         //report += enterRelationshipMethod.invoke(agent0, relationship) ;
                         //enterRelationshipMethod.invoke(agent1, relationship) ;
@@ -219,6 +230,8 @@ public class Community {
 
                     }
 		}
+                //LOGGER.log(Level.INFO, "createRelationships {0}", new Object[]{nbRelationships});
+
             }
             catch ( IllegalAccessException iae )
             {
@@ -378,48 +391,54 @@ public class Community {
 	protected String runEncounters()
 	{
             String report = "" ;
+            ArrayList<Relationship> currentRelationships ;
+            int lowerAgentId ;
+            int indexInteger ;
+                    
             // LOGGER.info("nb relationships: " + relationships.size());
             for (Agent agent : agents)
             {
-                    // Might this agent have the lower agentId
-                    // TODO: Improve precision
-                    if (agent.getLowerAgentId() == 0)
+                currentRelationships = agent.getCurrentRelationships();
+
+                //for (int relationshipIndex = 0 ; relationshipIndex < agent.getCurrentRelationships().size() ; relationshipIndex++ )
+                for (Relationship relationship : currentRelationships)
+                {
+                    // WARNING: May cause future problems with hetero couples
+                    // Does agent have lower agentId than partner
+                    //indexInteger = (int) Math.pow(2, relationshipIndex);
+                    // Avoid checking relationship twice by accessing only through the 
+                    // agent with the lower agentId
+                    // TODO: Incorporate this into Agent.Method()
+                    //int agentId = agent.getId() ;
+                    //int partnerId = relationship.getPartnerId(agentId) ;
+                    /*if (partnerId < agentId)
                             continue ;
-
-                    for (Relationship relationship : agent.getCurrentRelationships())
+                    */
+                    //Relationship relationship = currentRelationships.get(relationshipIndex) ;
+                    //if ((indexInteger & lowerAgentId) != indexInteger)
+                    
+                    if (agent != relationship.getLowerIdAgent())
+                        continue ;
+                    try
                     {
-                            // Avoid checking relationship twice by accessing only through the 
-                            // agent with the lower agentId
-                            // TODO: Incorporate this into Agent.Method()
-                            int agentId = agent.getId() ;
-                            int partnerId = relationship.getPartnerId(agentId) ;
-                            if (partnerId < agentId)
-                                    continue ;
-                            try
-                            {
-
-                                    //Agent[] agents = relationship.getAgents() ;
-                                    // TODO: Perhaps replace "agentId0/1" with "agentIds"
-                                    report += "agentId0:" + Integer.toString(agentId) + " " ;
-                                    report += "agentId1:" + Integer.toString(partnerId) + " " ;
-                                    report += relationship.encounter() ;
-                            }
-                            catch (NoSuchMethodException nsme)
-                            {
-                                    LOGGER.info(nsme.getLocalizedMessage());
-                                    report += nsme.getCause(); //  .getMessage() ;
-                            }
-                            catch (InvocationTargetException ite)
-                            {
-                                    LOGGER.info(ite.getLocalizedMessage());
-                                    //report += ite.getMessage() ;
-                            }
-                            catch (IllegalAccessException iae)
-                            {
-                                    LOGGER.info(iae.getLocalizedMessage());
-                                    report += iae.getMessage() ;
-                            }
+                        report += relationship.encounter() ;
                     }
+                    catch (NoSuchMethodException nsme)
+                    {
+                        LOGGER.info(nsme.getLocalizedMessage());
+                        report += nsme.getCause(); //  .getMessage() ;
+                    }
+                    catch (InvocationTargetException ite)
+                    {
+                        LOGGER.info(ite.getLocalizedMessage());
+                        //report += ite.getMessage() ;
+                    }
+                    catch (IllegalAccessException iae)
+                    {
+                        LOGGER.info(iae.getLocalizedMessage());
+                        report += iae.getMessage() ;
+                    }
+                }
             }
             return report ;
 	}
@@ -430,30 +449,31 @@ public class Community {
 	 */
 	protected String clearRelationships() 
 	{
-		String report = "" ;
-                ArrayList<Relationship> currentRelationships ;
-		Relationship relationship ;
-                
-		for (Agent agent : agents)
-		{
-			// Skip agents who can't end relationships
-                        // TODO: Make more precise
-			if (agent.getLowerAgentId() == 0)
-				continue ;
-			
-                        currentRelationships = agent.getCurrentRelationships() ;
-			for (int relationshipIndex = (currentRelationships.size() - 1) ; relationshipIndex >= 0 ; 
-                                relationshipIndex-- )
-			{
-                            relationship = currentRelationships.get(relationshipIndex) ;
-                            // Avoid checking relationship twice
-                            int agentId = agent.getId() ;
-                            if (agentId < relationship.getPartnerId(agentId))
-                                    endRelationship(relationship) ;
-			}
-		}
+            String report = "" ;
+            ArrayList<Relationship> currentRelationships ;
+            Relationship relationship ;
 
-		return report ;
+            for (Agent agent : agents)
+            {
+                // Skip agents who can't end relationships
+                // TODO: Make more precise
+                //if (agent.getLowerAgentId() == 0)
+                  //      continue ;
+
+                currentRelationships = agent.getCurrentRelationships() ;
+                for (int relationshipIndex = (currentRelationships.size() - 1) ; relationshipIndex >= 0 ; 
+                        relationshipIndex-- )
+                {
+                    relationship = currentRelationships.get(relationshipIndex) ;
+                    // Avoid checking relationship twice
+                    //int agentId = agent.getId() ;
+                    if (agent == relationship.getLowerIdAgent())
+                        endRelationship(relationship) ;
+                    //LOGGER.log(Level.INFO, "nbRelationships: {0}", new Object[]{nbRelationships});
+                    
+                }
+            }
+            return report ;
 	}
 
 	/*****************************************************************
@@ -461,9 +481,12 @@ public class Community {
 	 * calls Relationship.del() 
 	 * @param relationship
 	 *****************************************************************/
-	private boolean endRelationship(Relationship relationship) 
+	private String endRelationship(Relationship relationship) 
 	{
-		return relationship.breakup() ;
+            if (relationship.breakup())
+                nbRelationships-- ;
+            
+            return relationship.getReport() ;
 	}
 	
 	/**
