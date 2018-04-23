@@ -26,10 +26,10 @@ import java.util.logging.Logger;
  */
 public abstract class Agent {
     // String representation of Agent subclass
-    private String agent ;
+    final private String agent ;
 
     // Number in Community.population
-    private int agentId ;
+    final private int agentId ;
 
     // Age of Agent
     private int age ;
@@ -45,6 +45,9 @@ public abstract class Agent {
 
     // Probability of screening in a given cycle when symptomatic is false
     static double SCREEN_PROBABILITY = 0.01 ;
+    
+    // Standard String null response 
+    static String NONE = "none" ;
 
     // The maximum number of relationships an agent may be willing to sustain
     //static int MAX_RELATIONSHIPS = 15;
@@ -53,9 +56,11 @@ public abstract class Agent {
     private int promiscuity ;
 
     // probability of choosing each Relationship subclass
-    // odds of Monogomous, Regular and Casual
+    // odds of choosing a Monogomous Relationship, Regular and Casual
     int monogomousOdds = RAND.nextInt(11) ;
+    // odds of choosing a Regular Relationship
     int regularOdds = RAND.nextInt(11 - monogomousOdds) ;
+    // odds of choosing a Casual Relationship
     int casualOdds = 10 - monogomousOdds - regularOdds ;
 
     // probability of cheating on a monogomous spouse
@@ -115,7 +120,6 @@ public abstract class Agent {
     static double getInfectProbability(Agent infectedAgent, Agent clearAgent, int infectionStatus,
     		Site infectedSite, Site clearSite)
     {
-        LOGGER.log(Level.SEVERE, "static getInfectProbability() called from Agent.java");
     	return 0.5 ;
     }
 	
@@ -348,7 +352,9 @@ public abstract class Agent {
         String report = "" ;
         if (age > 30)
         {
-            if (age > 65)
+            // TODO: Re-implement and ensure that Agent.this is removed
+            //from Community.agents
+            if (age > 65 && false)
             {
                 report = death() ;
                 return report ;
@@ -371,7 +377,7 @@ public abstract class Agent {
      * Probabilistically transmits infection to receiving site.
      * @param transmitProbability
      * @param site
-     * @return True if receiving site becomes infected, false otherwise
+     * @return true if receiving site becomes infected, false otherwise
      */
     public boolean receiveInfection(double transmitProbability, Site site)
     {
@@ -383,11 +389,20 @@ public abstract class Agent {
             return false ;
     }
 
+    /**
+     * Whether the Agent is infected and symptomatic at any Site with any STI
+     * @return symptomatic
+     */
     public boolean getSymptomatic()
     {
             return symptomatic ;
     }
 
+    /**
+     * The Agent becomes symptomatic if the newly infected Site
+     * @param site
+     * @return 
+     */
     protected boolean setSymptomatic(Site site)
     {
             return symptomatic = (symptomatic || site.getSymptomatic()) ;
@@ -395,6 +410,8 @@ public abstract class Agent {
 
     /**
      * May be overridden for specific agent subclasses with specific screening behaviours 
+     * @param args (String[]) for compatability with inherited versions which need input
+     * parameters
      * @return Probability of screening when symptomatic is false
      */
     public double getScreenProbability(String[] args)
@@ -523,7 +540,6 @@ public abstract class Agent {
         currentPartnerIds.add(partnerId) ;
         nbRelationships++ ;
 
-
         setAvailable() ;
 
         report = relationship.getReport() ;
@@ -536,8 +552,16 @@ public abstract class Agent {
      */
     public String augmentLowerAgentId()
     {
-            lowerAgentId += 2^(nbRelationships - 1);
-            return Integer.toString(lowerAgentId) ;
+        if (nbRelationships != currentRelationships.size())
+            LOGGER.log(Level.SEVERE, "nbRelationships:{0} not equal to currentRelationships.size():{1}", 
+                    new Object[]{nbRelationships,currentRelationships.size()});
+        
+        int lowerAgentInt = (int) Math.pow(2,(nbRelationships - 1)) ;
+        if ((lowerAgentId & lowerAgentInt) == lowerAgentInt )
+            LOGGER.log(Level.SEVERE, "agentId:{0} already lowerAgentId of Relationship with {3} {1} {2}", 
+                    new Object[]{agentId,lowerAgentId,lowerAgentInt,currentRelationships.get((nbRelationships-1)).getPartnerId(agentId)});
+        lowerAgentId = lowerAgentId ^ lowerAgentInt;
+        return Integer.toString(lowerAgentId) ;
     }
 
     /**
@@ -547,9 +571,45 @@ public abstract class Agent {
      */
     public String diminishLowerAgentId(Relationship relationship)
     {
-            int relationshipIndex = currentRelationships.indexOf(relationship) ;
-            lowerAgentId -= 2^relationshipIndex;
-            return Integer.toString(lowerAgentId) ;
+        int relationshipIndex = currentRelationships.indexOf(relationship) ;
+        if (relationshipIndex < 0)
+        {
+            LOGGER.log(Level.SEVERE, "Agent {0} shares no such Relationship with Agent {1}", 
+                    new Object[]{agentId,relationship.getPartnerId(agentId)});
+            return "No such relationship" ;
+        }
+        int lowerAgentInt = (int) Math.pow(2,relationshipIndex) ;
+        
+        /*if ((lowerAgentId & lowerAgentInt) != lowerAgentInt)
+            LOGGER.log(Level.SEVERE, "agentId:{0} lowerAgentId:{1} lowerAgentInt:{2} nbRelationships:{3}", 
+                    new Object[]{agentId,lowerAgentId,lowerAgentInt,nbRelationships});
+        */
+        
+        // All bits up to and including relationshipIndex
+        int smallerIndexMask = (2 * lowerAgentInt) - 1 ;
+        
+        // Keep only bits less than relationshipIndex
+        int smallerIndex = lowerAgentId & (smallerIndexMask >> 1) ;
+        if (smallerIndex > lowerAgentId)
+            LOGGER.log(Level.SEVERE,"smallerIndex > lowerAgentId, agentId:{0} smallerIndex:{1} lowerAgentId:{2}", 
+                    new Object[]{agentId,smallerIndex,lowerAgentId}) ;
+        
+        // Keep only bits greater than relationshipIndex
+        int greaterIndex = lowerAgentId & ~smallerIndexMask ;
+        if (greaterIndex < 0)
+            LOGGER.log(Level.SEVERE, "agentId:{0} lowerAgentId:{1} smallerIndex:{2} nbRelationships{3}", 
+                    new Object[]{agentId,lowerAgentId,smallerIndex,nbRelationships});
+        
+        // Move those bits one place to the right (smaller)
+        greaterIndex = greaterIndex >> 1 ;
+        
+        // Combine to find new lowerAgentId
+        lowerAgentId = smallerIndex + greaterIndex ;
+        if ((agentId == 0) && false )
+            LOGGER.log(Level.INFO, "agentId:{0} smallerIndex:{1} greaterIndex:{3} lowerAgentInt:{2}", 
+                new Object[]{agentId,smallerIndex,lowerAgentInt,greaterIndex});
+        
+        return Integer.toString(lowerAgentId) ;
     }
 
     public int getLowerAgentId()
@@ -559,13 +619,13 @@ public abstract class Agent {
 
     public void enterRelationship(int agentNb)
     {
-            currentPartnerIds.add(agentNb) ;
+        currentPartnerIds.add(agentNb) ;
 
-            nbRelationships++ ;
+        nbRelationships++ ;
 
-            // Open to more ?
-            setAvailable() ;
-            return ;
+        // Open to more ?
+        setAvailable() ;
+        return ;
     }
 
     /**
@@ -576,16 +636,12 @@ public abstract class Agent {
      */
     public String endRelationship(Relationship relationship)
     { 
-            String report = "ended:" + relationship.getReport() ;
+        String report = "ended:" + relationship.getReport() ;
+        
+        relationship.getPartner(this).leaveRelationship(relationship) ;
+        leaveRelationship(relationship) ;
 
-            diminishLowerAgentId(relationship) ;
-
-            relationship.getPartner(this).leaveRelationship(relationship) ;
-
-
-            leaveRelationship(relationship) ;
-
-    return report ;
+        return report ;
     }
 
     /**
@@ -594,7 +650,7 @@ public abstract class Agent {
      */
     public String declareStatus()
     {
-        return "none" ;
+        return NONE ;
     }
 
     /**
@@ -621,6 +677,7 @@ public abstract class Agent {
      */
     public void leaveRelationship(Relationship relationship)
     {
+        diminishLowerAgentId(relationship) ;
         // Leave specific relationship subclass
         try
         {
@@ -651,9 +708,10 @@ public abstract class Agent {
         int partnerId = relationship.getPartnerId(agentId) ;
         int partnerIndex = currentPartnerIds.indexOf(partnerId) ;
         currentPartnerIds.remove(partnerIndex) ;
-        currentRelationships.remove(relationship) ;
+        int relationshipIndex = currentRelationships.indexOf(relationship) ;
+        currentRelationships.remove(relationshipIndex) ;
         nbRelationships-- ;
-        return ;
+        
     }
 
     //TODO: Clean up leaveRelationshipType(int agentNb)
@@ -787,12 +845,17 @@ public abstract class Agent {
         return report ;
     }
 
+    /**
+     * Removes all Relationships of Agent. Called by death()
+     * TODO: Add code to properly keep track of Community.nbRelationships
+     */
     protected void clearRelationships()
     {
         Relationship relationship ;
         int partnerId ;
+        int startIndex = (nbRelationships - 1) ;
         
-        for (int relationshipIndex = (nbRelationships - 1) ; relationshipIndex >= 0 ; 
+        for (int relationshipIndex = startIndex ; relationshipIndex >= 0 ; 
                 relationshipIndex-- )
         {
             relationship = currentRelationships.get(relationshipIndex) ;
