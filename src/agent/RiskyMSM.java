@@ -30,7 +30,7 @@ public class RiskyMSM extends MSM
     static double ANTIVIRAL_PROBABILITY = 0.9 ;
     
     // The probability of disclosing HIV status
-    static double PROBABILITY_DISCLOSE_HIV = 0.8 ;
+    static double PROBABILITY_DISCLOSE_HIV = 0.4 ;
     
     // The probability of being on PrEP, given negative HIV status
     static double PROBABILITY_PREP = 0.5 ;
