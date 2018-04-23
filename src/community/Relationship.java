@@ -26,7 +26,7 @@ public class Relationship {
     static Random rand = new Random() ;
     
     // TODO: Move condom variables to MSM
-    // Probability of using a condom
+    // Probability of using a condom for couplings with a Site.Penis
     static double CONDOM_USE = 0.5;
     
     // Protective effect of condom
@@ -35,7 +35,7 @@ public class Relationship {
     // Number of sexual contacts per cycle ;
     //private int contacts ;
     
-    // Probability of breakup() in a given cycle
+    // Probability of breakup() in a given cycle. This value chosen for debugging
     static double breakupProbability = -1.0 ;
     
     //LOGGER
@@ -72,7 +72,7 @@ public class Relationship {
     public Relationship(Agent agent0, Agent agent1) {
     	addAgents(agent0, agent1) ;
     	Class<?> clazz = this.getClass() ;
-    	relationship = clazz.asSubclass(clazz).getName() ;
+    	relationship = clazz.asSubclass(clazz).getSimpleName() ;
     }
     
     /**
@@ -83,21 +83,15 @@ public class Relationship {
      */
     final protected String addAgents(Agent agent0, Agent agent1)
     {
-        if (agent0.getId() < agent1.getId())
-        {
-    	this.agent0 = agent0 ;
+        String report = "" ;
+        this.agent0 = agent0 ;
     	this.agent1 = agent1 ;
-        	agent0.augmentLowerAgentId() ;
-    	}
-    	else 
-        {
-    	this.agent1 = agent0 ;
-    	this.agent0 = agent1 ;
-        	agent1.augmentLowerAgentId() ;
-        }
+    	
+        this.agent1.enterRelationship(this) ;
+        report += this.agent0.enterRelationship(this) ;
+        //this.agent0.augmentLowerAgentId() ;
         
-        agent1.enterRelationship(this) ;
-        return agent0.enterRelationship(this) ;
+        return report ;
     }
     
     /**
@@ -125,20 +119,19 @@ public class Relationship {
     }
     
     /*********************************************************************
-     * Probabilistically ends relationship ends on this cycle by choosing a 
+     * Probabilistically ends relationship on this cycle by choosing a 
      * random double between 0.0 and 1.0 
      * @return True if less than breakupProbability, False otherwise 
      *********************************************************************/
-    protected boolean breakup() 
+    protected boolean breakup()
     {
-    	if (rand.nextDouble() < this.getBreakupProbability())
-            {
-                agent0.endRelationship(this) ;  //(agent1.getId()) ;
-                //agent1.leaveRelationship(this) ;  //(agent0.getId()) ;
-                return true ;
-            }
-		
-    	return false;
+        if (rand.nextDouble() < getBreakupProbability()) 
+        {
+            agent0.leaveRelationship(this) ;  
+            agent1.leaveRelationship(this) ;  
+            return true ;
+        }
+    	return false ;
     }
 
     /**
@@ -167,78 +160,82 @@ public class Relationship {
     	int contacts = chooseNbContacts() ;
     	
     	// Initialising Agents and corresponding Sites 
-    	
+    	report += "agentId0:" + Integer.toString(agent0.getId()) + " " ;
+        report += "agentId1:" + Integer.toString(agent1.getId()) + " " ;
     	for (int contact= 0; contact < contacts; contact++)
     	{
-    		//Class<?> agentClazz = agent0.getClass() ; //.asSubclass(agent0.getClass()) ;
-    	
-    		// TODO: Generalise to arbitrary Agent subClasses
-    		//Method siteMethod = MSM.class.getMethod("chooseSites", Agent.class, Agent.class) ;
-			//Site[] sites = (Site[]) siteMethod.invoke(agent0,agent1) ;
-    		Site[] sites = MSM.chooseSites(agent0, agent1) ;
-			Site site0 = sites[0] ;
-			Site site1 = sites[1] ;
-    		int infectStatus0 = site0.getInfectStatus() ;
-	    	int infectStatus1 = site1.getInfectStatus() ;
-    		
-	    	// Update report
-	    	report += "contact:" + Integer.toString(contact) + " " ;
-	    	report += site0.getSite() + ":" + Integer.toString(infectStatus0) + " " ;
-	    	report += site1.getSite() + ":" + Integer.toString(infectStatus1) + " " ;
-	    	// compare Infection status of both sites
-	    	/*
-	    	Infection infection0 = site0.getInfection();
-	    	Infection infection1 = site1.getInfection();
-	    	
-	    	String infectName0 = infection0.getClass().getName(); 
-	    	String infectName1 = infection1.getClass().getName(); 
-	    	*/
-	    			
-	    	// no risk of transmission if both sites have same infectStatus
-	    	//if (infectName0.equals(infectName1))
-	    	if (infectStatus0 == infectStatus1) continue ;	
-	    	
-	    	// Choose whether condom is used, if any Penis Sites
-	    	double infectProbability = 1.0 ;
-	    	if ("Penis".equals(site0.getSite()) || "Penis".equals(site1.getSite()))
-	    	{
-	    		report += "condom:" ;
-	    		if (rand.nextDouble() < CONDOM_USE)
-	    		{
-	    			infectProbability= 1.0 - CONDOM_EFFECT ;
-		    		report += "true " ;
-	    		}
-	    		else report += "false " ;
-	    	}
-	    		
-	    	// call static getInfectProbability
-	    	report += "transmission:" ;
-	    	//TODO: Generalise to other subclasses of Agent
-	    	//Method getInfectionMethod = agentClazz.getMethod("getInfectProbability", Agent.class,
-    			//	Agent.class, int.class, Site.class, Site.class ) ;
-	    	// Method getInfectionMethod = Agent.class.getMethod("getInfectProbability", Agent.class,
-    			//	Agent.class, int.class, Site.class, Site.class ) ;
-	    	if (infectStatus0 != 0)
-	    	{
-	    		infectProbability*= MSM.getInfectProbability(agent0, agent1, infectStatus0, site0, site1) ; 
-	    				//(double) getInfectionMethod.
-	    				//invoke(agent0,agent1,infectStatus0,site0,site1) ;
-	    		
-		    	// Probabilistically transmit infection to site1
-	    		//site1.receive(infectName0,transmit0) ;
-	    		report += Boolean.toString(agent1.receiveInfection(infectProbability,site1)) ;	    	
-	    	}
-	    	else    // agent1 must be infected
-	    	{
-	    		infectProbability*= MSM.getInfectProbability(agent1, agent0, infectStatus1, site1, site0) ;
-            	//infectProbability*= (double) getInfectionMethod.
-	    			//	invoke(agent1,agent0,infectStatus1,site1,site0) ;
-	    		
-		    	// Probabilistically transmit infection to site0
-	    		//site0.receive(infectName0,transmit0) ;
-            	report += Boolean.toString(agent0.receiveInfection(infectProbability,site0)) ;	    	
-	    	}
-	    	report += " " ;
+            //Class<?> agentClazz = agent0.getClass() ; //.asSubclass(agent0.getClass()) ;
+
+            // TODO: Generalise to arbitrary Agent subClasses
+            //Method siteMethod = MSM.class.getMethod("chooseSites", Agent.class, Agent.class) ;
+                    //Site[] sites = (Site[]) siteMethod.invoke(agent0,agent1) ;
+            Site[] sites = MSM.chooseSites(agent0, agent1) ;
+            Site site0 = sites[0] ;
+            Site site1 = sites[1] ;
+            int infectStatus0 = site0.getInfectStatus() ;
+            int infectStatus1 = site1.getInfectStatus() ;
+
+            // Update report
+            report += "contact:" + Integer.toString(contact) + " " ;
+            report += site0.getSite() + ":" + Integer.toString(infectStatus0) + " " ;
+            report += site1.getSite() + ":" + Integer.toString(infectStatus1) + " " ;
+            // compare Infection status of both sites
+            /*
+            Infection infection0 = site0.getInfection();
+            Infection infection1 = site1.getInfection();
+
+            String infectName0 = infection0.getClass().getName(); 
+            String infectName1 = infection1.getClass().getName(); 
+            */
+
+            // no risk of transmission if both sites have same infectStatus
+            //if (infectName0.equals(infectName1))
+            if (infectStatus0 == infectStatus1) continue ;	
+
+            // Choose whether condom is used, if any Penis Sites
+            double infectProbability = 1.0 ;
+            if ("Penis".equals(site0.getSite()) || "Penis".equals(site1.getSite()))
+            {
+                report += "condom:" ;
+                // TODO: Make probability of condom use depend on other Site
+                //HIV status, etc
+                if (rand.nextDouble() < CONDOM_USE)
+                {
+                    infectProbability*= (1.0 - CONDOM_EFFECT) ;
+                    report += "true " ;
+                }
+                else 
+                    report += "false " ;
+            }
+
+            // call static getInfectProbability
+            report += "transmission:" ;
+            //TODO: Generalise to other subclasses of Agent
+            //Method getInfectionMethod = agentClazz.getMethod("getInfectProbability", Agent.class,
+                    //	Agent.class, int.class, Site.class, Site.class ) ;
+            // Method getInfectionMethod = Agent.class.getMethod("getInfectProbability", Agent.class,
+                    //	Agent.class, int.class, Site.class, Site.class ) ;
+            if (infectStatus0 != 0)
+            {
+                infectProbability*= MSM.getInfectProbability(agent0, agent1, infectStatus0, site0, site1) ; 
+                                //(double) getInfectionMethod.
+                                //invoke(agent0,agent1,infectStatus0,site0,site1) ;
+
+                // Probabilistically transmit infection to site1
+                //site1.receive(infectName0,transmit0) ;
+                report += Boolean.toString(agent1.receiveInfection(infectProbability,site1)) ;	    	
+            }
+            else    // agent1 must be infected
+            {
+                infectProbability*= MSM.getInfectProbability(agent1, agent0, infectStatus1, site1, site0) ;
+                //infectProbability*= (double) getInfectionMethod.
+                        //	invoke(agent1,agent0,infectStatus1,site1,site0) ;
+
+                // Probabilistically transmit infection to site0
+                //site0.receive(infectName0,transmit0) ;
+                report += Boolean.toString(agent0.receiveInfection(infectProbability,site0)) ;	    	
+            }
+            report += " " ;
     	}
     	return report ;   	
     
