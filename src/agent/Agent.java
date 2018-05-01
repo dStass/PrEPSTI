@@ -101,6 +101,18 @@ public abstract class Agent {
 
     static final java.util.logging.Logger LOGGER = java.util.logging.Logger.getLogger("agent") ;
 
+    /**
+     * In subclasses the choice of site might depend on the Class of Relationship.
+     * @param agent0
+     * @param agent1
+     * @param relationshipClazzName
+     * @return Probabilistically chosen Site[2] of Sites for sexual contact.
+     */
+    public static Site[] chooseSites(Agent agent0, Agent agent1, String relationshipClazzName)
+    {
+        return chooseSites(agent0, agent1) ;
+    }
+    
     public static Site[] chooseSites(Agent agent0, Agent agent1)
     {
             Site site0 = agent0.chooseSite() ;
@@ -117,17 +129,25 @@ public abstract class Agent {
      * @param clearSite
      * @return probability of infection passing from infectedSite to clearSite
      */
-    static double getInfectProbability(Agent infectedAgent, Agent clearAgent, int infectionStatus,
+    public static double getInfectProbability(Agent infectedAgent, Agent clearAgent, int infectionStatus,
     		Site infectedSite, Site clearSite)
     {
     	return 0.5 ;
     }
 	
+    public static boolean useCondom(Agent agent0, Agent agent1, String relationshipName)
+    {
+        if (agent0.chooseCondom(agent1))
+            return true ;
+        return agent1.chooseCondom(agent0) ;
+    }
+
    
     
     /**
      *  
      * Agent Class  
+     * @param startAge - (int) Age at (sexual) birth
      */
     public Agent(int startAge)
     {
@@ -139,12 +159,11 @@ public abstract class Agent {
             initInfidelity() ;
             
             if (casualOdds < 0)
-                LOGGER.info(String.valueOf(agentId) + " " + String.valueOf(casualOdds)) ;
+                LOGGER.log(Level.INFO, "{0} {1}", new Object[]{String.valueOf(agentId), String.valueOf(casualOdds)}) ;
 
             Class<?> clazz = this.getClass() ;
             agent = clazz.asSubclass(clazz).getSimpleName() ;
 
-            return ;
     }
 
     public int getId()
@@ -237,13 +256,12 @@ public abstract class Agent {
     }
 
     /**
-     * Randomly choose the agent's probability of cheating on a monogomous spouse
+     * Randomly choose the agent's probability of cheating on a monogomous spouse.
      */
     private void initInfidelity()
     {
         int maximum = getMaxRelationships() ;
             infidelity = 0.1 * RAND.nextInt(maximum)/maximum ;
-            return ;
     }
 
     public double getInfidelity()
@@ -354,7 +372,7 @@ public abstract class Agent {
         {
             // TODO: Re-implement and ensure that Agent.this is removed
             //from Community.agents
-            if (age > 65 && false)
+            if (age > 65)
             {
                 report = death() ;
                 return report ;
@@ -364,15 +382,22 @@ public abstract class Agent {
                 promiscuity-- ;
                 report += "promiscuity:" + promiscuity + " " ;
             }
-            if (infidelity > 0.0)
+            //if (infidelity > 0.0)
             {
                 infidelity *= 0.5 ;
-                report += "infidelity" + infidelity + " " ;
+                report += "infidelity:" + infidelity + " " ;
             }
         }
         return report ;
     }
 
+    /**
+     * 
+     * @param partner
+     * @return true if Agent decides to use a condom, false otherwise
+     */
+    abstract protected boolean chooseCondom(Agent partner) ;
+            
     /**
      * Probabilistically transmits infection to receiving site.
      * @param transmitProbability
@@ -399,7 +424,7 @@ public abstract class Agent {
     }
 
     /**
-     * The Agent becomes symptomatic if the newly infected Site
+     * The Agent becomes symptomatic if and only if the newly infected Site is.
      * @param site
      * @return 
      */
@@ -446,7 +471,6 @@ public abstract class Agent {
     protected void clearSymptomatic()
     {
             symptomatic = false ;
-            return ;
     }
 
     protected boolean getInfectedStatus()
@@ -457,7 +481,6 @@ public abstract class Agent {
     protected void setInfectedStatus(boolean infected)
     {
             infectedStatus = infected ;
-            return ;
     }
 
     /**
@@ -497,7 +520,7 @@ public abstract class Agent {
      * @param args
      * @return true to join and false otherwise
      */
-    public boolean joinOrgy(double joinOrgyProbability, Object[] args)
+    final public boolean joinOrgy(double joinOrgyProbability, Object[] args)
     {
         if (inMonogomous)
             if (RAND.nextDouble() > infidelity)
@@ -510,7 +533,7 @@ public abstract class Agent {
     /**
      * Sets the availability according to the number of relationships and participation in 
      * a monogomous relationship
-     * @return
+     * @return (Boolean) available
      */
     protected boolean setAvailable()
     {
@@ -625,7 +648,6 @@ public abstract class Agent {
 
         // Open to more ?
         setAvailable() ;
-        return ;
     }
 
     /**
@@ -634,7 +656,7 @@ public abstract class Agent {
      * @param relationship
      * @return true if relationship left, false otherwise
      */
-    public String endRelationship(Relationship relationship)
+    final private String endRelationship(Relationship relationship)
     { 
         String report = "ended:" + relationship.getReport() ;
         
@@ -664,7 +686,7 @@ public abstract class Agent {
      * @return String[] args of relationshipClazzName and other Properties 
      * relevant to deciding consent()
      */
-    public Object[] consentArgs(String relationshipClazzName, Agent agent) 
+    protected Object[] consentArgs(String relationshipClazzName, Agent agent) 
     {
         Object[] consentArgs = {relationshipClazzName,agent} ;
         return consentArgs ;
@@ -710,6 +732,7 @@ public abstract class Agent {
         currentPartnerIds.remove(partnerIndex) ;
         int relationshipIndex = currentRelationships.indexOf(relationship) ;
         currentRelationships.remove(relationshipIndex) ;
+        Relationship.diminishNbRelationships() ;
         nbRelationships-- ;
         
     }
@@ -722,7 +745,6 @@ public abstract class Agent {
             //lostPartners.add((Object) agentNb) ;
 
             nbRelationships-- ;
-            return ;
     }
 
     public String enterCasual(Relationship relationship)
@@ -737,7 +759,6 @@ public abstract class Agent {
     {
             enterRelationship(agentNb) ;
             casualNumber++ ;
-            return ;
     }
 
     public String enterRegular(Relationship relationship)
@@ -752,7 +773,6 @@ public abstract class Agent {
     {
             enterRelationship(agentNb) ;
             regularNumber++ ;
-            return ;
     }
 
     public String enterMonogomous(Relationship relationship)
@@ -767,49 +787,42 @@ public abstract class Agent {
     {
         enterRelationship(agentNb) ;
         inMonogomous = true ;
-        return ;
     }
 
     public void leaveCasual(Relationship relationship)
     {
         //leaveRelationship(relationship) ;
         casualNumber-- ;
-        return ;
     }
 
     public void leaveCasual(int agentNb)
     {
         leaveCasual(agentNb) ;
         casualNumber-- ;
-        return ;
     }
 
     public void leaveRegular(Relationship relationship)
     {
         //leaveRelationship(relationship) ;
         regularNumber-- ;
-        return ;
     }
 
     private void leaveRegular(int agentNb)
     {
         //leaveRelationship(agentNb) ;
         regularNumber-- ;
-        return ;
     }
 
     public void leaveMonogomous(Relationship relationship)
     {
         //leaveRelationship(relationship) ;
         inMonogomous = false ;
-        return ;
     }
 
     private void leaveMonogomous(int agentNb)
     {
         //leaveRelationship(agentNb) ;
         inMonogomous = false ;
-        return ;
     }
 
     /**
@@ -818,7 +831,7 @@ public abstract class Agent {
      * @param agent
      * @return true if agent dies and false otherwise
      */
-    public boolean grimReaper()
+    final public boolean grimReaper()
     {
         // double risk = Math.exp(-age*Math.log(2)/halfLife) ;
         double risk = Math.pow(((MAX_LIFE - age)/((double) MAX_LIFE)),2) ;
@@ -836,11 +849,12 @@ public abstract class Agent {
      * Default based on age, uniform probability with cutoff at maxLife
      * @return true if they die, false otherwise
      */
-    public String death()
+    final private String death()
     {
         // FIXME: Should maybe use Reporter.addReportProperty()
-        String report = "death:" + String.valueOf(age) + " " ;
-        report += "death:agentId:" + String.valueOf(agentId) + " ";
+        String report = "death:agentId:" + String.valueOf(agentId) + " ";
+        report += "age:" + String.valueOf(age) + " " ;
+        //report += "nbPartners:" + String.valueOf(currentRelationships.size()) + " ";
         clearRelationships() ;
         return report ;
     }
@@ -849,7 +863,7 @@ public abstract class Agent {
      * Removes all Relationships of Agent. Called by death()
      * TODO: Add code to properly keep track of Community.nbRelationships
      */
-    protected void clearRelationships()
+    final private void clearRelationships()
     {
         Relationship relationship ;
         int partnerId ;
@@ -859,10 +873,9 @@ public abstract class Agent {
                 relationshipIndex-- )
         {
             relationship = currentRelationships.get(relationshipIndex) ;
-            Agent agent = relationship.getLowerIdAgent() ;
-            agent.endRelationship(relationship) ;
+            Agent agentLowerId = relationship.getLowerIdAgent() ;
+            agentLowerId.endRelationship(relationship) ;
         }
-        return ;
     }
 	
     /**
