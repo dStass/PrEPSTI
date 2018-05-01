@@ -17,27 +17,21 @@ public class SafeMSM extends MSM{
     // Associated probabilities for the above
     //static double probabilityRequireDiscloseHIV = 0.5 ;
     
-    // The probability of positive HIV status
+    /** Fraction of SafeMSM with positive HIV status. */
     static double PROBABILITY_HIV = 0.02 ;
     
-    // The probability of being on antivirals, given positive HIV status
-    static double ANTIVIRAL_PROBABILITY = 0.9 ;
+    /** Fraction of SafeMSM who disclose HIV status if HIV positive. */
+    static double PROBABILITY_DISCLOSE_POSITIVE_HIV = 0.40 ;
+    /** Fraction of SafeMSM who disclose HIV status if HIV negative. */
+    static double PROBABILITY_DISCLOSE_NEGATIVE_HIV = 0.35 ;
     
-    // The probability of disclosing HIV status
-    static double PROBABILITY_DISCLOSE_HIV = 0.8 ;
-    
-    // The probability of being on PrEP, given negative HIV status
-    static double PROBABILITY_PREP = 0.5 ;
-
-    // The probability of serosorting
-    static double PROBABILITY_SERO_SORT = 0.4 ;
-    // The probability of seropositioning
-    static double PROBABILITY_SERO_POSITION = 0.4 ;
-
-    // probability of joining an orgy if invited
+    /** Probability of joining an orgy if invited. */
     static double JOIN_ORGY_PROBABILITY = 0.1 ;
     
+    /** probability of using condom even when apparently safe (PrEP, TasP, etc) */
+    private double probabilityUseCondom = RAND.nextDouble() ;
     
+    private boolean casualAnalSex ;
     public SafeMSM(int startAge){
         super(startAge) ;
     }
@@ -47,41 +41,50 @@ public class SafeMSM extends MSM{
         return MAX_RELATIONSHIPS ;
     }
     
+    /** Fraction of SafeMSM with positive HIV status. */
     protected double getProbabilityHIV()
     { 
         return PROBABILITY_HIV ;
     }
     
-    protected double getAntiviralProbability()
-    {
-        return ANTIVIRAL_PROBABILITY ;
-    }
     
+    /**
+     * HIV positive MSM are more likely to disclose the statusHIV
+     * @return (Double) probability of disclosing statusHIV
+     */
     protected double getProbabilityDiscloseHIV()
     {
-        return PROBABILITY_DISCLOSE_HIV ;
+        if (getStatusHIV())
+            return PROBABILITY_DISCLOSE_POSITIVE_HIV ;
+        return PROBABILITY_DISCLOSE_NEGATIVE_HIV ;
     }
     
-    protected double getProbabilityPrep()
+    /**
+     * Decides probabilistically whether MSM chooses to use a condom in a given encounter.
+     * Choice is based on properties of msm
+     * @param partner
+     * @return true if condom is to be used, false otherwise
+     */
+    @Override
+    protected boolean chooseCondom(Agent partner) 
     {
-        return PROBABILITY_PREP ;
+        if (getStatusHIV())
+            if (!getAntiViralStatus())
+                return true ;
+        else if (((MSM) partner).getDiscloseStatusHIV())
+            if (((MSM) partner).getStatusHIV())
+                if (!getPrepStatus())
+                    return true ;
+        else    // partner msm does not disclose
+            return true ;
+        return (RAND.nextDouble() < probabilityUseCondom ) ;  //TODO: Should there be subset who always use?
     }
-
     
-    protected double getProbabilitySeroSort()
-    {
-        return PROBABILITY_SERO_SORT ;
-    }
-    
-    protected double getProbabilitySeroPosition()
-    {
-        return PROBABILITY_SERO_POSITION ;
-    }
-
     /**
      * 
      * @return (double) the probability of MSM joining an orgy when invited
      */
+    @Override
     public double getJoinOrgyProbability()
     {
         return JOIN_ORGY_PROBABILITY ;
