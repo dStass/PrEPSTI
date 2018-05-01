@@ -29,7 +29,7 @@ public class Community {
     private ArrayList<Agent> agents = new ArrayList<Agent>() ;
     
     // Total number of agents, make larger once testing is complete!
-    private int population = 30000 ;
+    private int population = 6000 ;
 
     // Number of new population members and also average number of deaths per cycle
     private int birthRate = 2 ;
@@ -37,7 +37,7 @@ public class Community {
     // Current number of relationships in the community
     private int nbRelationships = 0; 
 
-    static Random rand = new Random() ;
+    static Random RAND = new Random() ;
 
     // List of indices in agents of available agents. Repetition indicates promiscuity
     //ArrayList<Integer> availableAgentsIds = new ArrayList<Integer>() ;
@@ -81,10 +81,15 @@ public class Community {
         // String censusReport
 
         String cycleString ;
+        
 
-        community.encounterScribe = community.new Scribe("siteToSiteEncounter") ;
         // simulation of maxCycles cycles
-        int maxCycles = 50 ;
+        int maxCycles = 500 ;
+        String scribeName = "siteToSiteEncounterPopulation" + String.valueOf(community.population) ;
+        scribeName += "Cycles" + String.valueOf(maxCycles) ;
+        community.encounterScribe = community.new Scribe(scribeName) ;
+        
+        System.out.println("population: " + community.population + ", Cycles: " + maxCycles);
         for (int cycle = 0; cycle < maxCycles; cycle++)
         {	
             cycleString = Integer.toString(cycle) + "," ;
@@ -111,10 +116,7 @@ public class Community {
             {
                 year++ ;
                 cyclesModYear = 0 ;
-                for (Agent agent : community.agents)
-                {
-                    agent.ageOneYear() ;
-                }
+                populationRecord += community.ageOneYear() ;
             }
         }
         community.encounterScribe.closeFile();
@@ -167,7 +169,6 @@ public class Community {
             agentReport += newAgent.getAgent() + " " ;
         }
         //String relationshipRecord = generateRelationships() ;
-        return ;
     }
 
         /**
@@ -189,7 +190,7 @@ public class Community {
          * 
          * @return (String) report of Relationships generated
 	 */
-	protected String generateRelationships()
+	private String generateRelationships()
 	{
             String report = "" ;
 
@@ -309,11 +310,27 @@ public class Community {
             return report ;
         }
         
+        private String ageOneYear()
+        {
+            String report = "" ;
+            String agentReport ;
+            int nbAgentRelationships ;
+            for (Agent agent : agents)
+            {
+                nbAgentRelationships = agent.getCurrentRelationships().size() ;
+                agentReport = agent.ageOneYear() ;
+                if (agentReport.contains("death"))
+                    nbRelationships -= nbAgentRelationships ;
+                report += agentReport ;
+            }
+            return report ;
+        }
+        
         /**
          * TODO: Implement generalised getCensusData() in Agent and subtypes
          * @return String giving each Agent and properties of interest to census
          */
-        protected String getCensus()
+        private String getCensus()
         {
             String report = "" ;
             String agentIdString ;
@@ -365,10 +382,11 @@ public class Community {
                 deaths = birthRate ;
             for (int death = 0 ; death < deaths ; death++)
             {
-                int agentInd = rand.nextInt(agents.size()) ;
+                int agentInd = RAND.nextInt(agents.size()) ;
                 Agent agent = agents.get(agentInd) ; 
                 if (agent.grimReaper())
                 {
+                    nbRelationships-= agent.getCurrentRelationships().size() ;
                     agents.remove(agent) ;
                     report = Reporter.addReportProperty("agentId", agent.getId(), report) ;
                     report = Reporter.addReportProperty("age", agent.getAge(), report) ;
@@ -388,7 +406,7 @@ public class Community {
          * @return String report of agentIds in each Relationship and the 
          * description of each sexual contact returned by Relationship.encounter()
          */
-	protected String runEncounters()
+	private String runEncounters()
 	{
             String report = "" ;
             ArrayList<Relationship> currentRelationships ;
@@ -398,10 +416,7 @@ public class Community {
             // LOGGER.info("nb relationships: " + relationships.size());
             for (Agent agent : agents)
             {
-                currentRelationships = agent.getCurrentRelationships();
-
-                //for (int relationshipIndex = 0 ; relationshipIndex < agent.getCurrentRelationships().size() ; relationshipIndex++ )
-                for (Relationship relationship : currentRelationships)
+                for (Relationship relationship : agent.getCurrentRelationships())
                 {
                     // WARNING: May cause future problems with hetero couples
                     // Does agent have lower agentId than partner
@@ -447,7 +462,7 @@ public class Community {
 	 * loop through relationships and probabilistically choose to end them
 	 * @return number of relationships before and after
 	 */
-	protected String clearRelationships() 
+	private String clearRelationships() 
 	{
             String report = "" ;
             ArrayList<Relationship> currentRelationships ;
@@ -455,11 +470,6 @@ public class Community {
 
             for (Agent agent : agents)
             {
-                // Skip agents who can't end relationships
-                // TODO: Make more precise
-                //if (agent.getLowerAgentId() == 0)
-                  //      continue ;
-
                 currentRelationships = agent.getCurrentRelationships() ;
                 for (int relationshipIndex = (currentRelationships.size() - 1) ; relationshipIndex >= 0 ; 
                         relationshipIndex-- )
@@ -484,9 +494,11 @@ public class Community {
 	private String endRelationship(Relationship relationship) 
 	{
             if (relationship.breakup())
+            {
                 nbRelationships-- ;
-            
-            return relationship.getReport() ;
+                return relationship.getReport() ;
+            }
+            return "" ;
 	}
 	
 	/**
@@ -504,7 +516,7 @@ public class Community {
 			{
 				report += "treatment:" + Boolean.toString(agent.treat()) ;
 			}
-			else if (agent.getScreenProbability(new String[] {Integer.toString(cycle)}) < rand.nextDouble()) 
+			else if (agent.getScreenProbability(new String[] {Integer.toString(cycle)}) < RAND.nextDouble()) 
 			{
 				report += "treatment:" + Boolean.toString(agent.treat()) ;
 			}
@@ -522,7 +534,6 @@ public class Community {
 		clearReport.add(clearRecord) ;
 		screenReport.add(screenRecord) ;
                 censusReport.add(populationRecord) ;
-		return ;
 	}
         
         /**
