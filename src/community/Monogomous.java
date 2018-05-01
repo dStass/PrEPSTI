@@ -6,18 +6,24 @@ package community;
 import agent.* ;
 
 import com.sun.media.jfxmedia.logging.Logger;
+import java.util.logging.Level;
 
 /**
  * @author MichaelWalker
  *
  */
 public class Monogomous extends Relationship {
-    static double breakupProbability = 0.1 ;
+    
+    /** The number of current Monogomous Relationships. */
+    static int NB_MONOGOMOUS = 0 ;
+    
+    /** Probability of breakup() in a given cycle. */
+    static double BREAKUP_PROBABILITY = 0.1 ;
     
 
     // Part of how the number of sexual encounters is determined.
     // TODO: Finalise the form of how this is handled
-    static double encounterProbability = 0.6 ;
+    static double ENCOUNTER_PROBABILITY = 0.6 ;
 
 
     // Logger
@@ -27,15 +33,16 @@ public class Monogomous extends Relationship {
      * 
      */
     public Monogomous() {
-            super() ;
+        super() ;
+        NB_MONOGOMOUS++ ;
     }
 
     /**
      * 
      */
     public Monogomous(Agent agent1, Agent agent2) {
-            super(agent1,agent2) ;
-            logger.info("Relationship type " + getRelationship());
+        super(agent1,agent2) ;
+        NB_MONOGOMOUS++ ;
     }
 
     /**
@@ -44,7 +51,7 @@ public class Monogomous extends Relationship {
      */
     protected int chooseNbContacts()
     {
-    	return rand.nextInt(3) + 1 ;
+    	return RAND.nextInt(3) + 1 ;
     }
     
     /**
@@ -52,9 +59,25 @@ public class Monogomous extends Relationship {
      * from the Relationship base class
      * @return (double) the probability of a relationship ending in a given cycle
      */
+    @Override
     protected double getBreakupProbability()
     {
-        return breakupProbability ;
+        return BREAKUP_PROBABILITY ;
+    }
+
+/**
+     * 
+     * @return (int) The current number of Monogomous Relationships.
+     */
+    public int getNbMonogomous()
+    {
+        return NB_MONOGOMOUS ;
+    }
+    
+    
+    protected void diminishNbMonogomous()
+    {
+        NB_MONOGOMOUS-- ;
     }
     
     
