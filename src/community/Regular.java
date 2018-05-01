@@ -2,19 +2,29 @@ package community;
 
 import agent.* ;
 
+import java.util.logging.Level;
+
 
 public class Regular extends Relationship {
-    static double breakupProbability = 0.3 ;
     
-    static double encounterProbability = 0.7 ;
+    /** The number of current Regular Relationships. */
+    static int NB_REGULAR = 0 ;
+    
+    /** Probability of breakup() in a given cycle. */
+    static double BREAKUP_PROBABILITY = 0.3 ;
+    
+    /** Probability of sexual encounter in a given cycle. */
+    static double ENCOUNTER_PROBABILITY = 0.7 ;
     
     public Regular()
     {
         super() ;
+        NB_REGULAR++ ;
     }
 
     public Regular(Agent agent1, Agent agent2) {
-            super(agent1,agent2) ;
+        super(agent1,agent2) ;
+        NB_REGULAR++ ;
     }
 
     /**
@@ -24,8 +34,22 @@ public class Regular extends Relationship {
      */
     protected double getBreakupProbability()
     {
-        return breakupProbability ;
+        return BREAKUP_PROBABILITY ;
+    }
+    
+    /**
+     * 
+     * @return (int) The current number of Regular Relationships.
+     */
+    public int getNbRegular()
+    {
+        return NB_REGULAR ;
     }
     
     
+    protected void diminishNbRegular()
+    {
+        NB_REGULAR-- ;
+    }
+
 }
