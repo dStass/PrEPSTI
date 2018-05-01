@@ -23,20 +23,23 @@ public class Relationship {
     private String relationship ;
     
     // Random number generator
-    static Random rand = new Random() ;
+    static Random RAND = new Random() ;
     
-    // TODO: Move condom variables to MSM
+    /** Current number of relationships in the simulation */
+    static int NB_RELATIONSHIPS = 0; 
+
+    // TODO: Move condom variables to STI
     // Probability of using a condom for couplings with a Site.Penis
     static double CONDOM_USE = 0.5;
     
     // Protective effect of condom
-    static final double CONDOM_EFFECT = 0.9 ;
+    static final double CONDOM_EFFECT = 0.60 ;
     
     // Number of sexual contacts per cycle ;
     //private int contacts ;
     
     // Probability of breakup() in a given cycle. This value chosen for debugging
-    static double breakupProbability = -1.0 ;
+    static double BREAKUP_PROBABILITY = -1.0 ;
     
     //LOGGER
     static final java.util.logging.Logger LOGGER = java.util.logging.Logger.getLogger("relationship") ;
@@ -55,22 +58,32 @@ public class Relationship {
     	int casualOdds = agent0.getCasualOdds() + agent1.getCasualOdds() ;
     	int totalOdds = monogomousOdds + regularOdds + casualOdds ;
     	
-        int choice = rand.nextInt(totalOdds) ;
+        int choice = RAND.nextInt(totalOdds) ;
         if (choice < monogomousOdds)
     		return Monogomous.class ;
     	if (choice < (monogomousOdds + regularOdds))
     		return Regular.class ;
     	return Casual.class ;
     }
+    
+    /**
+     * Decrements NB_RELATIONSHIPS by one. Called by Agent.leaveRelationship().
+     */
+    static public void diminishNbRelationships()
+    {
+        NB_RELATIONSHIPS-- ;
+    }
    
     public Relationship()
     {
+        NB_RELATIONSHIPS++ ;
     	Class<?> clazz = this.getClass() ;
     	relationship = clazz.asSubclass(clazz).getSimpleName() ;
     }
     
     public Relationship(Agent agent0, Agent agent1) {
-    	addAgents(agent0, agent1) ;
+    	NB_RELATIONSHIPS++ ;
+        addAgents(agent0, agent1) ;
     	Class<?> clazz = this.getClass() ;
     	relationship = clazz.asSubclass(clazz).getSimpleName() ;
     }
@@ -99,7 +112,7 @@ public class Relationship {
      * @param agentId
      * @return (int) agentId's partner's Id 
      */
-    public int getPartnerId(int agentId)
+    final public int getPartnerId(int agentId)
     {
     	if (agent0.getId() == agentId)
     		return agent1.getId() ;
@@ -111,7 +124,7 @@ public class Relationship {
      * @param agent - calling Agent
      * @return (Agent) agent's partner 
      */
-    public Agent getPartner(Agent agent)
+    final public Agent getPartner(Agent agent)
     {
     	if (agent0 == agent)
     		return agent1 ;
@@ -125,7 +138,7 @@ public class Relationship {
      *********************************************************************/
     protected boolean breakup()
     {
-        if (rand.nextDouble() < getBreakupProbability()) 
+        if (RAND.nextDouble() < getBreakupProbability()) 
         {
             agent0.leaveRelationship(this) ;  
             agent1.leaveRelationship(this) ;  
@@ -141,19 +154,19 @@ public class Relationship {
      */
     protected double getBreakupProbability()
     {
-        return breakupProbability ;
+        return BREAKUP_PROBABILITY ;
     }
     
     /**
      * Runs through the number of sexual contacts, chooses Sites and tracks STI 
      * transmission
      * @return (String) report including agentIds, respective Sites, Site infection status, 
-     * and whether transmission occured
+     * and whether transmission occurred
      * @throws NoSuchMethodException
      * @throws InvocationTargetException
      * @throws IllegalAccessException 
      */
-    protected String encounter() throws NoSuchMethodException, InvocationTargetException,
+    final protected String encounter() throws NoSuchMethodException, InvocationTargetException,
     IllegalAccessException
     {
     	String report = "" ;
@@ -199,7 +212,8 @@ public class Relationship {
                 report += "condom:" ;
                 // TODO: Make probability of condom use depend on other Site
                 //HIV status, etc
-                if (rand.nextDouble() < CONDOM_USE)
+                //if (rand.nextDouble() < CONDOM_USE)
+                if (Agent.useCondom(agent0, agent1, relationship))
                 {
                     infectProbability*= (1.0 - CONDOM_EFFECT) ;
                     report += "true " ;
@@ -248,9 +262,13 @@ public class Relationship {
      */
     private int chooseNbContacts()
     {
-    	return rand.nextInt(3) + 1 ;
+    	return RAND.nextInt(3) + 1 ;
     }
     
+    /**
+     * 
+     * @return (Agent[2]) The Agents in the relationship.
+     */
     protected Agent[] getAgents()
     {
     	return new Agent[] {agent0,agent1} ;
