@@ -5,22 +5,28 @@ import java.util.logging.Level;
 
 
 class Casual extends Relationship {
-    // Probability of breakup() in a given cycle.
-    static double breakupProbability = 1.0 ;
     
-    // Probability of sexual encounter in a given cycle.
-    static double encounterProbability = 1.0 ;
+    /** The number of current Casual Relationships. */
+    static int NB_CASUAL = 0 ;
+    
+    /** Probability of breakup() in a given cycle. */
+    static double BREAKUP_PROBABILITY = 1.0 ;
+    
+    /** Probability of sexual encounter in a given cycle. */
+    static double ENCOUNTER_PROBABILITY = 1.0 ;
     
 
     protected Casual() 
     {
         super() ;
+        NB_CASUAL++ ;
     }
     
 
     protected Casual(Agent agent1, Agent agent2) 
     {
         super(agent1,agent2) ;
+        NB_CASUAL++ ;
     }
     
 
@@ -29,7 +35,8 @@ class Casual extends Relationship {
      * Casual relationship ends at end of cycle 
      * @return True  
      *********************************************************************/
-    protected boolean breakup() 
+    @Override
+    final protected boolean breakup() 
     {
     	// Casual Relationship always ends immediately
         for (Agent agent : getAgents())
@@ -48,9 +55,22 @@ class Casual extends Relationship {
     @Override
     protected double getBreakupProbability()
     {
-        return breakupProbability ;
+        return BREAKUP_PROBABILITY ;
+    }
+    
+    /**
+     * 
+     * @return (int) The current number of Casual Relationships.
+     */
+    public int getNbCasual()
+    {
+        return NB_CASUAL ;
     }
     
     
+    protected void diminishNbCasual()
+    {
+        NB_CASUAL-- ;
+    }
 
 }
