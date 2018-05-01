@@ -39,10 +39,13 @@ public class STI {
     // Probability of transmission from Pharynx to Pharynx
     static double PHARYNX_PHARYNX = 0.5 ;
     
-    // Is this STI currently causing an infection?
+    /** Probability that condom use will block STI transmission. */
+    static double CONDOM_EFFECT = 0.60 ;
+    
+    /** Whether this STI currently causing an infection. */
     private boolean infectionStatus = false ;
     
-    // Is this STI currently causing symptoms? (false if !infectionStatus)
+    /** Whether this STI currently causing symptoms (false if !infectionStatus). */
     private boolean symptomatic = false ;
     
     /**
@@ -71,76 +74,121 @@ public class STI {
     }
     
     
-    // Probability of Penis infection being symptomatic
+    /**
+     * 
+     * @return  (Double) Probability of Penis infection being symptomatic
+     */
     public double getPenisSymptomatic()
     {
         return PENIS_SYMPTOMATIC ;
     }
     
-    // Probability of Rectum infection being symptomatic
+    /**
+     * 
+     * @return (Double) Probability of Rectum infection being symptomatic
+     */
     public double getRectumSymptomatic()
     {
         return RECTUM_SYMPTOMATIC ;
     }
     
-    // Probability of Pharynx infection being symptomatic
+    /**
+     * 
+     * @return (Double) Probability of Pharynx infection being symptomatic
+     */
     public double getPharynxSymptomatic()
     {
         return PHARYNX_SYMPTOMATIC ;
     }
     
-    // Probability of transmission from Penis to Penis
+    /**
+     * 
+     * @return (Double) Probability of transmission from Penis to Penis
+     */ 
     public double getPenisPenisTransmission()
     {
         return PENIS_PENIS ;
     }
     
-    // Probability of transmission from Penis to Rectum
+    /**
+     * 
+     * @return (Double) Probability of transmission from Penis to Rectum
+     */ 
     public double getPenisRectumTransmission()
     {
         return PENIS_RECTUM ;
     }
     
-    // Probability of transmission from Penis to Pharynx
+    /**
+     * 
+     * @return (Double) Probability of transmission from Penis to Pharynx
+     */ 
     public double getPenisPharynxTransmission()
     {
         return PENIS_PHARYNX ;
     }
     
-    // Probability of transmission from Rectum to Penis
+    /**
+     * 
+     * @return (Double) Probability of transmission from Rectum to Penis
+     */ 
     public double getRectumPenisTransmission()
     {
         return RECTUM_PENIS ;
     }
     
-    // Probability of transmission from Rectum to Rectum
+    /**
+     * 
+     * @return (Double) Probability of transmission from Rectum to Rectum
+     */ 
     public double getRectumRectumTransmission()
     {
         return RECTUM_RECTUM ;
     }
     
-    // Probability of transmission from Rectum to Pharynx
+    /**
+     * 
+     * @return (Double) Probability of transmission from Rectum to Pharynx
+     */ 
     public double getRectumPharynxTransmission()
     {
         return RECTUM_PHARYNX ;
     }
     
-    // Probability of transmission from Pharynx to Penis
+    /**
+     * 
+     * @return (Double) Probability of transmission from Pharynx to Penis
+     */ 
     public double getPharynxPenisTransmission()
     {
         return PHARYNX_PENIS ;
     }
     
-    // Probability of transmission from Pharynx to Rectum
+    /**
+     * 
+     * @return (Double) Probability of transmission from Pharynx to Rectum
+     */
     public double getPharynxRectumTransmission()
     {
         return PHARYNX_RECTUM ;
     }
     
-    // Probability of transmission from Pharynx to Rectum
+    /**
+     * 
+     * @return (Double)  Probability of transmission from Pharynx to Rectum
+     */
     public double getPharynxPharynxTransmission()
     {
         return PHARYNX_PHARYNX ;
+    }
+    
+    /**
+     * 
+     * @return (Double) Probability of condom preventing STI transmission, if used
+     */
+    public double getCondomEffect()
+    {
+        return CONDOM_EFFECT ;
     }
     
     public String getName()
