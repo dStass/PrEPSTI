@@ -446,19 +446,15 @@ public abstract class Agent {
 
     /**
      * Call each site.treat(). If all treatments successful, call clearSymptomatic()
-     * @return true if all sites auccessfully treated, false otherwise
+     * @return true if all sites successfully treated, false otherwise
      */
     public boolean treat()
     {
         Site[] sites = getSites() ;
         boolean successful = true ;
         for (Site site : sites)
-        {
-                if (site.getSymptomatic())
-                {
-                        successful = (successful && site.treat()) ;
-                }
-        }
+            if (site.getSymptomatic())
+                successful = (successful && site.treat()) ;
         if (successful) 
             clearSymptomatic();
         return successful ;
@@ -470,17 +466,17 @@ public abstract class Agent {
      */
     protected void clearSymptomatic()
     {
-            symptomatic = false ;
+        symptomatic = false ;
     }
 
     protected boolean getInfectedStatus()
     {
-            return infectedStatus ;
+        return infectedStatus ;
     }
 
     protected void setInfectedStatus(boolean infected)
     {
-            infectedStatus = infected ;
+        infectedStatus = infected ;
     }
 
     /**
@@ -508,10 +504,8 @@ public abstract class Agent {
     public boolean consent(String relationshipClazzName, Agent partner)
     {
         if (inMonogomous)
-        {
             if (RAND.nextDouble() > infidelity) 
                 return false ;
-        }
         return available ;
     }
     
@@ -535,7 +529,7 @@ public abstract class Agent {
      * a monogomous relationship
      * @return (Boolean) available
      */
-    protected boolean setAvailable()
+    protected boolean findAvailable()
     {
         available = (nbRelationships < promiscuity) ;
         return available ;
@@ -563,7 +557,7 @@ public abstract class Agent {
         currentPartnerIds.add(partnerId) ;
         nbRelationships++ ;
 
-        setAvailable() ;
+        findAvailable() ;
 
         report = relationship.getReport() ;
         return report ;
@@ -637,7 +631,7 @@ public abstract class Agent {
 
     public int getLowerAgentId()
     {
-            return lowerAgentId ;
+        return lowerAgentId ;
     }
 
     public void enterRelationship(int agentNb)
@@ -647,7 +641,7 @@ public abstract class Agent {
         nbRelationships++ ;
 
         // Open to more ?
-        setAvailable() ;
+        findAvailable() ;
     }
 
     /**
