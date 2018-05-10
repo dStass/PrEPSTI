@@ -8,10 +8,14 @@ import reporter.* ;
 
 import org.jfree.chart.* ;
 import org.jfree.chart.ui.ApplicationFrame ;
+import org.jfree.chart.axis.* ;
 import org.jfree.chart.plot.PlotOrientation ;
 import org.jfree.chart.ChartUtils ;
 import org.jfree.data.category.* ;
 import org.jfree.data.general.* ;
+import org.jfree.data.xy.XYDataset; 
+import org.jfree.data.xy.XYSeries ;  
+import org.jfree.data.xy.XYSeriesCollection ;
 
 import java.lang.reflect.* ;
 import java.util.Arrays ;
@@ -72,22 +76,34 @@ public class Presenter {
      * @param scoreName name of quantity on y-axis
      * @param reportName which report are we presenting
      */
-    protected void plotChartDefault(String scoreName, String reportName)
+    protected void plotChart(String scoreName, String reportName)
     {
         // Get full report reportName
         ArrayList<String> reportArray = getReportArray(reportName) ;
         
-        callPlotChartDefault(scoreName, reportArray) ;
+        callPlotChart(scoreName, reportArray) ;
         return ;
     }
     
+    /**
+     * Generates network diagram from data in hashMapArray.
+     * @param xLabel
+     * @param yLabel
+     * @param hashMapArray 
+     */
+    protected void callPlotNetwork(String xLabel, String yLabel, ArrayList<HashMap<Integer,ArrayList<Integer>>> hashMapArray)
+    {
+        int xHub = 0 ;
+        int yHub = 0 ;
+        chart_awt.callPlotNetwork(chartTitle, hashMapArray, yHub, xHub, yLabel, xLabel) ;
+    }
 
     /**
-     * Presents reportArray as a function of time/cycle
+     * Presents reportArray as a function of time/cycle.
      * @param scoreName
      * @param reportArray 
      */
-    protected void callPlotChartDefault(String scoreName, ArrayList<String> reportArray)
+    protected void callPlotChart(String scoreName, ArrayList<String> reportArray)
     {
         // Extract data from reportArray
         parseReportArray(scoreName, reportArray) ;
@@ -148,7 +164,6 @@ public class Presenter {
         
         // Send data to be processed and presented
         chart_awt.callPlotChart(chartTitle,categoryData,scoreData,scoreName,categoryName) ;
-        return ;
     }
     
     protected ArrayList<String> prepareEventsPerCycle(String scoreName, ArrayList<ArrayList<String>> reportArray)
@@ -169,11 +184,14 @@ public class Presenter {
     {
         ArrayList<String> eventsPerCycle = prepareEventsPerCycle(scoreName,reportArray) ;
         
-        callPlotChartDefault(scoreName,eventsPerCycle) ;
-        
-        return ;
+        callPlotChart(scoreName,eventsPerCycle) ;
     }
 
+    public void plotCycleValue(String scoreName, ArrayList<String> reportArray)
+    {
+        callPlotChart(scoreName,reportArray) ;
+    }            
+            
     /**
      * Uses reflect to call Method prepareReportNameReport()
      * @param reportName
@@ -210,8 +228,6 @@ public class Presenter {
         
         categoryData = Reporter.extractAllValues(categoryName, report, categoryIndex) ;
         scoreData = Reporter.extractAllValues(scoreName, report, categoryIndex) ;
-        
-        return ;
     }
 
     /**
@@ -227,7 +243,6 @@ public class Presenter {
             String value = Reporter.extractValue(scoreName,report) ;
             scoreData.add(value) ;
         }
-        return ;
     }
 
     /**
@@ -242,17 +257,60 @@ public class Presenter {
         }
         
         /**
-         * Calls Method plotChart() for plots over time after generating dataset
+         * Invokes plotLineChart() for networks (eg. Agent-to-Agent) after invoking
+         * createHubData() to generate Dataset
+         * @param chartTitle
+         * @param networkData
+         * @param hub
+         * @param hubCycle
+         * @param yLabel
+         * @param xLabel 
+         */
+        private void callPlotNetwork(String chartTitle, ArrayList<HashMap<Integer,ArrayList<Integer>>> networkData, 
+                int hub, int hubCycle, String yLabel, String xLabel)
+        {
+            XYSeriesCollection dataset = createHubDataset(hub, hubCycle, networkData, chartTitle) ;
+            plotLineChart(chartTitle, dataset, yLabel, xLabel) ;
+        }
+
+        /**
+         * Calls Method plotLineChart() for plots over time after generating dataset
          * @param chartTitle
          * @param dataArray
          * @param yLabel 
          */
         private void callPlotChart(String chartTitle, ArrayList<String> dataArray, String yLabel)
         {
-            CategoryDataset dataset = createDataset(dataArray) ;
-            plotChart(chartTitle, dataset, yLabel, "cycle") ;
+            XYSeriesCollection dataset = createXYDataset(dataArray) ;
+            plotLineChart(chartTitle, dataset, yLabel, "cycle") ;
         }
         
+        /**
+         * Creates scatter plot by generating a suitable Dataset from HashMaps in dataArray and feeding it plotScatterPlot().
+         * @param chartTitle
+         * @param dataArray
+         * @param yLabel
+         * @param xLabel 
+         */
+        private void callPlotScatterPlots(String chartTitle, ArrayList<HashMap<Integer,ArrayList<Integer>>> dataArray, String yLabel, String xLabel)
+        {
+            XYSeriesCollection dataset = createScatterPlotDataset(dataArray, chartTitle) ;
+            plotScatterPlot(chartTitle, dataset, yLabel, xLabel) ;
+        }
+       
+        /**
+         * Creates scatter plot by generating a suitable Dataset from dataHashMap and feeding it plotScatterPlot().
+         * @param chartTitle
+         * @param dataHashMap
+         * @param yLabel
+         * @param xLabel 
+         */
+        private void callPlotScatterPlot(String chartTitle, HashMap<Integer,ArrayList<Integer>> dataHashMap, String yLabel, String xLabel)
+        {
+            XYSeriesCollection dataset = createScatterPlotDataset(dataHashMap, chartTitle) ;
+            plotScatterPlot(chartTitle, dataset, yLabel, xLabel) ;
+        }
+       
         /**
          * Calls method plotChart for within-cycle plots after generating dataset
          * @param chartTitle
@@ -264,13 +322,13 @@ public class Presenter {
         private void callPlotChart(String chartTitle, ArrayList<String> categoryArray, ArrayList<String> scoreArray, String yLabel, String xLabel)
         {
             CategoryDataset dataset = createDataset(xLabel, categoryArray, scoreArray) ;
-            plotChart(chartTitle, dataset, yLabel, xLabel) ;
+            plotBarChart(chartTitle, dataset, yLabel, xLabel) ;
         }
         
         private void callPlotChartInteger(String chartTitle, ArrayList<String> categoryArray, ArrayList<Integer> scoreArray, String yLabel, String xLabel)
         {
             CategoryDataset dataset = createDatasetInteger(xLabel, categoryArray, scoreArray) ;
-            plotChart(chartTitle, dataset, yLabel, xLabel) ;
+            plotBarChart(chartTitle, dataset, yLabel, xLabel) ;
         }
         
         /**
@@ -280,18 +338,58 @@ public class Presenter {
          * @param yLabel
          * @param xLabel 
          */
-        private void plotChart(String chartTitle, CategoryDataset dataset, String yLabel, String xLabel)
+        private void plotBarChart(String chartTitle, CategoryDataset dataset, String yLabel, String xLabel)
         {
             JFreeChart barChart = ChartFactory.createBarChart(chartTitle,xLabel,
                 yLabel,dataset,PlotOrientation.VERTICAL,true, true, false);
+            
+            //barChart.getXYPlot().getDomainAxis().set.setTickUnit(new NumberTickUnit(dataset.getColumnCount()/20)) ;
             saveChart(barChart,chartTitle) ;
             displayChart(barChart) ;
+            
+        }
+        
+        private void plotScatterPlot(String chartTitle, XYDataset dataset, String yLabel, String xLabel)
+        {
+            JFreeChart scatterPlot = ChartFactory.createScatterPlot(xLabel, xLabel, xLabel, dataset, PlotOrientation.HORIZONTAL,true,true,false) ;
+            //JFreeChart scatterPlot = ChartFactory.createScatterPlot(xLabel, xLabel, xLabel, dataset, PlotOrientation.HORIZONTAL, rootPaneCheckingEnabled, rootPaneCheckingEnabled, rootPaneCheckingEnabled)
+            
+            NumberAxis rangeAxis = (NumberAxis) scatterPlot.getXYPlot().getRangeAxis() ;
+            rangeAxis.setTickUnit(new NumberTickUnit(1)) ;
+            saveChart(scatterPlot,chartTitle) ;
+            displayChart(scatterPlot) ;
+            
+        }
+        
+        /**
+         * Generates plot of dataset
+         * @param chartTitle
+         * @param dataset
+         * @param yLabel
+         * @param xLabel 
+         */
+        private void plotLineChart(String chartTitle, XYDataset dataset, String yLabel, String xLabel)
+        {
+            JFreeChart lineChart = ChartFactory.createXYLineChart(applicationTitle,xLabel,
+                yLabel,dataset,PlotOrientation.VERTICAL,true, true, false);
+            
+            NumberAxis domainAxis = (NumberAxis) lineChart.getXYPlot().getDomainAxis() ;
+            domainAxis.setTickUnit(new NumberTickUnit(dataset.getItemCount(0)/20)) ;
+            
+            if (int.class.isInstance(dataset.getX(0,0)))
+            {
+                NumberAxis rangeAxis = (NumberAxis) lineChart.getXYPlot().getRangeAxis() ;
+                rangeAxis.setTickUnit(new NumberTickUnit(1)) ;
+            }
+            saveChart(lineChart,chartTitle) ;
+            displayChart(lineChart) ;
             
         }
         
         private void displayChart(JFreeChart barChart)
         {
             ChartPanel chartPanel = new ChartPanel( barChart );        
+            //chartPanel.setPreferredSize(new java.awt.Dimension( 1120 , 367 ) );        
             chartPanel.setPreferredSize(new java.awt.Dimension( 560 , 367 ) );        
             setContentPane( chartPanel ); 
             pack() ;
@@ -372,25 +470,140 @@ public class Presenter {
          * @param scoreData
          * @return CategoryDataset of score over cycle
          */
-        private CategoryDataset createDataset(ArrayList<String> scoreData)
+        private XYSeriesCollection createXYDataset(ArrayList<String> scoreData)
         {
-            DefaultCategoryDataset categoryDataset = new DefaultCategoryDataset() ;
+            XYSeries xySeries = new XYSeries(applicationTitle) ;
             // ArrayList<String> categoryData = data.get(0) ;
             // ArrayList<String> scoreData = data.get(1) ;
             
-            String categoryValue ;
-            int scoreValue ;
+            Number scoreValue ;
+            int dataSize = scoreData.size() ;
             
-            for (int index = 0 ; index < scoreData.size() ; index++ )
+            for (int index = 0 ; index < dataSize; index++ )
             {
-                categoryValue = Integer.toString(index) ;
-                scoreValue = Integer.valueOf(scoreData.get(index)) ;
-                categoryDataset.addValue( scoreValue, "cycle", categoryValue ) ;
+                String scoreString = scoreData.get(index) ;
+                if (int.class.isInstance(scoreString)) 
+                    scoreValue = Integer.valueOf(scoreString) ;
+                else
+                    scoreValue = Double.valueOf(scoreString) ;
+                xySeries.add(1 + index, scoreValue, false);
             }
-            return categoryDataset ;
+            return new XYSeriesCollection(xySeries) ;
         }
         
+        /**
+         * Generates Dataset suitable for scatter plots on XYPlot from an ArrayList<HashMap>.
+         * Suitable for plots over multiple cycles.
+         * @param hashMapArrayList
+         * @param plotTitle
+         * @return 
+         */
+        private XYSeriesCollection createScatterPlotDataset(ArrayList<HashMap<Integer,ArrayList<Integer>>> hashMapArrayList, 
+                String plotTitle)
+        {
+            XYSeriesCollection scatterPlotDataset = new XYSeriesCollection() ;
+            String seriesTitle ;
+            HashMap<Integer,ArrayList<Integer>> hashMap ;
+                
+            for (int index = 0 ; index < hashMapArrayList.size() ; index++ )
+            {
+                seriesTitle = plotTitle + "_" + String.valueOf(index);
+                hashMap = hashMapArrayList.get(index);
+                scatterPlotDataset.addSeries(createScatterPlotSeries(hashMap,seriesTitle));
+            }
+            return scatterPlotDataset ;
+        }
         
+        /**
+         * Generates Dataset suitable for scatter plots on XYPlot from single HashMap.
+         * Suitable for plots with a single cycle.
+         * @param agentToAgentHashMap
+         * @param plotTitle
+         * @return (XYSeriesCollection) 
+         */
+        private XYSeriesCollection createScatterPlotDataset(HashMap<Integer,ArrayList<Integer>> agentToAgentHashMap, String plotTitle)
+        {
+            return new XYSeriesCollection(createScatterPlotSeries(agentToAgentHashMap,plotTitle)) ;
+        }
+        
+        /**
+         * 
+         * @param agentToAgentHashMap
+         * @param seriesTitle
+         * @return (XYSeries) with entires suitable for XYPlot.
+         */
+        private XYSeries createScatterPlotSeries(HashMap<Integer,ArrayList<Integer>> agentToAgentHashMap, String seriesTitle)
+        {
+            XYSeries scatterPlotDataset = new XYSeries(seriesTitle) ;
+            for (int positiveAgent : agentToAgentHashMap.keySet())
+                for (int negativeAgent : agentToAgentHashMap.get(positiveAgent))
+                    scatterPlotDataset.add(positiveAgent, negativeAgent) ;
+            return scatterPlotDataset ;
+        }
+        
+        private XYSeriesCollection createHubDataset(int hubId, int hubCycle, ArrayList<HashMap<Integer,ArrayList<Integer>>> agentToAgentArray, String hubTitle)
+        {
+            XYSeries hubSeries = new XYSeries(hubTitle) ;
+            for (int nodeCycle = hubId + 1; nodeCycle < agentToAgentArray.size(); nodeCycle++ )
+            {
+                hubSeries = generateHubCycle(hubId, hubCycle, agentToAgentArray.get(nodeCycle), nodeCycle, hubSeries, hubTitle) ;
+            }
+            return new XYSeriesCollection(hubSeries) ;
+        }
+        
+        /**
+         * 
+         * @param hubId
+         * @param hubCycle
+         * @param hubHashMap
+         * @param nodeCycle
+         * @return (XYSeries) with additional nodes showing transmissions in cycle nodeCycle from Agent hubId infected in cycle hubCycle.
+         */
+        private XYSeries generateHubCycle(int hubId, int hubCycle, HashMap<Integer,ArrayList<Integer>> hubHashMap, int nodeCycle, String hubTitle)
+        {
+            XYSeries hubSeries = new XYSeries(hubTitle) ;
+            return generateHubCycle(hubId, hubCycle, hubHashMap, nodeCycle, hubSeries, hubTitle) ;
+        }
+
+       /**
+         * 
+         * @param hubId
+         * @param hubCycle
+         * @param hubHashMap
+         * @param nodeCycle
+         * @param hubSeries (XYSeries) to be added to
+         * @return (XYSeries) with additional nodes showing transmissions in cycle nodeCycle from Agent hubId infected in cycle hubCycle.
+         */
+        private XYSeries generateHubCycle(int hubId, int hubCycle, HashMap<Integer,ArrayList<Integer>> hubHashMap, int nodeCycle, 
+                XYSeries hubSeries, String hubTitle)
+        {
+            //XYSeries hubSeries = new XYSeries("Infections by agentId " + String.valueOf(hubId)) ;
+            //hubSeries.add(hubId, hubCycle) ;
+            int[] hub = {hubId, hubCycle} ;
+            int[] node = new int[2];
+            node[1] = nodeCycle ;
+            for (int nodeId : hubHashMap.get(hubId))
+            {
+                node[0] = nodeId ;
+                hubSeries = hubEntry(hub,node,hubSeries) ;
+            }
+
+            return hubSeries ;
+        }
+        
+        /**
+         * Adds to xySeries the lines needed to add a node to a hub and be 
+         * ready to add next node
+         * @param hub
+         * @param node
+         * @param xySeries 
+         */
+        private XYSeries hubEntry(int[] hub, int[] node, XYSeries xySeries)
+        {
+            xySeries.add(node[0], node[1]);
+            xySeries.add(hub[0], hub[1]);
+            return xySeries ;
+        }
     }
     
 }
