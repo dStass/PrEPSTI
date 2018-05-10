@@ -44,18 +44,33 @@ public class ScreeningPresenter extends Presenter {
         this.reporter = reporter ;
     }
 
-    
+    /**
+     * Plots the population prevalence of STI over time (cycles).
+     */
     public void plotPrevalence()
     {
         ArrayList<String> prevalenceReport = reporter.preparePrevalenceReport() ;
         
-        plotCycleValue("Prevalence", prevalenceReport) ;
+        plotCycleValue("prevalence", prevalenceReport) ;
     }
     
+    /**
+     * Plots the population prevalence of symptomatic STI over time (cycles).
+     */
     public void plotSymptomPrevalence()
     {
-        ArrayList<String> symptomaticReport = reporter.prepareSymptomPrevalenceReport() ;
+        ArrayList<String> symptomaticReport = reporter.preparePrevalenceReport() ;
         
-        plotCycleValue("Symptom Prevalence", symptomaticReport) ;
+        plotCycleValue("symptomatic", symptomaticReport) ;
     }
+    
+    /**
+     * Plots the proportion of Agents with an STI that are symptomatic over time (cycles).
+     */
+    public void plotProportionSymptomatic()
+    {
+        ArrayList<String> symptomaticReport = reporter.preparePrevalenceReport() ;
+        plotCycleValue("proportion", symptomaticReport) ;
+    }
+    
 }
