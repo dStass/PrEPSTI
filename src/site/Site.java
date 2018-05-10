@@ -13,12 +13,12 @@ public class Site {
     // Name of subClass of Site
     final private String site ;
 
-    static Random rand = new Random() ;
+    static Random RAND = new Random() ;
 
     // Array of available infection status'
-    static String[] states = new String[] {"clear","gonorrhoea"} ;
+    static String[] STATES = new String[] {"clear","gonorrhoea"} ;
 
-    // infection indices given by log_2 of pure infectStatus
+    /** Infection indices given by log_2 of pure infectStatus. */
     static int GONORRHOEA = 0 ;
     //static int SYPHILIS = 1 ;
     //static int CHLAMYDIA = 2 ;
@@ -26,8 +26,8 @@ public class Site {
     // Initial infection, possibly NoInfection
 	// TODO: Implement Infection class instead of 0,1 infectStatus
     //private Infection infection ;
-    private int infectStatus ; 
-    private boolean symptomatic ;
+    private int infectedStatus = 0 ; 
+    private boolean symptomatic = false ;
     
     
     // Constants that vary according to Site subclass
@@ -52,19 +52,21 @@ public class Site {
      */
     public Site() 
     {
-        initialiseInfection() ;
+        //initialiseInfection() ;    //TODO: Reinstate when details of multiple
+        // STIs are sorted out.
         Class<?> clazz = this.getClass() ;
         site = clazz.asSubclass(clazz).getSimpleName() ;
     }
 
     /**
      * Called once to initialise infection status.
+     * TODO: May change back to private when details of multiple STIs are worked out.
      * @return true if site initially infected, false otherwise
      */
-    private boolean initialiseInfection()
+    public boolean initialiseInfection()
     {
-        infectStatus = 0 ;
-        symptomatic = false ;
+        //infectedStatus = 0 ;
+        //symptomatic = false ;
 
         // Decide initial infection status
         return receiveInfection(INITIAL) ;
@@ -81,9 +83,9 @@ public class Site {
 
     public boolean receiveInfection(double transmitProbability)
     {
-        if (rand.nextDouble() < transmitProbability )
+        if (RAND.nextDouble() < transmitProbability )
         {
-            infectStatus = 1 ;
+            infectedStatus = 1 ;
             chooseSymptomatic() ;
             return true ;
         }
@@ -92,7 +94,7 @@ public class Site {
 
     private boolean chooseSymptomatic()
     {
-        double probability = rand.nextDouble() ;
+        double probability = RAND.nextDouble() ;
         symptomatic = (probability < getSymptomaticProbability()) ;
         return symptomatic ;
     }
@@ -112,10 +114,10 @@ public class Site {
      */
     public boolean treat()
     {
-            if (rand.nextDouble() < TREATMENT_PROBABILITY )   //getTreatmentProbability() )
+            if (RAND.nextDouble() < TREATMENT_PROBABILITY )   //getTreatmentProbability() )
             {
-                    clearInfection() ;
-                    return true ;
+                clearInfection() ;
+                return true ;
             }
             return false ;
     }
@@ -129,15 +131,15 @@ public class Site {
         return TREATMENT_PROBABILITY ;
     }
 
-    private void clearInfection()
+    public void clearInfection()
     {
-        infectStatus = 0 ;
+        infectedStatus = 0 ;
         symptomatic = false ;
     }
 
-    public int getInfectStatus()
+    public int getInfectedStatus()
     {
-        return infectStatus ;
+        return infectedStatus ;
     }
 
     public boolean getSymptomatic()
