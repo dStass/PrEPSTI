@@ -90,9 +90,12 @@ public abstract class Agent {
     // current availability for a new relationship
     private boolean available = true ;
 
-    // infection and symptomatic status' , respectively
-    private boolean infectedStatus ;
-    private boolean symptomatic ;
+    /** Whether the Agent is infected with an STI of interest. */
+    private boolean infectedStatus = false ;
+    /** Whether any Site of the Agent is showing symptoms of the STI.
+     * Should be false if infecteStatus is false.
+     */
+    private boolean symptomatic = false ;
     
     // names of fields of interest to the census.
     private String[] censusFieldNames = {"agentId","age","agent","infectedStatus",
@@ -181,8 +184,8 @@ public abstract class Agent {
     {
         if (startAge == -1) // Choose random age from 16 to 65
             age = RAND.nextInt(50) + 16 ;
-        else if (startAge == 0) // Choose random age from 16 to 20, reaching sexual maturity
-            age = RAND.nextInt(5) + 16 ;
+        else if (startAge == 0) // Choose random age from 16 to 25, reaching sexual maturity
+            age = RAND.nextInt(10) + 16 ;
         else
             age = startAge ;
         return age ;
@@ -228,6 +231,7 @@ public abstract class Agent {
      * @return (int) the number of orgies in a community per cycle
      */
     abstract public int getOrgyNumber() ;
+    
     /**
      * 
      * @return (int) number of Agents invited to join any given orgy
@@ -408,8 +412,9 @@ public abstract class Agent {
     {
             if (site.receiveInfection(transmitProbability))
             {
-                    setSymptomatic(site) ;
-                    return true ;
+                infectedStatus = true ;
+                setSymptomatic(site) ;
+                return true ;
             }
             return false ;
     }
@@ -435,7 +440,7 @@ public abstract class Agent {
 
     /**
      * May be overridden for specific agent subclasses with specific screening behaviours 
-     * @param args (String[]) for compatability with inherited versions which need input
+     * @param args (Object[]) for compatability with inherited versions which need input
      * parameters
      * @return Probability of screening when symptomatic is false
      */
@@ -453,23 +458,32 @@ public abstract class Agent {
         Site[] sites = getSites() ;
         boolean successful = true ;
         for (Site site : sites)
-            if (site.getSymptomatic())
+            if ((site.getInfectedStatus()!=0))
                 successful = (successful && site.treat()) ;
         if (successful) 
+            infectedStatus = false ;
             clearSymptomatic();
         return successful ;
     }
 
-
     /**
-     * Set symptomatic to false. Called only when all sites have been successfully treated
+     * Set symptomatic to false. Called only when all sites have been successfully treated.
      */
     protected void clearSymptomatic()
     {
         symptomatic = false ;
     }
+    
+    protected void clearInfection()
+    {
+        infectedStatus = false ;
+        symptomatic = false ;
+        Site[] sites = getSites() ;
+        for (Site site : sites)
+            site.clearInfection() ;
+    }
 
-    protected boolean getInfectedStatus()
+    public boolean getInfectedStatus()
     {
         return infectedStatus ;
     }
@@ -881,4 +895,14 @@ public abstract class Agent {
             return agent ;
     }
 
+    
+    public void checkInfectedStatus()
+    {
+        Site[] sites = getSites() ;
+        String siteReport = "" ;
+        for (Site site : sites)
+            siteReport += site.getSite() + ":" + site.getInfectedStatus() + " " ;
+        LOGGER.log(Level.INFO, "Agent:{0} {1}", new Object[]{getInfectedStatus(),siteReport});
+    }
+    
 }
