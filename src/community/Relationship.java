@@ -19,11 +19,18 @@ public class Relationship {
     private Agent agent0 ;	
     private Agent agent1 ;
     
-    // To identify relationship subclass, see constructor
+    /** Simple name of relationship subclass (see constructor). */
     private String relationship ;
     
-    // Random number generator
+    /** Random number generator. */
     static Random RAND = new Random() ;
+    
+    /** Site name of Rectum */
+    static String RECTUM = "Rectum" ;
+    /** Site name of Rectum */
+    static String PENIS = "Penis" ;
+    /** Site name of Rectum */
+    static String PHARYNX = "Pharynx" ;
     
     /** Current number of relationships in the simulation */
     static int NB_RELATIONSHIPS = 0; 
@@ -170,11 +177,17 @@ public class Relationship {
     IllegalAccessException
     {
     	String report = "" ;
+        double infectProbability ;
+            
     	int contacts = chooseNbContacts() ;
-    	
-    	// Initialising Agents and corresponding Sites 
+    
+        // Initialising Agents and corresponding Sites 
     	report += "agentId0:" + Integer.toString(agent0.getId()) + " " ;
         report += "agentId1:" + Integer.toString(agent1.getId()) + " " ;
+        
+        if ((!agent0.getInfectedStatus()) && (!agent1.getInfectedStatus()))
+            return report ;
+        
     	for (int contact= 0; contact < contacts; contact++)
     	{
             //Class<?> agentClazz = agent0.getClass() ; //.asSubclass(agent0.getClass()) ;
@@ -185,8 +198,8 @@ public class Relationship {
             Site[] sites = MSM.chooseSites(agent0, agent1) ;
             Site site0 = sites[0] ;
             Site site1 = sites[1] ;
-            int infectStatus0 = site0.getInfectStatus() ;
-            int infectStatus1 = site1.getInfectStatus() ;
+            int infectStatus0 = site0.getInfectedStatus() ;
+            int infectStatus1 = site1.getInfectedStatus() ;
 
             // Update report
             report += "contact:" + Integer.toString(contact) + " " ;
@@ -200,14 +213,15 @@ public class Relationship {
             String infectName0 = infection0.getClass().getName(); 
             String infectName1 = infection1.getClass().getName(); 
             */
-
+        
             // no risk of transmission if both sites have same infectStatus
-            //if (infectName0.equals(infectName1))
-            if (infectStatus0 == infectStatus1) continue ;	
+            if (infectStatus0 == infectStatus1) 
+                continue ;	
 
             // Choose whether condom is used, if any Penis Sites
-            double infectProbability = 1.0 ;
-            if ("Penis".equals(site0.getSite()) || "Penis".equals(site1.getSite()))
+            infectProbability = 1.0;
+            if ((PENIS.equals(site0.getSite()) && (RECTUM.equals(site1.getSite()))) 
+                    || (PENIS.equals(site1.getSite())&& RECTUM.equals(site0.getSite())))
             {
                 report += "condom:" ;
                 // TODO: Make probability of condom use depend on other Site
@@ -237,7 +251,8 @@ public class Relationship {
 
                 // Probabilistically transmit infection to site1
                 //site1.receive(infectName0,transmit0) ;
-                report += Boolean.toString(agent1.receiveInfection(infectProbability,site1)) ;	    	
+                report += Boolean.toString(agent1.receiveInfection(infectProbability,site1)) ;	   
+                report += " " ; 	
             }
             else    // agent1 must be infected
             {
@@ -248,10 +263,10 @@ public class Relationship {
                 // Probabilistically transmit infection to site0
                 //site0.receive(infectName0,transmit0) ;
                 report += Boolean.toString(agent0.receiveInfection(infectProbability,site0)) ;	    	
+                report += " " ;
             }
-            report += " " ;
     	}
-    	return report ;   	
+        return report ;   	
     
     }
     
