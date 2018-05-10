@@ -63,7 +63,7 @@ abstract public class MSM extends Agent {
     /** Given seroSort or seroPosition, whether being on antiviral is sufficient. */
     private boolean acceptAntiViral ;
 
-    /** Status' for HIV infection, antiviral treatment if infected. */
+    /** Status for HIV infection. */
     private boolean statusHIV ;
     /** Whether currently being treated with antiretrovial medication. */
     private boolean antiViralStatus ;
@@ -138,10 +138,10 @@ abstract public class MSM extends Agent {
      * if required. If so, Penis of positive statusHIV msm is never chosen if 
      * couple is serodiscordant. 
      * Also check if either MSM refrains from anal intercourse in Casual Relationships.
-     * @param msm0
-     * @param msm1
+     * @param agent0
+     * @param agent1
      * @param relationshipClazzName
-     * @return 
+     * @return (Site[]) Sites of sexual contact for agent0, agent1, respectively.
      */
     public static Site[] chooseSites(Agent agent0, Agent agent1)    //, String relationshipClazzName)
     {
@@ -156,7 +156,7 @@ abstract public class MSM extends Agent {
      * @param msm0
      * @param msm1
      * @param relationshipClazzName
-     * @return 
+     * @return (Site[]) Sites of sexual contact for msm0, msm1, respectively.
      */
     public static Site[] chooseSites(MSM msm0, MSM msm1)    //, String relationshipClazzName)
     {
@@ -195,9 +195,9 @@ abstract public class MSM extends Agent {
     /**
      * Choose whether MSM is RiskyMSM or SafeMSM
      * @startAge - age of MSM at sexual 'birth'.
-     * @return Class - one of subclass RiskyMSM or SafeMSM
+     * @return - one of subclass RiskyMSM or SafeMSM
      */
-    public static Object birthMSM(int startAge)
+    public static MSM birthMSM(int startAge)
     {
         Class clazz ;
         int choice = RAND.nextInt(TOTAL_ODDS) ;
@@ -207,62 +207,85 @@ abstract public class MSM extends Agent {
             clazz = RiskyMSM.class ;
         try
         {
-            return clazz.getConstructor(int.class).newInstance(startAge);
+            return (MSM) clazz.getConstructor(int.class).newInstance(startAge);
         }
         catch ( Exception e )
         {
             LOGGER.log(Level.SEVERE, "{0} {1}", new Object[]{e.getClass().getCanonicalName(), clazz.getCanonicalName()});
         }
-        return new Object() ;
+        return new SafeMSM(-1) ;
     }
    
 
-	/**
-	 * 
-         * Specifies Agent subclass Men having Sex with Men. Necessary to call super.constructor()
-         * @startAge - Age of MSM at sexual 'birth'
-	 */
-    
-	public MSM(int startAge) 
-        {
-	    super(startAge) ;
-            initStatus() ;
-        }
-        
-        /**
-         * Initialises status' at construction of MSM. Separated from constructor 
-         * so that subclass static fields can be called
-         * TODO: Check that inherited version calls correct static fields
-         */
-        final private void initStatus()
+    /**
+     * 
+     * Specifies Agent subclass Men having Sex with Men. Necessary to call super.constructor()
+     * @startAge - Age of MSM at sexual 'birth'
+     */
+
+    public MSM(int startAge) 
+    {
+        super(startAge) ;
+        initStatus(startAge) ;
+    }
+
+    /**
+     * Initialises status' at construction of MSM. 
+     * Ensures that those MSM who come out during simulation are initially
+     * HIV free (statusHIV == false).
+     */
+    final private void initStatus(int startAge)
+    {
+        if (startAge < 0)    // MSM generated at outset, represent initial population
         {
             //requireDiscloseStatusHIV = (rand.nextDouble() < probabilityRequireDiscloseHIV) ;
             statusHIV = (RAND.nextDouble() < getProbabilityHIV()) ;
-            if (statusHIV)
-            {
-                antiViralStatus = (RAND.nextDouble() < getAntiviralProbability()) ;
-                prepStatus = false ;
-            }
-            else
-            {
-                prepStatus = (RAND.nextDouble() < getProbabilityPrep()) ;
-                antiViralStatus = false ;
-            }
-            discloseStatusHIV = (RAND.nextDouble() < getProbabilityDiscloseHIV()) ;
-            
-            if (discloseStatusHIV)
-            {
-        	seroSort = ((RAND.nextDouble() < getProbabilitySeroSort(statusHIV)) && discloseStatusHIV) ;
-                seroPosition = ((RAND.nextDouble() < getProbabilitySeroPosition(statusHIV)) && discloseStatusHIV) ;
-            }
-            else    // Cannot seroSort or SeroPosition without disclosing statusHIV
-            {
-                seroSort = false ;
-                seroPosition = false ;
-            }
-            return ;
+
+            // Sets antiViral status, ensuring it is true only if statusHIV is true
+            setAntiViralStatus(RAND.nextDouble() < getAntiviralProbability()) ;
+
+            // Sets antiViral status, ensuring it is true only if statusHIV is true
+            setPrepStatus(RAND.nextDouble() < getProbabilityPrep()) ;
+
+            // Initialises infectedStatus, ensuring consistency with Site.infectedStatus
+            initInfectedStatus() ;
+        }            
+        else    //  Assumed infection free on sexual birth
+        {
+            setStatusHIV(false) ;
+            //clearInfected() ;
         }
 
+        // Sets whether disclosesHIV, allowing for statusHIV
+        discloseStatusHIV = (RAND.nextDouble() < getProbabilityDiscloseHIV()) ;
+
+        if (discloseStatusHIV)
+        {
+            seroSort = ((RAND.nextDouble() < getProbabilitySeroSort(statusHIV)) && discloseStatusHIV) ;
+            seroPosition = ((RAND.nextDouble() < getProbabilitySeroPosition(statusHIV)) && discloseStatusHIV) ;
+        }
+        else    // Cannot seroSort or SeroPosition without disclosing statusHIV
+        {
+            seroSort = false ;
+            seroPosition = false ;
+        }
+    }
+
+    /**
+     * Initialises MSM infectedStatus while ensuring consistency with 
+     * Site.infectedStatus .
+     */
+    final protected void initInfectedStatus()
+    {
+        boolean infected = false ;    //  getInfectedStatus() ;
+        for (Site site : sites)
+        {
+            infected = infected || site.initialiseInfection() ;
+            setSymptomatic(site) ;
+        }
+        setInfectedStatus(infected) ;
+    }
+        
     /**
      * Should generate Site[] and not call Site[] MSM.sites to avoid error/complications
      * of ensuring that MSM.sites is updated with every call to setSitename().
@@ -366,12 +389,18 @@ abstract public class MSM extends Agent {
     }
     
     /**
-     * Setter of statusHIV, used for unit testing
+     * Setter of statusHIV.
+     * Also ensures that prepStatus and antiViralStatus do not have
+     * inappropriate values.
      * @param status 
      */
     public void setStatusHIV(boolean status)
     {
         statusHIV = status ;
+        if (status)
+            setPrepStatus(false) ;
+        else
+            setAntiViralStatus(false) ;
     }
 
     public boolean getSeroSort()
@@ -410,9 +439,14 @@ abstract public class MSM extends Agent {
         return antiViralStatus ;
     }
     
+    /**
+     * Setter of antiViralStatus. 
+     * Will only set it to true if statusHIV is true.
+     * @param status 
+     */
     public void setAntiViralStatus(boolean status)
     {
-        antiViralStatus = status ;
+        antiViralStatus = status && statusHIV ;
     }
 
     /**
@@ -445,7 +479,7 @@ abstract public class MSM extends Agent {
      */
     public void setPrepStatus(boolean prep)
     {
-        prepStatus = prep ;
+        prepStatus = prep && (!statusHIV) ;
         return ;
     }
 
@@ -453,6 +487,7 @@ abstract public class MSM extends Agent {
      * How would the MSM respond if asked to disclose their statusHIV
      * @return String representation of statusHIV if (discloseStatusHIV), otherwise 'none'
      */
+    @Override
     public String declareStatus()
     {
         if (discloseStatusHIV)
@@ -460,7 +495,8 @@ abstract public class MSM extends Agent {
         return NONE ;
     }
 
-    abstract int getMaxRelationships() ;
+    @Override
+    abstract int getMaxRelationships();
     
     abstract double getProbabilityHIV() ;
     
@@ -504,6 +540,7 @@ abstract public class MSM extends Agent {
      * 
      * @return (int) the number of orgies in a MSM community per cycle
      */
+    @Override
     public int getOrgyNumber()
     {
         return ORGY_NUMBER ;
