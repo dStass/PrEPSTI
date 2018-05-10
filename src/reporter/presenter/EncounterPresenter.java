@@ -78,7 +78,6 @@ public class EncounterPresenter extends Presenter {
         
         plotHashMap("Site","Ongoing transmissions",transmittingSites) ;
         
-        return ;
     }
     
     
@@ -89,6 +88,14 @@ public class EncounterPresenter extends Presenter {
         HashMap<String,Integer> fromSiteToSiteReport = reporter.prepareFromSiteToSiteReport(siteNames) ;
         plotHashMap("Site to Site","transmissions",fromSiteToSiteReport) ;
         
+    }
+    
+    
+    public void plotNbTransmissions()
+    {
+        ArrayList<String> nbTransmissionReport = reporter.prepareTransmissionCountReport() ;
+        
+        plotCycleValue("Number of Tranmissions", nbTransmissionReport) ;
     }
     
 }
