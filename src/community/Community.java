@@ -29,7 +29,7 @@ public class Community {
     private ArrayList<Agent> agents = new ArrayList<Agent>() ;
     
     // Total number of agents, make larger once testing is complete!
-    private int population = 6000 ;
+    private int population = 1000 ;
 
     // Number of new population members and also average number of deaths per cycle
     private int birthRate = 2 ;
@@ -84,7 +84,7 @@ public class Community {
         
 
         // simulation of maxCycles cycles
-        int maxCycles = 500 ;
+        int maxCycles = 100 ;
         String scribeName = "siteToSiteEncounterPopulation" + String.valueOf(community.population) ;
         scribeName += "Cycles" + String.valueOf(maxCycles) ;
         community.encounterScribe = community.new Scribe(scribeName) ;
@@ -104,8 +104,8 @@ public class Community {
             // treat symptomatic agents
             screenRecord = cycleString + community.screenAgents(cycle) ;
 
-            populationRecord = cycleString + community.births() ;
             //deathRecord = cycleString
+            populationRecord = cycleString + community.births() ;
             populationRecord += community.grimReaper() ;
 
             community.submitRecords(relationshipRecord,encounterRecord,
@@ -130,14 +130,21 @@ public class Community {
         System.out.println("Elapsed running time: " + seconds + "seconds") ;
         System.out.println("Elapsed running time: " + minutes + "minutes") ;
         EncounterReporter encounterReporter = new EncounterReporter("site to site",community.encounterReport) ;
-        EncounterPresenter encounterPresenter = new EncounterPresenter("site to site","site to site", encounterReporter) ;
+        EncounterPresenter encounterPresenter = new EncounterPresenter("site to site","transmitting sites", encounterReporter) ;
         //encounterPresenter.plotTransmittingSites(new String[] {"Penis","Rectum","Pharynx"});
         encounterPresenter.plotFromSiteToSite(new String[] {"Penis","Rectum","Pharynx"});
+        
         //PopulationReporter censusReporter = new PopulationReporter("age-at-death",community.censusReport) ;
         //PopulationPresenter censusPresenter = new PopulationPresenter("age-at-death","age-at-death",censusReporter) ;
         //censusPresenter.plotAgeAtDeath();
         //PopulationPresenter censusPresenter = new PopulationPresenter("deaths per cycle","deaths per cycle",censusReporter) ;
         //censusPresenter.plotDeathsPerCycle();
+        
+        //ScreeningReporter screeningReporter = 
+            //    new ScreeningReporter("symptomatic proportion of prevalence",community.screenReport) ;
+        //ScreeningPresenter screeningPresenter 
+          //      = new ScreeningPresenter("symptomatic proportion of prevalence","symptomatic proportion of prevalence",screeningReporter) ;
+        //screeningPresenter.plotProportionSymptomatic();
         
         //EncounterReporter partnersReporter = new EncounterReporter("testPairs",community.encounterReport) ;
         //Reporter partnersReporter = new Reporter("testPairs",community.generateReport,
@@ -179,7 +186,7 @@ public class Community {
         private MSM generateAgent()
         {
             // if Agent.subclass == MSM
-            MSM newAgent = (MSM) MSM.birthMSM(-1);
+            MSM newAgent = MSM.birthMSM(-1);
             return newAgent ;
          }
 	
@@ -355,7 +362,7 @@ public class Community {
             int currentPopulation = agents.size() ;
             for (int birth = 0 ; birth < birthRate ; birth++ )
             {
-                MSM newAgent = (MSM) MSM.birthMSM(0) ;
+                MSM newAgent = MSM.birthMSM(0) ;
                 agents.add(newAgent) ;
                 report += "agentId:" + Integer.toString(newAgent.getId()) + " " ;
                 report += "startAge:" + Integer.toString(newAgent.getAge()) + " " ; 
@@ -388,13 +395,12 @@ public class Community {
                 {
                     nbRelationships-= agent.getCurrentRelationships().size() ;
                     agents.remove(agent) ;
-                    report = Reporter.addReportProperty("agentId", agent.getId(), report) ;
-                    report = Reporter.addReportProperty("age", agent.getAge(), report) ;
+                    report += Reporter.addReportProperty("agentId", agent.getId()) ;
+                    report += Reporter.addReportProperty("age", agent.getAge()) ;
                 }
             }
             //prepare report
-            if (! report.isEmpty())
-                report = "death:" + report ;
+            report = "death:" + report ;
             
 
             return report ;
@@ -437,6 +443,7 @@ public class Community {
                     try
                     {
                         report += relationship.encounter() ;
+                        //System.out.println(report);
                     }
                     catch (NoSuchMethodException nsme)
                     {
@@ -506,22 +513,30 @@ public class Community {
 	 */
 	private String screenAgents(int cycle)
 	{
-		String report = "" ;
-		for (Agent agent : agents)
-		{
-			report += "agentId:" + Integer.toString(agent.getId()) + " " ;
-			boolean symptomatic = agent.getSymptomatic() ;
-			report += "symptomatic:" + Boolean.toString(symptomatic) + " " ;
-			if (symptomatic)
-			{
-				report += "treatment:" + Boolean.toString(agent.treat()) ;
-			}
-			else if (agent.getScreenProbability(new String[] {Integer.toString(cycle)}) < RAND.nextDouble()) 
-			{
-				report += "treatment:" + Boolean.toString(agent.treat()) ;
-			}
-		}
-		return report ;
+            String report = "" ;
+            boolean infected ;
+            boolean symptomatic ;
+                    
+            for (Agent agent : agents)
+            {
+                report += Reporter.addReportProperty("agentId",agent.getId()) ;
+                infected = agent.getInfectedStatus();
+                report += Reporter.addReportProperty("infected", infected) ;
+                if (infected)
+                {
+                    symptomatic = agent.getSymptomatic();
+                    report += Reporter.addReportProperty("symptomatic", symptomatic) ;
+                    if (symptomatic)
+                    {
+                            report += Reporter.addReportProperty("treatment",agent.treat()) ;
+                    }
+                    else if (RAND.nextDouble() < agent.getScreenProbability(new String[] {Integer.toString(cycle)})) 
+                    {
+                            report += Reporter.addReportProperty("treatment",agent.treat()) ;
+                    }
+                }
+            }
+            return report ;
 	}
 	
 	private void submitRecords(String generateRecord, String encounterRecord, String clearRecord, String screenRecord, String populationRecord)
