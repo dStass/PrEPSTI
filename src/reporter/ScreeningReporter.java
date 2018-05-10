@@ -30,38 +30,26 @@ public class ScreeningReporter extends Reporter {
         super(simname,reportFilePath) ;
     }
  
-    public double[] preparePrevalenceReport()
+    /**
+     * 
+     * @return (ArrayList<String>) indicating the total prevalence, prevalence of 
+     * symptomatic infection, and proportion of symptomatic infection in each cycle.
+     */
+    public ArrayList<String> preparePrevalenceReport()
     {
-        double[] prevalence = new double[input.size()];
-        int population ; 
-        
-        int index ;
-        String record ;
-        for (int recordNb = 0 ; recordNb < input.size() ; recordNb++ )
+        ArrayList<String> prevalence = new ArrayList<String>() ;
+        String entry ;
+        for (String record : input)
         {
-            population = 0 ;
-            record = input.get(recordNb) ;
             int[] incidence = countValueIncidence(INFECTED, TRUE, record, 0) ;
-            prevalence[recordNb] = ((double) incidence[0])/incidence[1] ;
+            entry = addReportProperty("prevalence",((double) incidence[0])/incidence[1]) ;
+            int[] symptoms = countValueIncidence(SYMPTOMATIC, TRUE, record, 0) ;
+            entry += addReportProperty("symptomatic",((double) symptoms[0])/symptoms[1]) ;
+            entry += addReportProperty("proportion",((double) symptoms[0])/incidence[0]) ;
+            
+            prevalence.add(entry) ;
         }
         return prevalence ;
-    }
-    
-    public double[] prepareSymptomPrevalenceReport()
-    {
-        double[] symptomatic = new double[input.size()];
-        int population ; 
-        
-        int index ;
-        String record ;
-        for (int recordNb = 0 ; recordNb < input.size() ; recordNb++ )
-        {
-            population = 0 ;
-            record = input.get(recordNb) ;
-            int[] incidence = countValueIncidence(SYMPTOMATIC, TRUE, record, 0) ;
-            symptomatic[recordNb] = ((double) incidence[0])/incidence[1] ;
-        }
-        return symptomatic ;
     }
     
 }
