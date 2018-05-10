@@ -24,32 +24,41 @@ public class Reporter {
     //ArrayList<String> encounterReports ;
     //ArrayList<String> clearReports ;
     //ArrayList<String> screenReports ;
+    
+    /** Input report. */ 
     protected ArrayList<String> input ;
 
-    // Output report
+    /** Output report. */
     protected ArrayList<String> output ;
 
-    // The number of Community cycles to pass between reports 
+    /** The number of Community cycles to pass between reports. */ 
     protected int outputCycle = 1 ;
 
-    // Logger
+    /** String representation of 'None'. */
+    static String NONE = "None" ;
+    /** static String representation of 'true'. */
+    static String TRUE = "true" ;
+    /** static String representation of 'false'. */
+    static String FALSE = "false" ;
+    
+    /** Logger of Reporter Class. */
     static final java.util.logging.Logger LOGGER = java.util.logging.Logger.getLogger("reporter") ;
 
-    public static final String addReportLabel(String label, String report)
+    public static final String addReportLabel(String label)
     {
-        return report + label + ":" ;
+        return label + ":" ;
     }
     
-    public static final String addReportProperty(String label, String value, String report)
+    public static final String addReportProperty(String label, String value)
     {
-        report = addReportLabel(label,report) ;
+        String report = addReportLabel(label) ;
         return report + value + " " ;
     }
         
-    public static final String addReportProperty(String label, int value, String report)
+    public static final String addReportProperty(String label, Object value)
     {
-        report = addReportLabel(label,report) ;
-        return report + Integer.toString(value) + " " ;
+        String report = addReportLabel(label) ;
+        return report + String.valueOf(value) + " " ;
     }
      
     /**
@@ -120,7 +129,7 @@ public class Reporter {
             {
                     return (Object) arrayList.get(elementNb) ;
             }
-            String message = "None" ;
+            String message = NONE ;
             return (Object) message ;
     }
 
@@ -202,6 +211,8 @@ public class Reporter {
     protected static String extractBoundedString(String bound, String string, int indexStart)
     {
         int index0 = indexOfProperty(bound, indexStart, string) ;
+        if (index0 == -1)
+            return "" ;
         int index1 = indexOfProperty(bound,index0+1,string) ;
         if (index1 == -1) index1 = string.length() ;
         return string.substring(index0, index1) ;
@@ -270,6 +281,30 @@ public class Reporter {
     }
     
     /**
+     * Finds the number of times propertyName occurs in string and the number of 
+     * times it has the value value.toString().
+     * @param propertyName
+     * @param value
+     * @param string
+     * @param startIndex
+     * @return (int[2]) The number of value incidents, number of propertyName incidents.
+     */
+    protected static int[] countValueIncidence(String propertyName, String value, String string, int startIndex)
+    {
+        int count = 0 ;
+        int total = 0 ;
+        int index = indexOfProperty(propertyName, startIndex, string) ;
+        while ( index >= 0 )
+        {
+            total++ ;
+            if (compareValue(propertyName, value, string, index))
+                count++ ;
+            index = indexOfProperty(propertyName, index+1, string) ;
+        }
+        return new int[] {count,total} ;
+    }
+    
+    /**
      * Compares the String representation of the value of propertyName to @param value
      * @param propertyName
      * @param value
@@ -280,6 +315,24 @@ public class Reporter {
     {
         return compareValue(propertyName, value, string, indexOfProperty(propertyName,string)) ;
     }
+    
+    /**
+     * Puts entries into HashMap whose keys are the agentIds
+     * and values are arrays of their partners Ids. 
+     * Creates key and associated int[] if necessary.
+     * 
+     * @param key - (String) usually agentId but need not be.
+     * @param entry - String to convert and go into int[] at key. 
+     * @param valueMap - Adding entry and sometimes key to this HashMap
+     * @return partnerMap - HashMap indicating partnerIds of each agent (key: agentId)
+     */
+    protected static HashMap<Integer,ArrayList<Integer>> updateHashMap(String keyString, String entryString, HashMap<Integer,ArrayList<Integer>> valueMap)
+    {
+        int key = Integer.valueOf(keyString) ;
+        int entry = Integer.valueOf(entryString) ;
+        return updateHashMap(key, entry, valueMap) ;
+    }
+    
     /**
      * Puts entries into HashMap whose keys are the agentIds
      * and values are arrays of their partners Ids. 
@@ -310,8 +363,7 @@ public class Reporter {
     }
 		
     /**
-     * Puts entries into HashMap whose keys are the agentIds
-     * and values are arrays of their partners Ids. 
+     * Increments entries into HashMap whose keys are the agentIds
      * Creates key and associated int[] if necessary.
      * @param key - usually agentId but need not be.
      * @param valueMap - Adding entry and sometimes key to this HashMap
@@ -374,7 +426,7 @@ public class Reporter {
         private Reader(String simName, String filePath)
         {
             String record = "" ;
-            while (record != null)
+            while (record == null)
             {
                 try
                 {
