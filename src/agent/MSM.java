@@ -659,9 +659,8 @@ abstract public class MSM extends Agent {
             // Find current cycle
             int cycle = Integer.valueOf(args[0]) ;
             
-            //Don't have compulsory screening on first day
-            //if (cycle == 0)
-              //  super.getScreenProbability(args) ;
+            // Countdown to next STI screen
+            screenTime-- ;
             
             // Those on antivirals test every three months (92 days) on a given day
             if ( screenTime == 0)
@@ -675,20 +674,5 @@ abstract public class MSM extends Agent {
         return super.getScreenProbability(args) ;
     }
     
-    /**
-     * Tracks time until next STI screen if MSM is on PrEP
-     * @return (String) report of results from aging.
-     */
-    @Override
-    protected String ageEffects()
-    {
-        if (prepStatus)
-        {
-        String report = "" ;
-        screenTime-- ;
-        report += super.ageEffects() ;
-        return report;
-        }
-        return super.ageEffects() ;
-    }
+   
 }
