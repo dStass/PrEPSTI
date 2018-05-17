@@ -39,6 +39,12 @@ public abstract class Agent {
 
     // Need to generate random numbers
     static Random RAND = new Random() ;
+    
+    // String representation of "true".
+    static String TRUE = "true" ;
+    // String representation of "false".
+    static String FALSE = "false" ;
+    
 
     // agentId of next Agent to be created, current number plus one
     static int NB_AGENTS_CREATED = 0 ;
@@ -140,9 +146,7 @@ public abstract class Agent {
 	
     public static boolean useCondom(Agent agent0, Agent agent1, String relationshipName)
     {
-        if (agent0.chooseCondom(agent1))
-            return true ;
-        return agent1.chooseCondom(agent0) ;
+        return ((agent0.chooseCondom(relationshipName, agent1)) || (agent1.chooseCondom(relationshipName, agent0))) ;
     }
 
    
@@ -369,7 +373,7 @@ public abstract class Agent {
 	 * 
      * @return String description of any altered quantities if any, empty otherwise
      */
-    private String ageEffects()
+    protected String ageEffects()
     {
         String report = "" ;
         if (age > 30)
@@ -400,7 +404,7 @@ public abstract class Agent {
      * @param partner
      * @return true if Agent decides to use a condom, false otherwise
      */
-    abstract protected boolean chooseCondom(Agent partner) ;
+    abstract protected boolean chooseCondom(String relationshipClazzName, Agent partner) ;
             
     /**
      * Probabilistically transmits infection to receiving site.
