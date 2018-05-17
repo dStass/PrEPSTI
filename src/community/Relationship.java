@@ -28,7 +28,7 @@ public class Relationship {
     /** Site name of Rectum */
     static String RECTUM = "Rectum" ;
     /** Site name of Rectum */
-    static String PENIS = "Penis" ;
+    static String URETHRA = "Urethra" ;
     /** Site name of Rectum */
     static String PHARYNX = "Pharynx" ;
     
@@ -36,7 +36,7 @@ public class Relationship {
     static int NB_RELATIONSHIPS = 0; 
 
     // TODO: Move condom variables to STI
-    // Probability of using a condom for couplings with a Site.Penis
+    // Probability of using a condom for couplings with a Site.Urethra
     static double CONDOM_USE = 0.5;
     
     // Protective effect of condom
@@ -218,10 +218,10 @@ public class Relationship {
             String infectName1 = infection1.getClass().getName(); 
             */
         
-            // Choose whether condom is used, if any Penis Sites
+            // Choose whether condom is used, if any Urethra Sites
             infectProbability = 1.0;
-            if ((PENIS.equals(site0.getSite()) && (RECTUM.equals(site1.getSite()))) 
-                    || (PENIS.equals(site1.getSite())&& RECTUM.equals(site0.getSite())))
+            if ((URETHRA.equals(site0.getSite()) && (RECTUM.equals(site1.getSite()))) 
+                    || (URETHRA.equals(site1.getSite())&& RECTUM.equals(site0.getSite())))
             {
                 report += "condom:" ;
                 // TODO: Make probability of condom use depend on other Site
