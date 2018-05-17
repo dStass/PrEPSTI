@@ -84,7 +84,7 @@ public class Community {
         
 
         // simulation of maxCycles cycles
-        int maxCycles = 100 ;
+        int maxCycles = 1000 ;
         String scribeName = "siteToSiteEncounterPopulation" + String.valueOf(community.population) ;
         scribeName += "Cycles" + String.valueOf(maxCycles) ;
         community.encounterScribe = community.new Scribe(scribeName) ;
@@ -129,22 +129,23 @@ public class Community {
         System.out.println("Elapsed running time: " + milliTime + "millseconds") ;
         System.out.println("Elapsed running time: " + seconds + "seconds") ;
         System.out.println("Elapsed running time: " + minutes + "minutes") ;
-        EncounterReporter encounterReporter = new EncounterReporter("site to site",community.encounterReport) ;
-        EncounterPresenter encounterPresenter = new EncounterPresenter("site to site","transmitting sites", encounterReporter) ;
+        //EncounterReporter encounterReporter = new EncounterReporter("Agent to Agent",community.encounterReport) ;
+        //EncounterPresenter encounterPresenter = new EncounterPresenter("Agent to Agent","agent to agent", encounterReporter) ;
         //encounterPresenter.plotTransmittingSites(new String[] {"Penis","Rectum","Pharynx"});
-        encounterPresenter.plotFromSiteToSite(new String[] {"Penis","Rectum","Pharynx"});
+        //encounterPresenter.plotFromSiteToSite(new String[] {"Penis","Rectum","Pharynx"});
+        //encounterPresenter.plotAgentToAgentNetwork();
         
-        //PopulationReporter censusReporter = new PopulationReporter("age-at-death",community.censusReport) ;
-        //PopulationPresenter censusPresenter = new PopulationPresenter("age-at-death","age-at-death",censusReporter) ;
-        //censusPresenter.plotAgeAtDeath();
+        PopulationReporter censusReporter = new PopulationReporter("age-at-death",community.censusReport) ;
+        PopulationPresenter censusPresenter = new PopulationPresenter("age-at-death","age-at-death",censusReporter) ;
+        censusPresenter.plotAgeAtDeath();
         //PopulationPresenter censusPresenter = new PopulationPresenter("deaths per cycle","deaths per cycle",censusReporter) ;
         //censusPresenter.plotDeathsPerCycle();
         
         //ScreeningReporter screeningReporter = 
-            //    new ScreeningReporter("symptomatic proportion of prevalence",community.screenReport) ;
+          //      new ScreeningReporter("prevalence",community.screenReport) ;
         //ScreeningPresenter screeningPresenter 
-          //      = new ScreeningPresenter("symptomatic proportion of prevalence","symptomatic proportion of prevalence",screeningReporter) ;
-        //screeningPresenter.plotProportionSymptomatic();
+          //      = new ScreeningPresenter("prevalence","prevalence",screeningReporter) ;
+        //screeningPresenter.plotPrevalence();
         
         //EncounterReporter partnersReporter = new EncounterReporter("testPairs",community.encounterReport) ;
         //Reporter partnersReporter = new Reporter("testPairs",community.generateReport,
@@ -253,7 +254,7 @@ public class Community {
             }
             
             // TODO: Uncomment this line when ready to debug
-            // arrangeOrgies() ;
+            arrangeOrgies() ;
             
             return report ;
 	}
@@ -274,7 +275,8 @@ public class Community {
             int orgySize = sampleAgent.getOrgySize() ;
             int orgyNumber = sampleAgent.getOrgyNumber() ;
             double joinOrgyProbability = sampleAgent.getJoinOrgyProbability() ;
-            
+            Object[] invitedAgents ;
+                
             for (int orgyIndex = 0 ; orgyIndex < orgyNumber ; orgyIndex++)
             {
                 // Invite next orgySize Agents to an orgy
@@ -285,12 +287,12 @@ public class Community {
                     break ;
                 
                 // Invited Agents subArrayList of agents
-                ArrayList<Agent> invitedAgents = (ArrayList<Agent>) agents.subList(startIndex, endIndex) ;
+                invitedAgents = agents.subList(startIndex, endIndex).toArray();
                 ArrayList<Agent> orgyAgents = new ArrayList<Agent>() ;
-                for (Agent agent : invitedAgents)
+                for (Object agent : invitedAgents)
                 {
-                    if (agent.joinOrgy(joinOrgyProbability,null))
-                        orgyAgents.add(agent) ;    // Agent agrees to join orgy
+                    if (((Agent) agent).joinOrgy(joinOrgyProbability,null))
+                        orgyAgents.add((Agent) agent) ;    // Agent agrees to join orgy
                 }
                 //Require orgies have at least three participants
                 if (orgyAgents.size() < 3)
