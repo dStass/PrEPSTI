@@ -200,7 +200,11 @@ public class Relationship {
             Site site1 = sites[1] ;
             int infectStatus0 = site0.getInfectedStatus() ;
             int infectStatus1 = site1.getInfectedStatus() ;
+            // no risk of transmission if both sites have same infectStatus
+            if (infectStatus0 == infectStatus1) 
+                continue ;	
 
+            
             // Update report
             report += "contact:" + Integer.toString(contact) + " " ;
             report += site0.getSite() + ":" + Integer.toString(infectStatus0) + " " ;
@@ -214,10 +218,6 @@ public class Relationship {
             String infectName1 = infection1.getClass().getName(); 
             */
         
-            // no risk of transmission if both sites have same infectStatus
-            if (infectStatus0 == infectStatus1) 
-                continue ;	
-
             // Choose whether condom is used, if any Penis Sites
             infectProbability = 1.0;
             if ((PENIS.equals(site0.getSite()) && (RECTUM.equals(site1.getSite()))) 
