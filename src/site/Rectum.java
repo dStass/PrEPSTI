@@ -17,13 +17,6 @@ public class Rectum extends Site {
     // Probability of positive symptomatic status if infected
     static double SYMPTOMATIC_PROBABILITY = 0.4 ;
 
-    // Probability of site transmitting infection, if all other probabilities unity
-    static double TRANSMIT = 0.4 ;
-
-    // Probability of site becoming infected, if all other probabilities unity
-    static double RECEIVE = 0.8 ;
-     
-	
     /**
      * 
      */
