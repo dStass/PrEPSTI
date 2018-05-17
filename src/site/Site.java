@@ -31,10 +31,10 @@ public class Site {
     
     
     // Constants that vary according to Site subclass
-    // Probability of initial gonorrhoea infection 
-    static double INITIAL = 0.3 ;
+    /** Probability of initial gonorrhoea infection. */ 
+    static double INITIAL = 0.03 ;
 
-    // Probability of positive symptomatic status if infected
+    /** Probability of positive symptomatic status if infected. */
     static double SYMPTOMATIC_PROBABILITY = 0.5 ;
 
     // Probability of site transmitting infection, if all other probabilities unity
