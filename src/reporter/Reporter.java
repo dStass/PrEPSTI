@@ -154,7 +154,7 @@ public class Reporter {
             //if (indexOfProperty(propertyName,boundedString) >= 0)
             //{
                 if (compareValue(propertyName,value,boundedString)) 
-                    boundedOutput += bound + ":" + boundedString ;
+                    boundedOutput += boundedString ;
             //}
             indexStart = indexOfProperty(bound,indexStart+1,string) ;
         }
@@ -260,7 +260,8 @@ public class Reporter {
     public static String extractValue(String propertyName, String string, int startIndex)
     {
         // Find value of valueName in string
-        startIndex+= propertyName.length() + 1 ;    // +1 is for ":" following propertyName
+        startIndex = string.indexOf(propertyName, startIndex) ;
+        startIndex += propertyName.length() + 1 ;    // +1 is for ":" following propertyName
         int valueEndIndex = string.indexOf(" ", startIndex) ;
         return string.substring(startIndex, valueEndIndex) ;
     }
@@ -354,11 +355,10 @@ public class Reporter {
         else
         {
             entryArray = new ArrayList<Integer>() ;
+            entryArray.add(entry) ;
         }
-        entryArray.add(entry) ;
         valueMap.put(key, entryArray) ;
 
-        
         return valueMap ;
     }
 		
@@ -382,6 +382,51 @@ public class Reporter {
             valueMap.put(key, 1) ;
         }
         
+        return valueMap ;
+    }
+	
+    /**
+     * Puts entries in HashMap<Integer,HashMap<Integer,ArrayList<Integer>>> after 
+     * converting input Strings to Integer.
+     * @param keyString
+     * @param entryString
+     * @param cycle
+     * @param valueMap
+     * @return 
+     */
+    protected static HashMap<Integer,HashMap<Integer,ArrayList<Integer>>> updateHashMap(String keyString, String entryString, 
+            int cycle, HashMap<Integer,HashMap<Integer,ArrayList<Integer>>> valueMap)
+    {
+        int key = Integer.valueOf(keyString) ;
+        int entry = Integer.valueOf(entryString) ;
+        return updateHashMap(key, entry, cycle, valueMap) ;
+    }
+    
+    /**
+     * Puts entries in HashMap<Integer,HashMap<Integer,ArrayList<Integer>>>, 
+     * creating keys in either HashMap when necessary and simply updating otherwise.
+     * @param keyString
+     * @param entryString
+     * @param cycle
+     * @param valueMap
+     * @return 
+     */
+    protected static HashMap<Integer,HashMap<Integer,ArrayList<Integer>>> updateHashMap(int key, int key2, int cycle, HashMap<Integer,HashMap<Integer,ArrayList<Integer>>> valueMap)
+    {
+        //HashMap<Integer,ArrayList<Integer>> partnerMap = new HashMap<Integer,ArrayList<Integer>>() ;
+        
+        HashMap<Integer,ArrayList<Integer>> entryHashMap ;
+        if (valueMap.containsKey(key))
+        {
+            entryHashMap = valueMap.get(key) ;
+        }
+        else
+        {
+            entryHashMap = new HashMap<Integer,ArrayList<Integer>>() ;
+            //entryArray.add(key2) ;
+        }
+        valueMap.put(key, updateHashMap(key2,cycle,entryHashMap)) ;
+
         return valueMap ;
     }
 		
