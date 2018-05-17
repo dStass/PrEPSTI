@@ -370,10 +370,10 @@ public abstract class Agent {
 
     /**
      * Promiscuity and infidelity decrease from age == 30
-	 * 
+     * 
      * @return String description of any altered quantities if any, empty otherwise
      */
-    protected String ageEffects()
+    private String ageEffects()
     {
         String report = "" ;
         if (age > 30)
