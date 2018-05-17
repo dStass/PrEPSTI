@@ -20,7 +20,7 @@ abstract public class MSM extends Agent {
     /** Site name of Rectum */
     static String RECTUM = "Rectum" ;
     /** Site name of Rectum */
-    static String PENIS = "Penis" ;
+    static String URETHRA = "Urethra" ;
     /** Site name of Rectum */
     static String PHARYNX = "Pharynx" ;
     
@@ -28,10 +28,24 @@ abstract public class MSM extends Agent {
     static double PROBABILITY_DISCLOSE_POSITIVE_HIV = 0.40 ;
     /** The probability of disclosing HIV status if HIV negative */
     static double PROBABILITY_DISCLOSE_NEGATIVE_HIV = 0.35 ;
-    /** Probability of serosorting if HIV positive */
+    /** Probability of serosorting if HIV positive (2016) */
     static double PROBABILITY_POSITIVE_SERO_SORT = 0.461 ;
-    /** Probability of serosorting if HIV negative */
+    /** Probability of serosorting if HIV negative (2016) */
     static double PROBABILITY_NEGATIVE_SERO_SORT = 0.518 ;
+    /** Probability of serosorting in Casual Relationship if HIV positive */
+    static double PROBABILITY_POSITIVE_CASUAL_SERO_SORT = 0.431 ;
+    /** Probability of serosorting in Casual Relationship if HIV negative */
+    static double PROBABILITY_NEGATIVE_CASUAL_SERO_SORT = 0.485 ;
+    /** Probability of serosorting in Regular Relationship if HIV positive */
+    static double PROBABILITY_POSITIVE_REGULAR_SERO_SORT = 0.274 ;
+    /** Probability of serosorting in Regular Relationship if HIV negative */
+    static double PROBABILITY_NEGATIVE_REGULAR_SERO_SORT = 0.712 ;
+    /** Probability of serosorting in Regular Relationship if HIV positive */
+    static double PROBABILITY_POSITIVE_MONOGOMOUS_SERO_SORT 
+            = PROBABILITY_POSITIVE_REGULAR_SERO_SORT ;
+    /** Probability of serosorting in Regular Relationship if HIV negative */
+    static double PROBABILITY_NEGATIVE_MONOGOMOUS_SERO_SORT 
+            = PROBABILITY_NEGATIVE_REGULAR_SERO_SORT ;
     /** Probability of sero-positioning if HIV positive */
     static double PROBABILITY_POSITIVE_SERO_POSITION = 0.237 ;
     /** Probability of sero-positioning if HIV negative */
@@ -49,15 +63,21 @@ abstract public class MSM extends Agent {
     
     /** Potential infection site Rectum */
     private Rectum rectum = new Rectum() ;
-    /** Potential infection site Penis */
-    private Penis penis = new Penis() ;
+    /** Potential infection site Urethra */
+    private Urethra urethra = new Urethra() ;
     /** Potential infection site Pharynx */
     private Pharynx pharynx = new Pharynx() ;
     /** Array of infection Sites */
-    private Site[] sites = {rectum,penis,pharynx} ;
+    private Site[] sites = {rectum,urethra,pharynx} ;
 
     /** Whether MSM serosorts, ie match for statusHIV. */
     private boolean seroSort ;
+    /** Whether MSM serosorts in Casual Relationship, ie match for statusHIV. */
+    private boolean seroSortCasual ;
+    /** Whether MSM serosorts in Regular Relationship, ie match for statusHIV. */
+    private boolean seroSortRegular ;
+    /** Whether MSM serosorts in Monogomous Relationship, ie match for statusHIV. */
+    private boolean seroSortMonogomous ;
     /** Whether MSM seropositions, +ve statusHIV never inserts to -ve statusHIV. */
     private boolean seroPosition ;
     /** Given seroSort or seroPosition, whether being on antiviral is sufficient. */
@@ -71,23 +91,25 @@ abstract public class MSM extends Agent {
     private boolean discloseStatusHIV ;
     /** Whether currently taking PrEP. */
     private boolean prepStatus ;
+    /** Cycles remaining until next STI screen if on PrEP. */
+    private int screenTime ;
 	
-    /** Transmission probabilities from Penis to Rectum */
-    static double PENISRECTUM = 0.8 ;
-    /** Transmission probabilities from Penis to Pharynx. */
-    static double PENISPHARYNX = 0.7 ;
-    /** Transmission probabilities from Rectum to Penis. */ 
-    static double RECTUMPENIS = 0.3 ;
+    /** Transmission probabilities from Urethra to Rectum */
+    static double URETHRARECTUM = 0.8 ;
+    /** Transmission probabilities from Urethra to Pharynx. */
+    static double URETHRAPHARYNX = 0.7 ;
+    /** Transmission probabilities from Rectum to Urethra. */ 
+    static double RECTUMURETHRA = 0.3 ;
     /** Transmission probabilities from Rectum to Pharynx. */
     static double RECTUMPHARYNX = 0.1 ;
-    /** Transmission probabilities in Pharynx to Penis intercourse. */
-    static double PHARYNXPENIS = 0.2 ;
+    /** Transmission probabilities in Pharynx to Urethra intercourse. */
+    static double PHARYNXURETHRA = 0.2 ;
     /** Transmission probabilities in Pharynx to Rectum intercourse. */
     static double PHARYNXRECTUM = 0.2 ;
     /** Transmission probabilities in Pharynx to Pharynx intercourse (kissing). */
     static double PHARYNXPHARYNX = 0.4 ;
-    /** Transmission probabilities in Penis to Penis intercourse (cockfighting). */
-    static double PENISPENIS = 0.1 ;
+    /** Transmission probabilities in Urethra to Urethra intercourse (cockfighting). */
+    static double URETHRAURETHRA = 0.1 ;
     /** Transmission probabilities in Rectum to Rectum intercourse. */
     static double RECTUMRECTUM = 0.2 ;
     
@@ -135,7 +157,7 @@ abstract public class MSM extends Agent {
     
     /**
      * Choose sites for sexual contact, implementing seropositioning
-     * if required. If so, Penis of positive statusHIV msm is never chosen if 
+     * if required. If so, Urethra of positive statusHIV msm is never chosen if 
      * couple is serodiscordant. 
      * Also check if either MSM refrains from anal intercourse in Casual Relationships.
      * @param agent0
@@ -150,7 +172,7 @@ abstract public class MSM extends Agent {
     
     /**
      * Choose sites for sexual contact, implementing seropositioning
-     * if required. If so, Penis of positive statusHIV msm is never chosen if 
+     * if required. If so, Urethra of positive statusHIV msm is never chosen if 
      * couple is serodiscordant. 
      * Also check if either MSM refrains from anal intercourse in Casual Relationships.
      * @param msm0
@@ -168,12 +190,12 @@ abstract public class MSM extends Agent {
                 Site site1 ;
                 if (msm0.statusHIV)
                 {
-                    site0 = msm0.chooseNotPenisSite() ;
+                    site0 = msm0.chooseNotUrethraSite() ;
                     site1 = msm1.chooseSite(site0) ;
                 }
                 else    // msm1.statusHIV == true
                 {
-                    site1 = msm1.chooseNotPenisSite() ;
+                    site1 = msm1.chooseNotUrethraSite() ;
                     site0 = msm0.chooseSite(site1) ;
                 }
                 return new Site[] {site0,site1} ;
@@ -236,33 +258,37 @@ abstract public class MSM extends Agent {
      */
     final private void initStatus(int startAge)
     {
+        //requireDiscloseStatusHIV = (rand.nextDouble() < probabilityRequireDiscloseHIV) ;
+        statusHIV = (RAND.nextDouble() < getProbabilityHIV()) ;
+
+        // Sets antiViral status, ensuring it is true only if statusHIV is true
+        setAntiViralStatus(RAND.nextDouble() < getAntiviralProbability()) ;
+
+        // Randomly set PrEP status, ensuring it is true only if statusHIV is true
+        initPrepStatus(RAND.nextDouble() < getProbabilityPrep()) ;
+        
+
         if (startAge < 0)    // MSM generated at outset, represent initial population
         {
-            //requireDiscloseStatusHIV = (rand.nextDouble() < probabilityRequireDiscloseHIV) ;
-            statusHIV = (RAND.nextDouble() < getProbabilityHIV()) ;
-
-            // Sets antiViral status, ensuring it is true only if statusHIV is true
-            setAntiViralStatus(RAND.nextDouble() < getAntiviralProbability()) ;
-
-            // Sets antiViral status, ensuring it is true only if statusHIV is true
-            setPrepStatus(RAND.nextDouble() < getProbabilityPrep()) ;
-
             // Initialises infectedStatus, ensuring consistency with Site.infectedStatus
             initInfectedStatus() ;
         }            
-        else    //  Assumed infection free on sexual birth
+        else if (false)   // TODO: Assume HIV free on sexual birth?
         {
             setStatusHIV(false) ;
             //clearInfected() ;
         }
 
         // Sets whether disclosesHIV, allowing for statusHIV
-        discloseStatusHIV = (RAND.nextDouble() < getProbabilityDiscloseHIV()) ;
+        double probabilityDiscloseHIV = getProbabilityDiscloseHIV() ;
+        discloseStatusHIV = (RAND.nextDouble() < probabilityDiscloseHIV) ;
 
         if (discloseStatusHIV)
         {
-            seroSort = ((RAND.nextDouble() < getProbabilitySeroSort(statusHIV)) && discloseStatusHIV) ;
-            seroPosition = ((RAND.nextDouble() < getProbabilitySeroPosition(statusHIV)) && discloseStatusHIV) ;
+            seroSortCasual = ((RAND.nextDouble() < getProbabilitySeroSortCasual(statusHIV)/probabilityDiscloseHIV) && discloseStatusHIV) ;
+            seroSortRegular = ((RAND.nextDouble() < getProbabilitySeroSortRegular(statusHIV)/probabilityDiscloseHIV) && discloseStatusHIV) ;
+            seroSortMonogomous = ((RAND.nextDouble() < getProbabilitySeroSortMonogomous(statusHIV)/probabilityDiscloseHIV) && discloseStatusHIV) ;
+            seroPosition = ((RAND.nextDouble() < getProbabilitySeroPosition(statusHIV)/probabilityDiscloseHIV) && discloseStatusHIV) ;
         }
         else    // Cannot seroSort or SeroPosition without disclosing statusHIV
         {
@@ -294,23 +320,26 @@ abstract public class MSM extends Agent {
     @Override
     protected Site[] getSites()
     {
-        return new Site[] {rectum,penis,pharynx} ;
+        return new Site[] {rectum,urethra,pharynx} ;
     }
         
     /**
      * Used when choosing Site for sexual encounter
-     * @return random choice of rectum, penis or pharynx
+     * @return random choice of rectum, urethra or pharynx
      */
     @Override
     protected Site chooseSite()
 	{
             int index = RAND.nextInt(3) ;
-            if (index == 0) 
-                return rectum ;
-            else if (index == 1) 
-                return penis ;
-            else 
-                return pharynx ;
+            switch (index) 
+            { 
+                case 0:
+                    return rectum ;
+                case 1: 
+                    return urethra ;
+                default: 
+                    return pharynx ;
+            }
 	}
 	
     @Override
@@ -319,7 +348,7 @@ abstract public class MSM extends Agent {
         if (site.getSite().equals(RECTUM))
         {
             int index = RAND.nextInt(2) ;
-            if (index == 0) return penis ;
+            if (index == 0) return urethra ;
             else return pharynx ;
         }
         else
@@ -334,18 +363,18 @@ abstract public class MSM extends Agent {
     {
         int index = RAND.nextInt(2) ;
         if (index == 0)
-            return penis ;
+            return urethra ;
         return pharynx ;
     }
 
     protected Site chooseNotRectumSite(Site site) 
     {
         if (PHARYNX.equals(site.getSite()))
-            return penis ;
+            return urethra ;
         return pharynx ;
     }
 
-    protected Site chooseNotPenisSite() 
+    protected Site chooseNotUrethraSite() 
     {
         int index = RAND.nextInt(2) ;
         if (index == 0)
@@ -363,14 +392,14 @@ abstract public class MSM extends Agent {
         this.rectum = rectum ;
     }
     
-    protected Penis getPenis()
+    protected Urethra getUrethra()
     {
-        return penis ;		
+        return urethra ;		
     }
 
-    protected void setPenis(Penis penis)
+    protected void setUrethra(Urethra urethra)
     {
-        this.penis = penis ;
+        this.urethra = urethra ;
     }
     
     protected Pharynx getPharynx()
@@ -403,9 +432,19 @@ abstract public class MSM extends Agent {
             setAntiViralStatus(false) ;
     }
 
-    public boolean getSeroSort()
+    public boolean getSeroSort(String relationshipClazzName)    //, Boolean status)
     {
-        return seroSort ;
+        Boolean serosort  = false ;
+        String returnString = "seroSort" + relationshipClazzName ;
+        try
+        {
+            serosort = MSM.class.getDeclaredField(returnString).getBoolean(this) ;
+        }
+        catch ( Exception e )
+        {
+            LOGGER.log(Level.SEVERE, "{0} {1}", new Object[] {returnString, e.getClass().getSimpleName()});
+        }
+        return serosort ;
     }
     
     /**
@@ -473,6 +512,14 @@ abstract public class MSM extends Agent {
         return prepStatus ;
     }
     
+    private void initPrepStatus(boolean prep)
+    {
+        setPrepStatus(prep) ;
+        
+        // Randomly set timer for first STI screen if on PrEP
+        if (prepStatus)
+            screenTime = RAND.nextInt(SCREENCYCLE) ;
+    }
     /**
      * Setter of prepStatus. Used for unit testing
      * @param prep 
@@ -480,9 +527,25 @@ abstract public class MSM extends Agent {
     public void setPrepStatus(boolean prep)
     {
         prepStatus = prep && (!statusHIV) ;
-        return ;
     }
 
+    /**
+     * Whether to enter a proposed relationship of class relationshipClazz .
+     * Currently according to whether in a monogomous relationship and 
+     * the number of relationships already entered compared to promiscuity.
+     * 
+     * @param relationshipClazzName - name relationship subclass
+     * @param partner - agent for sharing proposed relationship
+     * @return true if accept and false otherwise
+     */
+    public boolean consent(String relationshipClazzName, Agent partner)
+    {
+        if (getSeroSort(relationshipClazzName))
+            if (!String.valueOf(getStatusHIV()).equals(declareStatus()))
+                return false ;
+        return super.consent(relationshipClazzName, partner) ;
+    }
+    
     /**
      * How would the MSM respond if asked to disclose their statusHIV
      * @return String representation of statusHIV if (discloseStatusHIV), otherwise 'none'
@@ -519,6 +582,27 @@ abstract public class MSM extends Agent {
         return PROBABILITY_NEGATIVE_SERO_SORT ;
     }
 
+        protected double getProbabilitySeroSortCasual(Boolean hivStatus)
+    {
+        if (hivStatus)
+            return PROBABILITY_POSITIVE_CASUAL_SERO_SORT ;
+        return PROBABILITY_NEGATIVE_CASUAL_SERO_SORT ;
+    }
+
+    protected double getProbabilitySeroSortRegular(Boolean hivStatus)
+    {
+        if (hivStatus)
+            return PROBABILITY_POSITIVE_REGULAR_SERO_SORT ;
+        return PROBABILITY_NEGATIVE_REGULAR_SERO_SORT ;
+    }
+
+    protected double getProbabilitySeroSortMonogomous(Boolean hivStatus)
+    {
+        if (hivStatus)
+            return PROBABILITY_POSITIVE_MONOGOMOUS_SERO_SORT ;
+        return PROBABILITY_NEGATIVE_MONOGOMOUS_SERO_SORT ;
+    }
+
     protected double getProbabilitySeroPosition(Boolean hivStatus) 
     {
         if (hivStatus)
@@ -534,7 +618,7 @@ abstract public class MSM extends Agent {
      * @return true if condom is to be used, false otherwise
      */
     @Override
-    abstract protected boolean chooseCondom(Agent msm);
+    abstract protected boolean chooseCondom(String relationshipClazzName, Agent msm);
     
     /**
      * 
@@ -572,15 +656,39 @@ abstract public class MSM extends Agent {
     {
         if (prepStatus)
         {
+            // Find current cycle
             int cycle = Integer.valueOf(args[0]) ;
+            
+            //Don't have compulsory screening on first day
+            //if (cycle == 0)
+              //  super.getScreenProbability(args) ;
+            
             // Those on antivirals test every three months (92 days) on a given day
-            if ( Math.floorMod(cycle, SCREENCYCLE) == 0)
+            if ( screenTime == 0)
+            {
+                screenTime = SCREENCYCLE ;
                 return 1.0 ;
+            }
             else
                 return 0.0 ;
         }
         return super.getScreenProbability(args) ;
     }
     
-    
+    /**
+     * Tracks time until next STI screen if MSM is on PrEP
+     * @return (String) report of results from aging.
+     */
+    @Override
+    protected String ageEffects()
+    {
+        if (prepStatus)
+        {
+        String report = "" ;
+        screenTime-- ;
+        report += super.ageEffects() ;
+        return report;
+        }
+        return super.ageEffects() ;
+    }
 }
