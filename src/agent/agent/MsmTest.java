@@ -16,10 +16,10 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
-import site.Penis;
-import site.Pharynx;
-import site.Rectum;
-import site.Site;
+import site.Urethra ;
+import site.Pharynx ;
+import site.Rectum ;
+import site.Site ;
 
 /**
  *
