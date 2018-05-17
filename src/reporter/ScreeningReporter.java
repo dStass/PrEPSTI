@@ -12,6 +12,7 @@ package reporter;
 
 import java.io.* ;
 import java.util.ArrayList ;
+import java.util.logging.Level;
 
 
 public class ScreeningReporter extends Reporter {
@@ -38,13 +39,18 @@ public class ScreeningReporter extends Reporter {
     public ArrayList<String> preparePrevalenceReport()
     {
         ArrayList<String> prevalence = new ArrayList<String>() ;
+        int population ;
         String entry ;
         for (String record : input)
         {
+            //LOGGER.info(record) ;
             int[] incidence = countValueIncidence(INFECTED, TRUE, record, 0) ;
+            // Use population for prevalence calculations, symptoms[1] == incidence[0] 
+            population = incidence[1];
+            
             entry = addReportProperty("prevalence",((double) incidence[0])/incidence[1]) ;
             int[] symptoms = countValueIncidence(SYMPTOMATIC, TRUE, record, 0) ;
-            entry += addReportProperty("symptomatic",((double) symptoms[0])/symptoms[1]) ;
+            entry += addReportProperty("symptomatic",((double) symptoms[0])/population) ;
             entry += addReportProperty("proportion",((double) symptoms[0])/incidence[0]) ;
             
             prevalence.add(entry) ;
