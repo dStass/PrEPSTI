@@ -66,7 +66,7 @@ public class SafeMSM extends MSM{
      * @return true if condom is to be used, false otherwise
      */
     @Override
-    protected boolean chooseCondom(Agent partner) 
+    protected boolean chooseCondom(String relationshipClazzName, Agent partner) 
     {
         if (getStatusHIV())
             if (!getAntiViralStatus())
