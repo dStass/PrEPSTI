@@ -11,6 +11,7 @@ package reporter ;
 import java.io.* ;
 import java.util.ArrayList ;
 import java.util.HashMap ;
+import java.util.logging.Level;
 
 
 public class EncounterReporter extends Reporter {
@@ -80,13 +81,13 @@ public class EncounterReporter extends Reporter {
     {
         ArrayList<String> transmissionReport = new ArrayList<String>() ;
 
-        String report ;
+        String record ;
 
         for (int reportNb = 0 ; reportNb < input.size() ; reportNb += outputCycle )
         {
-            report = input.get(reportNb) ;
-            //LOGGER.log(Level.INFO, "prepare: {0}", report) ;
-            transmissionReport.add(encounterByValue("transmission","true",report)) ;
+            record = input.get(reportNb) ;
+            //LOGGER.log(Level.INFO, "prepare: {0}", record) ;
+            transmissionReport.add(encounterByValue("transmission","true",record)) ;
         }
         return transmissionReport ;
     }
@@ -105,39 +106,107 @@ public class EncounterReporter extends Reporter {
     
     
     /**
+     * TODO: Replace ArrayList with set.
+     * @return 
+     */
+    public HashMap<Integer,ArrayList<Integer>> prepareAgentToAgentRecord()
+    {
+        HashMap<Integer,ArrayList<Integer>> transmissionRecord = new HashMap<Integer,ArrayList<Integer>>() ;
+        
+        // Only consider contacts where transmission occurred
+        ArrayList<String> transmissionReport = prepareTransmissionReport() ;
+        int encounterIndex ;
+        int contactIndex ;
+        String contact ;
+        String[] agentIdPair ;
+        int spaceIndex ;
+        int trueIndex ;
+        int falseIndex ;
+                
+        // Check each record (cycle) in transmissionReport
+        for (String record : transmissionReport)
+        {
+            encounterIndex = record.indexOf("agentId0");
+            while (encounterIndex >= 0)
+            {
+                String encounterString = extractEncounter(record,encounterIndex) ;
+                agentIdPair = extractAgentIds(encounterString,0);
+                
+                // Check each sexual contact 
+                contactIndex = encounterString.indexOf(CONTACT);
+                while (contactIndex >= 0)
+                {
+                    contact = extractContact(encounterString,contactIndex) ;
+                    
+                    // Skip number of contact
+                    spaceIndex = contact.indexOf(" ");
+
+                    trueIndex = contact.indexOf("1",spaceIndex);
+                    falseIndex = contact.indexOf("0",spaceIndex);
+                    if (trueIndex < falseIndex)    
+                        Reporter.updateHashMap(agentIdPair[0], agentIdPair[1], transmissionRecord) ;
+                    else    // falseIndex < trueIndex
+                        Reporter.updateHashMap(agentIdPair[1], agentIdPair[0], transmissionRecord) ;
+                    contactIndex = encounterString.indexOf(CONTACT,contactIndex+1);
+                }
+                encounterIndex = record.indexOf("agentId0",encounterIndex+1) ;
+            }
+        }
+        return transmissionRecord ;
+    }
+    
+    /**
      * 
      * @return (ArrayList) cycle-by-cycle report of which Agent infected which other Agent
      */
-    public ArrayList<HashMap<Integer,ArrayList<Integer>>> prepareAgentToAgentReport()
+    public HashMap<Integer,HashMap<Integer,ArrayList<Integer>>> prepareAgentToAgentReport()
     {
-        ArrayList<HashMap<Integer,ArrayList<Integer>>> agentToAgentReport = 
-                            new ArrayList<HashMap<Integer,ArrayList<Integer>>>() ;
+        HashMap<Integer,HashMap<Integer,ArrayList<Integer>>> agentToAgentReport = 
+                            new HashMap<Integer,HashMap<Integer,ArrayList<Integer>>>() ;
         
-        HashMap<Integer,ArrayList<Integer>> transmissionMap ;
         
         // Only consider contacts where transmission occurred
         ArrayList<String> transmissionReport = prepareTransmissionReport() ;
         
+        int encounterIndex ;
+        int contactIndex ;
+        String[] agentIdPair ;
+        int spaceIndex ;
+        int trueIndex ;
+        int falseIndex ;
+                
         // Check each record (cycle) in transmissionReport
-        for (String record : transmissionReport)
+        for (int cycle = 0 ; cycle < transmissionReport.size(); cycle++ )
         {
-            transmissionMap = new HashMap<Integer,ArrayList<Integer>>();
+            String record = transmissionReport.get(cycle) ;
             
-            // Check each sexual contact 
-            int contactIndex = record.indexOf(CONTACT) ;
-            while (contactIndex >= 0)
+            encounterIndex = record.indexOf("agentId0");
+            while (encounterIndex >= 0)
             {
-                String contact = extractContact(record,contactIndex) ;
-                String[] agentIdPair = extractAgentIds(record,0) ;
+                String encounterString = extractEncounter(record,encounterIndex) ;
+                agentIdPair = extractAgentIds(encounterString,0);
+                
+                // Check each sexual contact 
+                contactIndex = encounterString.indexOf(CONTACT);
+                while (contactIndex >= 0)
+                {
+                    String contact = extractContact(encounterString,contactIndex) ;
+                    
+                    // Skip number of contact
+                    spaceIndex = contact.indexOf(" ");
 
-                int trueIndex = contact.indexOf(TRUE) ;
-                int falseIndex = contact.indexOf(FALSE) ;
-                if (trueIndex < falseIndex)    
-                    Reporter.updateHashMap(agentIdPair[0], agentIdPair[1], transmissionMap) ;
-                else    // falseIndex < trueIndex
-                    Reporter.updateHashMap(agentIdPair[1], agentIdPair[0], transmissionMap) ;
+                    trueIndex = contact.indexOf("1",spaceIndex);
+                    falseIndex = contact.indexOf("0",spaceIndex);
+                    if (trueIndex < falseIndex)    
+                    {
+                        Reporter.updateHashMap(agentIdPair[0], agentIdPair[1], cycle, agentToAgentReport) ;
+                    }
+                    else    // falseIndex < trueIndex
+                        Reporter.updateHashMap(agentIdPair[1], agentIdPair[0], cycle, agentToAgentReport) ;
+                    contactIndex = encounterString.indexOf(CONTACT,contactIndex+1);
+                }
+                encounterIndex = record.indexOf("agentId0",encounterIndex+1) ;
             }
-            agentToAgentReport.add(transmissionMap) ;
         }
         return agentToAgentReport ;
     }
@@ -150,8 +219,8 @@ public class EncounterReporter extends Reporter {
     {
         // Output HashMap
         HashMap<String,Integer> fromSiteToSiteReport = new HashMap<String,Integer>() ;
-        int contactIndex = 0 ;
-        //int nameIndex ;
+        int contactIndex ;
+        
         // String describing sexual contact
         String contactString ;
         // name of transmitting site 
@@ -174,7 +243,7 @@ public class EncounterReporter extends Reporter {
             report = transmissionReport.get(reportNb) ;
             // Extract contacts in which transmission occurs
             //report = encounterByValue("transmission","true",report) ;
-            
+            contactIndex = 0 ;
             // Cycle through contact: substrings, noting fromSite, toSite where 
             // transmission occurs
             //LOGGER.info(report);
@@ -281,7 +350,7 @@ public class EncounterReporter extends Reporter {
      * @param report
      * @return 
      */
-    private String encounterByValue(String propertyName, String value, String report)
+    private String encounterByValue(String propertyName, String value, String record)
     {
         int indexStart = 0 ;
         int indexContact ;
@@ -291,10 +360,10 @@ public class EncounterReporter extends Reporter {
         while (indexStart >= 0)
         {
             // Encounter to study
-            encounterString = extractEncounter(report, indexStart) ;
+            encounterString = extractEncounter(record, indexStart) ;
 
             // Prepare for next loop
-            indexStart = indexOfProperty("agentId0",indexStart+1, report) ;
+            indexStart = indexOfProperty("agentId0",indexStart+1, record) ;
             
             // Initialise output for encounter
             indexContact = indexOfProperty("contact",encounterString) ;
