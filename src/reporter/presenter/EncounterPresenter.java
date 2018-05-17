@@ -97,5 +97,22 @@ public class EncounterPresenter extends Presenter {
         
         plotCycleValue("Number of Tranmissions", nbTransmissionReport) ;
     }
+
+    /**
+     * plotAgentToAgent() produces a scatter plot of which Agents were infected by which other Agents.
+     */
+    public void plotAgentToAgent()
+    {
+        HashMap<Integer,ArrayList<Integer>> transmittingAgentsReport = reporter.prepareAgentToAgentRecord() ;
+        plotHashMapScatter("infectious agent", "receiving agent", transmittingAgentsReport ) ;
+    }
     
+    /**
+     * plotAgentToAgentNetwork() draws network of Agents infecting other Agents .
+     */
+    public void plotAgentToAgentNetwork()
+    {
+        HashMap<Integer,HashMap<Integer,ArrayList<Integer>>> transmittingAgentsReport = reporter.prepareAgentToAgentReport() ;
+        callPlotNetwork("agentId", "cycle", transmittingAgentsReport) ;
+    }
 }
