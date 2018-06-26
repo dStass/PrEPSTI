@@ -11,36 +11,39 @@ package agent;
  */
 public class RiskyMSM extends MSM
 {
-    // probability of choosing each Relationship subclass
-    // RiskyMSM taken to have more Casual Relationships and less Monogomous
-    // odds of Monogomous, Regular and Casual
-    int monogomousOdds = RAND.nextInt(10) ;
-    int regularOdds = 2 * RAND.nextInt(10 - monogomousOdds) ;
-    int casualOdds = 5 * (10 - monogomousOdds - regularOdds) ;
-
-    // The maximum number of relationships an agent may be willing to sustain
-    static int MAX_RELATIONSHIPS = 25;
+    /** The maximum number of relationships an agent may be willing to sustain. */
+    static int MAX_RELATIONSHIPS = 3;
     
     //static double probabilityRequireDiscloseHIV = 0.5 ;
     
     // The probability of positive HIV status
-    static double PROBABILITY_HIV = 0.02 ;
+    static double PROBABILITY_HIV = 0.12 ;
     
     // The probability of disclosing HIV status if HIV positive
     static double PROBABILITY_DISCLOSE_POSITIVE_HIV = 0.40 ;
     // The probability of disclosing HIV status if HIV negative
     static double PROBABILITY_DISCLOSE_NEGATIVE_HIV = 0.35 ;
-    // probability of using condom even when other strategies not available
+    
+    /** 
+     * Probability of joining an orgy if invited.
+     * Assumed one third of RiskyMSM average once every six months.
+     */
+    static double JOIN_ORGY_PROBABILITY = 1.0/(3 * 184) ;
+    
+    /** 
+     * Probability of using condom regardless of what other strategies are available.
+     */
     private double probabilityUseCondom = RAND.nextDouble() ;
-    
-    // probability of joining an orgy if invited
-    static double JOIN_ORGY_PROBABILITY = 0.4 ;
-    
+
     public RiskyMSM(int startAge){
         super(startAge) ;
     }
     
-    
+    /**
+     * getter for MAX_RELATIONSHIPS.
+     * @return MAX_RELATIONSHIPS
+     */
+    @Override
     protected int getMaxRelationships()
     {
         return MAX_RELATIONSHIPS ;
