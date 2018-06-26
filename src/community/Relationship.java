@@ -2,6 +2,8 @@ package community;
 
 import agent.* ;
 import site.* ;
+import reporter.Reporter ;
+
 
 import java.util.Random ;
 //import java.util.logging.Logger;
@@ -19,8 +21,12 @@ public class Relationship {
     private Agent agent0 ;	
     private Agent agent1 ;
     
+    private int relationshipId ;
+    
     /** Simple name of relationship subclass (see constructor). */
     private String relationship ;
+    
+    static public String RELATIONSHIP_ID = "relationshipId" ;
     
     /** Random number generator. */
     static Random RAND = new Random() ;
@@ -32,9 +38,34 @@ public class Relationship {
     /** Site name of Rectum */
     static String PHARYNX = "Pharynx" ;
     
+    static public String DEATH_RECORD = "death:" ;
+    
+    static public void APPEND_DEATH_RECORD(String record)
+    {
+        DEATH_RECORD += record ;
+    }
+    
+    static public String READ_DEATH_RECORD()
+    {
+        String output ;
+        output = DEATH_RECORD ;
+        DEATH_RECORD = "death:" ;
+        return output ;
+    }
+    
+    
     /** Current number of relationships in the simulation */
     static int NB_RELATIONSHIPS = 0; 
 
+    /** Total number of relationships created in the simulation */
+    static int NB_RELATIONSHIPS_CREATED = 0; 
+
+    /** Probability of sexual encounter within Relationship in any cycle */
+    static double ENCOUNTER_PROBABILITY = 0.5 ;
+    
+    /** One less than the maximum number of contacts allowed in a sexual encounter. */
+    static int MAXIMUM_CONTACTS = 3 ;
+    
     // TODO: Move condom variables to STI
     // Probability of using a condom for couplings with a Site.Urethra
     static double CONDOM_USE = 0.5;
@@ -60,12 +91,11 @@ public class Relationship {
      */
     static Class chooseRelationship(Agent agent0, Agent agent1 )
     {
-    	int monogomousOdds = agent0.getMonogomousOdds() + agent1.getMonogomousOdds() ;
-    	int regularOdds = agent0.getRegularOdds() + agent1.getRegularOdds() ;
-    	int casualOdds = agent0.getCasualOdds() + agent1.getCasualOdds() ;
-    	int totalOdds = monogomousOdds + regularOdds + casualOdds ;
-    	
-        int choice = RAND.nextInt(totalOdds) ;
+    	double monogomousOdds = agent0.getMonogomousOdds() + agent1.getMonogomousOdds() ;
+    	double regularOdds = agent0.getRegularOdds() + agent1.getRegularOdds() ;
+    	double casualOdds = agent0.getCasualOdds() + agent1.getCasualOdds() ;
+    	double totalOdds = monogomousOdds + regularOdds + casualOdds ;
+    	double choice = RAND.nextDouble() * totalOdds ;
         if (choice < monogomousOdds)
     		return Monogomous.class ;
     	if (choice < (monogomousOdds + regularOdds))
@@ -84,15 +114,24 @@ public class Relationship {
     public Relationship()
     {
         NB_RELATIONSHIPS++ ;
+        this.relationshipId = NB_RELATIONSHIPS_CREATED ;
+        NB_RELATIONSHIPS_CREATED++ ;
     	Class<?> clazz = this.getClass() ;
     	relationship = clazz.asSubclass(clazz).getSimpleName() ;
     }
     
     public Relationship(Agent agent0, Agent agent1) {
     	NB_RELATIONSHIPS++ ;
+        this.relationshipId = NB_RELATIONSHIPS_CREATED ;
+        NB_RELATIONSHIPS_CREATED++ ;
         addAgents(agent0, agent1) ;
     	Class<?> clazz = this.getClass() ;
     	relationship = clazz.asSubclass(clazz).getSimpleName() ;
+    }
+    
+    final public int getRelationshipId()
+    {
+        return relationshipId ;
     }
     
     /**
@@ -121,9 +160,9 @@ public class Relationship {
      */
     final public int getPartnerId(int agentId)
     {
-    	if (agent0.getId() == agentId)
-    		return agent1.getId() ;
-    	return agent0.getId() ;
+    	if (agent0.getAgentId() == agentId)
+    		return agent1.getAgentId() ;
+    	return agent0.getAgentId() ;
     }
     
     /**
@@ -136,6 +175,15 @@ public class Relationship {
     	if (agent0 == agent)
     		return agent1 ;
     	return agent0 ;
+    }
+    
+    /**
+     * The probability of any sexual contact in any cycle.
+     * @return 
+     */
+    protected double getEncounterProbability()
+    {
+        return ENCOUNTER_PROBABILITY ;
     }
     
     /*********************************************************************
@@ -182,8 +230,8 @@ public class Relationship {
     	int contacts = chooseNbContacts() ;
     
         // Initialising Agents and corresponding Sites 
-    	report += "agentId0:" + Integer.toString(agent0.getId()) + " " ;
-        report += "agentId1:" + Integer.toString(agent1.getId()) + " " ;
+    	report += "agentId0:" + Integer.toString(agent0.getAgentId()) + " " ;
+        report += "agentId1:" + Integer.toString(agent1.getAgentId()) + " " ;
         
         if ((!agent0.getInfectedStatus()) && (!agent1.getInfectedStatus()))
             return report ;
@@ -277,7 +325,7 @@ public class Relationship {
      */
     private int chooseNbContacts()
     {
-    	return RAND.nextInt(3) + 1 ;
+    	return RAND.nextInt(MAXIMUM_CONTACTS) + 1 ;
     }
     
     /**
@@ -294,12 +342,13 @@ public class Relationship {
         return agent0 ;
     }
     
-    public String getReport()
+    public String getRecord()
     {
-    	String report = getRelationship() + ":" ;
-    	report += "agentId0:" + Integer.toString(agent0.getId()) + " " ;
-    	report += "agentId1:" + Integer.toString(agent1.getId()) + " " ;
-    	return report ;
+    	String record = Reporter.addReportProperty(RELATIONSHIP_ID,relationshipId) ; 
+        record += Reporter.addReportProperty("relationship",getRelationship()) ;
+    	record += Reporter.addReportProperty(Reporter.AGENTID0,agent0.getAgentId());
+    	record += Reporter.addReportProperty(Reporter.AGENTID1,agent1.getAgentId()) ;
+    	return record ;
     }
 
     /**
