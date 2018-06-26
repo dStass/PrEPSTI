@@ -49,7 +49,7 @@ public class ScreeningPresenter extends Presenter {
      */
     public void plotPrevalence()
     {
-        ArrayList<String> prevalenceReport = reporter.preparePrevalenceReport() ;
+        ArrayList<Object> prevalenceReport = reporter.preparePrevalenceReport() ;
         
         plotCycleValue("prevalence", prevalenceReport) ;
     }
@@ -59,7 +59,7 @@ public class ScreeningPresenter extends Presenter {
      */
     public void plotSymptomPrevalence()
     {
-        ArrayList<String> symptomaticReport = reporter.preparePrevalenceReport() ;
+        ArrayList<Object> symptomaticReport = reporter.preparePrevalenceReport() ;
         
         plotCycleValue("symptomatic", symptomaticReport) ;
     }
@@ -69,7 +69,39 @@ public class ScreeningPresenter extends Presenter {
      */
     public void plotProportionSymptomatic()
     {
-        ArrayList<String> symptomaticReport = reporter.preparePrevalenceReport() ;
+        ArrayList<Object> symptomaticReport = reporter.preparePrevalenceReport() ;
+        plotCycleValue("proportion", symptomaticReport) ;
+    }
+    
+    /**
+     * Plots the population prevalence of infected siteName over time (cycles).
+     * @param siteName - Name of Site to plot for.
+     */
+    public void plotSitePrevalence(String siteName)
+    {
+        ArrayList<Object> prevalenceReport = reporter.prepareSitePrevalenceReport(siteName) ;
+        
+        plotCycleValue("prevalence", prevalenceReport) ;
+    }
+    
+    /**
+     * Plots the population prevalence of symptomatic siteName over time (cycles).
+     * @param siteName - Name of Site to plot for.
+     */
+    public void plotSiteSymptomPrevalence(String siteName)
+    {
+        ArrayList<Object> symptomaticReport = reporter.prepareSitePrevalenceReport(siteName) ;
+        
+        plotCycleValue("symptomatic", symptomaticReport) ;
+    }
+    
+    /**
+     * Plots the proportion of Agents with an infected siteName that are symptomatic over time (cycles).
+     * @param siteName - Name of Site to plot for.
+     */
+    public void plotSiteProportionSymptomatic(String siteName)
+    {
+        ArrayList<Object> symptomaticReport = reporter.prepareSitePrevalenceReport(siteName) ;
         plotCycleValue("proportion", symptomaticReport) ;
     }
     
