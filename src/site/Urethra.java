@@ -18,6 +18,21 @@ public class Urethra extends Site {
     // Probability of positive symptomatic status if infected
     static double SYMPTOMATIC_PROBABILITY = 0.9 ;
 
+    /**
+     * Duration of gonorrhoea infection in Urethra.
+     * Proper value unknown as almost always treated. 
+     * Value for Rectum taken.
+     */
+    static int INFECTION_DURATION = 183 ;
+    
+    static int SYMPTOMATIC_DURATION = 3 ;
+    
+    /**
+     * Probability of seeking treatment in a given cycle if infected with 
+     * gonorrhoea. This value chosen so 91% probability of treatment within 
+     * 3 days.
+     */
+    static double TREATMENT_PROBABILITY = 0.6 ; // 0.6 ;
     
     /**
      * 
@@ -26,6 +41,15 @@ public class Urethra extends Site {
     {
         super() ;
         Logger.logMsg(0, this.getSite());
+    }
+    
+    /**
+     * Determine whether Urethra initially infected.
+     * @return false
+     */
+    public boolean initialiseInfection()
+    {
+        return false ;
     }
     
     /**
@@ -38,5 +62,29 @@ public class Urethra extends Site {
     }
 
     
+    protected int getInfectionDuration()
+    {
+        return INFECTION_DURATION ;
+    }
+    
+    /**
+     * 
+     * @return Mean duration of symptomatic infection (before treatment).
+     */
+    @Override
+    protected int getSymptomaticDuration()
+    {
+        return SYMPTOMATIC_DURATION ;
+    }
+    
+    /**
+     * 
+     * @return Probability of treatment for an STI being sought and successful.
+     */
+    @Override
+    protected double getTreatmentProbability()
+    {
+        return TREATMENT_PROBABILITY ;
+    }
 
 }
