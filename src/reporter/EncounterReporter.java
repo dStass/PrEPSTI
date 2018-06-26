@@ -3,13 +3,18 @@
  */
 package reporter ;
 
+import community.* ;
+
 /**
 * @author Michael Walker
 */
 
 
 import java.io.* ;
+import java.util.Arrays ;
 import java.util.ArrayList ;
+//import java.util.Collections;
+//import java.util.Comparator;
 import java.util.HashMap ;
 import java.util.logging.Level;
 
@@ -21,14 +26,16 @@ public class EncounterReporter extends Reporter {
 
     static String TRANSMISSION = "transmission" ;
 
-    public EncounterReporter(String simname, ArrayList<String> reports) {
-        super(simname, reports);
+    public EncounterReporter(String simname, ArrayList<String> report) {
+        super(simname, report);
         // TODO Auto-generated constructor stub
     }
 
-    public EncounterReporter(String simname, String reportFilePath)
-    {
-        super(simname,reportFilePath) ;
+    public EncounterReporter(String simname, String fileName)
+    {        
+        fileName = "EncounterReport" + Community.NAME_ROOT + ".txt" ;  // Community.FILE_PATH + 
+        Reader reader = new Reader(simname,fileName) ;
+        input = reader.getFiledReport() ;
     }
     // Was hiding field in Reporter. May yet delete there
     //ArrayList<String> input ;
@@ -58,15 +65,15 @@ public class EncounterReporter extends Reporter {
      *  
      * @return ArrayList<HashMap>
      */
-    public ArrayList<HashMap<Integer,ArrayList<Integer>>> preparePartnersReport()
+    public ArrayList<HashMap<Object,ArrayList<Object>>> preparePartnersReport()
     {
-            ArrayList<HashMap<Integer,ArrayList<Integer>>> partnersReport  
-                    = new ArrayList<HashMap<Integer,ArrayList<Integer>>>() ;
+            ArrayList<HashMap<Object,ArrayList<Object>>> partnersReport  
+                    = new ArrayList<HashMap<Object,ArrayList<Object>>>() ;
             ArrayList<String[]> pairArray ;
             
             for (String record : input)
             {
-                partnersReport = new ArrayList<HashMap<Integer,ArrayList<Integer>>>() ;
+                partnersReport = new ArrayList<HashMap<Object,ArrayList<Object>>>() ;
                 pairArray = reportAgentIdPairs(record) ;
                 partnersReport.add(agentPartners(pairArray)) ;
             }
@@ -92,26 +99,68 @@ public class EncounterReporter extends Reporter {
         return transmissionReport ;
     }
     
-    public ArrayList<String> prepareTransmissionCountReport()
+    /**
+     * 
+     * @return (ArrayList<String>) The number of transmissions in each cycle.
+     */
+    public ArrayList<Object> prepareTransmissionCountReport()
     {
-        ArrayList<String> nbTransmissions = new ArrayList<String>() ;
+        ArrayList<Object> nbTransmissions = new ArrayList<Object>() ;
         
         for (String record : input)
         {
             int[] incidence = countValueIncidence("transmission", TRUE, record, 0) ;
-            nbTransmissions.add(String.valueOf((double) incidence[0])) ;
+            LOGGER.info((String.valueOf(incidence[0])));
+            nbTransmissions.add("transmission:" + String.valueOf(incidence[0])) ;
         }
         return nbTransmissions ;
     }
     
+    /**
+     * 
+     * @param sortedReport
+     * @return Report of Transmissions per cycle for Agents sorted in sortedReport.
+     */
+    public ArrayList<ArrayList<Object>> prepareTransmissionCountReport( HashMap<Object,HashMap<Object,ArrayList<Object>>> sortedReport )
+    {
+        ArrayList<ArrayList<Object>> nbTransmissions = new ArrayList<ArrayList<Object>>() ;
+        
+        Object[] objectKeys = sortedReport.keySet().toArray() ;
+        Integer[] sortedKeys = new Integer[objectKeys.length] ;
+        
+        for (int keyIndex = 0; keyIndex < objectKeys.length ; keyIndex++)
+            sortedKeys[keyIndex] = (Integer) objectKeys[keyIndex] ;
+        Arrays.sort(sortedKeys) ;
+        
+        LOGGER.log(Level.INFO, "nb sorted keys: {0}", objectKeys.length);
+        //for (int key : sortedKeys )
+        for (int key = 0 ; key <= sortedKeys[sortedKeys.length-1] ; key++)
+        {
+            ArrayList<Object> recordArray = new ArrayList<Object>() ;
+            if (sortedReport.keySet().contains(key))
+            {
+                HashMap<Object,ArrayList<Object>> cycleHashMap = sortedReport.get(key) ;
+                //count = 0;
+                for ( ArrayList<Object> value : cycleHashMap.values() )
+                    recordArray.add(value) ;
+            }
+            else
+                recordArray.add("0") ;
+            
+            nbTransmissions.add(recordArray) ;
+        }
+        return nbTransmissions ;
+            
+        
+    }
     
     /**
      * TODO: Replace ArrayList with set.
-     * @return 
+     * @return (HashMap) key is the transmitting agentId and entries are receiving agentIds
      */
-    public HashMap<Integer,ArrayList<Integer>> prepareAgentToAgentRecord()
+    public HashMap<Object,ArrayList<Object>> prepareAgentToAgentRecord()
     {
-        HashMap<Integer,ArrayList<Integer>> transmissionRecord = new HashMap<Integer,ArrayList<Integer>>() ;
+        HashMap<Object,ArrayList<Object>> transmissionRecord = new HashMap<Object,ArrayList<Object>>() ;
         
         // Only consider contacts where transmission occurred
         ArrayList<String> transmissionReport = prepareTransmissionReport() ;
@@ -144,9 +193,9 @@ public class EncounterReporter extends Reporter {
                     trueIndex = contact.indexOf("1",spaceIndex);
                     falseIndex = contact.indexOf("0",spaceIndex);
                     if (trueIndex < falseIndex)    
-                        Reporter.updateHashMap(agentIdPair[0], agentIdPair[1], transmissionRecord) ;
+                        Reporter.updateHashMap(Integer.valueOf(agentIdPair[0]), Integer.valueOf(agentIdPair[1]), transmissionRecord) ;
                     else    // falseIndex < trueIndex
-                        Reporter.updateHashMap(agentIdPair[1], agentIdPair[0], transmissionRecord) ;
+                        Reporter.updateHashMap(Integer.valueOf(agentIdPair[1]), Integer.valueOf(agentIdPair[0]), transmissionRecord) ;
                     contactIndex = encounterString.indexOf(CONTACT,contactIndex+1);
                 }
                 encounterIndex = record.indexOf("agentId0",encounterIndex+1) ;
@@ -157,12 +206,13 @@ public class EncounterReporter extends Reporter {
     
     /**
      * 
-     * @return (ArrayList) cycle-by-cycle report of which Agent infected which other Agent
+     * @return (HashMap) report of which Agent infected which other Agents in 
+     * which cycle.
      */
-    public HashMap<Integer,HashMap<Integer,ArrayList<Integer>>> prepareAgentToAgentReport()
+    public HashMap<Object,HashMap<Object,ArrayList<Object>>> prepareAgentToAgentReport()
     {
-        HashMap<Integer,HashMap<Integer,ArrayList<Integer>>> agentToAgentReport = 
-                            new HashMap<Integer,HashMap<Integer,ArrayList<Integer>>>() ;
+        HashMap<Object,HashMap<Object,ArrayList<Object>>> objectReport = 
+                            new HashMap<Object,HashMap<Object,ArrayList<Object>>>() ;
         
         
         // Only consider contacts where transmission occurred
@@ -199,26 +249,31 @@ public class EncounterReporter extends Reporter {
                     falseIndex = contact.indexOf("0",spaceIndex);
                     if (trueIndex < falseIndex)    
                     {
-                        Reporter.updateHashMap(agentIdPair[0], agentIdPair[1], cycle, agentToAgentReport) ;
+                        objectReport = Reporter.updateHashMap(Integer.valueOf(agentIdPair[0]), Integer.valueOf(agentIdPair[1]), cycle, objectReport) ;
+                        break ;
                     }
                     else    // falseIndex < trueIndex
-                        Reporter.updateHashMap(agentIdPair[1], agentIdPair[0], cycle, agentToAgentReport) ;
-                    contactIndex = encounterString.indexOf(CONTACT,contactIndex+1);
+                    {
+                        objectReport = Reporter.updateHashMap(Integer.valueOf(agentIdPair[1]), Integer.valueOf(agentIdPair[0]), cycle, objectReport) ;
+                        break ;
+                    }
+                    //contactIndex = encounterString.indexOf(CONTACT,contactIndex+1);
                 }
                 encounterIndex = record.indexOf("agentId0",encounterIndex+1) ;
             }
         }
-        return agentToAgentReport ;
+        //return hashMapHashMapNumber(objectReport) ;
+        return objectReport ;
     }
 		
     /**
      * @param siteNames (String[]) names of body sites in sexual contact
      * @return String[] report of sexual contacts where STI transmission occurred
      */    
-    public HashMap<String,Integer> prepareFromSiteToSiteReport(String siteNames[])
+    public HashMap<Object,Integer> prepareFromSiteToSiteReport(String siteNames[])
     {
         // Output HashMap
-        HashMap<String,Integer> fromSiteToSiteReport = new HashMap<String,Integer>() ;
+        HashMap<Object,Integer> fromSiteToSiteReport = new HashMap<Object,Integer>() ;
         int contactIndex ;
         
         // String describing sexual contact
@@ -306,15 +361,15 @@ public class EncounterReporter extends Reporter {
      * @param pairArray ArrayList<String[]> of agentId doublets indicating sexual encounters 
      * @return partnerMap - HashMap indicating partnerIds of each agent (key: agentId)
      */
-    private HashMap<Integer,ArrayList<Integer>> agentPartners(ArrayList<String[]> pairArray)
+    private HashMap<Object,ArrayList<Object>> agentPartners(ArrayList<String[]> pairArray)
     {
-        HashMap<Integer,ArrayList<Integer>> partnerMap = new HashMap<Integer,ArrayList<Integer>>() ;
-        int agentNb0 ;
-        int agentNb1 ;
+        HashMap<Object,ArrayList<Object>> partnerMap = new HashMap<Object,ArrayList<Object>>() ;
+        String agentNb0 ;
+        String agentNb1 ;
         for (String[] pairString : pairArray)
         { 
-            agentNb0 = Integer.parseInt(pairString[0]) ;
-            agentNb1 = Integer.parseInt(pairString[1]) ;
+            agentNb0 = pairString[0] ;
+            agentNb1 = pairString[1] ;
 
             updateHashMap(agentNb0,agentNb1,partnerMap) ;
             updateHashMap(agentNb1,agentNb0,partnerMap) ;
