@@ -12,7 +12,7 @@ package agent;
 public class SafeMSM extends MSM{
     
     // The maximum number of relationships an agent may be willing to sustain
-    static int MAX_RELATIONSHIPS = 5;
+    static int MAX_RELATIONSHIPS = 3;
     
     // Associated probabilities for the above
     //static double probabilityRequireDiscloseHIV = 0.5 ;
@@ -25,17 +25,21 @@ public class SafeMSM extends MSM{
     /** Fraction of SafeMSM who disclose HIV status if HIV negative. */
     static double PROBABILITY_DISCLOSE_NEGATIVE_HIV = 0.35 ;
     
-    /** Probability of joining an orgy if invited. */
-    static double JOIN_ORGY_PROBABILITY = 0.1 ;
-    
     /** probability of using condom even when apparently safe (PrEP, TasP, etc) */
     private double probabilityUseCondom = RAND.nextDouble() ;
     
-    private boolean casualAnalSex ;
+    /** Probability of joining an orgy if invited. */
+    static double JOIN_ORGY_PROBABILITY = 0.0 ;
+    
     public SafeMSM(int startAge){
         super(startAge) ;
     }
     
+    /**
+     * getter for MAX_RELATIONSHIPS.
+     * @return MAX_RELATIONSHIPS
+     */
+    @Override
     protected int getMaxRelationships()
     {
         return MAX_RELATIONSHIPS ;
@@ -61,7 +65,9 @@ public class SafeMSM extends MSM{
     
     /**
      * Decides probabilistically whether MSM chooses to use a condom in a given encounter.
-     * Choice is based on properties of msm
+     * Choice is based on properties of msm and Agent partner.
+     * TODO: Should there be subset that always uses a condom?
+     * @param relationshipClazzName
      * @param partner
      * @return true if condom is to be used, false otherwise
      */
@@ -71,12 +77,13 @@ public class SafeMSM extends MSM{
         if (getStatusHIV())
             if (!getAntiViralStatus())
                 return true ;
-        else if (((MSM) partner).getDiscloseStatusHIV())
+        else if (!getPrepStatus())
+        {
+            if (!((MSM) partner).getDiscloseStatusHIV())
+                return true ;
             if (((MSM) partner).getStatusHIV())
-                if (!getPrepStatus())
-                    return true ;
-        else    // partner msm does not disclose
-            return true ;
+                return true ;
+        }
         return (RAND.nextDouble() < probabilityUseCondom ) ;  //TODO: Should there be subset who always use?
     }
     
