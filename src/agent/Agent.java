@@ -5,7 +5,7 @@ package agent;
 
 import community.* ;
 
-
+import reporter.Reporter ;
 import site.* ;
 
 import java.util.Random ;
@@ -31,26 +31,58 @@ public abstract class Agent {
     // Number in Community.population
     final private int agentId ;
 
-    // Age of Agent
+    /** Age of Agent */
     private int age ;
 
-    // Age beyond which no agents live
+    /** Number of days since last birthday. */
+    private int cyclesModYear ;
+    
+    // Age beyond which Agents are removed from the population. */
     static int MAX_LIFE = 65 ;
+    
+    
+    /** Names of Sites for Agent*/ 
+    static public String[] SITE_NAMES = new String[] {} ;
+    
+    
+    // Age-specific death rates from ABS.Stat
+    static double RISK_60 = 5.6 ;
+    static double RISK_55 = 3.7 ;
+    static double RISK_50 = 2.5 ;
+    static double RISK_45 = 1.6 ;
+    static double RISK_40 = 1.2 ; 
+    static double RISK_35 = 0.8 ;
+    static double RISK_30 = 0.6 ;
+    static double RISK_25 = 0.4 ;
+    static double RISK_20 = 0.4 ;
+    static double RISK_15 = 0.2 ;
 
+    final static double DAYS_PER_YEAR = 365.25 ;
     // Need to generate random numbers
     static Random RAND = new Random() ;
     
-    // String representation of "true".
+    /** String representation of "true". */
     static String TRUE = "true" ;
-    // String representation of "false".
+    /** String representation of "false". */
     static String FALSE = "false" ;
+    /** String representation of "Monogomous". */
+    static String MONOGOMOUS = "Monogomous" ;
+    /** String representation of "Regular". */
+    static String REGULAR = "Regular" ;
+    /** String representation of "Casual". */
+    static String CASUAL = "Casual" ;
     
-
     // agentId of next Agent to be created, current number plus one
     static int NB_AGENTS_CREATED = 0 ;
 
-    // Probability of screening in a given cycle when symptomatic is false
-    static double SCREEN_PROBABILITY = 0.01 ;
+    /** Probability of screening in a given cycle when symptomatic is false. */
+    static double SCREEN_PROBABILITY = 0.001 ;
+    
+    /** 
+     * The fraction by which infidelity is multiplied every additional year after 
+     * the age of 30. 
+     */
+    static double INFIDELITY_FRACTION = 0.5 ;
     
     // Standard String null response 
     static String NONE = "none" ;
@@ -59,18 +91,17 @@ public abstract class Agent {
     //static int MAX_RELATIONSHIPS = 15;
 
     // number of relationships willing to maintain at once
-    private int promiscuity ;
+    private int concurrency ;
 
-    // probability of choosing each Relationship subclass
-    // odds of choosing a Monogomous Relationship, Regular and Casual
-    int monogomousOdds = RAND.nextInt(11) ;
-    // odds of choosing a Regular Relationship
-    int regularOdds = RAND.nextInt(11 - monogomousOdds) ;
-    // odds of choosing a Casual Relationship
-    int casualOdds = 10 - monogomousOdds - regularOdds ;
-
+    /** odds of choosing a Monogomous Relationship. */
+    double monogomousOdds = Monogomous.BREAKUP_PROBABILITY ;
+    /** odds of choosing a Regular Relationship. */
+    double regularOdds = Regular.BREAKUP_PROBABILITY ;
+    /** odds of choosing a Casual Relationship. */
+    double casualOdds = Casual.BREAKUP_PROBABILITY ;
+ 
     // probability of cheating on a monogomous spouse
-    private double infidelity;
+    private double infidelity = 0.03;
 
     // current partners
     private ArrayList<Integer> currentPartnerIds = new ArrayList<Integer>() ;
@@ -103,10 +134,17 @@ public abstract class Agent {
      */
     private boolean symptomatic = false ;
     
+        /** Days between asymptomatic STI screens . */
+    private int screenCycle = 92 ;
+    
+    /** Cycles remaining until next STI screen. */
+    private int screenTime ;
+
+    
     // names of fields of interest to the census.
-    private String[] censusFieldNames = {"agentId","age","agent","infectedStatus",
-            "symptomatic","available","inMonogomous","regularNumber","casualNumber",
-            "nbRelationships","promiscuity"} ;
+    private String[] censusFieldNames = {"agentId","agent","concurrency","infidelity"} ;
+            //"symptomatic","available","inMonogomous","regularNumber","casualNumber",
+            //"nbRelationships",
 
     static final java.util.logging.Logger LOGGER = java.util.logging.Logger.getLogger("agent") ;
 
@@ -161,19 +199,19 @@ public abstract class Agent {
             this.agentId = NB_AGENTS_CREATED ;
             NB_AGENTS_CREATED++ ;
             initAge(startAge) ;
+            cyclesModYear = RAND.nextInt(365) ;
             
-            initPromiscuity() ;
+            initConcurrency() ;
             initInfidelity() ;
             
-            if (casualOdds < 0)
-                LOGGER.log(Level.INFO, "{0} {1}", new Object[]{String.valueOf(agentId), String.valueOf(casualOdds)}) ;
+            initRelationshipOdds() ;
 
             Class<?> clazz = this.getClass() ;
             agent = clazz.asSubclass(clazz).getSimpleName() ;
 
     }
 
-    public int getId()
+    public int getAgentId()
     {
             return agentId ;
     }
@@ -195,6 +233,26 @@ public abstract class Agent {
         return age ;
     }
 
+    /**
+     * Initialises odds for different Relationship types
+     */
+    private void initRelationshipOdds()
+    {
+        try
+        {
+            // odds of choosing a Monogomous Relationship
+            double monogomousOdds = RAND.nextDouble() * Monogomous.BREAKUP_PROBABILITY ;
+            // odds of choosing a Regular Relationship
+            double regularOdds = RAND.nextDouble() * Regular.BREAKUP_PROBABILITY ;
+            // odds of choosing a Casual Relationship
+            double casualOdds = RAND.nextDouble() * Casual.BREAKUP_PROBABILITY ;
+        }
+        catch ( Exception e )
+        {
+            LOGGER.log(Level.INFO, "{0}", e.getLocalizedMessage());
+        }
+
+    }
     public int getAge() {
             return age;
     }
@@ -210,21 +268,30 @@ public abstract class Agent {
 
     public ArrayList<Integer> getCurrentPartnerIds()
     {
-            return currentPartnerIds;
+            return currentPartnerIds ;
+    }
+    
+    /**
+     * 
+     * @return (int) the number of current Relationships.
+     */
+    public int getNumberCurrentRelationships()
+    {
+        return currentPartnerIds.size() ;
     }
 
     /**
      * Randomly choose the number of simultaneous relationships an agent may have
      */
-    private int initPromiscuity()
+    private int initConcurrency()
     {
-            promiscuity = RAND.nextInt(getMaxRelationships()) + 1 ;
-            return promiscuity ;
+            concurrency = RAND.nextInt(getMaxRelationships()) + 1 ;
+            return concurrency ;
     }
 
-    public int getPromiscuity()
+    public int getConcurrency()
     {
-            return promiscuity ;
+            return concurrency ;
     }
     
     	
@@ -234,13 +301,13 @@ public abstract class Agent {
      * 
      * @return (int) the number of orgies in a community per cycle
      */
-    abstract public int getOrgyNumber() ;
+    //abstract public int getOrgyNumber() ;
     
     /**
      * 
      * @return (int) number of Agents invited to join any given orgy
      */
-    abstract public int getOrgySize() ;
+    abstract public int getGroupSexEventSize();
 
     /**
      * 
@@ -248,17 +315,17 @@ public abstract class Agent {
      */
     abstract public double getJoinOrgyProbability() ;
     
-    public int getMonogomousOdds()
+    public double getMonogomousOdds()
     {
             return monogomousOdds ;
     }
 
-    public int getRegularOdds()
+    public double getRegularOdds()
     {
             return regularOdds ;
     }
 
-    public int getCasualOdds()
+    public double getCasualOdds()
     {
             return casualOdds ;
     }
@@ -269,7 +336,7 @@ public abstract class Agent {
     private void initInfidelity()
     {
         int maximum = getMaxRelationships() ;
-            infidelity = 0.1 * RAND.nextInt(maximum)/maximum ;
+        infidelity = 0.1 * RAND.nextInt(maximum)/maximum ;
     }
 
     public double getInfidelity()
@@ -279,31 +346,32 @@ public abstract class Agent {
 
     public String getCensusReport()
     {
-        Class fieldClazz ;
+        String censusReport = "" ;
+        censusReport += "agentId:" + String.valueOf(agentId) + " " ;  // Reporter.addReportProperty("agentId",agentId) ;
+        censusReport += "class:" + agent + " " ;  // Reporter.addReportProperty("class",agent) ;
+        censusReport += "promiscuity:" + String.valueOf(concurrency) + " " ;  // Reporter.addReportProperty("concurrency",concurrency) ;
+        censusReport += "infidelity:" + String.valueOf(infidelity) + " " ;  // Reporter.addReportProperty("infidelity",infidelity) ;
+        
+        /*Class fieldClazz ;
         Class agentClazz ;
         String getterName ;
         Method getMethod ;
-        String censusReport = "" ;
-        for (String fieldName : censusFieldNames )
+        for (String fieldName : getCensusFieldNames() )
         {
+            censusReport += Reporter.addReportProperty(fieldName,Agent.class.getField(fieldName).get)  ;
             try
             {
-                censusReport += fieldName + ":" ;
-                fieldClazz = Class.forName(fieldName) ;
-                agentClazz = Class.forName(agent) ;
+                //fieldClazz = this.getClass().getField(fieldName).getClass() ;
+                agentClazz = Agent.class ;    // Class.forName("String") ;
                 getterName = "get" + fieldName.substring(0,1).toUpperCase() 
                         + fieldName.substring(1) ;
-                getMethod = agentClazz.getDeclaredMethod(getterName, (Class[]) null) ;
-                censusReport += String.valueOf(getMethod.invoke(this)) + " " ;
+                getMethod = agentClazz.getMethod(getterName, (Class[]) null) ;
+                censusReport += Reporter.addReportProperty(fieldName,getMethod.invoke(this)) ;
             }
             catch ( NoSuchMethodException nsme)
             {
-                LOGGER.log(Level.INFO, "{0}{1}", new Object[]{fieldName, nsme.getLocalizedMessage()});
+                LOGGER.log(Level.INFO, "NSME {0} {1}", new Object[]{fieldName, nsme.getLocalizedMessage()});
             }
-            catch ( ClassNotFoundException cnfe)
-            {
-                LOGGER.log(Level.INFO, "{0}{1}", new Object[]{fieldName, cnfe.getLocalizedMessage()});
-            } 
             catch (IllegalAccessException iae) 
             {
                 Logger.getLogger(Agent.class.getName()).log(Level.SEVERE, null, iae);
@@ -316,11 +384,23 @@ public abstract class Agent {
             {
                 Logger.getLogger(Agent.class.getName()).log(Level.SEVERE, null, ite);
             }
-        }
+            //catch ( ClassNotFoundException cnfe)
+            {
+              //  LOGGER.log(Level.INFO, "CNFE {0} {1}", new Object[]{fieldName, cnfe.getLocalizedMessage()});
+            } 
+            //catch (NoSuchFieldException nsfe)
+            {
+              //  LOGGER.log(Level.INFO, "{0} {1}", new Object[]{fieldName, nsfe.getMessage()}) ;
+            }
+        }*/
         return censusReport ;
     }
     
-    public String[] getCensusFieldNames()
+    /**
+     * 
+     * @return (String[]) Names of MSM fields of relevance to a census.
+     */
+    protected String[] getCensusFieldNames()
     {
         return censusFieldNames ;
     }
@@ -330,7 +410,7 @@ public abstract class Agent {
      * 
      * @return Site[] sites
      */
-    abstract protected Site[] getSites() ;
+    abstract public Site[] getSites() ;
     
     /**
      * Used when choosing Site for sexual encounter
@@ -348,23 +428,34 @@ public abstract class Agent {
             return chooseSite() ;
     }
 
+    public void ageOneDay()
+    {
+        cyclesModYear++ ;
+        if (cyclesModYear > 363)
+        {
+            age++ ;
+            cyclesModYear = 0 ;
+        }
+    }
     /**
-     * Called every 365 cycles to age the agent by one year.
+     * Invoked every 365 cycles to age the agent by one year.
+     * In turn invokes ageEffects() to handle the effects of age.
      * @return String description of agentId, age, and any altered quantities if any, 
      *     empty otherwise
      */
     public String ageOneYear()
     {
-            String report ;
+            String report = "" ;
             age++ ;
-            report = ageEffects() ;
+            LOGGER.info(String.valueOf(age));
+            /*report += ageEffects() ;
 
             // Prepare report if not still empty.
             if (! report.isEmpty())
             {
-                    report =  "age:" + age + " " + report ;
-                    report = "agentId:" + Integer.toString(agentId) + " " + report ;
-            }
+                report += Reporter.addReportProperty("agentId",agentId) ;
+                report += Reporter.addReportProperty("age",age) ;
+            }*/
             return report ;
     }
 
@@ -373,27 +464,17 @@ public abstract class Agent {
      * 
      * @return String description of any altered quantities if any, empty otherwise
      */
-    private String ageEffects()
+    protected String ageEffects()
     {
         String report = "" ;
         if (age > 30)
         {
-            // TODO: Re-implement and ensure that Agent.this is removed
-            //from Community.agents
-            if (age > 65)
+            // TODO: Modify propensity to consent to Casual Relationships
+            //report += Reporter.addReportProperty("consentCasual",concurrency) ;
+            if (infidelity > 0.0)
             {
-                report = death() ;
-                return report ;
-            }
-            if (promiscuity > 0)
-            {
-                promiscuity-- ;
-                report += "promiscuity:" + promiscuity + " " ;
-            }
-            //if (infidelity > 0.0)
-            {
-                infidelity *= 0.5 ;
-                report += "infidelity:" + infidelity + " " ;
+                infidelity *= INFIDELITY_FRACTION ;
+                report += Reporter.addReportProperty("infidelity",infidelity) ;
             }
         }
         return report ;
@@ -437,9 +518,38 @@ public abstract class Agent {
      * @param site
      * @return 
      */
-    protected boolean setSymptomatic(Site site)
+    public boolean setSymptomatic(Site site)
     {
             return symptomatic = (symptomatic || site.getSymptomatic()) ;
+    }
+
+    /** screenTime setter(). */
+    public void setScreenTime(int time)
+    {
+        screenTime = time ;
+    }
+
+    /** screenTime getter(). */
+    public int getScreenTime()
+    {
+        return screenTime ;
+    }
+
+    /** screenCycle setter(). */
+    public void setScreenCycle(int screen)
+    {
+        screenCycle = screen ;
+    }
+
+    /** screenCycle getter(). */
+    public int getScreenCycle()
+    {
+        return screenCycle ;
+    }
+    
+    protected void decrementScreenTime()
+    {
+        screenTime-- ;
     }
 
     /**
@@ -454,7 +564,26 @@ public abstract class Agent {
     }
 
     /**
-     * Call each site.treat(). If all treatments successful, call clearSymptomatic()
+     * Invoked when Agent is symptomatic. Call each site.treat(). If all treatments successful, call clearSymptomatic()
+     * @return true if all sites successfully treated, false otherwise
+     */
+    public boolean treatSymptomatic()
+    {
+        Site[] sites = getSites() ;
+        boolean successful = true ;
+        for (Site site : sites)
+            site.treat() ;
+//            if ((site.getInfectedStatus()!=0))
+//                successful = (successful && site.treat()) ;
+        //if (successful) 
+            infectedStatus = false ;
+            clearSymptomatic();
+        screenTime = screenCycle ;
+        return successful ;
+    }
+
+    /**
+     * Invoked when Agent is asymptomatic. Call each site.treat(). If all treatments successful, call clearSymptomatic()
      * @return true if all sites successfully treated, false otherwise
      */
     public boolean treat()
@@ -463,10 +592,10 @@ public abstract class Agent {
         boolean successful = true ;
         for (Site site : sites)
             if ((site.getInfectedStatus()!=0))
-                successful = (successful && site.treat()) ;
-        if (successful) 
-            infectedStatus = false ;
-            clearSymptomatic();
+                site.clearInfection();
+        infectedStatus = false ;
+        clearSymptomatic();
+        screenTime = screenCycle ;
         return successful ;
     }
 
@@ -478,7 +607,7 @@ public abstract class Agent {
         symptomatic = false ;
     }
     
-    protected void clearInfection()
+    public void clearInfection()
     {
         infectedStatus = false ;
         symptomatic = false ;
@@ -492,9 +621,32 @@ public abstract class Agent {
         return infectedStatus ;
     }
 
-    protected void setInfectedStatus(boolean infected)
+    /**
+     * Setter of infectedStatus, and also ensures that symptomatic is
+     * false if infectedStatus is false.
+     * @param infected 
+     */
+    public void setInfectedStatus(boolean infected)
     {
         infectedStatus = infected ;
+        symptomatic = symptomatic && infectedStatus ;
+    }
+    
+    /**
+     * Progress infection, invoking each site.progressInfection and 
+     * keeping track of whether the Agent is still infected.
+     * @return (boolean) whether the infection was cleared
+     */
+    public boolean progressInfection()
+    {
+        Site[] sites = getSites() ;
+        boolean stillInfected = false ;
+        for (Site site : sites)
+        {
+            stillInfected = (stillInfected || (site.progressInfection() > 0)) ;
+        }
+        setInfectedStatus(stillInfected) ;
+        return !stillInfected ;
     }
 
     /**
@@ -513,33 +665,46 @@ public abstract class Agent {
     /**
      * Whether to enter a proposed relationship of class relationshipClazz .
      * Currently according to whether in a monogomous relationship and 
-     * the number of relationships already entered compared to promiscuity.
+ the number of relationships already entered compared to concurrency.
+ It is advisable for subclasses of Agent to invoke this Method if they 
+ override with super.consent() .
      * 
      * @param relationshipClazzName - name relationship subclass
      * @param partner - agent for sharing proposed relationship
-     * @return true if accept and false otherwise
+     * @return (Boolean) true if accept and false otherwise
      */
     public boolean consent(String relationshipClazzName, Agent partner)
     {
         if (inMonogomous)
             if (RAND.nextDouble() > infidelity) 
                 return false ;
-        return available ;
+        if (MONOGOMOUS.equals(relationshipClazzName))
+            return (0 == currentRelationships.size()) ;
+        if (REGULAR.equals(relationshipClazzName))
+            return available ;
+        else    // Asking for Casual Relationship
+            return consentCasual(partner) ;
+        //return available ;
     }
+    
+    /**
+     * Whether to accept proposed Casual Relationship.
+     * @param agent (Agent) with whom Relationship is proposed.
+     * @return (Boolean) true if accept and false otherwise
+     */
+    abstract protected boolean consentCasual(Agent partner);
     
     /**
      * Probabilistically decide to accept invitation to join orgy
      * @param args
      * @return true to join and false otherwise
      */
-    final public boolean joinOrgy(double joinOrgyProbability, Object[] args)
+    final public boolean joinGroupSexEvent(Object[] args)
     {
         if (inMonogomous)
             if (RAND.nextDouble() > infidelity)
                 return false ;
-        if (RAND.nextDouble() < joinOrgyProbability)
-            return available ;
-        return false ;
+        return (RAND.nextDouble() < getJoinOrgyProbability()) ;
     }
 
     /**
@@ -547,9 +712,9 @@ public abstract class Agent {
      * a monogomous relationship
      * @return (Boolean) available
      */
-    protected boolean findAvailable()
+    protected boolean updateAvailable()
     {
-        available = (nbRelationships < promiscuity) ;
+        available = (nbRelationships <= concurrency) ;
         return available ;
     }
 
@@ -566,19 +731,19 @@ public abstract class Agent {
      */
     public String enterRelationship(Relationship relationship)
     {
-        String report = Integer.toString(agentId) + ":" ;
+        //String record = Reporter.addReportProperty(Reporter.AGENTID0, agentId) ;
         int partnerId = relationship.getPartnerId(agentId) ;
-        report += Integer.toString(partnerId) + ":" ;
-        //report += relationship.getRelationship() + " " ;
+        //record += Reporter.addReportProperty(Reporter.AGENTID1,partnerId) ;
+        //record += relationship.getRelationship() + " " ;
 
         currentRelationships.add(relationship) ;
         currentPartnerIds.add(partnerId) ;
         nbRelationships++ ;
 
-        findAvailable() ;
+        updateAvailable() ;
 
-        report = relationship.getReport() ;
-        return report ;
+        return relationship.getRecord() ;
+        //return record ;
     }
 
     /**
@@ -659,7 +824,7 @@ public abstract class Agent {
         nbRelationships++ ;
 
         // Open to more ?
-        findAvailable() ;
+        updateAvailable() ;
     }
 
     /**
@@ -670,12 +835,14 @@ public abstract class Agent {
      */
     final private String endRelationship(Relationship relationship)
     { 
-        String report = "ended:" + relationship.getReport() ;
+        String record = "" ;
+        //record = Reporter.addReportLabel("death");
+        record += Reporter.addReportProperty(Relationship.RELATIONSHIP_ID, relationship.getRelationshipId()) ;
         
         relationship.getPartner(this).leaveRelationship(relationship) ;
         leaveRelationship(relationship) ;
 
-        return report ;
+        return record ;
     }
 
     /**
@@ -845,14 +1012,47 @@ public abstract class Agent {
      */
     final public boolean grimReaper()
     {
-        // double risk = Math.exp(-age*Math.log(2)/halfLife) ;
-        double risk = Math.pow(((MAX_LIFE - age)/((double) MAX_LIFE)),2) ;
-        if (RAND.nextDouble() > risk ) 
+        if (RAND.nextDouble() < getRisk() ) 
         {
             death() ;
             return true ;
         }
         return false ;
+    }
+    
+    /**
+     * Based on data from the Australian Bureau of Statistics for Australian 
+     * population (http://stat.data.abs.gov.au/).
+     * @return (double) probability of dying during any cycle depending on the 
+     * properties, here age, of the Agent.
+     */
+    protected double getRisk()
+    {
+        double risk ;
+        if (age > 65)
+            return 1.0 ;
+        else if (age > 60)
+            risk = RISK_60 ;
+        else if (age > 55) 
+            risk = RISK_55 ;
+        else if (age > 50) 
+            risk = RISK_50 ;
+        else if (age > 45) 
+            risk = RISK_45 ;
+        else if (age > 40) 
+            risk = RISK_40 ;
+        else if (age > 35) 
+            risk = RISK_35 ;
+        else if (age > 30) 
+            risk = RISK_30 ;
+        else if (age > 25)
+            risk = RISK_25 ;
+        else if (age > 20)
+            risk = RISK_20 ;
+        else 
+            risk = RISK_15 ;
+        double noRisk = Math.pow((1 - risk/1000),1/DAYS_PER_YEAR) ;
+        return 1 - noRisk ;
     }
         
         
@@ -863,9 +1063,9 @@ public abstract class Agent {
      */
     final private String death()
     {
-        // FIXME: Should maybe use Reporter.addReportProperty()
-        String report = "death:agentId:" + String.valueOf(agentId) + " ";
-        report += "age:" + String.valueOf(age) + " " ;
+        String report = Reporter.addReportLabel("death") ; 
+        //report += Reporter.addReportProperty("agentId",agentId) ;
+        //report += Reporter.addReportProperty("age",age) ;
         //report += "nbPartners:" + String.valueOf(currentRelationships.size()) + " ";
         clearRelationships() ;
         return report ;
@@ -880,14 +1080,15 @@ public abstract class Agent {
         Relationship relationship ;
         int partnerId ;
         int startIndex = (nbRelationships - 1) ;
-        
+        String record = "" ;
         for (int relationshipIndex = startIndex ; relationshipIndex >= 0 ; 
                 relationshipIndex-- )
         {
             relationship = currentRelationships.get(relationshipIndex) ;
             Agent agentLowerId = relationship.getLowerIdAgent() ;
-            agentLowerId.endRelationship(relationship) ;
+            record += agentLowerId.endRelationship(relationship) ;
         }
+        Relationship.APPEND_DEATH_RECORD(record);
     }
 	
     /**
