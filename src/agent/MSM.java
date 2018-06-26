@@ -3,11 +3,14 @@
  */
 package agent;
 
+import reporter.Reporter ;
+
 import java.util.logging.Level;
 import site.* ;
 
 import java.lang.reflect.*;
-
+import org.apache.commons.math3.distribution.* ;
+        
 /**
  * @author Michael Walker
  *
@@ -23,6 +26,9 @@ abstract public class MSM extends Agent {
     static String URETHRA = "Urethra" ;
     /** Site name of Rectum */
     static String PHARYNX = "Pharynx" ;
+    
+    /** Names of Sites for MSM */ 
+    static public String[] SITE_NAMES = new String[] {"rectum","urethra","pharynx"} ;
     
     /** The probability of disclosing HIV status if HIV positive */
     static double PROBABILITY_DISCLOSE_POSITIVE_HIV = 0.40 ;
@@ -61,6 +67,24 @@ abstract public class MSM extends Agent {
      * seroSort or seroPosition if HIV negative */
     static double PROBABILITY_NEGATIVE_ACCEPT_ANTIVIRAL = 0.5 ;
     
+    // Age-specific death rates (deaths per 1000 per year) from ABS.Stat
+    static double RISK_60 = 8.0 ;
+    static double RISK_55 = 5.5 ;
+    static double RISK_50 = 3.5 ;
+    static double RISK_45 = 2.2 ;
+    static double RISK_40 = 1.4 ; 
+    static double RISK_35 = 0.9 ;
+    static double RISK_30 = 0.7 ;
+    static double RISK_25 = 0.6 ;
+    static double RISK_20 = 0.6 ;
+    static double RISK_15 = 0.4 ;
+
+    /**
+     * The fraction by which the probability for consenting to Casual Relationships
+     * is multiplied every additional year after the age of 30. 
+     */
+    
+    
     /** Potential infection site Rectum */
     private Rectum rectum = new Rectum() ;
     /** Potential infection site Urethra */
@@ -82,7 +106,9 @@ abstract public class MSM extends Agent {
     private boolean seroPosition ;
     /** Given seroSort or seroPosition, whether being on antiviral is sufficient. */
     private boolean acceptAntiViral ;
-
+    /** Probability of accepting proposed Casual Relationship */
+    private double consentCasualProbability = RAND.nextDouble() * 7/92 ;
+    
     /** Status for HIV infection. */
     private boolean statusHIV ;
     /** Whether currently being treated with antiretrovial medication. */
@@ -91,42 +117,46 @@ abstract public class MSM extends Agent {
     private boolean discloseStatusHIV ;
     /** Whether currently taking PrEP. */
     private boolean prepStatus ;
-    /** Cycles remaining until next STI screen if on PrEP. */
-    private int screenTime ;
 	
-    /** Transmission probabilities from Urethra to Rectum */
-    static double URETHRARECTUM = 0.8 ;
-    /** Transmission probabilities from Urethra to Pharynx. */
-    static double URETHRAPHARYNX = 0.7 ;
-    /** Transmission probabilities from Rectum to Urethra. */ 
-    static double RECTUMURETHRA = 0.3 ;
-    /** Transmission probabilities from Rectum to Pharynx. */
-    static double RECTUMPHARYNX = 0.1 ;
-    /** Transmission probabilities in Pharynx to Urethra intercourse. */
-    static double PHARYNXURETHRA = 0.2 ;
-    /** Transmission probabilities in Pharynx to Rectum intercourse. */
-    static double PHARYNXRECTUM = 0.2 ;
-    /** Transmission probabilities in Pharynx to Pharynx intercourse (kissing). */
-    static double PHARYNXPHARYNX = 0.4 ;
-    /** Transmission probabilities in Urethra to Urethra intercourse (cockfighting). */
-    static double URETHRAURETHRA = 0.1 ;
-    /** Transmission probabilities in Rectum to Rectum intercourse. */
-    static double RECTUMRECTUM = 0.2 ;
+    /** Transmission probabilities per sexual contact from Urethra to Rectum */
+    static double URETHRA_TO_RECTUM = 0.84 ;    // 0.8 ;
+    /** Transmission probabilities sexual contact from Urethra to Pharynx. */
+    static double URETHRA_TO_PHARYNX = 0.63 ;    // 0.7 ;
+    /** Transmission probabilities sexual contact from Rectum to Urethra. */ 
+    static double RECTUM_TO_URETHRA = 0.023 ;    // 0.3 ;
+    /** Transmission probabilities sexual contact from Rectum to Pharynx. */
+    static double RECTUM_TO_PHARYNX = 0.01 ;    // 0.1 ;
+    /** Transmission probabilities sexual contact in Pharynx to Urethra intercourse. */
+    static double PHARYNX_TO_URETHRA = 0.086 ;    // 0.2 ;
+    /** Transmission probabilities sexual contact in Pharynx to Rectum intercourse. */
+    static double PHARYNX_TO_RECTUM = 0.078 ;    // 0.2 ;
+    /** Transmission probabilities sexual contact in Pharynx to Pharynx intercourse (kissing). */
+    static double PHARYNX_TO_PHARYNX = 0.04 ;
+    /** Transmission probabilities sexual contact in Urethra to Urethra intercourse (docking). */
+    static double URETHRA_TO_URETHRA = 0.01 ;
+    /** Transmission probabilities sexual contact in Rectum to Rectum intercourse. */
+    static double RECTUM_TO_RECTUM = 0.001 ;
+    
+    /** The probability of screening in a given cycle with statusHIV true. */
+    static double SCREEN_PROBABILITY_HIV_POSITIVE = 0.0029 ;
+    
+    /** The probability of screening in a given cycle with statusHIV false 
+     * when not on PrEP.
+     */
+    static double SCREEN_PROBABILITY_HIV_NEGATIVE = 0.0012 ;
     
     /** The number of cycles between screenings for MSM on PrEP. */
-    static int SCREENCYCLE = 92 ;
+    //static int SCREENCYCLE = 92 ;
 
-    /** SCREENCYCLE getter(). */
-    public static int getSCREENCYCLE()
-    {
-        return SCREENCYCLE ;
-    }
-
-    /** The number of Agents invited to any given orgy. */
-    int ORGY_SIZE = 8 ;
+    
+    /** The number of msm invited to any given orgy. */
+    static public int GROUP_SEX_EVENT_SIZE = 10 ;
 
     /** The number of orgies in the community during a given cycle. */
-    int ORGY_NUMBER = 4 ;
+    //int ORGY_NUMBER = 4 ;
+    
+    /** Probability of joining an orgy if invited. */
+    static double JOIN_GSE_PROBABILITY = 6.35 * Math.pow(10,-4) ;
     
     
     /**
@@ -142,7 +172,7 @@ abstract public class MSM extends Agent {
     		Site infectedSite, Site clearSite)
     {
     	double infectProbability = -1.0 ;
-        String probabilityString = infectedSite.getSite().toUpperCase() + clearSite.getSite().toUpperCase() ;
+        String probabilityString = infectedSite.getSite().toUpperCase() + "_TO_" + clearSite.getSite().toUpperCase() ;
         try
         {
             infectProbability = MSM.class.getDeclaredField(probabilityString).getDouble(null) ;
@@ -216,6 +246,7 @@ abstract public class MSM extends Agent {
     	
     /**
      * Choose whether MSM is RiskyMSM or SafeMSM
+     * @param startAge
      * @startAge - age of MSM at sexual 'birth'.
      * @return - one of subclass RiskyMSM or SafeMSM
      */
@@ -242,9 +273,9 @@ abstract public class MSM extends Agent {
     /**
      * 
      * Specifies Agent subclass Men having Sex with Men. Necessary to call super.constructor()
+     * @param startAge
      * @startAge - Age of MSM at sexual 'birth'
      */
-
     public MSM(int startAge) 
     {
         super(startAge) ;
@@ -256,7 +287,7 @@ abstract public class MSM extends Agent {
      * Ensures that those MSM who come out during simulation are initially
      * HIV free (statusHIV == false).
      */
-    final private void initStatus(int startAge)
+    final void initStatus(int startAge)
     {
         //requireDiscloseStatusHIV = (rand.nextDouble() < probabilityRequireDiscloseHIV) ;
         statusHIV = (RAND.nextDouble() < getProbabilityHIV()) ;
@@ -266,18 +297,33 @@ abstract public class MSM extends Agent {
 
         // Randomly set PrEP status, ensuring it is true only if statusHIV is true
         initPrepStatus(RAND.nextDouble() < getProbabilityPrep()) ;
+        //initPrepStatus(false) ;
         
+        
+        if (prepStatus)
+        {
+            setScreenCycle(((int) new GammaDistribution(31,1).sample()) + 31) ;
+        }
+        else
+        {
+            if (statusHIV)
+                setScreenCycle(((int) new GammaDistribution(6,55).sample())) ;  // 65% screen within a year
+            else
+                setScreenCycle(((int) new GammaDistribution(8,50).sample())) ;  // 35% screen within a year
+        }
+        // Randomly set timer for first STI screen 
+        setScreenTime(RAND.nextInt(getScreenCycle())) ;
 
         if (startAge < 0)    // MSM generated at outset, represent initial population
         {
             // Initialises infectedStatus, ensuring consistency with Site.infectedStatus
             initInfectedStatus() ;
         }            
-        else if (false)   // TODO: Assume HIV free on sexual birth?
-        {
-            setStatusHIV(false) ;
-            //clearInfected() ;
-        }
+//        else if (false)   // Assume HIV free on sexual birth
+//        {
+//            setStatusHIV(false) ;
+//            //clearInfected() ;
+//        }
 
         // Sets whether disclosesHIV, allowing for statusHIV
         double probabilityDiscloseHIV = getProbabilityDiscloseHIV() ;
@@ -301,7 +347,7 @@ abstract public class MSM extends Agent {
      * Initialises MSM infectedStatus while ensuring consistency with 
      * Site.infectedStatus .
      */
-    final protected void initInfectedStatus()
+    final public void initInfectedStatus()
     {
         boolean infected = false ;    //  getInfectedStatus() ;
         for (Site site : sites)
@@ -311,14 +357,41 @@ abstract public class MSM extends Agent {
         }
         setInfectedStatus(infected) ;
     }
-        
+       
+    /**
+     * Adds "prepStatus", "statusHIV" to censusFieldNames
+     * @return (String[]) Names of MSM fields of relevance to a census.
+     */
+    @Override
+    protected String[] getCensusFieldNames()
+    {
+        String[] baseCensusNames = super.getCensusFieldNames() ;
+        String[] censusNames = new String[baseCensusNames.length + 1] ;
+        System.arraycopy(baseCensusNames, 0, censusNames, 0, baseCensusNames.length);
+        censusNames[baseCensusNames.length] = "prepStatus" ;
+        return censusNames ;
+    }
+
+    /**
+     * 
+     * @return (String) describing traits of Agent.
+     */
+    @Override
+    public String getCensusReport()
+    {
+        //String censusReport = super.getCensusReport() ;
+        String censusReport = "prepStatus:" + String.valueOf(prepStatus) + " ";  // Reporter.addReportProperty("prepStatus", prepStatus) ;
+        censusReport += "statusHIV:" + String.valueOf(statusHIV) + " " ;  // Reporter.addReportProperty("statusHIV", statusHIV) ;
+        censusReport += "age:" + String.valueOf(getAge()) + " " ;  // Reporter.addReportProperty("startAge", getAge()) ;
+        return censusReport ;
+    }
     /**
      * Should generate Site[] and not call Site[] MSM.sites to avoid error/complications
      * of ensuring that MSM.sites is updated with every call to setSitename().
      * @return (Site[]) of Sites belonging to this MSM
      */
     @Override
-    protected Site[] getSites()
+    public Site[] getSites()
     {
         return new Site[] {rectum,urethra,pharynx} ;
     }
@@ -382,7 +455,7 @@ abstract public class MSM extends Agent {
         return pharynx ;
     }
 
-    protected Rectum getRectum()
+    public Rectum getRectum()
     {
         return rectum ;
     }
@@ -392,7 +465,7 @@ abstract public class MSM extends Agent {
         this.rectum = rectum ;
     }
     
-    protected Urethra getUrethra()
+    public Urethra getUrethra()
     {
         return urethra ;		
     }
@@ -402,7 +475,7 @@ abstract public class MSM extends Agent {
         this.urethra = urethra ;
     }
     
-    protected Pharynx getPharynx()
+    public Pharynx getPharynx()
     {
         return pharynx ;
     }
@@ -504,7 +577,6 @@ abstract public class MSM extends Agent {
     public void setDiscloseStatusHIV(boolean disclose)
     {
         discloseStatusHIV = disclose ;
-        return ;
     }
 
     protected boolean getPrepStatus()
@@ -515,10 +587,6 @@ abstract public class MSM extends Agent {
     private void initPrepStatus(boolean prep)
     {
         setPrepStatus(prep) ;
-        
-        // Randomly set timer for first STI screen if on PrEP
-        if (prepStatus)
-            screenTime = RAND.nextInt(SCREENCYCLE) ;
     }
     /**
      * Setter of prepStatus. Used for unit testing
@@ -538,6 +606,7 @@ abstract public class MSM extends Agent {
      * @param partner - agent for sharing proposed relationship
      * @return true if accept and false otherwise
      */
+    @Override
     public boolean consent(String relationshipClazzName, Agent partner)
     {
         if (getSeroSort(relationshipClazzName))
@@ -546,6 +615,11 @@ abstract public class MSM extends Agent {
         return super.consent(relationshipClazzName, partner) ;
     }
     
+    @Override
+    protected boolean consentCasual(Agent partner)
+    {
+        return (RAND.nextDouble() < consentCasualProbability) ;
+    }
     /**
      * How would the MSM respond if asked to disclose their statusHIV
      * @return String representation of statusHIV if (discloseStatusHIV), otherwise 'none'
@@ -624,55 +698,106 @@ abstract public class MSM extends Agent {
      * 
      * @return (int) the number of orgies in a MSM community per cycle
      */
-    @Override
-    public int getOrgyNumber()
+    //@Override
+    //public int getOrgyNumber()
     {
-        return ORGY_NUMBER ;
+        //return ORGY_NUMBER ;
     }
     
     /**
      * 
      * @return (int) number of MSM invited to join any given orgy
      */
-    public int getOrgySize()
+    @Override
+    public int getGroupSexEventSize()
     {
-        return ORGY_SIZE ;
+        return GROUP_SEX_EVENT_SIZE ;
     }
 
     /**
      * 
      * @return (double) the probability of MSM joining an orgy when invited
      */
-    abstract public double getJoinOrgyProbability() ;
+    @Override
+    abstract public double getJoinOrgyProbability();
     
     /**
-     * Probability of MSM screening on that day. Same as Agent unless prepStatus true
+     * Probability of MSM screening on that day. Depends on prepStatus and statusHIV.
      * @param args
      * @return for PrEP users, 1.0 if cycle multiple of screenCycle, 0.0 otherwise
-     *     for non-PrEP users, random double between 0.0 and 1.0
+     *     for non-PrEP users, random double between 0.0 and 1.0 .
      */    
     @Override
     public double getScreenProbability(String[] args)
     {
-        if (prepStatus)
-        {
             // Find current cycle
-            int cycle = Integer.valueOf(args[0]) ;
+        //    int cycle = Integer.valueOf(args[0]) ;
             
-            // Countdown to next STI screen
-            screenTime-- ;
-            
-            // Those on antivirals test every three months (92 days) on a given day
-            if ( screenTime == 0)
-            {
-                screenTime = SCREENCYCLE ;
-                return 1.0 ;
-            }
-            else
-                return 0.0 ;
+        // Countdown to next STI screen
+        decrementScreenTime() ;
+
+        // Is it time for a regular screening?
+        if ( getScreenTime() < 0)
+        {
+            setScreenTime(getScreenCycle()) ;
+            return 1.0 ;
         }
-        return super.getScreenProbability(args) ;
+        else
+            return 0.0 ;
     }
     
-   
+        /**
+     * Based on data from the Australian Bureau of Statistics for NSW male population
+     * (http://stat.data.abs.gov.au/).
+     * @return (double) probability of dying during any cycle depending on the 
+     * properties, here age, of the Agent.
+     */
+    @Override
+    protected double getRisk()
+    {
+        double risk ;
+        int msmAge = getAge() ;
+        if (msmAge > 65)
+            return 1 ;
+        else if (msmAge > 60)
+            risk = RISK_60 ;
+        else if (msmAge > 55) 
+            risk = RISK_55 ;
+        else if (msmAge > 50) 
+            risk = RISK_50 ;
+        else if (msmAge > 45) 
+            risk = RISK_45 ;
+        else if (msmAge > 40) 
+            risk = RISK_40 ;
+        else if (msmAge > 35) 
+            risk = RISK_35 ;
+        else if (msmAge > 30) 
+            risk = RISK_30 ;
+        else if (msmAge > 25)
+            risk = RISK_25 ;
+        else if (msmAge > 20)
+            risk = RISK_20 ;
+        else 
+            risk = RISK_15 ;
+        double noRiskPower = 1.0/DAYS_PER_YEAR ;
+        
+        double noRisk = Math.pow((1 - risk/1000),1/DAYS_PER_YEAR) ;
+        return 1 - noRisk ;
+    }
+    
+    /**
+     * Incorporate the effects of aging on sexual activity.
+     * @return 
+     */
+    @Override
+    protected String ageEffects() 
+    {
+        return "" ;
+    
+    }
+        /*String report = "" ;
+        consentCasualProbability *= PROMISCUITY_FRACTION ;
+        report += Reporter.addReportProperty("consentCasualProbability", consentCasualProbability) ;
+        return super.ageEffects() + report ;
+    }*/
 }
