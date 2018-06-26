@@ -5,6 +5,7 @@
 package reporter.presenter;
 
 import reporter.* ;
+import community.Community ;
 
 import org.jfree.chart.* ;
 import org.jfree.chart.ui.ApplicationFrame ;
@@ -35,8 +36,8 @@ public class Presenter {
     
     private Reporter reporter ;
     
-    protected ArrayList<String> categoryData = new ArrayList<String>() ;
-    protected ArrayList<String> scoreData = new ArrayList<String>() ;
+    protected ArrayList<Object> categoryData = new ArrayList<Object>() ;
+    protected ArrayList<Object> scoreData = new ArrayList<Object>() ;
     protected String applicationTitle ;
     protected String chartTitle ;
     
@@ -56,6 +57,14 @@ public class Presenter {
         this.chartTitle = chartTitle ;
         chart_awt = new BarChart_AWT(applicationTitle, chartTitle) ;
         
+    }
+    
+    public Presenter(String simName, String chartTitle, String reportFilePath)
+    {
+        this.applicationTitle = simName ;
+        this.chartTitle = chartTitle ;
+        chart_awt = new BarChart_AWT(applicationTitle, chartTitle) ;
+        setReporter(new Reporter(simName,reportFilePath)) ;
     }
     
     public Presenter(String applicationTitle, String chartTitle, Reporter reporter)
@@ -79,7 +88,7 @@ public class Presenter {
     protected void plotChart(String scoreName, String reportName)
     {
         // Get full report reportName
-        ArrayList<String> reportArray = getReportArray(reportName) ;
+        ArrayList<Object> reportArray = getReportArray(reportName) ;
         
         callPlotChart(scoreName, reportArray) ;
         return ;
@@ -91,12 +100,12 @@ public class Presenter {
      * @param yLabel
      * @param hashMapArray 
      */
-    protected void callPlotNetwork(String xLabel, String yLabel, HashMap<Integer,HashMap<Integer,ArrayList<Integer>>> hashMapArray)
+    protected void callPlotNetwork(String xLabel, String yLabel, HashMap<Object,HashMap<Object,ArrayList<Object>>> hashMapArray)
     {
-        int xHub = 0;
-        for (int key : hashMapArray.keySet())
+        Number xHub = 0;
+        for (Object key : hashMapArray.keySet())
         {
-            xHub = key ;
+            xHub = (Number) key ;
             break ;
         }
         int yHub = 0 ;
@@ -108,8 +117,9 @@ public class Presenter {
      * @param scoreName
      * @param reportArray 
      */
-    protected void callPlotChart(String scoreName, ArrayList<String> reportArray)
+    protected void callPlotChart(String scoreName, ArrayList<Object> reportArray)
     {
+        LOGGER.info("callPlotChart()") ;
         // Extract data from reportArray
         parseReportArray(scoreName, reportArray) ;
         
@@ -128,28 +138,29 @@ public class Presenter {
     protected void plotChartCategory(String categoryName, String scoreName, String reportName, int cycle)  //  ArrayList<String> reportArray,
     {
         // Get report from cycle
-        ArrayList<String> reportArray = getReportArray(reportName) ;
+        ArrayList<Object> reportArray = getReportArray(reportName) ;
         
         callPlotChartDefault(categoryName, scoreName, reportArray, cycle) ;
     }
     
-    protected void plotHashMapScatter(String categoryName, String scoreName, HashMap<Integer,ArrayList<Integer>> hashMapReport )
+    protected void plotHashMapScatter(String categoryName, String scoreName, HashMap<Object,ArrayList<Object>> hashMapReport )
     {
         chart_awt.callPlotScatterPlot(chartTitle, hashMapReport, scoreName, categoryName) ;
     }
     
-    protected void plotHashMap(String categoryName, String scoreName, HashMap<String,Integer> hashMapReport )
+    protected void plotHashMap(String categoryName, String scoreName, HashMap<Object,Integer> hashMapReport )
     {
+        LOGGER.info("plotHashMap()") ;
         //ArrayList<String> categoryInteger = new ArrayList<String>() ;
         ArrayList<Integer> scoreInteger = new ArrayList<Integer>() ;
         
         categoryData.clear();
-        for (String key : hashMapReport.keySet())
+        for (Object key : hashMapReport.keySet())
         {
             categoryData.add(key) ;
         }
         categoryData.sort(null);
-        for (String key : categoryData)
+        for (Object key : categoryData)
         {
             scoreInteger.add(hashMapReport.get(key)) ;
         }
@@ -164,9 +175,9 @@ public class Presenter {
      * @param reportArray
      * @param cycle 
      */
-    protected void callPlotChartDefault(String categoryName, String scoreName, ArrayList<String> reportArray, int cycle)
+    protected void callPlotChartDefault(String categoryName, String scoreName, ArrayList<Object> reportArray, int cycle)
     {
-        String report = reportArray.get(cycle) ;
+        String report = (String) reportArray.get(cycle) ;
         
         // Extract data from report
         parseReport(categoryName, scoreName, report) ;
@@ -175,12 +186,18 @@ public class Presenter {
         chart_awt.callPlotChart(chartTitle,categoryData,scoreData,scoreName,categoryName) ;
     }
     
-    protected ArrayList<String> prepareEventsPerCycle(String scoreName, ArrayList<ArrayList<String>> reportArray)
+    /**
+     * 
+     * @param (String) scoreName
+     * @param (ArrayList<ArrayList<String>>) reportArray
+     * @return (String[]) Each entry is String.valueOf(the number of entries in each entry of reportArray)
+     */
+    protected ArrayList<Object> prepareEventsPerCycle(String scoreName, ArrayList<ArrayList<Object>> reportArray)
     {
-        ArrayList<String> eventsPerCycle = new ArrayList<String>() ;
+        ArrayList<Object> eventsPerCycle = new ArrayList<Object>() ;
         scoreName += ":" ;
         
-        for (ArrayList<String> report : reportArray)
+        for (ArrayList<Object> report : reportArray)
         {
             eventsPerCycle.add(scoreName + Integer.toString(report.size()) + " ") ;
         }
@@ -189,15 +206,16 @@ public class Presenter {
         
     }
     
-    public void plotEventsPerCycle(String scoreName, ArrayList<ArrayList<String>> reportArray)
+    public void plotEventsPerCycle(String scoreName, ArrayList<ArrayList<Object>> reportArray)
     {
-        ArrayList<String> eventsPerCycle = prepareEventsPerCycle(scoreName,reportArray) ;
+        ArrayList<Object> eventsPerCycle = prepareEventsPerCycle(scoreName,reportArray) ;
         
         callPlotChart(scoreName,eventsPerCycle) ;
     }
 
-    public void plotCycleValue(String scoreName, ArrayList<String> reportArray)
+    public void plotCycleValue(String scoreName, ArrayList<Object> reportArray)
     {
+        LOGGER.info("plotCycleValue") ;
         callPlotChart(scoreName,reportArray) ;
     }            
             
@@ -206,9 +224,9 @@ public class Presenter {
      * @param reportName
      * @return reportArray returned by prepareReportNameReport()
      */
-    private ArrayList<String> getReportArray(String reportName)
+    private ArrayList<Object> getReportArray(String reportName)
     {
-        ArrayList<String> reportArray = new ArrayList<String>() ;
+        ArrayList<Object> reportArray = new ArrayList<Object>() ;
         
         // Name of Method which provides report
         String reportMethodName = "prepare" + reportName + "Report" ;
@@ -216,7 +234,7 @@ public class Presenter {
         {
             Class reporterClass = reporter.getClass().asSubclass(reporter.getClass()) ;
             Method prepareReportMethod = reporterClass.getMethod(reportName) ;
-            reportArray = (ArrayList<String>) prepareReportMethod.invoke(reporter) ;
+            reportArray = (ArrayList<Object>) prepareReportMethod.invoke(reporter) ;
         }
         catch ( Exception e )
         {
@@ -245,11 +263,11 @@ public class Presenter {
      * @param scoreName
      * @param reports 
      */
-    private void parseReportArray(String scoreName, ArrayList<String> reports)
+    private void parseReportArray(String scoreName, ArrayList<Object> reports)
     {       
-        for (String report : reports)
+        for (Object report : reports)
         {
-            String value = Reporter.extractValue(scoreName,report) ;
+            String value = Reporter.extractValue(scoreName,String.valueOf(report)) ;
             scoreData.add(value) ;
         }
     }
@@ -275,8 +293,8 @@ public class Presenter {
          * @param yLabel
          * @param xLabel 
          */
-        private void callPlotNetwork(String chartTitle, HashMap<Integer,HashMap<Integer,ArrayList<Integer>>> networkData, 
-                int hub, int hubCycle, String yLabel, String xLabel)
+        private void callPlotNetwork(String chartTitle, HashMap<Object,HashMap<Object,ArrayList<Object>>> networkData, 
+                Number hub, Number hubCycle, String yLabel, String xLabel)
         {
             XYSeriesCollection dataset = createHubDataset(hub, hubCycle, networkData, chartTitle) ;
             plotLineChart(chartTitle, dataset, yLabel, xLabel) ;
@@ -288,8 +306,9 @@ public class Presenter {
          * @param dataArray
          * @param yLabel 
          */
-        private void callPlotChart(String chartTitle, ArrayList<String> dataArray, String yLabel)
+        private void callPlotChart(String chartTitle, ArrayList<Object> dataArray, String yLabel)
         {
+            LOGGER.info("callPlotChart()") ;
             XYSeriesCollection dataset = createXYDataset(dataArray) ;
             plotLineChart(chartTitle, dataset, yLabel, "cycle") ;
         }
@@ -301,7 +320,7 @@ public class Presenter {
          * @param yLabel
          * @param xLabel 
          */
-        private void callPlotScatterPlots(String chartTitle, ArrayList<HashMap<Integer,ArrayList<Integer>>> dataArray, String yLabel, String xLabel)
+        private void callPlotScatterPlots(String chartTitle, ArrayList<HashMap<Object,ArrayList<Object>>> dataArray, String yLabel, String xLabel)
         {
             XYSeriesCollection dataset = createScatterPlotDataset(dataArray, chartTitle) ;
             plotScatterPlot(chartTitle, dataset, yLabel, xLabel) ;
@@ -314,7 +333,7 @@ public class Presenter {
          * @param yLabel
          * @param xLabel 
          */
-        private void callPlotScatterPlot(String chartTitle, HashMap<Integer,ArrayList<Integer>> dataHashMap, String yLabel, String xLabel)
+        private void callPlotScatterPlot(String chartTitle, HashMap<Object,ArrayList<Object>> dataHashMap, String yLabel, String xLabel)
         {
             XYSeriesCollection dataset = createScatterPlotDataset(dataHashMap, chartTitle) ;
             plotScatterPlot(chartTitle, dataset, yLabel, xLabel) ;
@@ -328,14 +347,15 @@ public class Presenter {
          * @param yLabel
          * @param xLabel 
          */
-        private void callPlotChart(String chartTitle, ArrayList<String> categoryArray, ArrayList<String> scoreArray, String yLabel, String xLabel)
+        private void callPlotChart(String chartTitle, ArrayList<Object> categoryArray, ArrayList<Object> scoreArray, String yLabel, String xLabel)
         {
             CategoryDataset dataset = createDataset(xLabel, categoryArray, scoreArray) ;
             plotBarChart(chartTitle, dataset, yLabel, xLabel) ;
         }
         
-        private void callPlotChartInteger(String chartTitle, ArrayList<String> categoryArray, ArrayList<Integer> scoreArray, String yLabel, String xLabel)
+        private void callPlotChartInteger(String chartTitle, ArrayList<Object> categoryArray, ArrayList<Integer> scoreArray, String yLabel, String xLabel)
         {
+            LOGGER.info("callPlotChartInteger()") ;
             CategoryDataset dataset = createDatasetInteger(xLabel, categoryArray, scoreArray) ;
             plotBarChart(chartTitle, dataset, yLabel, xLabel) ;
         }
@@ -349,6 +369,7 @@ public class Presenter {
          */
         private void plotBarChart(String chartTitle, CategoryDataset dataset, String yLabel, String xLabel)
         {
+            LOGGER.info("plotBarChart()");
             JFreeChart barChart = ChartFactory.createBarChart(chartTitle,xLabel,
                 yLabel,dataset,PlotOrientation.VERTICAL,true, true, false);
             
@@ -379,6 +400,7 @@ public class Presenter {
          */
         private void plotLineChart(String chartTitle, XYDataset dataset, String yLabel, String xLabel)
         {
+            LOGGER.info("plotLineChart()") ;
             JFreeChart lineChart = ChartFactory.createXYLineChart(applicationTitle,xLabel,
                 yLabel,dataset,PlotOrientation.VERTICAL,true, true, false);
             
@@ -399,8 +421,8 @@ public class Presenter {
         private void displayChart(JFreeChart barChart)
         {
             ChartPanel chartPanel = new ChartPanel( barChart );        
-            chartPanel.setPreferredSize(new java.awt.Dimension( 2240 , 734 ) );        
-            //chartPanel.setPreferredSize(new java.awt.Dimension( 1120 , 367 ) );        
+            //chartPanel.setPreferredSize(new java.awt.Dimension( 2240 , 734 ) );        
+            chartPanel.setPreferredSize(new java.awt.Dimension( 1120 , 367 ) );        
             //chartPanel.setPreferredSize(new java.awt.Dimension( 560 , 367 ) );        
             setContentPane( chartPanel ); 
             pack() ;
@@ -410,12 +432,12 @@ public class Presenter {
         private void saveChart(JFreeChart barChart, String title)
         {
             String directory = "../output/test/" ;
-            String address = directory + title + ".jpg" ;
-            int width = 2560 ;
-            //int width = 1280 ;
+            String address = directory + title + Community.NAME_ROOT + ".jpg" ;
+            //int width = 2560 ;
+            int width = 1280 ;
             //int width = 640 ;
-            int height = 960 ;
-            //int height = 480 ;
+            //int height = 960 ;
+            int height = 480 ;
             File file = new File(address) ;
             //File file = new File(directory) ;
             //String[] files = file.list() ;
@@ -441,7 +463,7 @@ public class Presenter {
          * @param scoreData
          * @return 
          */
-        private CategoryDataset createDataset(String category, ArrayList<String> categoryData, ArrayList<String> scoreData)
+        private CategoryDataset createDataset(String category, ArrayList<Object> categoryData, ArrayList<Object> scoreData)
         {
             DefaultCategoryDataset categoryDataset = new DefaultCategoryDataset() ;
             // ArrayList<String> categoryData = data.get(0) ;
@@ -452,14 +474,14 @@ public class Presenter {
             
             for (int index = 0 ; index < scoreData.size() ; index++ )
             {
-                categoryValue = categoryData.get(index) ;
-                scoreValue = Integer.valueOf(scoreData.get(index)) ;
+                categoryValue = (String) categoryData.get(index) ;
+                scoreValue = Integer.valueOf((String) scoreData.get(index)) ;
                 categoryDataset.addValue( scoreValue, category, categoryValue ) ;
             }
             return categoryDataset ;
         }
         
-        private CategoryDataset createDatasetInteger(String category, ArrayList<String> categoryData, ArrayList<Integer> scoreData)
+        private CategoryDataset createDatasetInteger(String category, ArrayList<Object> categoryData, ArrayList<Integer> scoreData)
         {
             DefaultCategoryDataset categoryDataset = new DefaultCategoryDataset() ;
             // ArrayList<String> categoryData = data.get(0) ;
@@ -470,7 +492,7 @@ public class Presenter {
             
             for (int index = 0 ; index < scoreData.size() ; index++ )
             {
-                categoryValue = categoryData.get(index) ;
+                categoryValue = String.valueOf(categoryData.get(index)) ;
                 scoreValue = scoreData.get(index) ;
                 categoryDataset.addValue( scoreValue, category, categoryValue ) ;
             }
@@ -483,7 +505,7 @@ public class Presenter {
          * @param scoreData
          * @return CategoryDataset of score over cycle
          */
-        private XYSeriesCollection createXYDataset(ArrayList<String> scoreData)
+        private XYSeriesCollection createXYDataset(ArrayList<Object> scoreData)
         {
             XYSeries xySeries = new XYSeries(applicationTitle) ;
             // ArrayList<String> categoryData = data.get(0) ;
@@ -494,7 +516,7 @@ public class Presenter {
             
             for (int index = 0 ; index < dataSize; index++ )
             {
-                String scoreString = scoreData.get(index) ;
+                String scoreString = (String) scoreData.get(index) ;
                 if (int.class.isInstance(scoreString)) 
                     scoreValue = Integer.valueOf(scoreString) ;
                 else
@@ -511,12 +533,12 @@ public class Presenter {
          * @param plotTitle
          * @return 
          */
-        private XYSeriesCollection createScatterPlotDataset(ArrayList<HashMap<Integer,ArrayList<Integer>>> hashMapArrayList, 
+        private XYSeriesCollection createScatterPlotDataset(ArrayList<HashMap<Object,ArrayList<Object>>> hashMapArrayList, 
                 String plotTitle)
         {
             XYSeriesCollection scatterPlotDataset = new XYSeriesCollection() ;
             String seriesTitle ;
-            HashMap<Integer,ArrayList<Integer>> hashMap ;
+            HashMap<Object,ArrayList<Object>> hashMap ;
                 
             for (int index = 0 ; index < hashMapArrayList.size() ; index++ )
             {
@@ -534,7 +556,7 @@ public class Presenter {
          * @param plotTitle
          * @return (XYSeriesCollection) 
          */
-        private XYSeriesCollection createScatterPlotDataset(HashMap<Integer,ArrayList<Integer>> agentToAgentHashMap, String plotTitle)
+        private XYSeriesCollection createScatterPlotDataset(HashMap<Object,ArrayList<Object>> agentToAgentHashMap, String plotTitle)
         {
             return new XYSeriesCollection(createScatterPlotSeries(agentToAgentHashMap,plotTitle)) ;
         }
@@ -545,16 +567,17 @@ public class Presenter {
          * @param seriesTitle
          * @return (XYSeries) with entires suitable for XYPlot.
          */
-        private XYSeries createScatterPlotSeries(HashMap<Integer,ArrayList<Integer>> agentToAgentHashMap, String seriesTitle)
+        private XYSeries createScatterPlotSeries(HashMap<Object,ArrayList<Object>> agentToAgentHashMap, String seriesTitle)
         {
             XYSeries scatterPlotDataset = new XYSeries(seriesTitle) ;
-            for (int positiveAgent : agentToAgentHashMap.keySet())
-                for (int negativeAgent : agentToAgentHashMap.get(positiveAgent))
-                    scatterPlotDataset.add(positiveAgent, negativeAgent) ;
+            for (Object positiveAgent : agentToAgentHashMap.keySet())
+                for (Object negativeAgent : agentToAgentHashMap.get(positiveAgent))
+                    scatterPlotDataset.add((Number) positiveAgent, (Number) negativeAgent) ;
             return scatterPlotDataset ;
         }
         
-        private XYSeriesCollection createHubDataset(int hubId, int hubCycle, HashMap<Integer,HashMap<Integer,ArrayList<Integer>>> agentToCycleArray, String hubTitle)
+        private XYSeriesCollection createHubDataset(Number hubId, Number hubCycle, 
+                HashMap<Object,HashMap<Object,ArrayList<Object>>> agentToCycleArray, String hubTitle)
         {
             XYSeries hubSeries = new XYSeries(hubTitle,false,true) ;
             // for (int receiverId : agentToAgentArray.keySet())
@@ -573,11 +596,11 @@ public class Presenter {
          * @param nodeCycle
          * @return (XYSeries) with additional nodes showing transmissions in cycle nodeCycle from Agent hubId infected in cycle hubCycle.
          */
-        private XYSeries generateHub(int hubId, int hubCycle, HashMap<Integer,ArrayList<Integer>> hubHashMap, String hubTitle)
+        private XYSeries generateHub(Number hubId, Number hubCycle, HashMap<Object ,ArrayList<Object>> hubHashMap, String hubTitle)
         {
             XYSeries hubSeries = new XYSeries(hubTitle,false,true) ;
-            for (int nodeId : hubHashMap.keySet())
-                hubSeries = generateHubNode(hubId, hubCycle, nodeId, hubHashMap.get(nodeId), hubSeries) ;
+            for (Object nodeId : hubHashMap.keySet())
+                hubSeries = generateHubNode(hubId, hubCycle, (Number) nodeId, hubHashMap.get(nodeId), hubSeries) ;
             //for (double[] entry : hubSeries.toArray()) 
               //  System.out.println(entry[0] + entry[1]);
             return hubSeries ;
@@ -592,12 +615,12 @@ public class Presenter {
          * @param hubSeries (XYSeries) to be added to
          * @return (XYSeries) with additional nodes showing transmissions in cycle nodeCycle from Agent hubId infected in cycle hubCycle.
          */
-        private XYSeries generateHubNode(int hubId, int hubCycle, int nodeId, ArrayList<Integer> nodeCycles, XYSeries hubSeries)
+        private XYSeries generateHubNode(Number hubId, Number hubCycle, Number nodeId, ArrayList<Object> nodeCycles, XYSeries hubSeries)
         {
             //XYSeries hubSeries = new XYSeries("Infections by agentId " + String.valueOf(hubId)) ;
             //hubSeries.add(hubId, hubCycle) ;
-            for ( int nodeCycle : nodeCycles )
-                hubSeries = hubEntry(hubId, hubCycle, nodeId, nodeCycle, hubSeries) ;
+            for ( Object nodeCycle : nodeCycles )
+                hubSeries = hubEntry(hubId, hubCycle, nodeId, (Number) nodeCycle, hubSeries) ;
             
             return hubSeries ;
         }
@@ -609,7 +632,7 @@ public class Presenter {
          * @param node
          * @param xySeries 
          */
-        private XYSeries hubEntry(int hubId, int hubCycle, int nodeId, int nodeCycle, XYSeries xySeries)
+        private XYSeries hubEntry(Number hubId, Number hubCycle, Number nodeId, Number nodeCycle, XYSeries xySeries)
         {
             xySeries.add(nodeId, nodeCycle);
             xySeries.add(hubId, hubCycle);
