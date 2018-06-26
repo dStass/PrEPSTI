@@ -5,6 +5,8 @@
  */
 package reporter;
 
+import agent.MSM;
+import community.Community ;
 /**
  *
  * @author MichaelWalker
@@ -33,29 +35,82 @@ public class ScreeningReporter extends Reporter {
  
     /**
      * 
-     * @return (ArrayList<String>) indicating the total prevalence, prevalence of 
+     * @return (ArrayList\<String\>) indicating the total prevalence, prevalence of 
      * symptomatic infection, and proportion of symptomatic infection in each cycle.
      */
-    public ArrayList<String> preparePrevalenceReport()
+    public ArrayList<Object> preparePrevalenceReport()
     {
-        ArrayList<String> prevalence = new ArrayList<String>() ;
+        return preparePrevalenceReport(input) ;
+    }
+    
+    /**
+     * 
+     * @param report
+     * @return (ArrayList\<String\>) indicating the total prevalence, prevalence of 
+     * symptomatic infection, and proportion of symptomatic infection in each report cycle.
+     */
+    public ArrayList<Object> preparePrevalenceReport(ArrayList<String> report)
+    {
+        ArrayList<Object> prevalenceReport = new ArrayList<Object>() ;
         int population ;
+        int nbInfected ;
+        int nbSymptomatic ;
+        String entry ;
+        String[] siteNames = MSM.SITE_NAMES ;
+        for (int siteIndex = 0 ; siteIndex < siteNames.length ; siteIndex++ )
+        {
+            String siteName = siteNames[siteIndex] ;
+            siteNames[siteIndex] = siteName.substring(0,1).toUpperCase() 
+                    + siteName.substring(1) ;
+        }
+        for (String record : input)
+        {
+            nbSymptomatic = 0 ;
+            ArrayList<String> infections = extractArrayList(record,AGENTID) ;
+            nbInfected = infections.size() ;
+            for (String infection : infections)
+                for (String siteName : MSM.SITE_NAMES)
+                    if (compareValue(siteName,TRUE,infection))
+                    {
+                        nbSymptomatic++ ;
+                        break ;
+                    }
+            
+            //LOGGER.info(record) ;
+            
+            population = Community.POPULATION ;
+            
+            entry = addReportProperty("prevalence",((double) nbInfected)/population) ;
+            entry += addReportProperty("symptomatic",((double) nbSymptomatic)/population) ;
+            entry += addReportProperty("proportion",((double) nbSymptomatic)/nbInfected) ;
+            
+            prevalenceReport.add(entry) ;
+        }
+        return prevalenceReport ;
+    }
+    
+    public ArrayList<Object> prepareSitePrevalenceReport(String siteName) 
+    {
+        ArrayList<Object> sitePrevalenceReport = new ArrayList<Object>() ;
+        
+        int population ;
+        int[] nbSymptomatic ;
         String entry ;
         for (String record : input)
         {
-            //LOGGER.info(record) ;
-            int[] incidence = countValueIncidence(INFECTED, TRUE, record, 0) ;
-            // Use population for prevalence calculations, symptoms[1] == incidence[0] 
-            population = incidence[1];
+            nbSymptomatic = countValueIncidence(siteName,TRUE,record,0) ;
+                        
+//            if (nbSymptomatic[0] == nbSymptomatic[1])
+//                LOGGER.info(record);
             
-            entry = addReportProperty("prevalence",((double) incidence[0])/incidence[1]) ;
-            int[] symptoms = countValueIncidence(SYMPTOMATIC, TRUE, record, 0) ;
-            entry += addReportProperty("symptomatic",((double) symptoms[0])/population) ;
-            entry += addReportProperty("proportion",((double) symptoms[0])/incidence[0]) ;
+            population = Community.POPULATION ;
             
-            prevalence.add(entry) ;
+            entry = addReportProperty("prevalence",((double) nbSymptomatic[1])/population) ;
+            entry += addReportProperty("symptomatic",((double) nbSymptomatic[0])/population) ;
+            entry += addReportProperty("proportion",((double) nbSymptomatic[0])/nbSymptomatic[1]) ;
+            sitePrevalenceReport.add(entry) ;
         }
-        return prevalence ;
+        return sitePrevalenceReport ;
     }
     
 }
