@@ -9,15 +9,39 @@ import reporter.* ;
 
 import java.util.ArrayList ;
 import java.util.HashMap;
+import java.lang.reflect.*;
+import java.util.Arrays;
 import java.util.logging.Level;
 
 /**
  * Class to plot data from EncounterReporter
  * @author MichaelWalker
  */
+
+
 public class EncounterPresenter extends Presenter {
     
     private EncounterReporter reporter ;
+    
+    public static void main(String[] args)
+    {
+        try
+        {
+        String simName = args[0] ;
+        String chartTitle = args[1] ;
+        String reportFileName = args[2] ;
+        EncounterPresenter encounterPresenter = new EncounterPresenter(simName,chartTitle,reportFileName) ;
+        
+        String methodName = args[3] ;
+        Method method = EncounterPresenter.class.getMethod(methodName) ;
+        
+        method.invoke(encounterPresenter, (Object[]) Arrays.copyOfRange(args,4,args.length)) ;
+        }
+        catch ( Exception e )
+        {
+            LOGGER.log(Level.SEVERE, "{0}", e.getLocalizedMessage());
+        }
+    }
     
     public EncounterPresenter()
     {
@@ -27,6 +51,13 @@ public class EncounterPresenter extends Presenter {
     public EncounterPresenter(String applicationTitle, String chartTitle)
     {
         super(applicationTitle, chartTitle);
+    }
+    
+    public EncounterPresenter(String simName, String chartTitle, String reportFilePath)
+    {
+        super(simName,chartTitle,reportFilePath) ;
+        applicationTitle = simName ;
+        setReporter(new EncounterReporter(simName,reportFilePath)) ;
     }
     
     public EncounterPresenter(String applicationTitle, String chartTitle, EncounterReporter reporter)
@@ -53,7 +84,7 @@ public class EncounterPresenter extends Presenter {
     public void plotTransmittingSites(String[] siteNames)
     {
         // HashMap to be plotted
-        HashMap<String,Integer> transmittingSites = new HashMap<String,Integer>() ;
+        HashMap<Object,Integer> transmittingSites = new HashMap<Object,Integer>() ;
         for (String name : siteNames)
             transmittingSites.put(name, 0) ;
 
@@ -61,7 +92,7 @@ public class EncounterPresenter extends Presenter {
         int count ;
         
         // To record whether given Site was responsible for transmission
-        ArrayList<String> infectedStatus ;
+        ArrayList<Object> infectedStatus ;
         
         ArrayList<String> transmissionReport = reporter.prepareTransmissionReport() ;
         
@@ -70,8 +101,8 @@ public class EncounterPresenter extends Presenter {
             {
                 infectedStatus = Reporter.extractAllValues(name, report, 0) ;
                 count = 0 ;
-                for (String site : infectedStatus)
-                    count += Integer.valueOf(site) ;
+                for (Object site : infectedStatus)
+                    count += Integer.valueOf((String) site) ;
                 count += transmittingSites.get(name) ;
                 transmittingSites.put(name, count) ;
             }
@@ -85,7 +116,7 @@ public class EncounterPresenter extends Presenter {
     {
         // HashMap to be plotted
         // (String) key has format infectedsiteToReceivingsite
-        HashMap<String,Integer> fromSiteToSiteReport = reporter.prepareFromSiteToSiteReport(siteNames) ;
+        HashMap<Object,Integer> fromSiteToSiteReport = reporter.prepareFromSiteToSiteReport(siteNames) ;
         plotHashMap("Site to Site","transmissions",fromSiteToSiteReport) ;
         
     }
@@ -93,9 +124,9 @@ public class EncounterPresenter extends Presenter {
     
     public void plotNbTransmissions()
     {
-        ArrayList<String> nbTransmissionReport = reporter.prepareTransmissionCountReport() ;
+        ArrayList<Object> nbTransmissionReport = reporter.prepareTransmissionCountReport() ;
         
-        plotCycleValue("Number of Tranmissions", nbTransmissionReport) ;
+        plotCycleValue("transmission", nbTransmissionReport) ;
     }
 
     /**
@@ -103,7 +134,7 @@ public class EncounterPresenter extends Presenter {
      */
     public void plotAgentToAgent()
     {
-        HashMap<Integer,ArrayList<Integer>> transmittingAgentsReport = reporter.prepareAgentToAgentRecord() ;
+        HashMap<Object,ArrayList<Object>> transmittingAgentsReport = reporter.prepareAgentToAgentRecord() ;
         plotHashMapScatter("infectious agent", "receiving agent", transmittingAgentsReport ) ;
     }
     
@@ -112,7 +143,13 @@ public class EncounterPresenter extends Presenter {
      */
     public void plotAgentToAgentNetwork()
     {
-        HashMap<Integer,HashMap<Integer,ArrayList<Integer>>> transmittingAgentsReport = reporter.prepareAgentToAgentReport() ;
-        callPlotNetwork("agentId", "cycle", transmittingAgentsReport) ;
+        HashMap<Object,HashMap<Object,ArrayList<Object>>> transmittingAgentsReport = reporter.prepareAgentToAgentReport() ;
+        callPlotNetwork("agentId", "cycle", transmittingAgentsReport) ;    // (HashMap<Number,HashMap<Number,ArrayList<Number>>>) 
     }
+    
+    /*
+    Everything below here are conditional plots.
+    */
+    
+    
 }
