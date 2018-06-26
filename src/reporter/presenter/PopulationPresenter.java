@@ -5,10 +5,13 @@
  */
 package reporter.presenter;
 
+import java.lang.reflect.Method;
 import reporter.* ;
 
 import java.util.ArrayList ;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.logging.Level;
 
 /**
  * For presenting results from the PopulationReporter
@@ -19,14 +22,36 @@ public class PopulationPresenter extends Presenter{
     
     private PopulationReporter reporter ;
     
+    public static void main(String[] args)
+    {
+        try
+        {
+        String methodName = args[0] ;
+        Method method = PopulationPresenter.class.getMethod(methodName) ;
+        
+        String simName = args[1] ;
+        String chartTitle = args[2] ;
+        String reportFileName = args[3] ;
+        PopulationPresenter populationPresenter = new PopulationPresenter(simName,chartTitle,reportFileName) ;
+        
+        method.invoke(populationPresenter, (Object[]) Arrays.copyOfRange(args,4,args.length)) ;
+        }
+        catch ( Exception e )
+        {
+            LOGGER.log(Level.SEVERE, "{0}", e.getLocalizedMessage());
+        }
+    }
+    
     public PopulationPresenter()
     {
         super() ;   
     }
     
-    public PopulationPresenter(String applicationTitle, String chartTitle)
+    public PopulationPresenter(String simName, String chartTitle, String fileName)
     {
-        super(applicationTitle, chartTitle);
+        super(simName, chartTitle);
+        applicationTitle = simName ;
+        setReporter(new PopulationReporter(simName,fileName)) ;
     }
     
     public PopulationPresenter(String applicationTitle, String chartTitle, PopulationReporter reporter)
@@ -44,18 +69,23 @@ public class PopulationPresenter extends Presenter{
         this.reporter = reporter ;
     }
 
+    public void plotPopulationPerCycle()
+    {
+        ArrayList<Object> populationReport = reporter.preparePopulationReport() ;
+        
+        plotCycleValue("Population",populationReport) ;
+    }
     /**
      * Find and plot the number of deaths as a function of time/cycle
      */
     public void plotDeathsPerCycle()
     {
-        ArrayList<ArrayList<String>> agentDeathReport = reporter.prepareAgentDeathReport() ;
+        ArrayList<ArrayList<Object>> agentDeathReport = reporter.prepareAgeDeathReport() ;
         
         // ArrayList<String> deathsPerCycle = prepareDeathsPerCycle() ;
         
         plotEventsPerCycle("Deaths",agentDeathReport) ;
         
-        return ;
     }
 
     /**
@@ -63,13 +93,12 @@ public class PopulationPresenter extends Presenter{
      */
     public void plotBirthsPerCycle()
     {
-        ArrayList<ArrayList<String>> agentBirthReport = reporter.prepareAgentBirthReport() ;
+        ArrayList<ArrayList<Object>> agentBirthReport = reporter.prepareAgentBirthReport() ;
         
         // ArrayList<String> deathsPerCycle = prepareDeathsPerCycle() ;
         
         plotEventsPerCycle("Births",agentBirthReport) ;
         
-        return ;
     }
     
     /**
@@ -77,7 +106,7 @@ public class PopulationPresenter extends Presenter{
      */
     public void plotAgeAtDeath()
     {
-        HashMap<String,Integer> ageAtDeathReport = reporter.prepareAgeAtDeathReport() ;
+        HashMap<Object,Integer> ageAtDeathReport = reporter.prepareAgeAtDeathReport() ;
         
         plotHashMap("Age", "Number of deaths", ageAtDeathReport ) ;
     }
