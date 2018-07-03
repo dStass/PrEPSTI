@@ -78,8 +78,12 @@ public class RiskyMSM extends MSM
         String partnerDisclosure = partner.declareStatus() ;
         Boolean partnerSeroPosition = ((MSM) partner).getSeroPosition() ;
         if (getSeroSort(relationshipClazzName))    // might use condom when serodiscordance or nondisclosure
+        {
             if (!(getStatusHIV() == Boolean.getBoolean(partnerDisclosure))) 
                 return (RAND.nextDouble() < probabilityUseCondom ) ;
+            else if (!getPrepStatus() || !((MSM)partner).getPrepStatus())
+                return (RAND.nextDouble() < probabilityUseCondom ) ;
+        }
         if (getSeroPosition())
             if (NONE.equals(partnerDisclosure))  // maybe if partner does not disclose
                 return (RAND.nextDouble() < probabilityUseCondom ) ;
