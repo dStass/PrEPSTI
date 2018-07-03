@@ -22,6 +22,7 @@ public class PopulationReporter extends Reporter {
     static String DEATH = "death" ;
     static String BIRTH = "birth" ;
     static String AGE = "age" ;
+    static String START_AGE = "startAge" ;
     
     public PopulationReporter(String simname, ArrayList<String> report) 
     {
@@ -223,7 +224,7 @@ public class PopulationReporter extends Reporter {
         for (int reportNb = 0 ; reportNb < input.size() ; reportNb += outputCycle )
         {
             record = input.get(reportNb) ;
-            LOGGER.log(Level.INFO, "{0} {1}", new Object[] {reportNb,record});
+            //LOGGER.log(Level.INFO, "{0} {1}", new Object[] {reportNb,record});
             deathIndex = indexOfProperty("death",record) ;
             if (deathIndex < 0)
                 continue ;
@@ -243,7 +244,6 @@ public class PopulationReporter extends Reporter {
         for (int reportNb = 0 ; reportNb < input.size() ; reportNb += outputCycle )
         {
             record = input.get(reportNb) ;
-            LOGGER.info(record);
             birthReport.add(record.substring(indexOfProperty("birth",record),indexOfProperty("death",record))) ;
         }
         return birthReport ;
@@ -251,13 +251,15 @@ public class PopulationReporter extends Reporter {
     
     /**
      * For sorting final record according to Agent.getAge() .
-     * @return HashMap (int) ageRange mapped to ArrayList of AgentIds.
+     * @return HashMap (int) AgentId mapped to age.
      */
     public HashMap<Object,Integer> sortAgeRecord()
     {
         //HashMap<Object,ArrayList<Object>> sortAgeRecord = new HashMap<Object,ArrayList<Object>>() ;
         
         HashMap<Object,Integer> agentAgeHashMap = new HashMap<Object,Integer>() ;
+        
+        int daysInYear = 365 ;
         
         ArrayList<String>  birthReport = prepareBirthReport() ;
         ArrayList<String>  deathReport = prepareDeathReport() ;
@@ -272,16 +274,17 @@ public class PopulationReporter extends Reporter {
             {
                 Object agentId = extractValue(AGENTID,birthAgent) ;
                 int age = Integer.valueOf(extractValue(AGE,birthAgent)) ;
-                agentAgeHashMap.put(agentId, age + nbCycles - recordIndex) ;
+                agentAgeHashMap.put(agentId, age + (nbCycles - recordIndex)/daysInYear) ;
             }
-            
             String deathRecord = deathReport.get(recordIndex) ;
             ArrayList<String> deathArray = extractArrayList(deathRecord,AGENTID) ;
             for (String deathAgent : deathArray) 
             {
                 Object agentId = extractValue(AGENTID,deathAgent) ;
-                agentAgeHashMap.remove(agentId) ;
+                int correctAge = agentAgeHashMap.get(agentId) - (nbCycles - recordIndex)/daysInYear ;
+                agentAgeHashMap.put(agentId,correctAge) ;
             }
+            
         }
         
         // Put into form ageRange={agentId}
