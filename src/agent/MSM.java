@@ -150,7 +150,7 @@ abstract public class MSM extends Agent {
 
     
     /** The number of msm invited to any given orgy. */
-    static public int GROUP_SEX_EVENT_SIZE = 10 ;
+    static public int GROUP_SEX_EVENT_SIZE = 20 ;
 
     /** The number of orgies in the community during a given cycle. */
     //int ORGY_NUMBER = 4 ;
@@ -297,23 +297,9 @@ abstract public class MSM extends Agent {
 
         // Randomly set PrEP status, ensuring it is true only if statusHIV is true
         initPrepStatus(RAND.nextDouble() < getProbabilityPrep()) ;
-        //initPrepStatus(false) ;
         
         
-        if (prepStatus)
-        {
-            setScreenCycle(((int) new GammaDistribution(31,1).sample()) + 31) ;
-        }
-        else
-        {
-            if (statusHIV)
-                setScreenCycle(((int) new GammaDistribution(6,55).sample())) ;  // 65% screen within a year
-            else
-                setScreenCycle(((int) new GammaDistribution(8,50).sample())) ;  // 35% screen within a year
-        }
-        // Randomly set timer for first STI screen 
-        setScreenTime(RAND.nextInt(getScreenCycle())) ;
-
+        
         if (startAge < 0)    // MSM generated at outset, represent initial population
         {
             // Initialises infectedStatus, ensuring consistency with Site.infectedStatus
@@ -379,10 +365,9 @@ abstract public class MSM extends Agent {
     @Override
     public String getCensusReport()
     {
-        //String censusReport = super.getCensusReport() ;
-        String censusReport = "prepStatus:" + String.valueOf(prepStatus) + " ";  // Reporter.addReportProperty("prepStatus", prepStatus) ;
+        String censusReport = super.getCensusReport() ;
+        censusReport += "prepStatus:" + String.valueOf(prepStatus) + " ";  // Reporter.addReportProperty("prepStatus", prepStatus) ;
         censusReport += "statusHIV:" + String.valueOf(statusHIV) + " " ;  // Reporter.addReportProperty("statusHIV", statusHIV) ;
-        censusReport += "age:" + String.valueOf(getAge()) + " " ;  // Reporter.addReportProperty("startAge", getAge()) ;
         return censusReport ;
     }
     /**
@@ -584,10 +569,38 @@ abstract public class MSM extends Agent {
         return prepStatus ;
     }
     
+    /**
+     * Initialise prepStatus and set up screenCycle and screenTime accordingly.
+     * @param prep 
+     */
     private void initPrepStatus(boolean prep)
     {
         setPrepStatus(prep) ;
+        
+        if (prep)
+            setScreenCycle(((int) new GammaDistribution(31,1).sample()) + 31) ;
+        else
+        {
+            if (statusHIV)
+                setScreenCycle(((int) new GammaDistribution(6,55).sample())) ;  // 65% screen within a year
+            else
+                setScreenCycle(((int) new GammaDistribution(8,55).sample())) ;  // 35% screen within a year
+        }
+        // Randomly set timer for first STI screen 
+        setScreenTime(RAND.nextInt(getScreenCycle())) ;
+
     }
+    
+    /**
+     * Allow for re-initialisation of prepStatus during simulation while 
+     * initPrepStatus() remains private.
+     * @param prep 
+     */
+    public void reinitPrepStatus(boolean prep)
+    {
+        initPrepStatus(prep) ;
+    }
+    
     /**
      * Setter of prepStatus. Used for unit testing
      * @param prep 
@@ -644,7 +657,7 @@ abstract public class MSM extends Agent {
     
     abstract double getProbabilityDiscloseHIV() ;
     
-    protected double getProbabilityPrep() 
+    public double getProbabilityPrep() 
     {
         return PROBABILITY_PREP ;
     }
