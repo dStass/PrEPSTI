@@ -76,9 +76,9 @@ public class Reporter {
      * @param report
      * @return indexOf(property + ":")
      */
-    public static final int indexOfProperty(String property, String report)
+    public static final int indexOfProperty(String property, String record)
     {
-        return indexOfProperty(property,0,report) ;
+        return indexOfProperty(property,0,record) ;
     }
     
     /**
@@ -341,7 +341,7 @@ public class Reporter {
      */
     protected static ArrayList<String> extractArrayList(String string, String bound)
     {
-        int indexStart = 0 ;
+        int indexStart = indexOfProperty(bound, string) ;
         ArrayList<String> outputArray = new ArrayList<String>() ;
         String extractedString ;
         while (indexStart >= 0) 
@@ -542,7 +542,7 @@ public class Reporter {
      * @param valueMap - Adding boundValue and sometimes key to this HashMap
      * @return partnerMap - HashMap indicating partnerIds of each agent (key: agentId)
      */
-    protected static HashMap<Object,ArrayList<Object>> updateHashMap(Object key, Object entry, HashMap<Object,ArrayList<Object>> valueMap)
+    public static HashMap<Object,ArrayList<Object>> updateHashMap(Object key, Object entry, HashMap<Object,ArrayList<Object>> valueMap)
     {
         return updateHashMap(key, entry, valueMap, true) ;
     }
@@ -708,6 +708,40 @@ public class Reporter {
             numberHashMapHashMap.put((Number) key, numberHashMap) ;
         }
         return numberHashMapHashMap ;
+    }
+    
+    /**
+     * Restructures paramHashMap so that most-nested values become keys.
+     * Values are HashTable of ArrayList of nested keys.
+     * key1 -> key2 -> arrayValue becomes arrayValue -> key1 -> key2 .
+     * @param paramHashMap
+     * @return HashTable
+     */
+    static public HashMap<Object,HashMap<Object,ArrayList<Object>>> 
+        invertHashMapHashMap(HashMap<Object,HashMap<Object,ArrayList<Object>>> paramHashMap)
+    {
+        LOGGER.info("invertHashMapHashMap()");
+        HashMap<Object,HashMap<Object,ArrayList<Object>>> invertedHashMap = new HashMap<Object,HashMap<Object,ArrayList<Object>>>() ;
+        HashMap<Object,ArrayList<Object>> cycleHashMap ;
+        
+        for( Object key1 : paramHashMap.keySet() )
+        {
+            LOGGER.info(key1.toString());
+            for (Object key2 : paramHashMap.get(key1).keySet())
+            {
+            //LOGGER.info(paramHashMap.get(key1).get(key2).toString());
+                for (Object cycle : paramHashMap.get(key1).get(key2))
+                {
+            //LOGGER.info(cycle.toString());
+                    if (!invertedHashMap.keySet().contains(cycle))
+                        cycleHashMap = new HashMap<Object,ArrayList<Object>>() ;
+                    else 
+                        cycleHashMap = invertedHashMap.get(cycle) ;
+                    invertedHashMap.put(cycle, updateHashMap(key1,key2,cycleHashMap)) ;
+                }
+            }
+        }
+        return invertedHashMap ;
     }
     
     /**
