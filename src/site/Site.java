@@ -90,7 +90,7 @@ abstract public class Site {
         if (RAND.nextDouble() < INITIAL ) 
         {
             infectedStatus = 1 ;
-            infectionTime = RAND.nextInt(getInfectionDuration()) + getInfectionDuration() ;
+            infectionTime = RAND.nextInt(getInfectionDuration()) ; // + getInfectionDuration() ;
             return true ;
         }
         return false ;
