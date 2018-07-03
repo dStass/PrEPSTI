@@ -11,10 +11,10 @@ public class Regular extends Relationship {
     static int NB_REGULAR = 0 ;
     
     /** Probability of breakup() in a given cycle. */
-    static double BREAKUP_PROBABILITY = 0.3 ;
+    static public double BREAKUP_PROBABILITY = 0.005 ;
     
     /** Probability of sexual encounter in a given cycle. */
-    static double ENCOUNTER_PROBABILITY = 0.7 ;
+    static double ENCOUNTER_PROBABILITY = 0.7 ; // 0.7 ;
     
     public Regular()
     {
@@ -28,11 +28,22 @@ public class Regular extends Relationship {
     }
 
     /**
+     * The probability of any sexual contact in any cycle.
+     * @return 
+     */
+    @Override
+    protected double getEncounterProbability()
+    {
+        return ENCOUNTER_PROBABILITY ;
+    }
+    
+    /**
      * Since breakupProbability is static, this getter allows it to be called
      * from the Relationship base class
      * @return (double) the probability of a relationship ending in a given cycle
      */
-    protected double getBreakupProbability()
+    @Override
+    public double getBreakupProbability()
     {
         return BREAKUP_PROBABILITY ;
     }
