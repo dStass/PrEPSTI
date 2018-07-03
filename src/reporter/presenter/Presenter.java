@@ -100,16 +100,9 @@ public class Presenter {
      * @param yLabel
      * @param hashMapArray 
      */
-    protected void callPlotNetwork(String xLabel, String yLabel, HashMap<Object,HashMap<Object,ArrayList<Object>>> hashMapArray)
+    protected void callPlotNetwork(String xLabel, String yLabel, ArrayList<HashMap<Object,ArrayList<Object>>> hashMapArray)
     {
-        Number xHub = 0;
-        for (Object key : hashMapArray.keySet())
-        {
-            xHub = (Number) key ;
-            break ;
-        }
-        int yHub = 0 ;
-        chart_awt.callPlotNetwork(chartTitle, hashMapArray, xHub, yHub, xLabel, yLabel) ;
+        chart_awt.callPlotNetwork(chartTitle, hashMapArray, xLabel, yLabel) ;
     }
 
     /**
@@ -119,7 +112,7 @@ public class Presenter {
      */
     protected void callPlotChart(String scoreName, ArrayList<Object> reportArray)
     {
-        LOGGER.info("callPlotChart()") ;
+        //LOGGER.info("callPlotChart()") ;
         // Extract data from reportArray
         parseReportArray(scoreName, reportArray) ;
         
@@ -150,21 +143,41 @@ public class Presenter {
     
     protected void plotHashMap(String categoryName, String scoreName, HashMap<Object,Integer> hashMapReport )
     {
+        HashMap<Object,Number> numberHashMap = new HashMap<Object,Number>() ;
+        for (Object key : hashMapReport.keySet())
+            numberHashMap.put(key, (Number) hashMapReport.get(key)) ;
+        
+        plotHashMapNumber(categoryName,scoreName,numberHashMap) ;
+    }
+    
+    protected void plotHashMapDouble(String categoryName, String scoreName, HashMap<Object,Double> hashMapReport )
+    {
+        HashMap<Object,Number> numberHashMap = new HashMap<Object,Number>() ;
+        for (Object key : hashMapReport.keySet())
+            numberHashMap.put(key, (Number) hashMapReport.get(key)) ;
+        
+        plotHashMapNumber(categoryName,scoreName,numberHashMap) ;
+    }
+    
+    protected void plotHashMapNumber(String categoryName, String scoreName, HashMap<Object,Number> hashMapReport )
+    {
         LOGGER.info("plotHashMap()") ;
         //ArrayList<String> categoryInteger = new ArrayList<String>() ;
-        ArrayList<Integer> scoreInteger = new ArrayList<Integer>() ;
+        ArrayList<Number> scoreNumber = new ArrayList<Number>() ;
         
         categoryData.clear();
         for (Object key : hashMapReport.keySet())
         {
+            if (key.equals(null))
+                continue ;
             categoryData.add(key) ;
         }
         categoryData.sort(null);
         for (Object key : categoryData)
         {
-            scoreInteger.add(hashMapReport.get(key)) ;
+            scoreNumber.add(hashMapReport.get(key)) ;
         }
-        chart_awt.callPlotChartInteger(chartTitle,categoryData,scoreInteger,scoreName,categoryName) ;
+        chart_awt.callPlotChartInteger(chartTitle,categoryData,scoreNumber,scoreName,categoryName) ;
     }
     
     /**
@@ -215,7 +228,7 @@ public class Presenter {
 
     public void plotCycleValue(String scoreName, ArrayList<Object> reportArray)
     {
-        LOGGER.info("plotCycleValue") ;
+        //LOGGER.info("plotCycleValue") ;
         callPlotChart(scoreName,reportArray) ;
     }            
             
@@ -293,10 +306,10 @@ public class Presenter {
          * @param yLabel
          * @param xLabel 
          */
-        private void callPlotNetwork(String chartTitle, HashMap<Object,HashMap<Object,ArrayList<Object>>> networkData, 
-                Number hub, Number hubCycle, String yLabel, String xLabel)
+        private void callPlotNetwork(String chartTitle, ArrayList<HashMap<Object,ArrayList<Object>>> networkData, 
+                String yLabel, String xLabel)
         {
-            XYSeriesCollection dataset = createHubDataset(hub, hubCycle, networkData, chartTitle) ;
+            XYSeriesCollection dataset = createHubDataset(networkData, chartTitle) ;
             plotLineChart(chartTitle, dataset, yLabel, xLabel) ;
         }
 
@@ -308,7 +321,7 @@ public class Presenter {
          */
         private void callPlotChart(String chartTitle, ArrayList<Object> dataArray, String yLabel)
         {
-            LOGGER.info("callPlotChart()") ;
+            //LOGGER.info("callPlotChart()") ;
             XYSeriesCollection dataset = createXYDataset(dataArray) ;
             plotLineChart(chartTitle, dataset, yLabel, "cycle") ;
         }
@@ -353,9 +366,9 @@ public class Presenter {
             plotBarChart(chartTitle, dataset, yLabel, xLabel) ;
         }
         
-        private void callPlotChartInteger(String chartTitle, ArrayList<Object> categoryArray, ArrayList<Integer> scoreArray, String yLabel, String xLabel)
+        private void callPlotChartInteger(String chartTitle, ArrayList<Object> categoryArray, ArrayList<Number> scoreArray, String yLabel, String xLabel)
         {
-            LOGGER.info("callPlotChartInteger()") ;
+            //LOGGER.info("callPlotChartInteger()") ;
             CategoryDataset dataset = createDatasetInteger(xLabel, categoryArray, scoreArray) ;
             plotBarChart(chartTitle, dataset, yLabel, xLabel) ;
         }
@@ -369,7 +382,7 @@ public class Presenter {
          */
         private void plotBarChart(String chartTitle, CategoryDataset dataset, String yLabel, String xLabel)
         {
-            LOGGER.info("plotBarChart()");
+            //LOGGER.info("plotBarChart()");
             JFreeChart barChart = ChartFactory.createBarChart(chartTitle,xLabel,
                 yLabel,dataset,PlotOrientation.VERTICAL,true, true, false);
             
@@ -400,7 +413,7 @@ public class Presenter {
          */
         private void plotLineChart(String chartTitle, XYDataset dataset, String yLabel, String xLabel)
         {
-            LOGGER.info("plotLineChart()") ;
+            //LOGGER.info("plotLineChart()") ;
             JFreeChart lineChart = ChartFactory.createXYLineChart(applicationTitle,xLabel,
                 yLabel,dataset,PlotOrientation.VERTICAL,true, true, false);
             
@@ -408,6 +421,7 @@ public class Presenter {
             domainAxis.setTickUnit(new NumberTickUnit(dataset.getItemCount(0)/20)) ;
             
             // Set unit tick distance if range is integer.
+            //LOGGER.info(String.valueOf(dataset.getX(0,0)));
             if (int.class.isInstance(dataset.getX(0,0)))
             {
                 NumberAxis rangeAxis = (NumberAxis) lineChart.getXYPlot().getRangeAxis() ;
@@ -481,14 +495,14 @@ public class Presenter {
             return categoryDataset ;
         }
         
-        private CategoryDataset createDatasetInteger(String category, ArrayList<Object> categoryData, ArrayList<Integer> scoreData)
+        private CategoryDataset createDatasetInteger(String category, ArrayList<Object> categoryData, ArrayList<Number> scoreData)
         {
             DefaultCategoryDataset categoryDataset = new DefaultCategoryDataset() ;
             // ArrayList<String> categoryData = data.get(0) ;
             // ArrayList<String> scoreData = data.get(1) ;
             
             String categoryValue ;
-            int scoreValue ;
+            Number scoreValue ;
             
             for (int index = 0 ; index < scoreData.size() ; index++ )
             {
@@ -576,16 +590,43 @@ public class Presenter {
             return scatterPlotDataset ;
         }
         
-        private XYSeriesCollection createHubDataset(Number hubId, Number hubCycle, 
-                HashMap<Object,HashMap<Object,ArrayList<Object>>> agentToCycleArray, String hubTitle)
+        /**
+         * 
+         * @param cycleToAgentArray
+         * @param hubTitle
+         * @return 
+         */
+        private XYSeriesCollection createHubDataset(ArrayList<HashMap<Object,ArrayList<Object>>> cycleToAgentArray, String hubTitle)
         {
-            XYSeries hubSeries = new XYSeries(hubTitle,false,true) ;
-            // for (int receiverId : agentToAgentArray.keySet())
+            XYSeriesCollection hubSeriesCollection = new XYSeriesCollection() ;
+            HashMap<Object,Number> lastInfected = new HashMap<Object,Number>() ;
+            
+            for (int cycle = 0 ; cycle < cycleToAgentArray.size() ; cycle++ )
             {
-                LOGGER.log(Level.INFO, "{0}", agentToCycleArray.get(hubId)) ;
-                hubSeries = generateHub(hubId, hubCycle, agentToCycleArray.get(hubId), hubTitle) ;
+                HashMap<Object,ArrayList<Object>> agentToAgentHashMap = cycleToAgentArray.get(cycle) ;
+                for (Object transmitterId : agentToAgentHashMap.keySet())
+                {
+                    XYSeries hubSeries = new XYSeries(hubTitle,false,true) ;
+            
+                    if (!lastInfected.containsKey(transmitterId))
+                        lastInfected.put(transmitterId, 0) ;
+                    ArrayList<Object> toAgentArray = agentToAgentHashMap.get(transmitterId) ;
+                    //LOGGER.log(Level.INFO, "{0}", toAgentArray ) ;
+                    hubSeries = generateHub((Number) transmitterId, lastInfected.get(transmitterId), toAgentArray, cycle, hubTitle, hubSeries) ;
+                    for (Object receiverId : toAgentArray)
+                        lastInfected.put(receiverId, cycle) ;
+                    try
+                    {
+                        hubSeriesCollection.addSeries((XYSeries) hubSeries.clone());
+                    }
+                    catch ( CloneNotSupportedException cnse )
+                    {
+                        LOGGER.info(cnse.toString());
+                        hubSeriesCollection.addSeries(hubSeries);
+                    }
+                }
             }
-            return new XYSeriesCollection(hubSeries) ;
+            return hubSeriesCollection ;
         }
         
         /**
@@ -596,11 +637,10 @@ public class Presenter {
          * @param nodeCycle
          * @return (XYSeries) with additional nodes showing transmissions in cycle nodeCycle from Agent hubId infected in cycle hubCycle.
          */
-        private XYSeries generateHub(Number hubId, Number hubCycle, HashMap<Object ,ArrayList<Object>> hubHashMap, String hubTitle)
+        private XYSeries generateHub(Number hubId, Number hubCycle, ArrayList<Object> hubArray, Number nodeCycle, String hubTitle, XYSeries hubSeries)
         {
-            XYSeries hubSeries = new XYSeries(hubTitle,false,true) ;
-            for (Object nodeId : hubHashMap.keySet())
-                hubSeries = generateHubNode(hubId, hubCycle, (Number) nodeId, hubHashMap.get(nodeId), hubSeries) ;
+            for (Object nodeId : hubArray)
+                hubSeries = generateHubNode(hubId, hubCycle, (Number) nodeId, nodeCycle, hubSeries) ;
             //for (double[] entry : hubSeries.toArray()) 
               //  System.out.println(entry[0] + entry[1]);
             return hubSeries ;
@@ -615,12 +655,11 @@ public class Presenter {
          * @param hubSeries (XYSeries) to be added to
          * @return (XYSeries) with additional nodes showing transmissions in cycle nodeCycle from Agent hubId infected in cycle hubCycle.
          */
-        private XYSeries generateHubNode(Number hubId, Number hubCycle, Number nodeId, ArrayList<Object> nodeCycles, XYSeries hubSeries)
+        private XYSeries generateHubNode(Number hubId, Number hubCycle, Number nodeId, Number nodeCycle, XYSeries hubSeries)
         {
             //XYSeries hubSeries = new XYSeries("Infections by agentId " + String.valueOf(hubId)) ;
             //hubSeries.add(hubId, hubCycle) ;
-            for ( Object nodeCycle : nodeCycles )
-                hubSeries = hubEntry(hubId, hubCycle, nodeId, (Number) nodeCycle, hubSeries) ;
+            hubSeries = hubEntry(hubId, hubCycle, nodeId, nodeCycle, hubSeries) ;
             
             return hubSeries ;
         }
@@ -634,6 +673,7 @@ public class Presenter {
          */
         private XYSeries hubEntry(Number hubId, Number hubCycle, Number nodeId, Number nodeCycle, XYSeries xySeries)
         {
+            xySeries.add(hubId, hubCycle);
             xySeries.add(nodeId, nodeCycle);
             xySeries.add(hubId, hubCycle);
             return xySeries ;
