@@ -24,40 +24,6 @@ public class SortReporter extends Reporter {
     Reporter sortingReporter ;
     Reporter unsortedReporter ;
     
-    /**
-     * Restructures paramHashMap so that most-nested values become keys.
-     * Values are HashTable of ArrayList of nested keys.
-     * key1 -> key2 -> arrayValue becomes arrayValue -> key1 -> key2 .
-     * @param paramHashMap
-     * @return HashTable
-     */
-    static public HashMap<Object,HashMap<Object,ArrayList<Object>>> 
-        invertHashMapHashMap(HashMap<Object,HashMap<Object,ArrayList<Object>>> paramHashMap)
-    {
-        LOGGER.info("invertHashMapHashMap()");
-        HashMap<Object,HashMap<Object,ArrayList<Object>>> invertedHashMap = new HashMap<Object,HashMap<Object,ArrayList<Object>>>() ;
-        HashMap<Object,ArrayList<Object>> cycleHashMap ;
-        
-        for( Object key1 : paramHashMap.keySet() )
-        {
-            LOGGER.info(key1.toString());
-            for (Object key2 : paramHashMap.get(key1).keySet())
-            {
-            LOGGER.info(paramHashMap.get(key1).get(key2).toString());
-                for (Object cycle : paramHashMap.get(key1).get(key2))
-                {
-            LOGGER.info(cycle.toString());
-                    if (!invertedHashMap.keySet().contains(cycle))
-                        cycleHashMap = new HashMap<Object,ArrayList<Object>>() ;
-                    else 
-                        cycleHashMap = invertedHashMap.get(cycle) ;
-                    invertedHashMap.put(cycle, updateHashMap(key1,key2,cycleHashMap)) ;
-                }
-            }
-        }
-        return invertedHashMap ;
-    }
-    
     
         
     public SortReporter(String simname, Reporter unsortedReporter, Reporter sortingReporter) {
@@ -153,7 +119,11 @@ public class SortReporter extends Reporter {
         for (Object ageKey : ageEnteredRelationshipRecord.keySet())
         {
             ArrayList<Object> ageRecord = (ArrayList<Object>) ageEnteredRelationshipRecord.get(ageKey) ;
-            int nbEntries = ageRecord.size() ;
+            int nbEntries = 0 ;
+            for (Object agentId : sortAgeRecord.keySet())
+                if (sortAgeRecord.get(agentId).equals(ageKey))
+                    nbEntries++ ;
+            // int nbEntries = ageRecord.size() ;
             int sum = 0 ;
             for (Object number : ageRecord)
                 sum += (Integer) number ;
@@ -174,6 +144,8 @@ public class SortReporter extends Reporter {
     public ArrayList<Object> prepareSortPrevalenceReport(int partnerCount, int backYear)
     {
         ArrayList<Object> prevalenceReport = new ArrayList<Object>() ;
+        int daysPerYear = 365 ;
+        int maxCycles = input.size() ;
         int population = 0 ;
         int nbInfected ;
         int nbSymptomatic ;
@@ -187,19 +159,20 @@ public class SortReporter extends Reporter {
                     + siteName.substring(1) ;
         }
         
-        ArrayList<ArrayList<ArrayList<ArrayList<Object>>>> screenSortAgentNewPartnersReport 
-                = prepareScreenSortAgentNewPartnersReport(partnerCount, backYear) ;
         ArrayList<Object> agentIdArray ; 
-        for (int recordIndex = 0 ; recordIndex < input.size() ; recordIndex++ ) // (String record : input)
+        
+        for (int recordIndex = backYear*daysPerYear ; recordIndex < input.size() ; recordIndex++ ) // (String record : input)
         {
             String record = input.get(recordIndex) ;
-            agentIdArray = screenSortAgentNewPartnersReport.get(recordIndex).get(backYear-1).get(partnerCount-1) ;
+            ArrayList<ArrayList<ArrayList<Object>>> screenSortAgentNewPartnersReport 
+                = prepareScreenSortAgentNewPartnersReport(partnerCount, backYear, recordIndex) ;
+            agentIdArray = screenSortAgentNewPartnersReport.get(backYear-1).get(partnerCount) ;
+            population = agentIdArray.size() ;
             nbSymptomatic = 0 ;
             ArrayList<String> infections = extractArrayList(record,AGENTID) ;
             nbInfected = infections.size() ;
             for (String infection : infections)
             {
-                population++ ;
                 if (!agentIdArray.contains(extractValue(AGENTID,infection))) 
                         continue ;
                 for (String siteName : MSM.SITE_NAMES)
@@ -223,14 +196,14 @@ public class SortReporter extends Reporter {
     }
     
     /**
-     * report -> years back -> count -> agentIds
+     * years back -> count -> agentIds
      * @param partnerCount
      * @param backYears
      * @return 
      */
-    public ArrayList<ArrayList<ArrayList<ArrayList<Object>>>> prepareScreenSortAgentNewPartnersReport(int partnerCount, int backYears)
+    public ArrayList<ArrayList<ArrayList<Object>>> prepareScreenSortAgentNewPartnersReport(int partnerCount, int backYears, int recordIndex)
     {
-        ArrayList<ArrayList<ArrayList<ArrayList<Object>>>> screenSortAgentNewPartnersReport = new ArrayList<ArrayList<ArrayList<ArrayList<Object>>>>() ;
+        ArrayList<ArrayList<ArrayList<Object>>> screenSortAgentNewPartnersReport = new ArrayList<ArrayList<ArrayList<Object>>>() ;
         
         int daysPerYear = 365 ;
         
@@ -238,30 +211,29 @@ public class SortReporter extends Reporter {
         
         // number of partners -> agentIds
         ArrayList<ArrayList<Object>> commenceArray = new ArrayList<ArrayList<Object>>() ;
+        for (int count = 0 ; count <= partnerCount ; count++ )
+            commenceArray.add(new ArrayList<Object>()) ;
             
-        for (int index = daysPerYear * backYears ; index < sortingReport.size() ; index++ )
+        // New partners per agentId
+        HashMap<Object,Integer> agentCommenceCount = new HashMap<Object,Integer>() ;
+
+        for (int count = 0 ; count <= partnerCount ; count++ )
+            commenceArray.set(count, new ArrayList<Object>()) ;
+
+        for (int year = 1 ; year <= backYears ; year++)
         {
-            // New partners per agentId
-            HashMap<Object,Integer> agentCommenceCount = new HashMap<Object,Integer>() ;
-            
-            for (int count = 0 ; count <= partnerCount ; count++ )
-                commenceArray.set(count, new ArrayList<Object>()) ;
-        
-            for (int year = 0 ; year < backYears ; year++)
+            for (int cycle = (year-1)*daysPerYear ; cycle < year * daysPerYear ; cycle++)
+                for (Object agentId : sortingReport.get(recordIndex-cycle))
+                    agentCommenceCount = incrementHashMap(agentId,agentCommenceCount) ;
+            for (Object agentKey : agentCommenceCount.keySet())    
             {
-                for (int cycle = year*daysPerYear ; cycle > (year+1) * daysPerYear ; cycle--)
-                    for (Object agentId : sortingReport.get(index-cycle))
-                        agentCommenceCount = incrementHashMap(agentId,agentCommenceCount) ;
-                for (Object agentKey : agentCommenceCount.keySet())    
-                {
-                    int relationshipCount = agentCommenceCount.get(agentKey) ;
-                    if (relationshipCount < partnerCount)
-                        commenceArray.get(relationshipCount).add(agentKey) ;
-                    else
-                        commenceArray.get(partnerCount).add(agentKey) ;
-                }
-                screenSortAgentNewPartnersReport.get(index).set(year,(ArrayList<ArrayList<Object>>) commenceArray.clone()) ;
+                int relationshipCount = agentCommenceCount.get(agentKey) ;
+                if (relationshipCount < partnerCount)
+                    commenceArray.get(relationshipCount).add(agentKey) ;
+                else
+                    commenceArray.get(partnerCount).add(agentKey) ;
             }
+            screenSortAgentNewPartnersReport.add((ArrayList<ArrayList<Object>>) commenceArray.clone()) ;
         }
         return screenSortAgentNewPartnersReport ;
     }
