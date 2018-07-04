@@ -349,8 +349,10 @@ public abstract class Agent {
         String censusReport = "" ;
         censusReport += "agentId:" + String.valueOf(agentId) + " " ;  // Reporter.addReportProperty("agentId",agentId) ;
         censusReport += "class:" + agent + " " ;  // Reporter.addReportProperty("class",agent) ;
-        censusReport += "promiscuity:" + String.valueOf(concurrency) + " " ;  // Reporter.addReportProperty("concurrency",concurrency) ;
-        censusReport += "infidelity:" + String.valueOf(infidelity) + " " ;  // Reporter.addReportProperty("infidelity",infidelity) ;
+        censusReport += "age:" + String.valueOf(getAge()) + " " ;  // Reporter.addReportProperty("startAge", getAge()) ;
+        //censusReport += "concurrency:" + String.valueOf(concurrency) + " " ;  // Reporter.addReportProperty("concurrency",concurrency) ;
+        //censusReport += "infidelity:" + String.valueOf(infidelity) + " " ;  // Reporter.addReportProperty("infidelity",infidelity) ;
+        censusReport += Reporter.addReportProperty("screenInterval",getScreenCycle()) ;
         
         /*Class fieldClazz ;
         Class agentClazz ;
