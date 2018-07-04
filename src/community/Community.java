@@ -28,10 +28,13 @@ import org.jfree.chart.* ;
  *
  *******************************************************************/
 public class Community {
-    static public int POPULATION = 40000 ;
-    static public int MAX_CYCLES = 5000 ;
-    static public String NAME_ROOT = "ProbEncounterDelayScreenGSE10sizeContacts4Screentime"
-            + String.valueOf(POPULATION) + "Cycles" + String.valueOf(MAX_CYCLES) ;
+    static public int POPULATION = 40000;
+    static public int MAX_CYCLES = 5000;
+    //static public String NAME_ROOT = "testPlotSortRelationshipsByAge"
+    //static public String NAME_ROOT = "testPlotSortPrevalenceYear3Partners10"
+    static public String NAME_ROOT = "NoprepGSE20sizeContacts5"
+    //static public String NAME_ROOT = "testBurnin5000"
+            + "Pop" + String.valueOf(POPULATION) + "Cycles" + String.valueOf(MAX_CYCLES) ;
 
     static public String FILE_PATH = "../output/test/" ;
     
@@ -44,9 +47,9 @@ public class Community {
 
     private ArrayList<Agent> agents = new ArrayList<Agent>() ;
     
-    // Total number of agents, make larger once testing is complete!
+    /** Total number of agents. */
     private int population = POPULATION ;
-    // Current number of sexually live agents, make larger once testing is complete!
+    /** Current number of sexually live agents */
     private int currentPopulation = population ;
 
     // Number of new population members and also average number of deaths per cycle
@@ -87,6 +90,9 @@ public class Community {
 
     public static void main(String[] args)
     {
+        //POPULATION = Integer.valueOf(args[0]) ;
+        //MAX_CYCLES = Integer.valueOf(args[1]) ;
+        
         // Record starting time to measure running time
         long startTime = System.nanoTime() ;
         
@@ -98,7 +104,6 @@ public class Community {
         //System.out.println(community.initialiseCommunity()) ;
 
         // For generating reports
-        LOGGER.info("records");
         String relationshipRecord ;
         String encounterRecord ;
         //String clearanceRecord ;
@@ -127,10 +132,10 @@ public class Community {
             outputInterval = 10 ;
         
         // Generate relationships for simulation
-        for (int burnin = 0 ; burnin < 1000 ; burnin++ )
+        for (int burnin = 0 ; burnin < 2000 ; burnin++ )
         {
-            community.generateRelationships() ;
-            community.clearRelationships() ;
+            Relationship.BURNIN_COMMENCE = community.generateRelationships() + Relationship.BURNIN_COMMENCE ;
+            Relationship.BURNIN_BREAKUP = community.clearRelationships().substring(6) + Relationship.BURNIN_BREAKUP ;
         }
         
         //outputInterval = 1 ;
@@ -139,6 +144,8 @@ public class Community {
             if (cycle == ((cycle/outputInterval) * outputInterval))
                 LOGGER.log(Level.INFO, "Cycle no. {0}", cycleString);
 
+            if (cycle == 4000 && false)
+                community.interveneCommunity() ;
             //LOGGER.log(Level.INFO,"{0} {1}", new Object[] {Relationship.NB_RELATIONSHIPS,Relationship.NB_RELATIONSHIPS_CREATED});
             // update relationships and perform sexual encounters, report them
             relationshipRecord = cycleString + community.generateRelationships();
@@ -177,7 +184,7 @@ public class Community {
             cycleString = Integer.toString(cycle+1) + "," ;
             populationRecord = cycleString + community.births(deltaPopulation) ;
         }
-        //community.encounterScribe = community.new Scribe(scribeName) ;
+        //community.encounterScribe = community.new Scribe(Community.NAME_ROOT) ;
         //community.dump(new String[] {"relationship","encounter","infection", "population"}) ;
         //community.encounterScribe.closeFile();
         
@@ -190,9 +197,9 @@ public class Community {
         System.out.println("Elapsed running time: " + seconds + "seconds") ;
         System.out.println("Elapsed running time: " + minutes + "minutes") ;
         
-        //EncounterReporter encounterReporter = new EncounterReporter("Agent to Agent",community.encounterReport) ;
-        //EncounterPresenter encounterPresenter = new EncounterPresenter("Agent to Agent","agent to agent", encounterReporter) ;
-        //encounterPresenter.plotNbTransmissions(); 
+        EncounterReporter encounterReporter = new EncounterReporter("Agent to Agent",community.encounterReport) ;
+        EncounterPresenter encounterPresenter = new EncounterPresenter(Community.NAME_ROOT,"agent to agent", encounterReporter) ;
+        encounterPresenter.plotNbTransmissions(); 
         //encounterPresenter.plotTransmittingSites(new String[] {"Urethra","Rectum","Pharynx"});
         //encounterPresenter.plotFromSiteToSite(new String[] {"Urethra","Rectum","Pharynx"});
         //encounterPresenter.plotAgentToAgentNetwork();
@@ -202,6 +209,29 @@ public class Community {
         //populationPresenter.plotAgeAtDeath();
         //PopulationPresenter populationPresenter = new PopulationPresenter("births per cycle","births per cycle",populationReporter) ;
         //populationPresenter.plotBirthsPerCycle();
+        
+        //SortReporter sortReporter = new SortReporter("Prep +ve infections per cycle",encounterReporter,populationReporter) ;
+        //SortPresenter sortPresenter = new SortPresenter("Prep +ve infections per cycle","Infections per cycle",sortReporter) ;
+        //sortPresenter.plotReceiveSortPrepStatusReport(TRUE);
+        //RelationshipReporter relationshipReporter 
+          //      = new RelationshipReporter("New Relationships per cycle",community.relationshipReport) ;
+        //ScreeningReporter screeningReporter = new ScreeningReporter("prevalence",community.infectionReport) ;
+        //SortReporter sortReporter = new SortReporter("prevalence",screeningReporter,relationshipReporter) ;
+        //SortPresenter sortPresenter = new SortPresenter("prevalence","prevalence",sortReporter) ;
+        //sortPresenter.plotSortPrevalence(10,3);
+        
+        //RelationshipReporter relationshipReporter 
+          //      = new RelationshipReporter("Cumulative Relationships per age",community.relationshipReport) ;
+        //PopulationReporter populationReporter = new PopulationReporter("age",community.populationReport) ;
+        //SortReporter sortReporter = new SortReporter("Cumulative Relationships per age",relationshipReporter,populationReporter) ;
+        //SortPresenter sortPresenter = new SortPresenter("age","nbRelationships",sortReporter) ;
+        //sortPresenter.plotAgeNumberEnteredRelationshipRecord() ;
+        
+        ScreeningReporter screeningReporter = 
+                new ScreeningReporter("prevalence",community.infectionReport) ;
+        ScreeningPresenter screeningPresenter 
+                = new ScreeningPresenter("prevalence",Community.NAME_ROOT,screeningReporter) ;
+        screeningPresenter.plotPrevalence();
         
         //RelationshipReporter relationshipReporter 
           //      = new RelationshipReporter("New Relationships per cycle",community.relationshipReport) ;
@@ -223,28 +253,12 @@ public class Community {
         //RelationshipPresenter relationshipPresenter 
           //      = new RelationshipPresenter("Cumulative Relationships to date","Cumulative Relationships to date",relationshipReporter) ;
         //relationshipPresenter.plotCumulativeRelationships();
-        //RelationshipReporter relationshipReporter 
-          //      = new RelationshipReporter("Mean number of Relationships",community.relationshipReport) ;
-        //RelationshipPresenter relationshipPresenter 
-          //      = new RelationshipPresenter("Mean number of Relationships","Mean number of Relationships",relationshipReporter) ;
-        //relationshipPresenter.plotMeanNumberRelationshipsReport();
+        RelationshipReporter relationshipReporter 
+                = new RelationshipReporter("Mean number of Relationships",community.relationshipReport) ;
+        RelationshipPresenter relationshipPresenter 
+                = new RelationshipPresenter("Mean number of Relationships",Community.NAME_ROOT,relationshipReporter) ;
+        relationshipPresenter.plotMeanNumberRelationshipsReport();
         
-        //SortReporter sortReporter = new SortReporter("Prep +ve infections per cycle",encounterReporter,populationReporter) ;
-        //SortPresenter sortPresenter = new SortPresenter("Prep +ve infections per cycle","Infections per cycle",sortReporter) ;
-        //sortPresenter.plotReceiveSortPrepStatusReport(TRUE);
-        
-        ScreeningReporter screeningReporter = 
-                new ScreeningReporter("prevalence",community.infectionReport) ;
-        ScreeningPresenter screeningPresenter 
-                = new ScreeningPresenter("prevalence","prevalence",screeningReporter) ;
-        screeningPresenter.plotPrevalence();
-        
-        //EncounterReporter partnersReporter = new EncounterReporter("testPairs",community.encounterReport) ;
-        //Reporter partnersReporter = new Reporter("testPairs",community.generateReport,
-                //	community.encounterReport,community.clearReport,community.screenReport) ;
-        //ArrayList<HashMap<Integer,ArrayList<Integer>>> partnersReport = partnersReporter.preparePartnersReport() ;
-        //System.out.println(partnersReport.get(0).get(0).size()) ; //  toString());
-        //System.out.println(partnersReport.get(0).get(4).size()) ; // .toString());
     }
 
     /**
@@ -266,7 +280,6 @@ public class Community {
             agents.add(newAgent) ;
 
             // Record newAgent for later reporting
-            initialRecord += Reporter.addReportProperty(Reporter.AGENTID, newAgent.getAgentId()) ;
             initialRecord += newAgent.getCensusReport() ;
             //LOGGER.info(initialRecord);
         }
@@ -278,30 +291,45 @@ public class Community {
      */
     private String initialiseCommunity()
     {
+        
         // Clear all initial infections
         for (Agent agent : agents)
-            agent.clearInfection();
+        {
+            ((MSM) agent).setPrepStatus(false);
+            //agent.clearInfection();
+        }
         
         // Infect one RiskyMSM.urethra
-        for (Agent agent : agents) 
+//        for (Agent agent : agents) 
+//        {
+//            // Start with RiskyMSM
+//            if (!agent.getAgent().equals("RiskyMSM"))
+//                continue ;
+//            MSM msm = (MSM) agent ;
+//            
+//            // Start with single Rectum infection
+//            Site site = msm.getUrethra() ;
+//            boolean infected = site.receiveInfection(1.1) ;
+//            site.setSymptomatic(-1) ;
+//            msm.setInfectedStatus(infected);
+//            msm.setSymptomatic(site) ;
+//            break ;
+//        }
+//        return "Population clear except for one RiskyMSM with asymptomatic Rectum infection." ;
+        return "";
+    }
+    
+    /**
+     * For addressing specific questions. Code will flux dramatically.
+     */
+    private String interveneCommunity()
+    {
+        for (Agent agent : agents)
         {
-            // Start with RiskyMSM
-            if (!agent.getAgent().equals("RiskyMSM"))
-            {
-                LOGGER.info(agent.getAgent());
-                continue ;
-            }
-            MSM msm = (MSM) agent ;
-            
-            // Start with single Rectum infection
-            Site site = msm.getRectum() ;
-            boolean infected = site.receiveInfection(1.1) ;
-            site.setSymptomatic(-1) ;
-            msm.setInfectedStatus(infected);
-            msm.setSymptomatic(site) ;
-            break ;
+            double prepProbability = ((MSM) agent).getProbabilityPrep() ;
+            ((MSM) agent).reinitPrepStatus(true) ; // RAND.nextDouble() < prepProbability) ;
         }
-        return "Population clear except for one RiskyMSM with asymptomatic Urethral infection." ;
+        return "PrEP introduced" ;
     }
     
     /**
@@ -517,7 +545,7 @@ public class Community {
             MSM newAgent = MSM.birthMSM(0) ;
             agents.add(newAgent) ;
             record += Reporter.addReportProperty("agentId",newAgent.getAgentId()) ;
-            record += Reporter.addReportProperty("startAge",newAgent.getAge()) ; 
+            record += Reporter.addReportProperty("age",newAgent.getAge()) ; 
             currentPopulation++ ;
         }
         record += Reporter.addReportProperty("currentPopulation",currentPopulation) ;
@@ -552,7 +580,7 @@ public class Community {
                 nbRelationships-= agent.getCurrentRelationships().size() ;
                 agents.remove(agent) ;
                 record += Reporter.addReportProperty("agentId", agent.getAgentId()) ;
-                record += Reporter.addReportProperty("age", agent.getAge()) ;
+                //record += Reporter.addReportProperty("age", agent.getAge()) ;
                 currentPopulation-- ;
             }
         }
@@ -643,9 +671,7 @@ public class Community {
                 // Avoid checking relationship twice
                 //int agentId = agent.getAgentId() ;
                 if (agent == relationship.getLowerIdAgent())
-                {
                     record += endRelationship(relationship) ;
-                }
                 //LOGGER.log(Level.INFO, "nbRelationships: {0}", new Object[]{nbRelationships});
 
             }
@@ -663,7 +689,7 @@ public class Community {
         if (relationship.breakup())
         {
             nbRelationships-- ;
-            return relationship.getRecord() ;
+            return relationship.endRelationship() ;
         }
         return "" ;
     }
@@ -692,9 +718,9 @@ public class Community {
             // Due for an STI screen?
             if (RAND.nextDouble() < agent.getScreenProbability(new String[] {Integer.toString(cycle)})) 
             {
-                //LOGGER.info("screening agentId:"+String.valueOf(agent.getAgentId())) ;
                 if (infected)
                 {
+                    //LOGGER.info("screening agentId:"+String.valueOf(agent.getAgentId())) ;
                     record += Reporter.addReportProperty("agentId",agent.getAgentId()) ;
                     for (Site site : agent.getSites())
                     {
