@@ -40,6 +40,9 @@ public class Relationship {
     
     static public String DEATH_RECORD = "death:" ;
     
+    static public String BURNIN_COMMENCE = "clear:" ;
+    static public String BURNIN_BREAKUP = "" ;
+    
     static public void APPEND_DEATH_RECORD(String record)
     {
         DEATH_RECORD += record ;
@@ -64,7 +67,7 @@ public class Relationship {
     static double ENCOUNTER_PROBABILITY = 0.5 ;
     
     /** One less than the maximum number of contacts allowed in a sexual encounter. */
-    static int MAXIMUM_CONTACTS = 3 ;
+    static int MAXIMUM_CONTACTS = 4 ;
     
     // TODO: Move condom variables to STI
     // Probability of using a condom for couplings with a Site.Urethra
@@ -349,6 +352,11 @@ public class Relationship {
     	record += Reporter.addReportProperty(Reporter.AGENTID0,agent0.getAgentId());
     	record += Reporter.addReportProperty(Reporter.AGENTID1,agent1.getAgentId()) ;
     	return record ;
+    }
+    
+    public String endRelationship()
+    {
+        return Reporter.addReportProperty(RELATIONSHIP_ID,relationshipId) ; 
     }
 
     /**
