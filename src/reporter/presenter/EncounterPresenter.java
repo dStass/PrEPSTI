@@ -144,7 +144,22 @@ public class EncounterPresenter extends Presenter {
     public void plotAgentToAgentNetwork()
     {
         HashMap<Object,HashMap<Object,ArrayList<Object>>> transmittingAgentsReport = reporter.prepareAgentToAgentReport() ;
-        callPlotNetwork("agentId", "cycle", transmittingAgentsReport) ;    // (HashMap<Number,HashMap<Number,ArrayList<Number>>>) 
+        HashMap<Object,HashMap<Object,ArrayList<Object>>> invertedTransmittingAgentsReport 
+                = Reporter.invertHashMapHashMap(transmittingAgentsReport) ;
+        
+        ArrayList<HashMap<Object,ArrayList<Object>>> plottingAgentsReport = new ArrayList<HashMap<Object,ArrayList<Object>>>() ;
+        for (int cycle = 0 ; cycle < invertedTransmittingAgentsReport.keySet().size() ; cycle++ )
+        {
+            if (invertedTransmittingAgentsReport.keySet().contains(cycle))
+            {
+                plottingAgentsReport.add(invertedTransmittingAgentsReport.get(cycle)) ;
+                LOGGER.log(Level.INFO, "{0} {1}", new Object[] {cycle,invertedTransmittingAgentsReport.get(cycle)});
+            }
+            else
+                plottingAgentsReport.add(new HashMap<Object,ArrayList<Object>>()) ;
+        }
+        //LOGGER.log(Level.INFO, "{0}", transmittingAgentsReport);
+        callPlotNetwork("agentId", "cycle", plottingAgentsReport) ;    // (HashMap<Number,HashMap<Number,ArrayList<Number>>>) 
     }
     
     /*
