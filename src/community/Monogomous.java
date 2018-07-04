@@ -18,12 +18,11 @@ public class Monogomous extends Relationship {
     static int NB_MONOGOMOUS = 0 ;
     
     /** Probability of breakup() in a given cycle. */
-    static double BREAKUP_PROBABILITY = 0.1 ;
+    public static double BREAKUP_PROBABILITY = 0.0001 ;
     
 
     // Part of how the number of sexual encounters is determined.
-    // TODO: Finalise the form of how this is handled
-    static double ENCOUNTER_PROBABILITY = 0.6 ;
+    static double ENCOUNTER_PROBABILITY = 0.6 ; // 0.6 ;
 
 
     // Logger
@@ -46,6 +45,16 @@ public class Monogomous extends Relationship {
     }
 
     /**
+     * The probability of any sexual contact in any cycle.
+     * @return 
+     */
+    @Override
+    protected double getEncounterProbability()
+    {
+        return ENCOUNTER_PROBABILITY ;
+    }
+    
+    /**
      * TODO: Finalise the form of how this is handled  
      * @return the int number of sexual contacts for a given encounter
      */
@@ -60,12 +69,12 @@ public class Monogomous extends Relationship {
      * @return (double) the probability of a relationship ending in a given cycle
      */
     @Override
-    protected double getBreakupProbability()
+    public double getBreakupProbability()
     {
         return BREAKUP_PROBABILITY ;
     }
 
-/**
+    /**
      * 
      * @return (int) The current number of Monogomous Relationships.
      */
