@@ -126,11 +126,32 @@ public class SortPresenter extends Presenter {
      */
     public void plotSortPrevalence(int partnerCount, int backYear)
     {
-        ArrayList<Object> prevalenceSortReport = reporter.prepareSortPrevalenceReport(partnerCount, backYear) ;
+        HashMap<Object,Number> prevalenceSortCount = new HashMap<Object,Number>() ;
         
-        plotCycleValue("prevalence", prevalenceSortReport) ;
+        ArrayList<Object> prevalenceSortReport ;
+        String prevalenceSortRecord ;
+        Number prevalence ;
+        for (int nbPartner = 1 ; nbPartner <= partnerCount ; nbPartner++ )
+        {
+            prevalenceSortReport = reporter.prepareSortPrevalenceReport(nbPartner, backYear) ;
+            prevalenceSortRecord = String.valueOf(prevalenceSortReport.get((prevalenceSortReport.size()-1))) ;
+            prevalence = (Number) Double.valueOf(Reporter.extractValue("prevalence", prevalenceSortRecord)) ;
+            prevalenceSortCount.put(nbPartner, prevalence) ;
+            LOGGER.info(prevalenceSortRecord);
+        }
+        
+        plotHashMapNumber("nbPartners","prevalence", prevalenceSortCount) ;
     }
     
-    
+    /**
+     * Plots the mean number of relationships entered by an Agent by a given age.
+     */
+    public void plotAgeNumberEnteredRelationshipRecord()
+    {
+        HashMap<Object,Double> ageNumberEnteredRelationshipRecord 
+                = reporter.prepareAgeNumberEnteredRelationshipRecord() ;
+        
+        plotHashMapDouble("age","nbPartners", ageNumberEnteredRelationshipRecord ) ;
+    }
     
 }
