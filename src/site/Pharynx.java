@@ -16,6 +16,9 @@ public class Pharynx extends Site {
 
     // Probability of positive symptomatic status if infected
     static double SYMPTOMATIC_PROBABILITY = 0.0 ;
+    
+    /** Probability of Site being infected initially */
+    static double INITIAL = 0.039 ;
 
     /**
      * Duration of gonorrhoea infection in Pharynx, 12 weeks.
@@ -45,6 +48,15 @@ public class Pharynx extends Site {
 
     /**
      * 
+     * @return Probability of site being infected initially.
+     */
+    protected double getInfectedProbability()
+    {
+        return INITIAL ;
+    }
+
+    /**
+     * 
      * @return The probability of an infection at this Site causing symptoms.
      */        
     protected double getSymptomaticProbability()
@@ -52,6 +64,7 @@ public class Pharynx extends Site {
         return SYMPTOMATIC_PROBABILITY ;
     }
 
+    @Override
     protected int getInfectionDuration()
     {
         return INFECTION_DURATION ;
