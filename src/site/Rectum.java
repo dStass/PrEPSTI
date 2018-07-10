@@ -10,11 +10,12 @@ package site;
 public class Rectum extends Site {
 
     // Constants that vary according to Site subclass
-    // Probability of initial gonorrhoea infection 
-    static double INITIAL = 0.3 ;
-
+    
+    /** Probability of Site being infected initially */
+    static double INITIAL = 0.046 ;
+    
     // Probability of positive symptomatic status if infected
-    static double SYMPTOMATIC_PROBABILITY = 0.4 ;
+    static double SYMPTOMATIC_PROBABILITY = 0.15 ;
 
     /**
      * Duration of gonorrhoea infection in rectum, 6 months.
@@ -35,6 +36,15 @@ public class Rectum extends Site {
     public Rectum() 
     {
             super() ;
+    }
+
+    /**
+     * 
+     * @return Probability of site being infected initially.
+     */
+    protected double getInfectedProbability()
+    {
+        return INITIAL ;
     }
 
     /**
