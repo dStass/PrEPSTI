@@ -110,7 +110,6 @@ public class EncounterReporter extends Reporter {
         for (String record : input)
         {
             int[] incidence = countValueIncidence("transmission", TRUE, record, 0) ;
-            LOGGER.info((String.valueOf(incidence[0])));
             nbTransmissions.add("transmission:" + String.valueOf(incidence[0])) ;
         }
         return nbTransmissions ;
@@ -119,9 +118,9 @@ public class EncounterReporter extends Reporter {
     /**
      * 
      * @param sortedReport
-     * @return Report of Transmissions per cycle for Agents sorted in sortedReport.
+     * @return Report of Transmissions per cycle to Agents sorted in sortedReport.
      */
-    public ArrayList<ArrayList<Object>> prepareTransmissionCountReport( HashMap<Object,HashMap<Object,ArrayList<Object>>> sortedReport )
+    public ArrayList<ArrayList<Object>> prepareReceiveCountReport( HashMap<Object,HashMap<Object,ArrayList<Object>>> sortedReport )
     {
         ArrayList<ArrayList<Object>> nbTransmissions = new ArrayList<ArrayList<Object>>() ;
         
@@ -229,7 +228,6 @@ public class EncounterReporter extends Reporter {
         for (int cycle = 0 ; cycle < transmissionReport.size(); cycle++ )
         {
             String record = transmissionReport.get(cycle) ;
-            
             encounterIndex = record.indexOf("agentId0");
             while (encounterIndex >= 0)
             {
@@ -264,6 +262,32 @@ public class EncounterReporter extends Reporter {
         }
         //return hashMapHashMapNumber(objectReport) ;
         return objectReport ;
+    }
+    
+    /**
+     * This method makes use of agentToAgentReport mapping agentId0 to agentId1 
+     * to Array of cycles in which transmission occurred.
+     * @return HashMap agentId to number of times Agent transmitted disease.
+     */
+    public HashMap<Object,Integer> prepareAgentTransmissionCountReport()
+    {
+        HashMap<Object,Integer> agentTransmissionCountReport 
+                = new HashMap<Object,Integer>() ;
+        
+        HashMap<Object,HashMap<Object,ArrayList<Object>>> agentToAgentReport 
+                = prepareAgentToAgentReport() ;
+        
+        HashMap<Object,ArrayList<Object>> agentToAgentRecord = new HashMap<Object,ArrayList<Object>>() ;
+        
+        for (Object agentId : agentToAgentReport.keySet())
+        {
+            int agentTotal = 0 ;
+            agentToAgentRecord = agentToAgentReport.get(agentId) ;
+            for (Object agentKey : agentToAgentRecord.keySet()) 
+                agentTotal += agentToAgentRecord.get(agentKey).size() ;
+            agentTransmissionCountReport.put(agentId, agentTotal) ;
+        }
+        return agentTransmissionCountReport ;
     }
 		
     /**
