@@ -119,19 +119,19 @@ abstract public class MSM extends Agent {
     private boolean prepStatus ;
 	
     /** Transmission probabilities per sexual contact from Urethra to Rectum */
-    static double URETHRA_TO_RECTUM = 0.84 ;    // 0.8 ;
+    static double URETHRA_TO_RECTUM = 0.6 ;    // 0.84 ;    // 0.8 ;
     /** Transmission probabilities sexual contact from Urethra to Pharynx. */
-    static double URETHRA_TO_PHARYNX = 0.63 ;    // 0.7 ;
+    static double URETHRA_TO_PHARYNX = 0.4 ; // 0.63 ;    // 0.7 ;
     /** Transmission probabilities sexual contact from Rectum to Urethra. */ 
-    static double RECTUM_TO_URETHRA = 0.023 ;    // 0.3 ;
+    static double RECTUM_TO_URETHRA = 0.015 ; // 0.023 ;    // 0.3 ;
     /** Transmission probabilities sexual contact from Rectum to Pharynx. */
-    static double RECTUM_TO_PHARYNX = 0.01 ;    // 0.1 ;
+    static double RECTUM_TO_PHARYNX = 0.02 ;    // 0.1 ;
     /** Transmission probabilities sexual contact in Pharynx to Urethra intercourse. */
-    static double PHARYNX_TO_URETHRA = 0.086 ;    // 0.2 ;
+    static double PHARYNX_TO_URETHRA = 0.075 ; // 0.086 ;    // 0.2 ;
     /** Transmission probabilities sexual contact in Pharynx to Rectum intercourse. */
-    static double PHARYNX_TO_RECTUM = 0.078 ;    // 0.2 ;
+    static double PHARYNX_TO_RECTUM = 0.02 ;    // 0.2 ;
     /** Transmission probabilities sexual contact in Pharynx to Pharynx intercourse (kissing). */
-    static double PHARYNX_TO_PHARYNX = 0.04 ;
+    static double PHARYNX_TO_PHARYNX = 0.02 ;
     /** Transmission probabilities sexual contact in Urethra to Urethra intercourse (docking). */
     static double URETHRA_TO_URETHRA = 0.01 ;
     /** Transmission probabilities sexual contact in Rectum to Rectum intercourse. */
@@ -150,7 +150,7 @@ abstract public class MSM extends Agent {
 
     
     /** The number of msm invited to any given orgy. */
-    static public int GROUP_SEX_EVENT_SIZE = 20 ;
+    static public int GROUP_SEX_EVENT_SIZE = 7 ;
 
     /** The number of orgies in the community during a given cycle. */
     //int ORGY_NUMBER = 4 ;
@@ -564,7 +564,7 @@ abstract public class MSM extends Agent {
         discloseStatusHIV = disclose ;
     }
 
-    protected boolean getPrepStatus()
+    public boolean getPrepStatus()
     {
         return prepStatus ;
     }
