@@ -29,11 +29,11 @@ import org.jfree.chart.* ;
  *******************************************************************/
 public class Community {
     static public int POPULATION = 40000;
-    static public int MAX_CYCLES = 500;
+    static public int MAX_CYCLES = 7000;
     //static public String NAME_ROOT = "testPlotSortRelationshipsByAge"
     //static public String NAME_ROOT = "testPlotSortPrevalenceYear3Partners10"
-    //static public String NAME_ROOT = "init1UrethralCalibration30GSE7sizeContacts5"
-    static public String NAME_ROOT = "calibration31"
+    static public String NAME_ROOT = "NoprepCalibration31GSE7sizeContacts5"
+    //static public String NAME_ROOT = "calibration31"
     //static public String NAME_ROOT = "testPlotNetwork"
             + "Pop" + String.valueOf(POPULATION) + "Cycles" + String.valueOf(MAX_CYCLES) ;
 

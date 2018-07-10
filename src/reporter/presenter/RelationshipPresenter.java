@@ -128,7 +128,6 @@ public class RelationshipPresenter extends Presenter{
     
     public void plotMeanNumberRelationshipsReport()
     {
-        LOGGER.info("plotMeanNumberRelationshipReport()") ;
         ArrayList<Object> meanNumberRelationshipsReport = reporter.prepareMeanNumberRelationshipsReport() ;
         
         plotCycleValue("Mean number of partners",meanNumberRelationshipsReport) ;

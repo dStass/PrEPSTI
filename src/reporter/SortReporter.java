@@ -69,12 +69,17 @@ public class SortReporter extends Reporter {
     
     public HashMap<Object,HashMap<Object,ArrayList<Object>>>
         prepareReceiveSortPrepStatusReport(String value )
-        {
-            HashMap<Object,HashMap<Object,ArrayList<Object>>> outputHashMap 
-                    = prepareReceiveSortPrepStatusReport(new String[] {value}).get(value) ;
-            return outputHashMap ;
-        }
-    
+    {
+        HashMap<Object,HashMap<Object,ArrayList<Object>>> outputHashMap 
+                = prepareReceiveSortPrepStatusReport(new String[] {value}).get(value) ;
+        return outputHashMap ;
+    }
+
+    /**
+     * 
+     * @param values
+     * @return HashMap sorting values -> correspondingTransmissionReport
+     */
     public HashMap<Object,HashMap<Object,HashMap<Object,ArrayList<Object>>>> 
         prepareReceiveSortPrepStatusReport(String[] values )
     {
@@ -95,7 +100,7 @@ public class SortReporter extends Reporter {
         
     /**
      * 
-     * @return HashMap of age to mean number of Relationships entered into at 
+     * @return HashMap of age to mean number of Relationships entered into by 
      * that age.
      */
     public HashMap<Object,Double> prepareAgeNumberEnteredRelationshipRecord()
@@ -103,12 +108,15 @@ public class SortReporter extends Reporter {
         HashMap<Object,Double> ageNumberEnteredRelationshipRecord 
                 = new HashMap<Object,Double>() ;
 
+        // key:age value:ArrayList of new Relationships for each Agent, sums to 
+        //total number of new Relationships formed by that age.
         HashMap<Object,ArrayList<Object>> ageEnteredRelationshipRecord 
                 = new HashMap<Object,ArrayList<Object>>() ;
         
-        //TODO: key:agentId value: Age
+        //key:agentId value: Age for final record in report
         HashMap<Object,Integer> sortAgeRecord = ((PopulationReporter) sortingReporter).sortAgeRecord() ;
         
+        // Each record is a HashMap indicating new relationshipIds for relevant (key) Agents
         ArrayList<HashMap<Object,ArrayList<Object>>> agentsEnteredRelationshipReport 
                 = ((RelationshipReporter) unsortedReporter).prepareAgentsEnteredRelationshipReport() ;
         
@@ -116,17 +124,24 @@ public class SortReporter extends Reporter {
             for (Object agentId : enteredRelationshipRecord.keySet())
                 ageEnteredRelationshipRecord =
                         updateHashMap(sortAgeRecord.get(agentId),enteredRelationshipRecord.get(agentId).size(),ageEnteredRelationshipRecord) ; 
+        
         for (Object ageKey : ageEnteredRelationshipRecord.keySet())
         {
             ArrayList<Object> ageRecord = (ArrayList<Object>) ageEnteredRelationshipRecord.get(ageKey) ;
+            
+            // Agents forming no Relationships and hence no contribution to ageRecord must still be counted.
             int nbEntries = 0 ;
             for (Object agentId : sortAgeRecord.keySet())
                 if (sortAgeRecord.get(agentId).equals(ageKey))
                     nbEntries++ ;
             // int nbEntries = ageRecord.size() ;
+            
+            // Add new Relationships formed by that age
             int sum = 0 ;
             for (Object number : ageRecord)
                 sum += (Integer) number ;
+            
+            // Take the mean per Agent
             double mean = ((double) sum)/nbEntries ;
             ageNumberEnteredRelationshipRecord.put(ageKey,mean) ;
         }

@@ -66,6 +66,7 @@ public class SafeMSM extends MSM{
     /**
      * Decides probabilistically whether MSM chooses to use a condom in a given encounter.
      * Choice is based on properties of msm and Agent partner.
+     * TODO: Different probabilityUseCondom according to prepStatus?
      * TODO: Should there be subset that always uses a condom?
      * @param relationshipClazzName
      * @param partner

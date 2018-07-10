@@ -720,13 +720,12 @@ public class Reporter {
     static public HashMap<Object,HashMap<Object,ArrayList<Object>>> 
         invertHashMapHashMap(HashMap<Object,HashMap<Object,ArrayList<Object>>> paramHashMap)
     {
-        LOGGER.info("invertHashMapHashMap()");
+        //LOGGER.info("invertHashMapHashMap()");
         HashMap<Object,HashMap<Object,ArrayList<Object>>> invertedHashMap = new HashMap<Object,HashMap<Object,ArrayList<Object>>>() ;
         HashMap<Object,ArrayList<Object>> cycleHashMap ;
         
         for( Object key1 : paramHashMap.keySet() )
         {
-            LOGGER.info(key1.toString());
             for (Object key2 : paramHashMap.get(key1).keySet())
             {
             //LOGGER.info(paramHashMap.get(key1).get(key2).toString());

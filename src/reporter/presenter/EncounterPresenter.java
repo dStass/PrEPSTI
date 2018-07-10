@@ -159,7 +159,7 @@ public class EncounterPresenter extends Presenter {
                 plottingAgentsReport.add(new HashMap<Object,ArrayList<Object>>()) ;
         }
         //LOGGER.log(Level.INFO, "{0}", transmittingAgentsReport);
-        callPlotNetwork("agentId", "cycle", plottingAgentsReport) ;    // (HashMap<Number,HashMap<Number,ArrayList<Number>>>) 
+        callPlotNetwork("cycle", "agentId", plottingAgentsReport) ;    // (HashMap<Number,HashMap<Number,ArrayList<Number>>>) 
     }
     
     /*

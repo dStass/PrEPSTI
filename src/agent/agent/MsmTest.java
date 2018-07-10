@@ -56,8 +56,8 @@ public class MsmTest {
     {
         msm0 = MSM.birthMSM(startAge0) ;
         msm1 = MSM.birthMSM(startAge1) ;
-        int msmId0 = msm0.getId() ;
-        int msmId1 = msm1.getId() ;
+        int msmId0 = msm0.getAgentId() ;
+        int msmId1 = msm1.getAgentId() ;
         assert (msmId1 == (msmId0 + 1)) : "msm0 Id:" + String.valueOf(msmId0) +
                 "msm1 Id:" + String.valueOf(msmId1) ;
     }
@@ -187,7 +187,7 @@ public class MsmTest {
         msm0.setPrepStatus(true) ;
         // always test on screening day 
         // TODO: Check for results of changing static in subclass
-        int prepScreenCycle = 3 * MSM.getSCREENCYCLE() ;
+        int prepScreenCycle = 3 * msm0.getScreenCycle() ;
         String[] testArgs = {Integer.toString(prepScreenCycle)} ;
         assert (msm0.getScreenProbability(testArgs) == 1.0 ) : 
                 "MSM on PrEP failed to screen on screening day" ;

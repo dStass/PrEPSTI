@@ -309,7 +309,7 @@ public class Presenter {
         private void callPlotNetwork(String chartTitle, ArrayList<HashMap<Object,ArrayList<Object>>> networkData, 
                 String yLabel, String xLabel)
         {
-            XYSeriesCollection dataset = createHubDataset(networkData, chartTitle) ;
+            XYSeriesCollection dataset = createHubDataset(networkData) ;
             plotLineChart(chartTitle, dataset, yLabel, xLabel) ;
         }
 
@@ -415,7 +415,7 @@ public class Presenter {
         {
             //LOGGER.info("plotLineChart()") ;
             JFreeChart lineChart = ChartFactory.createXYLineChart(applicationTitle,xLabel,
-                yLabel,dataset,PlotOrientation.VERTICAL,true, true, false);
+                yLabel,dataset,PlotOrientation.VERTICAL,false, true, false);
             
             NumberAxis domainAxis = (NumberAxis) lineChart.getXYPlot().getDomainAxis() ;
             domainAxis.setTickUnit(new NumberTickUnit(dataset.getItemCount(0)/20)) ;
@@ -596,7 +596,7 @@ public class Presenter {
          * @param hubTitle
          * @return 
          */
-        private XYSeriesCollection createHubDataset(ArrayList<HashMap<Object,ArrayList<Object>>> cycleToAgentArray, String hubTitle)
+        private XYSeriesCollection createHubDataset(ArrayList<HashMap<Object,ArrayList<Object>>> cycleToAgentArray)
         {
             XYSeriesCollection hubSeriesCollection = new XYSeriesCollection() ;
             HashMap<Object,Number> lastInfected = new HashMap<Object,Number>() ;
@@ -606,13 +606,15 @@ public class Presenter {
                 HashMap<Object,ArrayList<Object>> agentToAgentHashMap = cycleToAgentArray.get(cycle) ;
                 for (Object transmitterId : agentToAgentHashMap.keySet())
                 {
-                    XYSeries hubSeries = new XYSeries(hubTitle,false,true) ;
+                    String seriesTitle = "cycle" + String.valueOf(cycle) 
+                            + "agentId" + String.valueOf(transmitterId) ;
+                    XYSeries hubSeries = new XYSeries(seriesTitle,false,true) ;
             
                     if (!lastInfected.containsKey(transmitterId))
                         lastInfected.put(transmitterId, 0) ;
                     ArrayList<Object> toAgentArray = agentToAgentHashMap.get(transmitterId) ;
                     //LOGGER.log(Level.INFO, "{0}", toAgentArray ) ;
-                    hubSeries = generateHub((Number) transmitterId, lastInfected.get(transmitterId), toAgentArray, cycle, hubTitle, hubSeries) ;
+                    hubSeries = generateHub((Number) transmitterId, lastInfected.get(transmitterId), toAgentArray, cycle, hubSeries) ;
                     for (Object receiverId : toAgentArray)
                         lastInfected.put(receiverId, cycle) ;
                     try
@@ -637,7 +639,7 @@ public class Presenter {
          * @param nodeCycle
          * @return (XYSeries) with additional nodes showing transmissions in cycle nodeCycle from Agent hubId infected in cycle hubCycle.
          */
-        private XYSeries generateHub(Number hubId, Number hubCycle, ArrayList<Object> hubArray, Number nodeCycle, String hubTitle, XYSeries hubSeries)
+        private XYSeries generateHub(Number hubId, Number hubCycle, ArrayList<Object> hubArray, Number nodeCycle, XYSeries hubSeries)
         {
             for (Object nodeId : hubArray)
                 hubSeries = generateHubNode(hubId, hubCycle, (Number) nodeId, nodeCycle, hubSeries) ;

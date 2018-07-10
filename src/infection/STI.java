@@ -13,27 +13,27 @@ public class STI {
     
     // Designated number for Infection Class. Always 0 for base class please.
     static int INFECTION_NB = 0 ;
-    // Probability of Penis infection being symptomatic
-    static double PENIS_SYMPTOMATIC ;
+    // Probability of Urethra infection being symptomatic
+    static double URETHRA_SYMPTOMATIC ;
     // Probability of Rectum infection being symptomatic
     static double RECTUM_SYMPTOMATIC ;
     // Probability of Pharynx infection being symptomatic
     static double PHARYNX_SYMPTOMATIC ;
     
-    // Probability of transmission from Penis to Penis
-    static double PENIS_PENIS = 0.1 ;
-    // Probability of transmission from Penis to Rectum
-    static double PENIS_RECTUM = 0.8 ;
-    // Probability of transmission from Penis to Pharynx
-    static double PENIS_PHARYNX = 0.6 ;
-    // Probability of transmission from Rectum to Penis
-    static double RECTUM_PENIS = 0.5 ;
+    // Probability of transmission from Urethra to Urethra
+    static double URETHRA_URETHRA = 0.1 ;
+    // Probability of transmission from Urethra to Rectum
+    static double URETHRA_RECTUM = 0.8 ;
+    // Probability of transmission from Urethra to Pharynx
+    static double URETHRA_PHARYNX = 0.6 ;
+    // Probability of transmission from Rectum to Urethra
+    static double RECTUM_URETHRA = 0.5 ;
     // Probability of transmission from Rectum to Rectum
     static double RECTUM_RECTUM = 0.1 ;
     // Probability of transmission from Rectum to Pharynx
     static double RECTUM_PHARYNX = 0.2 ;
-    // Probability of transmission from Pharynx to Penis
-    static double PHARYNX_PENIS = 0.5 ;
+    // Probability of transmission from Pharynx to Urethra
+    static double PHARYNX_URETHRA = 0.5 ;
     // Probability of transmission from Pharynx to Rectum
     static double PHARYNX_RECTUM = 0.5 ;
     // Probability of transmission from Pharynx to Pharynx
@@ -76,11 +76,11 @@ public class STI {
     
     /**
      * 
-     * @return  (Double) Probability of Penis infection being symptomatic
+     * @return  (Double) Probability of Urethra infection being symptomatic
      */
-    public double getPenisSymptomatic()
+    public double getUrethraSymptomatic()
     {
-        return PENIS_SYMPTOMATIC ;
+        return URETHRA_SYMPTOMATIC ;
     }
     
     /**
@@ -103,38 +103,38 @@ public class STI {
     
     /**
      * 
-     * @return (Double) Probability of transmission from Penis to Penis
+     * @return (Double) Probability of transmission from Urethra to Urethra
      */ 
-    public double getPenisPenisTransmission()
+    public double getUrethraUrethraTransmission()
     {
-        return PENIS_PENIS ;
+        return URETHRA_URETHRA ;
     }
     
     /**
      * 
-     * @return (Double) Probability of transmission from Penis to Rectum
+     * @return (Double) Probability of transmission from Urethra to Rectum
      */ 
-    public double getPenisRectumTransmission()
+    public double getUrethraRectumTransmission()
     {
-        return PENIS_RECTUM ;
+        return URETHRA_RECTUM ;
     }
     
     /**
      * 
-     * @return (Double) Probability of transmission from Penis to Pharynx
+     * @return (Double) Probability of transmission from Urethra to Pharynx
      */ 
-    public double getPenisPharynxTransmission()
+    public double getUrethraPharynxTransmission()
     {
-        return PENIS_PHARYNX ;
+        return URETHRA_PHARYNX ;
     }
     
     /**
      * 
-     * @return (Double) Probability of transmission from Rectum to Penis
+     * @return (Double) Probability of transmission from Rectum to Urethra
      */ 
-    public double getRectumPenisTransmission()
+    public double getRectumUrethraTransmission()
     {
-        return RECTUM_PENIS ;
+        return RECTUM_URETHRA ;
     }
     
     /**
@@ -157,11 +157,11 @@ public class STI {
     
     /**
      * 
-     * @return (Double) Probability of transmission from Pharynx to Penis
+     * @return (Double) Probability of transmission from Pharynx to Urethra
      */ 
-    public double getPharynxPenisTransmission()
+    public double getPharynxUrethraTransmission()
     {
-        return PHARYNX_PENIS ;
+        return PHARYNX_URETHRA ;
     }
     
     /**

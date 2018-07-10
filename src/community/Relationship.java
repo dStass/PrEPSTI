@@ -66,8 +66,8 @@ public class Relationship {
     /** Probability of sexual encounter within Relationship in any cycle */
     static double ENCOUNTER_PROBABILITY = 0.5 ;
     
-    /** One less than the maximum number of contacts allowed in a sexual encounter. */
-    static int MAXIMUM_CONTACTS = 4 ;
+    /** The maximum number of contacts allowed in a sexual encounter. */
+    static int MAXIMUM_CONTACTS = 5 ;
     
     // TODO: Move condom variables to STI
     // Probability of using a condom for couplings with a Site.Urethra
@@ -236,9 +236,11 @@ public class Relationship {
     	report += "agentId0:" + Integer.toString(agent0.getAgentId()) + " " ;
         report += "agentId1:" + Integer.toString(agent1.getAgentId()) + " " ;
         
+        // return if neither Agent is infected
         if ((!agent0.getInfectedStatus()) && (!agent1.getInfectedStatus()))
             return report ;
         
+        // Loop through sexual contacts
     	for (int contact= 0; contact < contacts; contact++)
     	{
             //Class<?> agentClazz = agent0.getClass() ; //.asSubclass(agent0.getClass()) ;
@@ -249,6 +251,8 @@ public class Relationship {
             Site[] sites = MSM.chooseSites(agent0, agent1) ;
             Site site0 = sites[0] ;
             Site site1 = sites[1] ;
+            
+            // Are contact sites infected?
             int infectStatus0 = site0.getInfectedStatus() ;
             int infectStatus1 = site1.getInfectedStatus() ;
             // no risk of transmission if both sites have same infectStatus
@@ -269,15 +273,13 @@ public class Relationship {
             String infectName1 = infection1.getClass().getName(); 
             */
         
-            // Choose whether condom is used, if any Urethra Sites
+            // Choose whether condom is used, if any Urethra involved
             infectProbability = 1.0;
             if ((URETHRA.equals(site0.getSite()) && (RECTUM.equals(site1.getSite()))) 
                     || (URETHRA.equals(site1.getSite())&& RECTUM.equals(site0.getSite())))
             {
                 report += "condom:" ;
-                // TODO: Make probability of condom use depend on other Site
-                //HIV status, etc
-                //if (rand.nextDouble() < CONDOM_USE)
+                
                 if (Agent.useCondom(agent0, agent1, relationship))
                 {
                     infectProbability*= (1.0 - CONDOM_EFFECT) ;
@@ -288,7 +290,7 @@ public class Relationship {
             }
 
             // call static getInfectProbability
-            report += "transmission:" ;
+            report += Reporter.addReportLabel("transmission") ;
             //TODO: Generalise to other subclasses of Agent
             //Method getInfectionMethod = agentClazz.getMethod("getInfectProbability", Agent.class,
                     //	Agent.class, int.class, Site.class, Site.class ) ;
@@ -322,9 +324,22 @@ public class Relationship {
     }
     
     /**
+     * Allows unit testing of encounter() without compromising scope.
+     * @return
+     * @throws NoSuchMethodException
+     * @throws InvocationTargetException
+     * @throws IllegalAccessException 
+     */
+    final public String testEncounter() throws NoSuchMethodException, InvocationTargetException,
+    IllegalAccessException
+    {
+        return encounter() ;
+    }
+    
+    /**
      * Chooses the number of sexual contacts for a given relationship in a given
      * cycle. Called by encounter()
-     * @return 
+     * @return int between 1 and MAXIMUM_CONTACTS
      */
     private int chooseNbContacts()
     {
