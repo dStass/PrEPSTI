@@ -16,8 +16,11 @@ public class Urethra extends Site {
     // static double INITIAL = 0.3 ;
 
     // Probability of positive symptomatic status if infected
-    static double SYMPTOMATIC_PROBABILITY = 0.9 ;
-
+    static double SYMPTOMATIC_PROBABILITY = 0.8 ;
+    
+    /** Probability of Site being infected initially */
+    static double INITIAL = 0.03 ;
+    
     /**
      * Duration of gonorrhoea infection in Urethra.
      * Proper value unknown as almost always treated. 
@@ -47,11 +50,21 @@ public class Urethra extends Site {
      * Determine whether Urethra initially infected.
      * @return false
      */
-    public boolean initialiseInfection()
-    {
-        return false ;
-    }
+//    @Override
+//    public boolean initialiseInfection()
+//    {
+//        return false ;
+//    }
     
+    /**
+     * 
+     * @return Probability of site being infected initially.
+     */
+    protected double getInfectedProbability()
+    {
+        return INITIAL ;
+    }
+
     /**
      * 
      * @return The probability of an infection at this Site causing symptoms
