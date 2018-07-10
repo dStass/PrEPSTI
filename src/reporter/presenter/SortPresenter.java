@@ -114,7 +114,7 @@ public class SortPresenter extends Presenter {
                 = SortReporter.invertHashMapHashMap(receiveSortPrepStatusReport) ;
         LOGGER.info("prepareTransmissionCountReport");
         ArrayList<ArrayList<Object>> nbTransmissionReport 
-                = ((EncounterReporter) reporter.getUnsortedReporter()).prepareTransmissionCountReport(invertedPrepStatusReport) ;
+                = ((EncounterReporter) reporter.getUnsortedReporter()).prepareReceiveCountReport(invertedPrepStatusReport) ;
         LOGGER.log(Level.INFO, "{0}", nbTransmissionReport);
         LOGGER.info("plotCycleValue");
         plotEventsPerCycle("nbTransmissions", nbTransmissionReport) ;
