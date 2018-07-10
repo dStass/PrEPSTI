@@ -87,13 +87,22 @@ abstract public class Site {
      */
     public boolean initialiseInfection()
     {
-        if (RAND.nextDouble() < INITIAL ) 
+        if (RAND.nextDouble() < getInfectedProbability() ) 
         {
             infectedStatus = 1 ;
             infectionTime = RAND.nextInt(getInfectionDuration()) ; // + getInfectionDuration() ;
             return true ;
         }
         return false ;
+    }
+    
+    /**
+     * 
+     * @return Probability of site being infected initially.
+     */
+    protected double getInfectedProbability()
+    {
+        return INITIAL ;
     }
 
     /**
