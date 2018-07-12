@@ -105,4 +105,17 @@ public class ScreeningPresenter extends Presenter {
         plotCycleValue("proportion", symptomaticReport) ;
     }
     
+    /**
+     * Plots the population prevalence of coinfected siteNames over time (cycles).
+     * @param (String[]) siteNames - Name of coinfected Sites to plot for.
+     */
+    public void plotSiteCoPrevalence(String[] siteNames)
+    {
+        ArrayList<Object> coprevalenceReport = reporter.prepareSiteCoPrevalenceReport(siteNames) ;
+        
+        plotCycleValue("prevalence", coprevalenceReport) ;
+    }
+    
+    
+    
 }
