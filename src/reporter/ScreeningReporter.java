@@ -52,7 +52,7 @@ public class ScreeningReporter extends Reporter {
     public ArrayList<Object> preparePrevalenceReport(ArrayList<String> report)
     {
         ArrayList<Object> prevalenceReport = new ArrayList<Object>() ;
-        int population ;
+        int population = Community.POPULATION ;
         int nbInfected ;
         int nbSymptomatic ;
         String entry ;
@@ -77,9 +77,6 @@ public class ScreeningReporter extends Reporter {
                     }
             
             //LOGGER.info(record) ;
-            
-            population = Community.POPULATION ;
-            
             entry = addReportProperty("prevalence",((double) nbInfected)/population) ;
             entry += addReportProperty("symptomatic",((double) nbSymptomatic)/population) ;
             entry += addReportProperty("proportion",((double) nbSymptomatic)/nbInfected) ;
@@ -93,7 +90,7 @@ public class ScreeningReporter extends Reporter {
     {
         ArrayList<Object> sitePrevalenceReport = new ArrayList<Object>() ;
         
-        int population ;
+        int population = Community.POPULATION ;
         int[] nbSymptomatic ;
         String entry ;
         for (String record : input)
@@ -103,7 +100,6 @@ public class ScreeningReporter extends Reporter {
 //            if (nbSymptomatic[0] == nbSymptomatic[1])
 //                LOGGER.info(record);
             
-            population = Community.POPULATION ;
             
             entry = addReportProperty("prevalence",((double) nbSymptomatic[1])/population) ;
             entry += addReportProperty("symptomatic",((double) nbSymptomatic[0])/population) ;
@@ -111,6 +107,37 @@ public class ScreeningReporter extends Reporter {
             sitePrevalenceReport.add(entry) ;
         }
         return sitePrevalenceReport ;
+    }
+    
+    /**
+     * 
+     * @param siteNames
+     * @return ArrayList of prevalence of coninfection of Sites named in siteNames.
+     */
+    public ArrayList<Object> prepareSiteCoPrevalenceReport(String[] siteNames) 
+    {
+        ArrayList<Object> siteCoPrevalenceReport = new ArrayList<Object>() ;
+        
+        int population = Community.POPULATION ;
+        int[] nbSymptomatic ;
+        Double prevalence ;
+        String entry ;
+        
+        for (String record : input)
+        {
+            entry = record ;
+            for (String siteName : siteNames)
+            {
+                entry = boundedStringByContents(siteName,AGENTID,entry) ;
+            }
+            if (entry.isEmpty())
+                prevalence = 0.0 ;
+            else 
+                prevalence = (Double.valueOf(countValueIncidence(AGENTID,"",entry,0)[1]))/population ;
+            siteCoPrevalenceReport.add("prevalence:" + String.valueOf(prevalence) + " ") ;
+            //LOGGER.info("prevalence:" + String.valueOf(prevalence) + " ");
+        }
+        return siteCoPrevalenceReport ;
     }
     
 }
