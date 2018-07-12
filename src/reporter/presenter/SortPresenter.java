@@ -122,7 +122,7 @@ public class SortPresenter extends Presenter {
     
     /**
      * Plots the prevalence of STI among MSM with partnerCount new Relationships in the 
-     * past backYears years over time (cycles).
+     * past backYears years.
      */
     public void plotSortPrevalence(int partnerCount, int backYear)
     {
@@ -133,9 +133,15 @@ public class SortPresenter extends Presenter {
         Number prevalence ;
         for (int nbPartner = 1 ; nbPartner <= partnerCount ; nbPartner++ )
         {
+            LOGGER.info("nbPartner:" + String.valueOf(nbPartner));
             prevalenceSortReport = reporter.prepareSortPrevalenceReport(nbPartner, backYear) ;
-            prevalenceSortRecord = String.valueOf(prevalenceSortReport.get((prevalenceSortReport.size()-1))) ;
-            prevalence = (Number) Double.valueOf(Reporter.extractValue("prevalence", prevalenceSortRecord)) ;
+            if (prevalenceSortReport.size() > 0)
+            {
+                prevalenceSortRecord = String.valueOf(prevalenceSortReport.get((prevalenceSortReport.size()-1))) ;
+                prevalence = (Number) Double.valueOf(Reporter.extractValue("prevalence", prevalenceSortRecord)) ;
+            }
+            else 
+                break ;
             prevalenceSortCount.put(nbPartner, prevalence) ;
             LOGGER.info(prevalenceSortRecord);
         }
