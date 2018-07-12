@@ -119,17 +119,17 @@ abstract public class MSM extends Agent {
     private boolean prepStatus ;
 	
     /** Transmission probabilities per sexual contact from Urethra to Rectum */
-    static double URETHRA_TO_RECTUM = 0.6 ;    // 0.84 ;    // 0.8 ;
+    static double URETHRA_TO_RECTUM = 0.65 ;    // 0.84 ;    // 0.8 ;
     /** Transmission probabilities sexual contact from Urethra to Pharynx. */
-    static double URETHRA_TO_PHARYNX = 0.4 ; // 0.63 ;    // 0.7 ;
+    static double URETHRA_TO_PHARYNX = 0.45 ; // 0.63 ;    // 0.7 ;
     /** Transmission probabilities sexual contact from Rectum to Urethra. */ 
-    static double RECTUM_TO_URETHRA = 0.015 ; // 0.023 ;    // 0.3 ;
+    static double RECTUM_TO_URETHRA = 0.01 ; // 0.023 ;    // 0.3 ;
     /** Transmission probabilities sexual contact from Rectum to Pharynx. */
-    static double RECTUM_TO_PHARYNX = 0.02 ;    // 0.1 ;
+    static double RECTUM_TO_PHARYNX = 0.03 ;    // 0.1 ;
     /** Transmission probabilities sexual contact in Pharynx to Urethra intercourse. */
-    static double PHARYNX_TO_URETHRA = 0.075 ; // 0.086 ;    // 0.2 ;
+    static double PHARYNX_TO_URETHRA = 0.07 ; // 0.086 ;    // 0.2 ;
     /** Transmission probabilities sexual contact in Pharynx to Rectum intercourse. */
-    static double PHARYNX_TO_RECTUM = 0.02 ;    // 0.2 ;
+    static double PHARYNX_TO_RECTUM = 0.03 ;    // 0.2 ;
     /** Transmission probabilities sexual contact in Pharynx to Pharynx intercourse (kissing). */
     static double PHARYNX_TO_PHARYNX = 0.02 ;
     /** Transmission probabilities sexual contact in Urethra to Urethra intercourse (docking). */
