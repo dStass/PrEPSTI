@@ -326,9 +326,12 @@ public class Reporter {
         while (indexStart >= 0)
         {
             boundedString = extractBoundedString(bound, string, indexStart) ;
-            if (boundedString.contains(propertyName)) ;  //(compareValue(propertyName,value,boundedString)) 
+            if (boundedString.contains(propertyName))   //(compareValue(propertyName,value,boundedString)) 
                 boundedOutput += boundedString ;
+                
             indexStart = indexOfProperty(bound,indexStart+1,string) ;
+            //LOGGER.log(Level.INFO, "index:{0} propertyName:{3} boundedString:{2}", new Object[] {indexStart,bound,boundedString,propertyName});
+        
         }
         return boundedOutput ;
     }
