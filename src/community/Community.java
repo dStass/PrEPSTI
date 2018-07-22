@@ -29,22 +29,27 @@ import org.jfree.chart.* ;
  *******************************************************************/
 public class Community {
     static public int POPULATION = 40000;
-    static public int MAX_CYCLES = 7000;
+    static public int MAX_CYCLES = 10000;
     //static public String NAME_ROOT = "testPlotSortRelationshipsByAge"
     //static public String NAME_ROOT = "testPlotSortPrevalenceYear3Partners10"
-    static public String NAME_ROOT = "NoprepCalibration31GSE7sizeContacts5"
+    //static public String NAME_ROOT = "NoPrepCalibration40GSE7sizeContacts5"
     //static public String NAME_ROOT = "calibration31"
-    //static public String NAME_ROOT = "testPlotNetwork"
+    static public String NAME_ROOT = "testMultiFilesCalibration31"
             + "Pop" + String.valueOf(POPULATION) + "Cycles" + String.valueOf(MAX_CYCLES) ;
 
     static public String FILE_PATH = "../output/test/" ;
+    static final int DUMP_CYCLE = ((int) Math.pow(10, 7))/POPULATION ;
+    static final boolean PARTIAL_DUMP = (DUMP_CYCLE > 0) ;
     
     static public String getFilePath()
     {
         return FILE_PATH ;
     }
     
-    static Random RAND = new Random() ;
+    /** Generate and record Random number seed. */
+    static final long RANDOM_SEED = System.nanoTime() ;
+    static final Random RAND = new Random(RANDOM_SEED) ;
+    
 
     private ArrayList<Agent> agents = new ArrayList<Agent>() ;
     
@@ -75,15 +80,15 @@ public class Community {
     private static String FALSE = "false" ;
     
     private String initialRecord ;
-    private ArrayList<String> genericReport = new ArrayList<String>() ;
-    private ArrayList<String> relationshipReport = new ArrayList<String>() ;
-    private ArrayList<String> encounterReport = new ArrayList<String>() ;
+    //private ArrayList<String> genericReport = new ArrayList<String>() ;
+    protected ArrayList<String> relationshipReport = new ArrayList<String>() ;
+    protected ArrayList<String> encounterReport = new ArrayList<String>() ;
     //private ArrayList<String> clearReport = new ArrayList<String>() ;
-    private ArrayList<String> infectionReport = new ArrayList<String>() ;
-    private ArrayList<String> populationReport = new ArrayList<String>() ;
+    protected ArrayList<String> infectionReport = new ArrayList<String>() ;
+    protected ArrayList<String> populationReport = new ArrayList<String>() ;
     //private ArrayList<String> censusReport = new ArrayList<String>() ;
     
-    private Scribe encounterScribe ;  // = new Scribe() ;
+    private Scribe scribe = new Scribe(NAME_ROOT, new String[] {"relationship","encounter","infection", "population"}) ;
 
 
     // Logger
@@ -96,7 +101,8 @@ public class Community {
         
         // Record starting time to measure running time
         long startTime = System.nanoTime() ;
-        
+        LOGGER.info("Seed:" + String.valueOf(System.currentTimeMillis()));
+    
         // Establish Community of Agents for simulation
         LOGGER.info(Community.NAME_ROOT);
         Community community = new Community() ;
@@ -181,13 +187,20 @@ public class Community {
 //                cyclesModYear = 0 ;
 //                populationRecord += community.ageOneYear() ;
 //            }
-            
+            if (PARTIAL_DUMP)
+                if ((((cycle+1)/DUMP_CYCLE) * DUMP_CYCLE) == (cycle+1) )
+                {
+                    community.dump();
+                }
+                    
+
             cycleString = Integer.toString(cycle+1) + "," ;
             populationRecord = cycleString + community.births(deltaPopulation) ;
         }
-        //community.encounterScribe = community.new Scribe(Community.NAME_ROOT) ;
-        //community.dump(new String[] {"relationship","encounter","infection", "population"}) ;
-        //community.encounterScribe.closeFile();
+        // Final dump() or whole dump if no partial dumps
+        if (!PARTIAL_DUMP || (((Community.MAX_CYCLES)/DUMP_CYCLE) * DUMP_CYCLE) != Community.MAX_CYCLES )
+            community.dump() ;
+        community.dumpMetaData() ;
         
         long elapsedTime = System.nanoTime() - startTime ;
         long milliTime = elapsedTime/1000000 ;
@@ -199,32 +212,32 @@ public class Community {
         System.out.println("Elapsed running time: " + minutes + "minutes") ;
         
         ScreeningReporter screeningReporter = 
-                new ScreeningReporter("prevalence",community.infectionReport) ;
-        ScreeningPresenter screeningPresenter 
-                = new ScreeningPresenter("prevalence",Community.NAME_ROOT,screeningReporter) ;
-        screeningPresenter.plotPrevalence();
+                //new ScreeningReporter("prevalence",community.infectionReport) ;
+                new ScreeningReporter(Community.NAME_ROOT,Community.FILE_PATH) ;
+        //ScreeningPresenter screeningPresenter 
+          //      = new ScreeningPresenter("prevalence",Community.NAME_ROOT,screeningReporter) ;
+        //screeningPresenter.multiPlotScreening(new Object[] {"prevalence", new String[] {"Pharynx","Urethra","Rectum"},"coprevalence",new String[] {"Rectum","Pharynx"}});
         ScreeningPresenter screeningPresenter2 
-                = new ScreeningPresenter("urethra prevalence",Community.NAME_ROOT + "Urethra",screeningReporter) ;
-        screeningPresenter2.plotSitePrevalence("Urethra");
+                = new ScreeningPresenter("prevalence",Community.NAME_ROOT,screeningReporter) ;
+        screeningPresenter2.plotPrevalence();
+        //screeningPresenter2.plotIncidencePerCycle();
         ScreeningPresenter screeningPresenter3 
-                = new ScreeningPresenter("rectum prevalence",Community.NAME_ROOT + "Rectum",screeningReporter) ;
-        screeningPresenter3.plotSitePrevalence("Rectum");
-        ScreeningPresenter screeningPresenter4 
-                = new ScreeningPresenter("pharynx prevalence",Community.NAME_ROOT + "Pharynx",screeningReporter) ;
-        screeningPresenter4.plotSitePrevalence("Pharynx");
+                = new ScreeningPresenter("STI incidence",Community.NAME_ROOT + "Incidence",screeningReporter) ;
+        screeningPresenter3.multiPlotScreening(new Object[] {"coprevalence",new String[] {"Pharynx","Rectum"},"prevalence",new String[] {"Pharynx","Rectum","Urethra"}});
         
-        EncounterReporter encounterReporter = new EncounterReporter("Agent to Agent",community.encounterReport) ;
-        EncounterPresenter encounterPresenter = new EncounterPresenter(Community.NAME_ROOT,"agent to agent", encounterReporter) ;
+        //EncounterReporter encounterReporter = new EncounterReporter("Agent to Agent",community.encounterReport) ;
+        //EncounterPresenter encounterPresenter = new EncounterPresenter(Community.NAME_ROOT,"agent to agent", encounterReporter) ;
+        //encounterPresenter.plotCondomUse();
         //encounterPresenter.plotNbTransmissions(); 
         //encounterPresenter.plotTransmittingSites(new String[] {"Urethra","Rectum","Pharynx"});
-        encounterPresenter.plotFromSiteToSite(new String[] {"Urethra","Rectum","Pharynx"});
+        //encounterPresenter.plotFromSiteToSite(new String[] {"Urethra","Rectum","Pharynx"});
         //encounterPresenter.plotAgentToAgentNetwork();
         
-        //PopulationReporter populationReporter = new PopulationReporter("age-at-death",community.populationReport) ;
+        //PopulationReporter populationReporter = new PopulationReporter("deaths per cycle",community.populationReport) ;
         //PopulationPresenter populationPresenter = new PopulationPresenter("age-at-death","age-at-death",populationReporter) ;
         //populationPresenter.plotAgeAtDeath();
-        //PopulationPresenter populationPresenter = new PopulationPresenter("births per cycle","births per cycle",populationReporter) ;
-        //populationPresenter.plotBirthsPerCycle();
+        //PopulationPresenter populationPresenter = new PopulationPresenter("deaths per cycle","deaths per cycle",populationReporter) ;
+        //populationPresenter.plotDeathsPerCycle();
         
         //SortReporter sortReporter2 = new SortReporter("Prep +ve infections per cycle",encounterReporter,populationReporter) ;
         //SortPresenter sortPresenter2 = new SortPresenter("Prep +ve infections per cycle","Infections per cycle",sortReporter2) ;
@@ -234,7 +247,7 @@ public class Community {
         //ScreeningReporter screeningReporter = new ScreeningReporter("prevalence",community.infectionReport) ;
         //SortReporter sortReporter = new SortReporter("prevalence",screeningReporter,relationshipReporter) ;
         //SortPresenter sortPresenter = new SortPresenter("prevalence","prevalence",sortReporter) ;
-        //sortPresenter.plotSortPrevalence(10,3);
+        //sortPresenter.plotSortPrevalence(5,3);  // Up to 5 partners the past 3 years
         
         //RelationshipReporter relationshipReporter 
           //      = new RelationshipReporter("Cumulative Relationships per age",community.relationshipReport) ;
@@ -248,11 +261,14 @@ public class Community {
         //RelationshipPresenter relationshipPresenter 
           //      = new RelationshipPresenter("New relationships per cycle","New relationships per cycle",relationshipReporter) ;
         //relationshipPresenter.plotNewRelationshipsPerCycle();
+        //RelationshipPresenter relationshipPresenter2 
+          //      = new RelationshipPresenter("New Regular relationships per cycle","New Regular relationships per cycle",relationshipReporter) ;
+        //relationshipPresenter2.plotNewRelationshipsPerCycle(new String[] {"Regular"});
         //RelationshipReporter relationshipReporter 
           //      = new RelationshipReporter("Relationship breakups per cycle",community.relationshipReport) ;
-        //RelationshipPresenter relationshipPresenter 
+        //RelationshipPresenter relationshipPresenter2 
           //      = new RelationshipPresenter("Relationship breakups per cycle","Relationship breakups per cycle",relationshipReporter) ;
-        //relationshipPresenter.plotBreakupsPerCycle();
+        //relationshipPresenter2.plotBreakupsPerCycle();
         //RelationshipReporter relationshipReporter 
         //        = new RelationshipReporter("Relationships of given length",community.relationshipReport) ;
         //RelationshipPresenter relationshipPresenter 
@@ -265,9 +281,9 @@ public class Community {
         //relationshipPresenter.plotCumulativeRelationships();
         //RelationshipReporter relationshipReporter 
           //      = new RelationshipReporter("Mean number of Relationships",community.relationshipReport) ;
-        //RelationshipPresenter relationshipPresenter 
+        //RelationshipPresenter relationshipPresenter2 
           //      = new RelationshipPresenter("Mean number of Relationships",Community.NAME_ROOT,relationshipReporter) ;
-        //relationshipPresenter.plotMeanNumberRelationshipsReport();
+        //relationshipPresenter2.plotMeanNumberRelationshipsReport();
         
     }
 
@@ -306,7 +322,7 @@ public class Community {
         for (Agent agent : agents)
         {
             ((MSM) agent).setPrepStatus(false);
-            //agent.clearInfection();
+//            agent.clearInfection();
         }
         
         // Infect one RiskyMSM.urethra
@@ -336,11 +352,11 @@ public class Community {
     {
         for (Agent agent : agents)
         {
-            if (true || !((MSM) agent).getPrepStatus())
+            if (!((MSM) agent).getPrepStatus())
             {
-                double prepProbability = ((MSM) agent).getProbabilityPrep() ;
+                //double prepProbability = ((MSM) agent).getProbabilityPrep() ;
                 ((MSM) agent).reinitPrepStatus(true) ; // RAND.nextDouble() < prepProbability) ;
-                //break ;
+                break ;
             }
         }
         return "PrEP introduced" ; // gradually" ;
@@ -647,7 +663,7 @@ public class Community {
                 catch (NoSuchMethodException nsme)
                 {
                     LOGGER.info(nsme.getLocalizedMessage());
-                    record += nsme.getCause(); //  .getMessage() ;
+                    record += nsme.toString(); //  .getMessage() ;
                 }
                 catch (InvocationTargetException ite)
                 {
@@ -759,7 +775,7 @@ public class Community {
                 }
                 
                 // agent.progressInfection() allow infection to run one cycle of its course
-                // and returns boolean whether agent is cleared (!stillInfected)
+                // and returns boolean when agent is cleared (!stillInfected)
                 if (agent.progressInfection())
                 {
                     record += Reporter.addReportLabel("cleared") ;
@@ -796,26 +812,39 @@ public class Community {
             populationReport.add(populationRecord) ;
     }
 
-    private void dump(String[] scribeNames)
+    /**
+     * Saves Reports to file via scribe.dump() and empties them in memory.
+     */
+    private void dump()
     {
+        scribe.dump(this) ;
+                //MetaData() ;
         try
         {
-            for (String scribeName : scribeNames)
+            for (String scribeName : scribe.properties)
             {
-                //scribeName = scribeName.substring(0,1).toUpperCase() 
-                  //      + scribeName.substring(1) ;
-                LOGGER.info(scribeName) ;
-                String reportName = scribeName + "Report" ;
-                ArrayList<String> report = (ArrayList<String>) Community.class.getDeclaredField(reportName).get(this) ;
-                Scribe scribe = new Scribe(scribeName + Community.NAME_ROOT) ;
-                scribe.writeReport(report);
-                scribe.closeFile();
+                this.getClass().getDeclaredField(scribeName).set(this, (ArrayList<String>) new ArrayList<String>()) ;
             }
         }
         catch ( Exception nsfe )
         {
             LOGGER.log(Level.SEVERE, "{0} {1}", new Object[] {nsfe.getLocalizedMessage(), nsfe.toString()});
         }
+    }
+    
+    
+    private void dumpMetaData()
+    {
+        ArrayList<String> metaLabels = new ArrayList<String>() ; 
+        ArrayList<Object> metaData = new ArrayList<Object>() ; 
+        metaLabels.add("community.randomSeed") ;
+        metaData.add(RANDOM_SEED) ;
+        metaLabels.add("agent.randomSeed") ;
+        metaData.add(Agent.GET_RANDOM_SEED()) ;
+        metaLabels.add("site.randomSeed") ;
+        metaData.add(Site.GET_RANDOM_SEED()) ;
+        
+        scribe.dumpMetaData(metaLabels,metaData) ;
     }
     
     /**
@@ -827,42 +856,99 @@ public class Community {
     private class Scribe{
 
         String extension = ".txt" ;
-        // The number of Community cycles to pass between reports 
-        int outputCycle ;
+        /** The number of Community cycles to pass between reports. */
+        int dumpCycle ;
+        
+        /** Keeps track of how many dumps have taken place so far for labelling purposes. */
+        int dumpsSoFar = 0 ;
 
-        String name ;
+        String simName ;
+        String[] properties ;
 
         String globalFolder = Community.FILE_PATH ;
-        String fileName ;
+        //String fileName ;
 
         // File paths
         String logFilePath ;
         String errorFilePath ;
-        String outputFilePath ;
+        //String outputFilePath ;
 
 
         // File objects
-        BufferedWriter fileWriter ;
+        BufferedWriter[] fileWriters ;
         /*
         File logFile ;
         File errorFile ;
         File outputFile ;
         */
 
-        private Scribe(String name) 
+        private Scribe(String simName, String[] propertyNames) 
         {
-            this.name = name ;
-            fileName = name + extension ;
-            outputFilePath = globalFolder + fileName ;
+            this.simName = simName ;
+            this.dumpCycle = Community.DUMP_CYCLE ;
+            
+            this.properties = new String[propertyNames.length] ;
+            for (int propertyIndex = 0 ; propertyIndex < propertyNames.length ; propertyIndex++ )
+                properties[propertyIndex] = propertyNames[propertyIndex] + "Report" ;
+        }
+        
+        
+        private void dump(Community community)
+        {
+            String property ;
+            
+            for (int index = 0 ; index < properties.length ; index++ )
+            {
+                property = properties[index] ;
+                try
+                {
+                    BufferedWriter fileWriter = openFile(property) ;
+                    writeReport(fileWriter,(ArrayList<String>) Community.class.getDeclaredField(property).get(community)) ;
+                    closeFile(fileWriter) ;
+                }
+                catch ( Exception e )
+                {
+                    LOGGER.log(Level.SEVERE, e.toString());
+                }
+            }
+            dumpsSoFar++ ;
+        }
+        
+        /**
+         * Opens file and writes metadata to it.
+         * @param metaLabels
+         * @param metaData 
+         */
+        protected void dumpMetaData(ArrayList<String> metaLabels, ArrayList<Object> metaData)
+        {
+            String fileName = simName + "-METADATA" + extension ;
             try
             {
-                fileWriter = new BufferedWriter(new FileWriter(outputFilePath,true));
-            } //the true will append the new data
+                BufferedWriter metadataWriter = new BufferedWriter(new FileWriter(globalFolder + fileName,false)) ;
+                writeMetaData(metadataWriter,metaLabels,metaData) ;
+                metadataWriter.close() ;
+            } 
             catch ( Exception e )
             {
-                LOGGER.log(Level.SEVERE, e.getLocalizedMessage());
-                closeFile() ;
+                LOGGER.info(e.toString());
             }
+        }
+        
+        /**
+         * 
+         * @param property
+         * @return (BufferedWriter) file for dumping property data for the current
+         * dump cycle after constructing the appropriate filename.
+         * @throws IOException 
+         */
+        private BufferedWriter openFile(String property) throws IOException 
+        {
+            String fileName = simName + property ; 
+            if (dumpCycle > 0)
+                fileName += "-" + String.valueOf(dumpsSoFar * dumpCycle) ;
+            String outputFilePath = globalFolder + fileName + extension ;
+            BufferedWriter fileWriter = new BufferedWriter(new FileWriter(outputFilePath,false));
+            return fileWriter ;
         }
 
 
@@ -877,27 +963,54 @@ public class Community {
         errorFile = new File(errorFilePath) ;
         */
 
-        private void writeRecord(String record) throws Exception
+        /**
+         * Writes given String record to BufferedWriter fileWriter.
+         * @param fileWriter
+         * @param record
+         * @throws Exception 
+         */
+        private void writeRecord(BufferedWriter fileWriter, String record) throws Exception
         {
                 fileWriter.write(record);
                 fileWriter.newLine();
         }
 
-        private void writeReport(ArrayList<String> report)
+        /**
+         * Writes (String) ArrayList report to BufferedWriter fileWriter.
+         * @param fileWriter
+         * @param report
+         * @throws Exception 
+         */
+        private void writeReport(BufferedWriter fileWriter, ArrayList<String> report) throws Exception
+        {
+            for (String record : report)
+                writeRecord(fileWriter, record) ;
+        }
+        
+        /**
+         * Writes metadata-related variables to BufferedWriter fileWriter.
+         * @param fileWriter
+         * @param labels - (ArrayList String) names of variables being written.
+         * @param metadata - (ArrayList Object) values of variables being written.
+         */
+        private void writeMetaData(BufferedWriter fileWriter, ArrayList<String> labels, ArrayList<Object> metadata)
         {
             try
             {
-                for (String record : report)
-                    writeRecord(record) ;
+                for (int dataLine = 0 ; dataLine < metadata.size() ; dataLine++ )
+                    writeRecord(fileWriter, Reporter.addReportProperty(labels.get(dataLine), metadata.get(dataLine))) ;
             }
             catch ( Exception e )
             {
-                LOGGER.log(Level.SEVERE, e.getLocalizedMessage());
-                closeFile() ;
+                LOGGER.log(Level.SEVERE, e.toString()) ;
             }
         }
 
-        private void closeFile()
+        /**
+         * Closes BufferedWriter fileWriter.
+         * @param fileWriter 
+         */
+        private void closeFile(BufferedWriter fileWriter)
         {
             try
             {
@@ -909,10 +1022,6 @@ public class Community {
             }
         }
 
-        private String getOutputFilePath()
-        {
-            return outputFilePath ;
-        }
 
     }
 
