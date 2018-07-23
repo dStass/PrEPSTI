@@ -10,6 +10,7 @@ import java.io.* ;
 import java.lang.reflect.*;
 import java.util.ArrayList ;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap ;
 
 import java.util.logging.Level;
@@ -32,6 +33,9 @@ public class Reporter {
 
     /** Output report. */
     protected ArrayList<String> output ;
+    
+    /** Reader for accessing saved reports. */
+    protected Reader reader ;
 
     /** The number of Community cycles to pass between reports. */ 
     protected int outputCycle = 1 ;
@@ -863,8 +867,71 @@ public class Reporter {
         return agentIdValues ;
     }
 
+    /**
+     * Stores an ArrayList (String) report as a csv file for other packages to read.
+     * @param report 
+     */
+    static public void writeCSV(ArrayList<String> report)
+    {
+        String folderPath = Community.FILE_PATH ;
+        String fileName = Community.NAME_ROOT ;
+        String filePath = folderPath + fileName + ".csv" ;
+        String line ;
+        ArrayList<String> properties = identifyProperties(report.get(0)) ;
+        String fileHeader = properties.get(0) ;
+        for (int index = 1 ; index < properties.size() ; index++ )
+            fileHeader += "," + properties.get(index) ;
+        try
+        {
+            BufferedWriter fileWriter = new BufferedWriter(new FileWriter(filePath,false));
+            fileWriter.write(fileHeader) ;
+            fileWriter.newLine();
+            for (String record : report)
+            {
+                line = "" ;
+                for (String property : properties)
+                    line += "," + extractValue(property,record) ;
+                line = line.substring(1) ;
+                fileWriter.write(line) ;
+                fileWriter.newLine() ;
+            }
+            fileWriter.close() ;
+        }
+        catch( Exception e )
+        {
+            LOGGER.info(e.toString()) ;
+        }
+    }
 
-
+    /**
+     * TODO: Unit test
+     * @param record
+     * @return (ArrayList) 
+     */
+    static ArrayList<String> identifyProperties(String record)
+    {
+        ArrayList<String> propertyArray = new ArrayList<String>() ;
+        
+        int colonIndex = record.indexOf(":") ;
+        int spaceIndex ;
+        int nextColonIndex ;
+        int propertyIndex = 0 ;
+        
+        while (colonIndex > 0)
+        {
+            nextColonIndex = record.indexOf(":",colonIndex+1) ;
+            spaceIndex = record.indexOf(" ",colonIndex) ;
+            if  (spaceIndex < nextColonIndex)
+            {
+                propertyArray.add(record.substring(propertyIndex, colonIndex)) ;
+                propertyIndex = spaceIndex + 1 ;
+            }
+            else
+                propertyIndex = colonIndex + 1 ;
+            colonIndex = nextColonIndex ;
+        }
+        return propertyArray ;
+    }
 
     
     public Reporter()
@@ -883,12 +950,23 @@ public class Reporter {
     
     public Reporter(String simname, String fileName)
     {
-        fileName = Community.FILE_PATH + "Report" + Community.NAME_ROOT + ".txt" ;
-        Reader reader = new Reader(simname,fileName) ;
-        input = reader.getFiledReport() ;
+        //LOGGER.info(fileName) ;
+        reader = new Reader(simname,fileName) ;
+        input = reader.updateOutputArray() ;
     }
 
-
+    /**
+     * Loads the next Report file into input if there is another file to read.
+     * @return true if update successful, false if all files have already been read.
+     */
+    public boolean updateReport()
+    {
+        if (reader.fileIndex >= reader.fileNames.size())
+            return false ;
+        input = reader.updateOutputArray();
+        return true ;
+    }
+    
     /**
      * 
      * @param reportNb
@@ -910,49 +988,85 @@ public class Reporter {
     protected class Reader
     {
     //	ArrayList<String> encounterReports, ArrayList<String> clearReports, ArrayList<String> screenReports)
-        private ArrayList<String> outputArray = new ArrayList<String>() ;
+        private ArrayList<String> fileNames = new ArrayList<String>() ;
+        private String folderPath ;
+        private int fileIndex = 0;
+        
         protected Reader(String simName, String filePath)
         {
-            String record = "record" ;
-            while (!record.isEmpty())
-            {
-//            File folder = new File(".");
-//File[] listOfFiles = folder.listFiles();
-//
-//    for (File file : folder.listFiles()) {
-//      if (file.isFile()) {
-//        System.out.println("File " + file.getName());
-//      } else if (file.isDirectory()) {
-//        System.out.println("Directory " + file.getName());
-//      }
-//    }
-            //LOGGER.info(filePath);
-                try
-                {
-                    BufferedReader fileReader = new BufferedReader(new FileReader(filePath)) ;
-                    //new FileInputStream(".").;
-                    //BufferedReader fileReader = new BufferedReader(new InputStreamReader(new FileInputStream("LICENSE"))) ;
-                    //BufferedReader fileReader = new BufferedReader(new InputStreamReader(new FileInputStream("C:\\Users\\MichaelWalker\\OneDrive - UNSW\\gonorrhoeaPrEP\\simulator\\PrEPSTI\\LICENSE"))) ;
-                    //BufferedReader fileReader = new BufferedReader(new InputStreamReader(new FileInputStream("dist/README"))) ;
-                    //BufferedReader fileReader = new BufferedReader(new InputStreamReader(new FileInputStream("C:\\Users\\MichaelWalker\\OneDrive - UNSW\\gonorrhoeaPrEP\\simulator\\output\\testFile.txt"))) ;
-                    record = fileReader.readLine() ;
-                    outputArray.add(record) ;
-                }
-                catch ( Exception e )
-                {
-                    LOGGER.log(Level.SEVERE, e.toString());
-                    record = "" ;
-                }
-            }
-            if (outputArray.isEmpty())
-                LOGGER.log(Level.SEVERE, "Empty Report from File at {0}", new Object[]{filePath});
-            
+            this.folderPath = filePath ;
+            fileNames = initFileNames(simName) ;
         }
         
-        protected ArrayList<String> getFiledReport()
+        /**
+         * Updates Reader output from next file.
+         * TODO: Implement all this with an iterator.
+         * @return Updated Reporter.input .
+         */
+        protected ArrayList<String> updateOutputArray()
         {
+            ArrayList<String> outputArray = new ArrayList<String>() ;
+            String record = "" ;
+            if (fileIndex >= fileNames.size())
+                return outputArray ;
+            try
+            {
+                //LOGGER.info(folderPath + getFileName());
+                BufferedReader fileReader = new BufferedReader(new FileReader(folderPath + getFileName())) ;
+                record = fileReader.readLine() ;
+                if (record == null)
+                    LOGGER.info(Level.WARNING + ":Empty report file");
+                while (record != null)
+                {
+                    outputArray.add(record) ;
+                    record = fileReader.readLine() ;
+                }
+            }
+            catch ( Exception e )
+            {
+                LOGGER.log(Level.SEVERE, e.toString());
+                record = "" ;
+            }
+            if (outputArray.isEmpty())
+                LOGGER.log(Level.SEVERE, "Empty Report from File at {0}", new Object[]{folderPath});
+            
             return outputArray ;
         }
+        
+        /**
+         * Adjusts the value of fileIndex to keep track of Report files. 
+         * @return (String) fileName of next file.
+         */
+        private String getFileName()
+        {
+            fileIndex++ ;
+            return fileNames.get(fileIndex-1) ;
+        }
+        
+        /**
+         * 
+         * @param simName
+         * @return ArrayList of fileNames
+         */
+        protected ArrayList<String> initFileNames(String simName)
+        {
+            ArrayList<String> nameArray = new ArrayList<String>() ;
+            File folder = new File(folderPath) ;
+
+            for (File file : folder.listFiles()) 
+                if (file.isFile()) 
+                {
+                    String fileName = file.getName() ;
+                    if (fileName.contains(simName))
+                        nameArray.add(fileName) ;
+                }
+            //LOGGER.log(Level.INFO, "{0}", nameArray) ;
+            //Collections.sort(nameArray, String.CASE_INSENSITIVE_ORDER) ;
+            nameArray.sort(String.CASE_INSENSITIVE_ORDER);
+            //LOGGER.log(Level.INFO, "{0}", nameArray) ;
+            return nameArray ;
+        }
+        
     }
     /*
                 outputCycle = 5 ;
