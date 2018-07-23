@@ -29,17 +29,21 @@ import org.jfree.chart.* ;
  *******************************************************************/
 public class Community {
     static public int POPULATION = 40000;
-    static public int MAX_CYCLES = 10000;
+    static public int MAX_CYCLES = 5000;
     //static public String NAME_ROOT = "testPlotSortRelationshipsByAge"
     //static public String NAME_ROOT = "testPlotSortPrevalenceYear3Partners10"
     //static public String NAME_ROOT = "NoPrepCalibration40GSE7sizeContacts5"
     //static public String NAME_ROOT = "calibration31"
-    static public String NAME_ROOT = "testMultiFilesCalibration31"
+    static public String NAME_ROOT = "testMultiFilesCalibration42"
             + "Pop" + String.valueOf(POPULATION) + "Cycles" + String.valueOf(MAX_CYCLES) ;
 
     static public String FILE_PATH = "../output/test/" ;
+    /** Dump reports to disk after this many cycles. */
     static final int DUMP_CYCLE = ((int) Math.pow(10, 7))/POPULATION ;
+    /** Whether to dump partial reports during simulation. */
     static final boolean PARTIAL_DUMP = (DUMP_CYCLE > 0) ;
+    /** How many digits represent cycles in DUMP filename. */
+    static final int DUMP_DIGITS = (int) Math.floor(Math.log10(MAX_CYCLES-1)) + 1 ;
     
     static public String getFilePath()
     {
@@ -222,7 +226,7 @@ public class Community {
         screeningPresenter2.plotPrevalence();
         //screeningPresenter2.plotIncidencePerCycle();
         ScreeningPresenter screeningPresenter3 
-                = new ScreeningPresenter("STI incidence",Community.NAME_ROOT + "Incidence",screeningReporter) ;
+                = new ScreeningPresenter("multi prevalence",Community.NAME_ROOT + "Incidence",screeningReporter) ;
         screeningPresenter3.multiPlotScreening(new Object[] {"coprevalence",new String[] {"Pharynx","Rectum"},"prevalence",new String[] {"Pharynx","Rectum","Urethra"}});
         
         //EncounterReporter encounterReporter = new EncounterReporter("Agent to Agent",community.encounterReport) ;
@@ -885,7 +889,10 @@ public class Community {
         private Scribe(String simName, String[] propertyNames) 
         {
             this.simName = simName ;
-            this.dumpCycle = Community.DUMP_CYCLE ;
+            if (Community.PARTIAL_DUMP)
+                this.dumpCycle = Community.DUMP_CYCLE ;
+            else
+                this.dumpCycle = 0 ;
             
             this.properties = new String[propertyNames.length] ;
             for (int propertyIndex = 0 ; propertyIndex < propertyNames.length ; propertyIndex++ )
@@ -935,7 +942,8 @@ public class Community {
         }
         
         /**
-         * 
+         * Filenames are appended according to their first cycle. This cycle 
+         * number if padded out with leading zeroes to generate filename order on disk.
          * @param property
          * @return (BufferedWriter) file for dumping property data for the current
          * dump cycle after constructing the appropriate filename.
@@ -945,7 +953,12 @@ public class Community {
         {
             String fileName = simName + property ; 
             if (dumpCycle > 0)
-                fileName += "-" + String.valueOf(dumpsSoFar * dumpCycle) ;
+            {
+                String nameIndex = String.valueOf(dumpsSoFar * dumpCycle) ;
+                while (nameIndex.length() < Community.DUMP_DIGITS)
+                    nameIndex = "0" + nameIndex ;
+                fileName += "-" + nameIndex;
+            }
             String outputFilePath = globalFolder + fileName + extension ;
             BufferedWriter fileWriter = new BufferedWriter(new FileWriter(outputFilePath,false));
             return fileWriter ;
