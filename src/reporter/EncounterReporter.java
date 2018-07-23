@@ -31,11 +31,9 @@ public class EncounterReporter extends Reporter {
         // TODO Auto-generated constructor stub
     }
 
-    public EncounterReporter(String simname, String fileName)
+    public EncounterReporter(String simName, String reportFilePath)
     {        
-        fileName = "EncounterReport" + Community.NAME_ROOT + ".txt" ;  // Community.FILE_PATH + 
-        Reader reader = new Reader(simname,fileName) ;
-        input = reader.getFiledReport() ;
+        super(simName + "encounter", reportFilePath) ;
     }
     // Was hiding field in Reporter. May yet delete there
     //ArrayList<String> input ;
@@ -67,17 +65,23 @@ public class EncounterReporter extends Reporter {
      */
     public ArrayList<HashMap<Object,ArrayList<Object>>> preparePartnersReport()
     {
-            ArrayList<HashMap<Object,ArrayList<Object>>> partnersReport  
-                    = new ArrayList<HashMap<Object,ArrayList<Object>>>() ;
-            ArrayList<String[]> pairArray ;
-            
+        ArrayList<HashMap<Object,ArrayList<Object>>> partnersReport  
+                = new ArrayList<HashMap<Object,ArrayList<Object>>>() ;
+        ArrayList<String[]> pairArray ;
+
+        boolean nextInput = true ; 
+        
+        while (nextInput)
+        {
             for (String record : input)
             {
                 partnersReport = new ArrayList<HashMap<Object,ArrayList<Object>>>() ;
                 pairArray = reportAgentIdPairs(record) ;
                 partnersReport.add(agentPartners(pairArray)) ;
             }
-            return partnersReport ;
+                nextInput = updateReport() ;
+        }
+        return partnersReport ;
     }
 
     /**
@@ -90,11 +94,17 @@ public class EncounterReporter extends Reporter {
 
         String record ;
 
-        for (int reportNb = 0 ; reportNb < input.size() ; reportNb += outputCycle )
+        boolean nextInput = true ; 
+        
+        while (nextInput)
         {
-            record = input.get(reportNb) ;
-            //LOGGER.log(Level.INFO, "prepare: {0}", record) ;
-            transmissionReport.add(encounterByValue("transmission","true",record)) ;
+            for (int reportNb = 0 ; reportNb < input.size() ; reportNb += outputCycle )
+            {
+                record = input.get(reportNb) ;
+                //LOGGER.log(Level.INFO, "prepare: {0}", record) ;
+                transmissionReport.add(encounterByValue("transmission","true",record)) ;
+            }
+            nextInput = updateReport() ;
         }
         return transmissionReport ;
     }
@@ -107,10 +117,16 @@ public class EncounterReporter extends Reporter {
     {
         ArrayList<Object> nbTransmissions = new ArrayList<Object>() ;
         
-        for (String record : input)
+        boolean nextInput = true ; 
+        
+        while (nextInput)
         {
-            int[] incidence = countValueIncidence("transmission", TRUE, record, 0) ;
-            nbTransmissions.add("transmission:" + String.valueOf(incidence[0])) ;
+            for (String record : input)
+            {
+                int[] incidence = countValueIncidence("transmission", TRUE, record, 0) ;
+                nbTransmissions.add("transmission:" + String.valueOf(incidence[0])) ;
+            }
+            nextInput = updateReport() ;
         }
         return nbTransmissions ;
     }
@@ -151,6 +167,40 @@ public class EncounterReporter extends Reporter {
         return nbTransmissions ;
             
         
+    }
+    
+    /**
+     * 
+     * @return Report of number of condom usages and opportunities for condom use and
+     * proportion of opportunities taken.
+     */
+    public ArrayList<Object> prepareCondomUseReport()
+    {
+        ArrayList<Object> condomUseReport = new ArrayList<Object>() ;
+        int opportunities = 0 ;
+        int usages = 0 ;
+        double proportion ;
+        int[] condomData ;
+        String output ;
+        
+        boolean nextInput = true ; 
+        
+        while (nextInput)
+        {
+            for (String record : input)
+            {
+                condomData = countValueIncidence("condom",TRUE,record,0) ;
+                usages = condomData[0] ;
+                opportunities = condomData[1] ;
+                proportion = ((double) usages)/opportunities ;
+                output = Reporter.addReportProperty("usages", usages) ;
+                output += Reporter.addReportProperty("opportunities", opportunities) ;
+                output += Reporter.addReportProperty("proportion", proportion) ;
+                condomUseReport.add(output) ;
+            }
+            nextInput = updateReport() ;
+        }
+        return condomUseReport ;
     }
     
     /**
