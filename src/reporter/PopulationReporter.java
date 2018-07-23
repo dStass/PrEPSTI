@@ -34,11 +34,9 @@ public class PopulationReporter extends Reporter {
      * @param simName
      * @param fileName 
      */
-    public PopulationReporter(String simName, String fileName)
+    public PopulationReporter(String simName, String reportFilePath)
     {
-        fileName = "PopulationReport" + Community.NAME_ROOT + ".txt" ;  // Community.FILE_PATH + 
-        Reader reader = new Reader(simName,fileName) ;
-        input = reader.getFiledReport() ;
+        super(simName + "population", reportFilePath) ;
     }
     
     /**
@@ -185,7 +183,6 @@ public class PopulationReporter extends Reporter {
                     ageIndex = deathRecord.indexOf(ageString,agentIdIndex);
                     ageDeathRecord.add(extractValue(AGE, deathRecord,ageIndex)) ;
                     agentIdIndex = isPropertyNameNext(AGENTID,deathRecord,ageIndex+4) ;    // 3 letters in AGE, +1 for ":"
-                    LOGGER.log(Level.INFO, "agentIdIndex:{0} {1} {2} {3}", new Object[] {agentIdIndex,ageIndex,deathRecord.indexOf(AGE,ageIndex),deathRecord});
                 }
             }
             ageDeathReport.add(ageDeathRecord) ;
@@ -221,14 +218,20 @@ public class PopulationReporter extends Reporter {
         int deathIndex ;
         String valueString ;
 
-        for (int reportNb = 0 ; reportNb < input.size() ; reportNb += outputCycle )
+        boolean nextInput = true ; 
+        
+        while (nextInput)
         {
-            record = input.get(reportNb) ;
-            //LOGGER.log(Level.INFO, "{0} {1}", new Object[] {reportNb,record});
-            deathIndex = indexOfProperty("death",record) ;
-            if (deathIndex < 0)
-                continue ;
-            deathReport.add(record.substring(deathIndex)) ;
+            for (int reportNb = 0 ; reportNb < input.size() ; reportNb += outputCycle )
+            {
+                record = input.get(reportNb) ;
+                //LOGGER.log(Level.INFO, "{0} {1}", new Object[] {reportNb,record});
+                deathIndex = indexOfProperty("death",record) ;
+                if (deathIndex < 0)
+                    continue ;
+                deathReport.add(record.substring(deathIndex)) ;
+            }
+        nextInput = updateReport() ;
         }
         return deathReport ;
     }
@@ -241,10 +244,16 @@ public class PopulationReporter extends Reporter {
         int agentIndex ;
         String valueString ;
 
-        for (int reportNb = 0 ; reportNb < input.size() ; reportNb += outputCycle )
+        boolean nextInput = true ; 
+        
+        while (nextInput)
         {
-            record = input.get(reportNb) ;
-            birthReport.add(record.substring(indexOfProperty("birth",record),indexOfProperty("death",record))) ;
+            for (int reportNb = 0 ; reportNb < input.size() ; reportNb += outputCycle )
+            {
+                record = input.get(reportNb) ;
+                birthReport.add(record.substring(indexOfProperty("birth",record),indexOfProperty("death",record))) ;
+            }
+        nextInput = updateReport() ;
         }
         return birthReport ;
     }
