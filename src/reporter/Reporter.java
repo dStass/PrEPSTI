@@ -962,7 +962,11 @@ public class Reporter {
     public boolean updateReport()
     {
         if (reader.fileIndex >= reader.fileNames.size())
+        {
+            reader.fileIndex = 0 ;
+            input = reader.updateOutputArray() ;
             return false ;
+        }
         input = reader.updateOutputArray();
         return true ;
     }
