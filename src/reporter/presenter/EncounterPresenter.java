@@ -121,7 +121,9 @@ public class EncounterPresenter extends Presenter {
         
     }
     
-    
+    /**
+     * Plots the number of transmissions in a given cycle.
+     */
     public void plotNbTransmissions()
     {
         ArrayList<Object> nbTransmissionReport = reporter.prepareTransmissionCountReport() ;
@@ -130,7 +132,18 @@ public class EncounterPresenter extends Presenter {
     }
 
     /**
-     * plotAgentToAgent() produces a scatter plot of which Agents were infected by which other Agents.
+     * Plots the proportion of opportunities for condom use for which a condom is 
+     * actually used in a given cycle.
+     */
+    public void plotCondomUse()
+    {
+        ArrayList<Object> condomUseReport = reporter.prepareCondomUseReport() ;
+        
+        plotCycleValue("proportion", condomUseReport) ;
+    }
+
+    /**
+     * Produces a scatter plot of which Agents were infected by which other Agents.
      */
     public void plotAgentToAgent()
     {
@@ -153,7 +166,7 @@ public class EncounterPresenter extends Presenter {
             if (invertedTransmittingAgentsReport.keySet().contains(cycle))
             {
                 plottingAgentsReport.add(invertedTransmittingAgentsReport.get(cycle)) ;
-                LOGGER.log(Level.INFO, "{0} {1}", new Object[] {cycle,invertedTransmittingAgentsReport.get(cycle)});
+                //LOGGER.log(Level.INFO, "{0} {1}", new Object[] {cycle,invertedTransmittingAgentsReport.get(cycle)});
             }
             else
                 plottingAgentsReport.add(new HashMap<Object,ArrayList<Object>>()) ;
