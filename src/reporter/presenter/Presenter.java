@@ -36,8 +36,8 @@ public class Presenter {
     
     private Reporter reporter ;
     
-    protected ArrayList<Object> categoryData = new ArrayList<Object>() ;
-    protected ArrayList<Object> scoreData = new ArrayList<Object>() ;
+    protected ArrayList<ArrayList<Object>> categoryData = new ArrayList<ArrayList<Object>>() ;
+    protected ArrayList<ArrayList<Object>> scoreData = new ArrayList<ArrayList<Object>>() ;
     protected String applicationTitle ;
     protected String chartTitle ;
     
@@ -122,6 +122,43 @@ public class Presenter {
     }
     
     /**
+     * Presents reportArray as a function of time/cycle.
+     * @param scoreName
+     * @param reportArray 
+     */
+    protected void callMultiPlotChart(String scoreName, ArrayList<ArrayList<Object>> reportArrays, String[] legend)
+    {
+        //LOGGER.info("callPlotChart()") ;
+        // Extract data from reportArray
+        parseReportArrays(scoreName, reportArrays) ;
+        
+        // Send data to be processed and presented
+        chart_awt.callPlotChart(chartTitle,scoreData,scoreName,legend) ;
+        return ;
+    }
+    
+    /**
+     * Presents reportArray as a function of time/cycle.
+     * @param scoreName
+     * @param reportArray 
+     */
+    protected void callMultiPlotChart(ArrayList<String> scoreNames, ArrayList<ArrayList<Object>> reportArrays, String[] legend)
+    {
+        //LOGGER.info("callPlotChart()") ;
+        // Extract data from reportArray
+        parseReportArrays(scoreNames, reportArrays) ;
+        
+        // Generate approriate scoreName from scoreNames with no repetition
+        String scoreName = "" ;
+        for (String name : scoreNames)
+            if (scoreName.indexOf(name) >= 0)
+                scoreName += "/" + name ;
+        // Send data to be processed and presented
+        chart_awt.callPlotChart(chartTitle,scoreData,scoreName,legend) ;
+        return ;
+    }
+    
+    /**
      * Presents scoreName as a function of categoryName after calling prepareReportNameReport()
      * @param categoryName
      * @param scoreName
@@ -164,20 +201,22 @@ public class Presenter {
         LOGGER.info("plotHashMap()") ;
         //ArrayList<String> categoryInteger = new ArrayList<String>() ;
         ArrayList<Number> scoreNumber = new ArrayList<Number>() ;
+        ArrayList<Object> categoryEntry = new ArrayList<Object>() ;
         
         categoryData.clear();
         for (Object key : hashMapReport.keySet())
         {
             if (key.equals(null))
                 continue ;
-            categoryData.add(key) ;
+            categoryEntry.add(key) ;
         }
-        categoryData.sort(null);
-        for (Object key : categoryData)
+        categoryEntry.sort(null);
+        for (Object key : categoryEntry)
         {
             scoreNumber.add(hashMapReport.get(key)) ;
         }
-        chart_awt.callPlotChartInteger(chartTitle,categoryData,scoreNumber,scoreName,categoryName) ;
+        //categoryData.add(categoryEntry) ;
+        chart_awt.callPlotChartInteger(chartTitle,categoryEntry,scoreNumber,scoreName,categoryName) ;
     }
     
     /**
@@ -190,13 +229,13 @@ public class Presenter {
      */
     protected void callPlotChartDefault(String categoryName, String scoreName, ArrayList<Object> reportArray, int cycle)
     {
-        String report = (String) reportArray.get(cycle) ;
+        String record = (String) reportArray.get(cycle) ;
         
         // Extract data from report
-        parseReport(categoryName, scoreName, report) ;
+        parseRecord(categoryName, scoreName, record) ;
         
         // Send data to be processed and presented
-        chart_awt.callPlotChart(chartTitle,categoryData,scoreData,scoreName,categoryName) ;
+        chart_awt.callPlotChart(chartTitle,categoryData.get(0),scoreData.get(0),scoreName,categoryName) ;
     }
     
     /**
@@ -232,6 +271,18 @@ public class Presenter {
         callPlotChart(scoreName,reportArray) ;
     }            
             
+    public void multiPlotCycleValue(String scoreName, ArrayList<ArrayList<Object>> reportArrays, String[] legend)
+    {
+        //LOGGER.info("plotCycleValue") ;
+        callMultiPlotChart(scoreName,reportArrays,legend) ;
+    }            
+            
+    public void multiPlotCycleValue(ArrayList<String> scoreNames, ArrayList<ArrayList<Object>> reportArrays, String[] legend)
+    {
+        //LOGGER.info("plotCycleValue") ;
+        callMultiPlotChart(scoreNames,reportArrays,legend) ;
+    }            
+            
     /**
      * Uses reflect to call Method prepareReportNameReport()
      * @param reportName
@@ -262,26 +313,96 @@ public class Presenter {
      * @param scoreName
      * @param report 
      */
-    private void parseReport(String categoryName, String scoreName, String report)
+    private void parseRecord(String categoryName, String scoreNames, String report)
+    {
+        parseRecord(new String[] {categoryName}, scoreNames, report) ;
+    }
+    
+    /**
+     * Extracts category (x) and score (y) data and records in corresponding fields
+     * @param categoryName
+     * @param scoreName
+     * @param report 
+     */
+    private void parseRecord(String[] categoryNames, String scoreName, String report)
     {        
-        int categoryIndex = Reporter.indexOfProperty(categoryName,report) ;
-        
-        categoryData = Reporter.extractAllValues(categoryName, report, categoryIndex) ;
-        scoreData = Reporter.extractAllValues(scoreName, report, categoryIndex) ;
+        for (int plotIndex = 0 ; plotIndex < categoryNames.length ; plotIndex++ )
+        {
+            int categoryIndex = Reporter.indexOfProperty(categoryNames[plotIndex],report) ;
+
+            categoryData.add(Reporter.extractAllValues(categoryNames[plotIndex], report, categoryIndex)) ;
+            scoreData.add(Reporter.extractAllValues(scoreName, report, categoryIndex)) ;
+        }
     }
 
     /**
      * Extracts one value for scoreName from each report cycle.
      * Intended for plots over time.
      * @param scoreName
+     * @param report 
+     */
+    private void parseReportArray(String scoreName, ArrayList<Object> report)
+    {       
+        ArrayList<Object> plotArray = new ArrayList<Object>() ;
+        for (Object record : report)
+        {
+            String value = Reporter.extractValue(scoreName,String.valueOf(record)) ;
+            plotArray.add(value) ;
+        }
+        scoreData.add(plotArray) ;
+    }
+
+    /**
+     * Extracts one value for scoreName from each report cycle of each report.
+     * Intended for plots over time.
+     * @param scoreName
      * @param reports 
      */
-    private void parseReportArray(String scoreName, ArrayList<Object> reports)
+    private void parseReportArrays(String scoreName, ArrayList<ArrayList<Object>> reports)
     {       
-        for (Object report : reports)
+        ArrayList<Object> plotArray ;
+        
+        for (ArrayList<Object> report : reports)
         {
-            String value = Reporter.extractValue(scoreName,String.valueOf(report)) ;
-            scoreData.add(value) ;
+            plotArray = new ArrayList<Object>() ;
+            for (Object record : report)
+            {
+                String value = Reporter.extractValue(scoreName,String.valueOf(record)) ;
+                plotArray.add(value) ;
+            }
+            scoreData.add(plotArray) ;
+        }
+    }
+
+    /**
+     * Extracts one value for scoreName from each report cycle of each report.
+     * Intended for plots over time.
+     * @param scoreName
+     * @param reports 
+     */
+    private void parseReportArrays(ArrayList<String> scoreNames, ArrayList<ArrayList<Object>> reports)
+    {       
+        ArrayList<Object> plotArray ;
+        String scoreName ;
+        ArrayList<Object> report ;
+        
+        for (int index = 0 ; index < scoreNames.size() ; index++ )
+        {
+            plotArray = new ArrayList<Object>() ;
+            scoreName = scoreNames.get(index) ;
+            report = reports.get(index) ;
+            
+            // An empty entry in reports indicates that the previous report should be used.
+            if (report.isEmpty())
+                report = reports.get(index - 1) ;
+            
+            // Add value to plotArray for scoreData
+            for (Object record : report)
+            {
+                String value = Reporter.extractValue(scoreName,String.valueOf(record)) ;
+                plotArray.add(value) ;
+            }
+            scoreData.add(plotArray) ;
         }
     }
 
@@ -310,20 +431,31 @@ public class Presenter {
                 String yLabel, String xLabel)
         {
             XYSeriesCollection dataset = createHubDataset(networkData) ;
-            plotLineChart(chartTitle, dataset, yLabel, xLabel) ;
+            plotLineChart(chartTitle, dataset, yLabel, xLabel, new String[] {""}) ;
         }
 
+        /**
+         * Calls Method callPlotChart() for plots over time after generating dataset without legend
+         * @param chartTitle
+         * @param dataArray
+         * @param yLabel 
+         */
+        private void callPlotChart(String chartTitle, ArrayList<ArrayList<Object>> dataArray, String yLabel)
+        {
+            callPlotChart(chartTitle, dataArray, yLabel, new String[] {""}) ;
+        }
+        
         /**
          * Calls Method plotLineChart() for plots over time after generating dataset
          * @param chartTitle
          * @param dataArray
          * @param yLabel 
          */
-        private void callPlotChart(String chartTitle, ArrayList<Object> dataArray, String yLabel)
+        private void callPlotChart(String chartTitle, ArrayList<ArrayList<Object>> dataArray, String yLabel, String[] legend)
         {
             //LOGGER.info("callPlotChart()") ;
-            XYSeriesCollection dataset = createXYDataset(dataArray) ;
-            plotLineChart(chartTitle, dataset, yLabel, "cycle") ;
+            XYSeriesCollection dataset = createXYDataset(dataArray,legend) ;
+            plotLineChart(chartTitle, dataset, yLabel, "cycle", legend) ;
         }
         
         /**
@@ -411,11 +543,12 @@ public class Presenter {
          * @param yLabel
          * @param xLabel 
          */
-        private void plotLineChart(String chartTitle, XYDataset dataset, String yLabel, String xLabel)
+        private void plotLineChart(String chartTitle, XYDataset dataset, String yLabel, String xLabel, String[] legend)
         {
             //LOGGER.info("plotLineChart()") ;
+            boolean showLegend = !(legend[0].isEmpty()) ;
             JFreeChart lineChart = ChartFactory.createXYLineChart(applicationTitle,xLabel,
-                yLabel,dataset,PlotOrientation.VERTICAL,false, true, false);
+                yLabel,dataset,PlotOrientation.VERTICAL,showLegend, true, false);
             
             NumberAxis domainAxis = (NumberAxis) lineChart.getXYPlot().getDomainAxis() ;
             domainAxis.setTickUnit(new NumberTickUnit(dataset.getItemCount(0)/20)) ;
@@ -445,8 +578,8 @@ public class Presenter {
         
         private void saveChart(JFreeChart barChart, String title)
         {
-            String directory = "../output/test/" ;
-            String address = directory + title + Community.NAME_ROOT + ".jpg" ;
+            String directory = Community.FILE_PATH ;
+            String address = Community.FILE_PATH + title + Community.NAME_ROOT + ".jpg" ;
             //int width = 2560 ;
             int width = 1280 ;
             //int width = 640 ;
@@ -519,25 +652,51 @@ public class Presenter {
          * @param scoreData
          * @return CategoryDataset of score over cycle
          */
-        private XYSeriesCollection createXYDataset(ArrayList<Object> scoreData)
+        private XYSeriesCollection createXYDataset(ArrayList<ArrayList<Object>> scoreData, String[] legend)
         {
-            XYSeries xySeries = new XYSeries(applicationTitle) ;
+            XYSeriesCollection xySeriesCollection = new XYSeriesCollection() ;
             // ArrayList<String> categoryData = data.get(0) ;
             // ArrayList<String> scoreData = data.get(1) ;
             
             Number scoreValue ;
-            int dataSize = scoreData.size() ;
-            
-            for (int index = 0 ; index < dataSize; index++ )
+            int dataSize ;
+            ArrayList<Object> data ;
+            int plotTotal ;
+            if (legend.length > 0)
+                plotTotal = legend.length ;
+            else
             {
-                String scoreString = (String) scoreData.get(index) ;
-                if (int.class.isInstance(scoreString)) 
-                    scoreValue = Integer.valueOf(scoreString) ;
-                else
-                    scoreValue = Double.valueOf(scoreString) ;
-                xySeries.add(1 + index, scoreValue, false);
+                plotTotal = 1 ;
+                legend = new String[] {""} ;
             }
-            return new XYSeriesCollection(xySeries) ;
+            
+            for (int plotNumber = 0 ; plotNumber < plotTotal ; plotNumber++ )
+            {
+                XYSeries xySeries = new XYSeries(legend[plotNumber]) ;
+
+                data = scoreData.get(plotNumber) ;
+                dataSize = data.size();
+                scoreValue = 0 ;
+
+                for (int index = 0 ; index < dataSize; index++ )
+                {
+                    String scoreString = (String) data.get(index) ;
+                    if (int.class.isInstance(scoreString)) 
+                        scoreValue = Integer.valueOf(scoreString) ;
+                    else
+                        scoreValue = Double.valueOf(scoreString) ;
+                    xySeries.add(1 + index, scoreValue, false);
+                }
+                try
+                {
+                    xySeriesCollection.addSeries((XYSeries) xySeries.clone()) ;
+                }
+                catch ( CloneNotSupportedException cnse )
+                {
+                    LOGGER.log(Level.SEVERE, cnse.toString());
+                }
+            }
+            return xySeriesCollection ;
         }
         
         /**
