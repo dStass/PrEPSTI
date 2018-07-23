@@ -58,8 +58,17 @@ public abstract class Agent {
     static double RISK_15 = 0.2 ;
 
     final static double DAYS_PER_YEAR = 365.25 ;
+    
     // Need to generate random numbers
-    static Random RAND = new Random() ;
+    /** Generate and record Random number seed. */
+    static final long RANDOM_SEED = System.nanoTime() ;
+    static final Random RAND = new Random(RANDOM_SEED) ;
+    
+    /** get RANDOM_SEED. */
+    static public final long GET_RANDOM_SEED()
+    {
+        return RANDOM_SEED ;
+    }
     
     /** String representation of "true". */
     static String TRUE = "true" ;
