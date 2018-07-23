@@ -75,13 +75,29 @@ public class RelationshipPresenter extends Presenter{
 
     /**
      * Find and plot the number of new Relationships as a function of time/cycle
+     * The first cycle is left out to accomodate burn-in.
      */
     public void plotNewRelationshipsPerCycle()
     {
         ArrayList<ArrayList<Object>> relationshipCommenceReport = reporter.prepareRelationshipCommenceReport() ;
+        ArrayList<ArrayList<Object>> submitReport = new ArrayList<ArrayList<Object>>() ;
+        for (int index = 1 ; index < relationshipCommenceReport.size() ; index++)
+            submitReport.add(relationshipCommenceReport.get(index)) ;
+        plotEventsPerCycle("New relationships",submitReport) ;
         
-        // ArrayList<String> deathsPerCycle = prepareDeathsPerCycle() ;
-        plotEventsPerCycle("New relationships",relationshipCommenceReport) ;
+    }
+
+    /**
+     * Find and plot the number of new Relationships as a function of time/cycle
+     * The first cycle is left out to accomodate burn-in.
+     */
+    public void plotNewRelationshipsPerCycle(String[] relationshipClazzes)
+    {
+        ArrayList<ArrayList<Object>> relationshipCommenceReport = reporter.prepareRelationshipCommenceReport(relationshipClazzes) ;
+        ArrayList<ArrayList<Object>> submitReport = new ArrayList<ArrayList<Object>>() ;
+        for (int index = 1 ; index < relationshipCommenceReport.size() ; index++)
+            submitReport.add(relationshipCommenceReport.get(index)) ;
+        plotEventsPerCycle("New relationships",submitReport) ;
         
     }
 
@@ -91,10 +107,11 @@ public class RelationshipPresenter extends Presenter{
     public void plotBreakupsPerCycle()
     {
         ArrayList<ArrayList<Object>> relationshipBreakupReport = reporter.prepareRelationshipBreakupReport() ;
+        ArrayList<ArrayList<Object>> submitReport = new ArrayList<ArrayList<Object>>() ;
+        for (int index = 2 ; index < relationshipBreakupReport.size() ; index++)
+            submitReport.add(relationshipBreakupReport.get(index)) ;
         
-        // ArrayList<String> deathsPerCycle = prepareDeathsPerCycle() ;
-        
-        plotEventsPerCycle("Breakups",relationshipBreakupReport) ;
+        plotEventsPerCycle("Breakups",submitReport) ;
         
     }
 
