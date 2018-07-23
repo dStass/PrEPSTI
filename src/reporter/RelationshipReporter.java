@@ -37,12 +37,9 @@ public class RelationshipReporter extends Reporter {
      * @param simName
      * @param fileName 
      */
-    public RelationshipReporter(String simName, String fileName)
+    public RelationshipReporter(String simName, String reportFilePath)
     {
-        fileName = "RelationshipReport" + Community.NAME_ROOT + ".txt" ; // Community.FILE_PATH + 
-        System.out.println(fileName);
-        Reader reader = new Reader(simName,fileName) ;
-        input = reader.getFiledReport() ;
+        super(simName + "relationship", reportFilePath) ;
     }
     
     /**
@@ -62,6 +59,36 @@ public class RelationshipReporter extends Reporter {
             //LOGGER.info(record);
             //int startIndex = indexOfProperty(RELATIONSHIP_ID,report) ;
             relationshipCommenceReport.add(extractAllValues(RELATIONSHIP_ID, record,0)) ;
+            //relationshipCommenceReport.add(extractAllValues(AGENTID1, report,0)) ;
+        }
+        return relationshipCommenceReport ;
+    }
+    
+    /**
+     * 
+     * @return ArrayList of ArrayLists of (String) RelationshipIds of relationships
+     * of class relationshipClazz commenced in each cycle
+     */
+    public ArrayList<ArrayList<Object>> prepareRelationshipCommenceReport(String[] relationshipClazzes)
+    {
+        ArrayList<ArrayList<Object>> relationshipCommenceReport = new ArrayList<ArrayList<Object>>() ;
+        
+        ArrayList<String> commenceReport = prepareCommenceReport() ;
+        String filteredRecord ;
+        
+        for (int reportNb = 0 ; reportNb < commenceReport.size() ; reportNb++ )
+        {
+            String record = commenceReport.get(reportNb) ;
+            
+            // Include only selected Relationships 
+            filteredRecord = "" ;
+            for (String relationshipClazz : relationshipClazzes)
+                filteredRecord += boundedStringByValue("relationship",relationshipClazz,RELATIONSHIP_ID,record) ;
+            if (filteredRecord.isEmpty())
+                filteredRecord = record ;
+            //LOGGER.info(record);
+            //int startIndex = indexOfProperty(RELATIONSHIP_ID,report) ;
+            relationshipCommenceReport.add(extractAllValues(RELATIONSHIP_ID, filteredRecord,0)) ;
             //relationshipCommenceReport.add(extractAllValues(AGENTID1, report,0)) ;
         }
         return relationshipCommenceReport ;
@@ -449,6 +476,7 @@ public class RelationshipReporter extends Reporter {
     
     /**
      * Indicates which Agents were infected at which Sites for which cycles.
+     * TODO: Adapt to multiple Report files
      * @param siteNames
      * @return HashMap key agentId, value HashMap key siteName value ArrayList of cycles when infected
      */
@@ -567,8 +595,16 @@ public class RelationshipReporter extends Reporter {
             
             //LOGGER.info(input.get(0));
         }
+        
+        boolean nextInput = true ; 
+        
+        while (nextInput)
+        {
         for (String inputRecord : input)
             inputString.add(inputRecord) ;
+        nextInput = updateReport() ;
+        }
+        
 
         for (int reportNb = 0 ; reportNb < inputString.size() ; reportNb += outputCycle )
         {
@@ -593,8 +629,16 @@ public class RelationshipReporter extends Reporter {
         ArrayList<String> inputString = new ArrayList<String>() ;
         if (!Relationship.BURNIN_COMMENCE.equals("clear:"))
             inputString.add(Relationship.BURNIN_COMMENCE) ;
-        for (String inputRecord : input)
-            inputString.add(inputRecord) ;
+        
+        boolean nextInput = true ; 
+        
+        while (nextInput)
+        {
+            for (String inputRecord : input)
+                inputString.add(inputRecord) ;
+            nextInput = updateReport() ;
+        }
+        
 
         for (int reportNb = 0 ; reportNb < inputString.size() ; reportNb += outputCycle )
         {
