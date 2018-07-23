@@ -23,88 +23,97 @@ public class ScreeningReporter extends Reporter {
     static String SYMPTOMATIC = "symptomatic" ;
     
     
-    public ScreeningReporter(String simname, ArrayList<String> reports) {
-        super(simname, reports);
+    public ScreeningReporter(String simname, ArrayList<String> report) {
+        super(simname, report);
         // TODO Auto-generated constructor stub
     }
 
-    public ScreeningReporter(String simname, String reportFilePath)
+    public ScreeningReporter(String simName, String reportFilePath)
     {
-        super(simname,reportFilePath) ;
+        super(simName+"infection",reportFilePath) ;
     }
  
     /**
      * 
-     * @return (ArrayList\<String\>) indicating the total prevalence, prevalence of 
-     * symptomatic infection, and proportion of symptomatic infection in each cycle.
+     * @return (ArrayList\<String\>) indicating the total coprevalence, coprevalence of 
+     * symptomatic infection, and proportion of symptomatic infection in each report cycle.
      */
     public ArrayList<Object> preparePrevalenceReport()
     {
-        return preparePrevalenceReport(input) ;
-    }
-    
-    /**
-     * 
-     * @param report
-     * @return (ArrayList\<String\>) indicating the total prevalence, prevalence of 
-     * symptomatic infection, and proportion of symptomatic infection in each report cycle.
-     */
-    public ArrayList<Object> preparePrevalenceReport(ArrayList<String> report)
-    {
         ArrayList<Object> prevalenceReport = new ArrayList<Object>() ;
+        
         int population = Community.POPULATION ;
         int nbInfected ;
         int nbSymptomatic ;
         String entry ;
         String[] siteNames = MSM.SITE_NAMES ;
-        for (int siteIndex = 0 ; siteIndex < siteNames.length ; siteIndex++ )
+        boolean nextInput = true ; 
+
+        while (nextInput)
         {
-            String siteName = siteNames[siteIndex] ;
-            siteNames[siteIndex] = siteName.substring(0,1).toUpperCase() 
-                    + siteName.substring(1) ;
-        }
-        for (String record : input)
-        {
-            nbSymptomatic = 0 ;
-            ArrayList<String> infections = extractArrayList(record,AGENTID) ;
-            nbInfected = infections.size() ;
-            for (String infection : infections)
-                for (String siteName : MSM.SITE_NAMES)
-                    if (compareValue(siteName,TRUE,infection))
-                    {
-                        nbSymptomatic++ ;
-                        break ;
-                    }
-            
-            //LOGGER.info(record) ;
-            entry = addReportProperty("prevalence",((double) nbInfected)/population) ;
-            entry += addReportProperty("symptomatic",((double) nbSymptomatic)/population) ;
-            entry += addReportProperty("proportion",((double) nbSymptomatic)/nbInfected) ;
-            
-            prevalenceReport.add(entry) ;
+        
+            for (int siteIndex = 0 ; siteIndex < siteNames.length ; siteIndex++ )
+            {
+                String siteName = siteNames[siteIndex] ;
+                siteNames[siteIndex] = siteName.substring(0,1).toUpperCase() 
+                        + siteName.substring(1) ;
+            }
+            for (String record : input)
+            {
+                nbSymptomatic = 0 ;
+                ArrayList<String> infections = extractArrayList(record,AGENTID) ;
+                nbInfected = infections.size() ;
+                for (String infection : infections)
+                    for (String siteName : MSM.SITE_NAMES)
+                        if (compareValue(siteName,TRUE,infection))
+                        {
+                            nbSymptomatic++ ;
+                            break ;
+                        }
+
+                //LOGGER.info(record) ;
+                entry = addReportProperty("prevalence",((double) nbInfected)/population) ;
+                entry += addReportProperty("symptomatic",((double) nbSymptomatic)/population) ;
+                entry += addReportProperty("proportion",((double) nbSymptomatic)/nbInfected) ;
+
+                prevalenceReport.add(entry) ;
+            }
+            nextInput = updateReport() ;
         }
         return prevalenceReport ;
     }
     
+    /**
+     * 
+     * @return (ArrayList\<String\>) indicating the total coprevalence, coprevalence of 
+     * symptomatic infection, and proportion of symptomatic infection at site given 
+     * by siteName in each report cycle.
+     */
     public ArrayList<Object> prepareSitePrevalenceReport(String siteName) 
     {
         ArrayList<Object> sitePrevalenceReport = new ArrayList<Object>() ;
         
-        int population = Community.POPULATION ;
-        int[] nbSymptomatic ;
-        String entry ;
-        for (String record : input)
+        boolean nextInput = true ; 
+        
+        while (nextInput)
         {
-            nbSymptomatic = countValueIncidence(siteName,TRUE,record,0) ;
-                        
-//            if (nbSymptomatic[0] == nbSymptomatic[1])
-//                LOGGER.info(record);
-            
-            
-            entry = addReportProperty("prevalence",((double) nbSymptomatic[1])/population) ;
-            entry += addReportProperty("symptomatic",((double) nbSymptomatic[0])/population) ;
-            entry += addReportProperty("proportion",((double) nbSymptomatic[0])/nbSymptomatic[1]) ;
-            sitePrevalenceReport.add(entry) ;
+            int population = Community.POPULATION ;
+            int[] nbSymptomatic ;
+            String entry ;
+            for (String record : input)
+            {
+                nbSymptomatic = countValueIncidence(siteName,TRUE,record,0) ;
+
+    //            if (nbSymptomatic[0] == nbSymptomatic[1])
+    //                LOGGER.info(record);
+
+
+                entry = addReportProperty("prevalence",((double) nbSymptomatic[1])/population) ;
+                entry += addReportProperty("symptomatic",((double) nbSymptomatic[0])/population) ;
+                entry += addReportProperty("proportion",((double) nbSymptomatic[0])/nbSymptomatic[1]) ;
+                sitePrevalenceReport.add(entry) ;
+            }
+            nextInput = updateReport() ;
         }
         return sitePrevalenceReport ;
     }
@@ -112,7 +121,7 @@ public class ScreeningReporter extends Reporter {
     /**
      * 
      * @param siteNames
-     * @return ArrayList of prevalence of coninfection of Sites named in siteNames.
+     * @return ArrayList of coprevalence of coninfection of Sites named in siteNames.
      */
     public ArrayList<Object> prepareSiteCoPrevalenceReport(String[] siteNames) 
     {
@@ -120,24 +129,61 @@ public class ScreeningReporter extends Reporter {
         
         int population = Community.POPULATION ;
         int[] nbSymptomatic ;
-        Double prevalence ;
+        Double coprevalence ;
         String entry ;
+        boolean nextInput = true ; 
         
-        for (String record : input)
+        while (nextInput)
         {
-            entry = record ;
-            for (String siteName : siteNames)
+            for (String record : input)
             {
-                entry = boundedStringByContents(siteName,AGENTID,entry) ;
+                entry = record ;
+                for (String siteName : siteNames)
+                {
+                    entry = boundedStringByContents(siteName,AGENTID,entry) ;
+                }
+                if (entry.isEmpty())
+                    coprevalence = 0.0 ;
+                else 
+                    coprevalence = (Double.valueOf(countValueIncidence(AGENTID,"",entry,0)[1]))/population ;
+                siteCoPrevalenceReport.add("coprevalence:" + String.valueOf(coprevalence) + " ") ;
+                //LOGGER.info("coprevalence:" + String.valueOf(coprevalence) + " ");
             }
-            if (entry.isEmpty())
-                prevalence = 0.0 ;
-            else 
-                prevalence = (Double.valueOf(countValueIncidence(AGENTID,"",entry,0)[1]))/population ;
-            siteCoPrevalenceReport.add("prevalence:" + String.valueOf(prevalence) + " ") ;
-            //LOGGER.info("prevalence:" + String.valueOf(prevalence) + " ");
+            nextInput = updateReport() ;
         }
         return siteCoPrevalenceReport ;
+    }
+    
+    /** 
+     * 
+     * @return Report indicating the number and per population of incidents
+     * of infection.
+     */
+    public ArrayList<Object> prepareIncidenceReport()
+    {
+        ArrayList<Object> incidenceReport = new ArrayList<Object>() ;
+        
+        int incidents ;
+        double incidence ;
+        int population = Community.POPULATION ;
+        String output ;
+        
+        boolean nextInput = true ; 
+        while (nextInput)
+        {
+            for (String record : input)
+            {
+                incidents = countValueIncidence("treated","",record,0)[1];
+                incidence = ((double) incidents)/population;
+
+                output = Reporter.addReportProperty("incidents", incidents) ;
+                output += Reporter.addReportProperty("incidence", incidence) ;
+
+                incidenceReport.add(output) ;
+            }
+                nextInput = updateReport() ;
+        }
+        return incidenceReport ;
     }
     
 }
