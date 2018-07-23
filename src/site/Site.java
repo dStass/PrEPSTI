@@ -19,7 +19,16 @@ abstract public class Site {
     // Name of subClass of Site
     final private String site ;
 
-    static Random RAND = new Random() ;
+    /** Generate and record Random number seed. */
+    static final long RANDOM_SEED = System.nanoTime() ;
+    static final Random RAND = new Random(RANDOM_SEED) ;
+    
+    /** get RANDOM_SEED. */
+    static public final long GET_RANDOM_SEED()
+    {
+        return RANDOM_SEED ;
+    }
+    
     
     //LOGGER
     static final java.util.logging.Logger LOGGER = java.util.logging.Logger.getLogger("relationship") ;
