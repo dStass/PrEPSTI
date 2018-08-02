@@ -24,6 +24,11 @@ public class PopulationReporter extends Reporter {
     static String AGE = "age" ;
     static String START_AGE = "startAge" ;
     
+    public PopulationReporter()
+    {
+        
+    }
+    
     public PopulationReporter(String simname, ArrayList<String> report) 
     {
         super(simname, report);
@@ -77,6 +82,13 @@ public class PopulationReporter extends Reporter {
             
         }
         return populationReport ;
+    }
+    
+    
+    public String getInitialRecord()
+    {
+        String initialRecord = super.getInitialRecord() ;
+        return initialRecord.substring(0, initialRecord.indexOf(DEATH)) ;
     }
     
     /**
