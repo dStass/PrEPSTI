@@ -322,7 +322,7 @@ public abstract class Agent {
      * 
      * @return (double) the probability of Agents joining an orgy when invited
      */
-    abstract public double getJoinOrgyProbability() ;
+    abstract public double getJoinGroupSexEventProbability() ;
     
     public double getMonogomousOdds()
     {
@@ -700,7 +700,7 @@ public abstract class Agent {
     
     /**
      * Whether to accept proposed Casual Relationship.
-     * @param agent (Agent) with whom Relationship is proposed.
+     * @param partner (Agent) with whom Relationship is proposed.
      * @return (Boolean) true if accept and false otherwise
      */
     abstract protected boolean consentCasual(Agent partner);
@@ -715,7 +715,7 @@ public abstract class Agent {
         if (inMonogomous)
             if (RAND.nextDouble() > infidelity)
                 return false ;
-        return (RAND.nextDouble() < getJoinOrgyProbability()) ;
+        return (RAND.nextDouble() < getJoinGroupSexEventProbability()) ;
     }
 
     /**
