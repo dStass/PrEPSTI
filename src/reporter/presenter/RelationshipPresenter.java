@@ -24,26 +24,14 @@ public class RelationshipPresenter extends Presenter{
     
     public static void main(String[] args)
     {
-        try
-        {
-        String methodName = args[0] ;
-        System.out.println(methodName);
-        Method method = RelationshipPresenter.class.getMethod(methodName) ;
-        System.out.println(methodName);
-        String simName = args[1] ;
-        String chartTitle = args[2] ;
-        String reportFileName = args[3] ;
+        String simName = "testPlotCondomUsePop4000Cycles500" ; // args[0] ;
+        String chartTitle = "days gap between final two relationships" ; // args[1] ;
+        String reportFileName = "../output/test/" ; // args[2] ;
         RelationshipPresenter relationshipPresenter = new RelationshipPresenter(simName,chartTitle,reportFileName) ;
+        //encounterPresenter.plotCondomUse();
+        relationshipPresenter.plotCumulativeRelationshipGaps() ;
+
         
-        if (args.length>4)
-            method.invoke(relationshipPresenter, (Object[]) Arrays.copyOfRange(args,4,args.length)) ;
-        else 
-            method.invoke(relationshipPresenter) ;
-        }
-        catch ( Exception e )
-        {
-            LOGGER.log(Level.SEVERE, "{0} {1}", new Object[] {e.toString(),e.getLocalizedMessage()});
-        }
     }
     
     public RelationshipPresenter()
@@ -149,4 +137,29 @@ public class RelationshipPresenter extends Presenter{
         
         plotCycleValue("Mean number of partners",meanNumberRelationshipsReport) ;
     }
+    
+    /**
+     * Plots gap between last two Relationships, ie cycle of commencement for last 
+     * minus cycle of breakup for second-last Relationship. A negative gap indicates
+     * overlap.
+     * TODO: Implement as cumulative plot.
+     */
+    public void plotAgentGapReport()
+    {
+        HashMap<Object,Integer> agentGapReport = reporter.prepareAgentGapReport() ;
+        
+        plotHashMap("Agent Ids","Days between relationships",agentGapReport) ;
+    }
+    
+    
+    public void plotCumulativeRelationshipGaps()
+    {
+        HashMap<Object,Integer> cumulativeRelationshipGapRecord = reporter.prepareRelationshipCumulativeGapRecord() ;
+        
+        plotHashMap("Length of relationship gap","Cumulative distribution",cumulativeRelationshipGapRecord) ;
+    }
+    
+    
+            
+            
 }
