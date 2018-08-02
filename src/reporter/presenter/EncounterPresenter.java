@@ -6,6 +6,7 @@
 package reporter.presenter;
 
 import reporter.* ;
+import community.Community ;
 
 import java.util.ArrayList ;
 import java.util.HashMap;
@@ -27,19 +28,21 @@ public class EncounterPresenter extends Presenter {
     {
         try
         {
-        String simName = args[0] ;
-        String chartTitle = args[1] ;
-        String reportFileName = args[2] ;
-        EncounterPresenter encounterPresenter = new EncounterPresenter(simName,chartTitle,reportFileName) ;
-        
-        String methodName = args[3] ;
-        Method method = EncounterPresenter.class.getMethod(methodName) ;
-        
-        method.invoke(encounterPresenter, (Object[]) Arrays.copyOfRange(args,4,args.length)) ;
+            String simName = "introPrepCalibration48Pop40000Cycles20000" ; // args[0] ;
+            String chartTitle = "condom_use" ; // args[1] ;
+            String reportFileName = "../output/test/" ; // args[2] ;
+            EncounterPresenter encounterPresenter = new EncounterPresenter(simName,chartTitle,reportFileName) ;
+            //encounterPresenter.plotCondomUse();
+            encounterPresenter.plotProtection() ;
+
+            //String methodName = args[3] ;
+            //Method method = EncounterPresenter.class.getMethod(methodName) ;
+
+            //method.invoke(encounterPresenter, (Object[]) Arrays.copyOfRange(args,4,args.length)) ;
         }
         catch ( Exception e )
         {
-            LOGGER.log(Level.SEVERE, "{0}", e.getLocalizedMessage());
+            LOGGER.log(Level.SEVERE, "{0}", e.toString());
         }
     }
     
@@ -55,8 +58,7 @@ public class EncounterPresenter extends Presenter {
     
     public EncounterPresenter(String simName, String chartTitle, String reportFilePath)
     {
-        super(simName,chartTitle,reportFilePath) ;
-        applicationTitle = simName ;
+        super(simName,chartTitle) ;
         setReporter(new EncounterReporter(simName,reportFilePath)) ;
     }
     
@@ -141,6 +143,42 @@ public class EncounterPresenter extends Presenter {
         
         plotCycleValue("proportion", condomUseReport) ;
     }
+    
+    
+    public void plotProtection()
+    {
+        PopulationReporter populationReporter = new PopulationReporter(applicationTitle,Community.FILE_PATH) ;
+        ArrayList<String> census = populationReporter.prepareBirthReport() ;
+        
+        plotProtection(census) ;
+    }
+    
+    public void plotProtection(ArrayList<String> census)
+    {
+        ArrayList<String> practices = new ArrayList<String>() ;
+        practices.add("condomOnly") ;
+        practices.add("onlySeroPosition") ;
+        //practices.add("onlySeroSort") ;
+        practices.add("condomSeroPosition") ;
+        //practices.add("condomSeroSort") ;
+        practices.add("unprotected") ;
+        //LOGGER.log(Level.INFO, "{0}", practices);
+        plotProtection(census, practices) ;
+    }
+    
+    /**
+     * Plots the combinations of protection-related practices used as a 
+     * proportion of condom-relevant contacts per cycle.
+     * @param census
+     * @param practices 
+     */
+    public void plotProtection(ArrayList<String> census, ArrayList<String> practices)
+    {
+        ArrayList<Object> protectionReport = reporter.prepareProtectionReport(census) ;
+        
+        multiPlotCycleValue(practices, protectionReport) ;
+    }
+            
 
     /**
      * Produces a scatter plot of which Agents were infected by which other Agents.
