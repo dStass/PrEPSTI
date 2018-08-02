@@ -11,7 +11,10 @@ import org.jfree.chart.* ;
 import org.jfree.chart.ui.ApplicationFrame ;
 import org.jfree.chart.axis.* ;
 import org.jfree.chart.plot.PlotOrientation ;
+import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.chart.ChartUtils ;
+import org.jfree.chart.renderer.category.GroupedStackedBarRenderer;
+import org.jfree.data.KeyToGroupMap;
 import org.jfree.data.category.* ;
 import org.jfree.data.general.* ;
 import org.jfree.data.xy.XYDataset; 
@@ -159,6 +162,33 @@ public class Presenter {
     }
     
     /**
+     * Presents reportArray as a function of time/cycle.
+     * @param scoreName
+     * @param reportArray 
+     */
+    protected void callMultiPlotChart(ArrayList<String> scoreNames, ArrayList<Object> reportArrays)
+    {
+        //LOGGER.info("callPlotChart()") ;
+        // Extract data from reportArray
+        parseReportArray(scoreNames, reportArrays) ;
+        
+        // Generate approriate scoreName from scoreNames with no repetition
+        String[] legend = new String[scoreNames.size()] ;
+        String scoreName = "" ;
+        String name ;
+        for (int scoreIndex = 0 ; scoreIndex < scoreNames.size() ; scoreIndex++ )
+        {
+            name = scoreNames.get(scoreIndex) ;
+            scoreName += "/" + name ;
+            legend[scoreIndex] = name ;
+            LOGGER.info(name);
+        }
+        // Send data to be processed and presented
+        chart_awt.callPlotChart(chartTitle,scoreData,scoreName,legend) ;
+        return ;
+    }
+    
+    /**
      * Presents scoreName as a function of categoryName after calling prepareReportNameReport()
      * @param categoryName
      * @param scoreName
@@ -196,12 +226,23 @@ public class Presenter {
         plotHashMapNumber(categoryName,scoreName,numberHashMap) ;
     }
     
-    protected void plotHashMapNumber(String categoryName, String scoreName, HashMap<Object,Number> hashMapReport )
+    protected void plotHashMapNumber(String categoryName, String scoreName, HashMap<Object,Number> hashMapReport ) 
+    {
+        HashMap<Object,Number[]> newHashMapReport = new HashMap<Object,Number[]>() ;
+        
+        for (Object key : hashMapReport.keySet())
+            newHashMapReport.put(key, new Number[] {hashMapReport.get(key)}) ;
+        
+        plotHashMapNumber(categoryName, new String[] {scoreName}, newHashMapReport) ;
+    }
+    
+    protected void plotHashMapNumber(String categoryName, String[] scoreNames, HashMap<Object,Number[]> hashMapReport )
     {
         LOGGER.info("plotHashMap()") ;
         //ArrayList<String> categoryInteger = new ArrayList<String>() ;
-        ArrayList<Number> scoreNumber = new ArrayList<Number>() ;
+        ArrayList<ArrayList<Number>> scoreNumbers = new ArrayList<ArrayList<Number>>() ;
         ArrayList<Object> categoryEntry = new ArrayList<Object>() ;
+        Number[] hashMapValue ;
         
         categoryData.clear();
         for (Object key : hashMapReport.keySet())
@@ -213,10 +254,14 @@ public class Presenter {
         categoryEntry.sort(null);
         for (Object key : categoryEntry)
         {
-            scoreNumber.add(hashMapReport.get(key)) ;
+            ArrayList<Number> scoreEntry = new ArrayList<Number>() ;
+            hashMapValue = hashMapReport.get(key) ;
+            for (int valueIndex = 0 ; valueIndex < hashMapValue.length ; valueIndex++ )
+                scoreEntry.add(hashMapValue[valueIndex]) ;
+            scoreNumbers.add((ArrayList<Number>) scoreEntry.clone()) ;
         }
         //categoryData.add(categoryEntry) ;
-        chart_awt.callPlotChartInteger(chartTitle,categoryEntry,scoreNumber,scoreName,categoryName) ;
+        chart_awt.callStackedPlotChart(chartTitle,categoryEntry,scoreNumbers,scoreNames,categoryName) ;
     }
     
     /**
@@ -281,6 +326,12 @@ public class Presenter {
     {
         //LOGGER.info("plotCycleValue") ;
         callMultiPlotChart(scoreNames,reportArrays,legend) ;
+    }            
+            
+    public void multiPlotCycleValue(ArrayList<String> scoreNames, ArrayList<Object> reportArrays)
+    {
+        //LOGGER.info("plotCycleValue") ;
+        callMultiPlotChart(scoreNames,reportArrays) ;
     }            
             
     /**
@@ -407,6 +458,30 @@ public class Presenter {
     }
 
     /**
+     * Extracts one value for scoreName from each report cycle of each report.
+     * Intended for plots over time.
+     * @param scoreName
+     * @param reports 
+     */
+    private void parseReportArray(ArrayList<String> scoreNames, ArrayList<Object> report)
+    {       
+        ArrayList<Object> plotArray ;
+        
+        for (String scoreName : scoreNames)
+        {
+            plotArray = new ArrayList<Object>() ;
+            
+            // Add value to plotArray for scoreData
+            for (Object record : report)
+            {
+                String value = Reporter.extractValue(scoreName,String.valueOf(record)) ;
+                plotArray.add(value) ;
+            }
+            scoreData.add((ArrayList<Object>) plotArray.clone()) ;
+        }
+    }
+
+    /**
      * private class to specifically handle JFreeChart functions such as
      * handling Datasets and plotting charts.
      */
@@ -498,6 +573,25 @@ public class Presenter {
             plotBarChart(chartTitle, dataset, yLabel, xLabel) ;
         }
         
+        
+        private void callStackedPlotChart(String chartTitle, ArrayList<Object> categoryArray, ArrayList<ArrayList<Number>> scoreArray, String[] scoreNames, String xLabel)
+        {
+            //LOGGER.info("callPlotChartInteger()") ;
+            CategoryDataset dataset = createDataset(scoreNames, categoryArray, scoreArray) ;
+            plotStackedBarChart(chartTitle, dataset, scoreNames, xLabel) ;
+        }
+        
+        
+        
+        /**
+         * Redundant version of callPlotChart allowing for scoreArray to be integer instead of Object.
+         * TODO: Refactor and remove, replace with callPlotChart() 
+         * @param chartTitle
+         * @param categoryArray
+         * @param scoreArray
+         * @param yLabel
+         * @param xLabel 
+         */
         private void callPlotChartInteger(String chartTitle, ArrayList<Object> categoryArray, ArrayList<Number> scoreArray, String yLabel, String xLabel)
         {
             //LOGGER.info("callPlotChartInteger()") ;
@@ -524,6 +618,26 @@ public class Presenter {
             
         }
         
+        private void plotStackedBarChart(String chartTitle, CategoryDataset dataset, String[] scoreNames , String xLabel)
+        {
+            //LOGGER.info("plotBarChart()");
+            JFreeChart barChart = ChartFactory.createStackedBarChart(chartTitle,xLabel,
+                scoreNames[0],dataset,PlotOrientation.VERTICAL,true, true, false);
+            
+            GroupedStackedBarRenderer renderer = new GroupedStackedBarRenderer();
+            KeyToGroupMap map = new KeyToGroupMap("G1");
+            for (String name : scoreNames)
+                map.mapKeyToGroup(name, "G1");
+            renderer.setSeriesToGroupMap(map); 
+            CategoryPlot plot = (CategoryPlot) barChart.getPlot();
+            plot.setRenderer(renderer);
+            //plot.setFixedLegendItems(createLegendItems());
+        
+            saveChart(barChart,chartTitle) ;
+            displayChart(barChart) ;
+            
+        }
+        
         private void plotScatterPlot(String chartTitle, XYDataset dataset, String yLabel, String xLabel)
         {
             JFreeChart scatterPlot = ChartFactory.createScatterPlot(chartTitle, xLabel, yLabel, dataset, PlotOrientation.VERTICAL,true,true,false) ;
@@ -545,7 +659,6 @@ public class Presenter {
          */
         private void plotLineChart(String chartTitle, XYDataset dataset, String yLabel, String xLabel, String[] legend)
         {
-            //LOGGER.info("plotLineChart()") ;
             boolean showLegend = !(legend[0].isEmpty()) ;
             JFreeChart lineChart = ChartFactory.createXYLineChart(applicationTitle,xLabel,
                 yLabel,dataset,PlotOrientation.VERTICAL,showLegend, true, false);
@@ -574,12 +687,13 @@ public class Presenter {
             setContentPane( chartPanel ); 
             pack() ;
             setVisible(true) ;
+            LOGGER.info(System.getProperty("os.name")) ;
         }
         
         private void saveChart(JFreeChart barChart, String title)
         {
-            String directory = Community.FILE_PATH ;
-            String address = Community.FILE_PATH + title + Community.NAME_ROOT + ".jpg" ;
+            String directory = "../" + Community.FILE_PATH ;
+            String address = directory + title + Community.NAME_ROOT + ".jpg" ;
             //int width = 2560 ;
             int width = 1280 ;
             //int width = 640 ;
@@ -646,6 +760,30 @@ public class Presenter {
             return categoryDataset ;
         }
         
+        private CategoryDataset createDataset(String[] scoreNames, ArrayList<Object> categoryData, ArrayList<ArrayList<Number>> scoreData)
+        {
+            DefaultCategoryDataset categoryDataset = new DefaultCategoryDataset() ;
+            // ArrayList<String> categoryData = data.get(0) ;
+            // ArrayList<String> scoreData = data.get(1) ;
+            
+            String categoryValue ;
+            ArrayList<Number> scoreValueArray ;
+            //Number scoreValue ;
+            
+            for (int index = 0 ; index < scoreData.size() ; index++ )
+            {
+                categoryValue = String.valueOf(categoryData.get(index)) ;
+                scoreValueArray = scoreData.get(index) ;
+                for (int scoreIndex = 0 ; scoreIndex < scoreValueArray.size() ; scoreIndex++ )
+                {
+                    Number scoreValue = scoreValueArray.get(scoreIndex) ;
+                    String scoreName = scoreNames[scoreIndex] ;
+                    categoryDataset.addValue( scoreValue, scoreName, categoryValue ) ;
+                }
+            }
+            return categoryDataset ;
+        }
+        
         /**
          * Generate Dataset from scoreData.
          * Intended for plots over time/cycles
@@ -657,7 +795,6 @@ public class Presenter {
             XYSeriesCollection xySeriesCollection = new XYSeriesCollection() ;
             // ArrayList<String> categoryData = data.get(0) ;
             // ArrayList<String> scoreData = data.get(1) ;
-            
             Number scoreValue ;
             int dataSize ;
             ArrayList<Object> data ;
