@@ -8,6 +8,7 @@ package reporter.presenter;
 
 import java.util.ArrayList ;
 
+import community.Community ;
 import reporter.ScreeningReporter ;
 
 /**
@@ -38,6 +39,14 @@ public class ScreeningPresenter extends Presenter {
         super(applicationTitle,chartTitle,reporter) ;
         setReporter(reporter) ;
     }
+    
+    public ScreeningPresenter(String simName, String chartTitle, String reportFilePath)
+    {
+        super(simName,chartTitle) ;
+        setReporter(new ScreeningReporter(simName,reportFilePath)) ;
+    }
+    
+    
     
     /**
      * Overrides super.setReporter() because reporter is now PopulationReporter
@@ -237,5 +246,34 @@ public class ScreeningPresenter extends Presenter {
 //            boolean plotPharynxSymptomPrevalence, boolean plotIncidence, boolean plotRectumIncidence, boolean plotUrethraIncidents, 
 //            boolean plotPharynxIncidents)
 
+    /**
+     * Plots prevalence from different saved simulations on same axes.
+     * @param simNames 
+     */
+    public void coplotPrevalence(String[] simNames)
+    {
+        ArrayList<ArrayList<Object>> prevalenceReportList = new ArrayList<ArrayList<Object>>() ;
+        ArrayList<String> coplotNames = new ArrayList<String>() ;
+        ArrayList<String> legend = new ArrayList<String>() ;
+        String legendEntry ;
+        
+        // Include this Reporter
+        prevalenceReportList.add(reporter.preparePrevalenceReport()) ;
+        coplotNames.add(reporter.getSimName()) ;
+        
+        for (String simName : simNames)
+        {
+            ScreeningReporter screeningReporter = new ScreeningReporter(simName,Community.FILE_PATH) ;
+            prevalenceReportList.add(screeningReporter.preparePrevalenceReport()) ;
+            coplotNames.add("prevalence") ;
+            legend.add(simName) ;
+        }
+        //LOGGER.log(Level.INFO, "{0}", prevalenceReport);
+        String[] legendArray =  new String[legend.size()] ;
+        for (int i = 0 ; i < legendArray.length ; i++ )
+            legendArray[i] = legend.get(i) ;
+        multiPlotCycleValue(coplotNames, prevalenceReportList, legendArray) ;
+    
+    }
     
 }
