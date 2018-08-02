@@ -119,23 +119,23 @@ abstract public class MSM extends Agent {
     private boolean prepStatus ;
 	
     /** Transmission probabilities per sexual contact from Urethra to Rectum */
-    static double URETHRA_TO_RECTUM = 0.65 ;    // 0.84 ;    // 0.8 ;
+    static double URETHRA_TO_RECTUM = 0.99 ;    // 0.84 ;    // 0.8 ;
     /** Transmission probabilities sexual contact from Urethra to Pharynx. */
-    static double URETHRA_TO_PHARYNX = 0.45 ; // 0.63 ;    // 0.7 ;
+    static double URETHRA_TO_PHARYNX = 0.5 ; // 0.63 ;    // 0.7 ;
     /** Transmission probabilities sexual contact from Rectum to Urethra. */ 
-    static double RECTUM_TO_URETHRA = 0.01 ; // 0.023 ;    // 0.3 ;
+    static double RECTUM_TO_URETHRA = 0.035 ; // 0.023 ;    // 0.3 ;
     /** Transmission probabilities sexual contact from Rectum to Pharynx. */
-    static double RECTUM_TO_PHARYNX = 0.03 ;    // 0.1 ;
+    static double RECTUM_TO_PHARYNX = 0.01 ;    // 0.1 ;
     /** Transmission probabilities sexual contact in Pharynx to Urethra intercourse. */
-    static double PHARYNX_TO_URETHRA = 0.07 ; // 0.086 ;    // 0.2 ;
+    static double PHARYNX_TO_URETHRA = 0.03 ; // 0.086 ;    // 0.2 ;
     /** Transmission probabilities sexual contact in Pharynx to Rectum intercourse. */
-    static double PHARYNX_TO_RECTUM = 0.03 ;    // 0.2 ;
+    static double PHARYNX_TO_RECTUM = 0.06 ;    // 0.2 ;
     /** Transmission probabilities sexual contact in Pharynx to Pharynx intercourse (kissing). */
-    static double PHARYNX_TO_PHARYNX = 0.02 ;
+    static double PHARYNX_TO_PHARYNX = 0.04 ;
     /** Transmission probabilities sexual contact in Urethra to Urethra intercourse (docking). */
     static double URETHRA_TO_URETHRA = 0.01 ;
     /** Transmission probabilities sexual contact in Rectum to Rectum intercourse. */
-    static double RECTUM_TO_RECTUM = 0.001 ;
+    static double RECTUM_TO_RECTUM = 0.004 ;
     
     /** The probability of screening in a given cycle with statusHIV true. */
     static double SCREEN_PROBABILITY_HIV_POSITIVE = 0.0029 ;
@@ -290,7 +290,7 @@ abstract public class MSM extends Agent {
     final void initStatus(int startAge)
     {
         //requireDiscloseStatusHIV = (rand.nextDouble() < probabilityRequireDiscloseHIV) ;
-        statusHIV = (RAND.nextDouble() < getProbabilityHIV()) ;
+        statusHIV = (RAND.nextDouble() < getProportionHIV()) ;
 
         // Sets antiViral status, ensuring it is true only if statusHIV is true
         setAntiViralStatus(RAND.nextDouble() < getAntiviralProbability()) ;
@@ -324,7 +324,9 @@ abstract public class MSM extends Agent {
         }
         else    // Cannot seroSort or SeroPosition without disclosing statusHIV
         {
-            seroSort = false ;
+            seroSortCasual = false ;
+            seroSortRegular = false ;
+            seroSortMonogomous = false ;
             seroPosition = false ;
         }
     }
@@ -366,8 +368,12 @@ abstract public class MSM extends Agent {
     public String getCensusReport()
     {
         String censusReport = super.getCensusReport() ;
-        censusReport += "prepStatus:" + String.valueOf(prepStatus) + " ";  // Reporter.addReportProperty("prepStatus", prepStatus) ;
-        censusReport += "statusHIV:" + String.valueOf(statusHIV) + " " ;  // Reporter.addReportProperty("statusHIV", statusHIV) ;
+        censusReport += Reporter.addReportProperty("prepStatus", prepStatus) ;
+        censusReport += Reporter.addReportProperty("statusHIV", statusHIV) ;
+        censusReport += Reporter.addReportProperty("seroSortCasual", seroSortCasual) ;
+        censusReport += Reporter.addReportProperty("seroSortRegular", seroSortRegular) ;
+        censusReport += Reporter.addReportProperty("seroSortMonogomous", seroSortMonogomous) ;
+        censusReport += Reporter.addReportProperty("seroPosition", seroPosition) ;
         return censusReport ;
     }
     /**
@@ -389,15 +395,12 @@ abstract public class MSM extends Agent {
     protected Site chooseSite()
 	{
             int index = RAND.nextInt(3) ;
-            switch (index) 
-            { 
-                case 0:
-                    return rectum ;
-                case 1: 
-                    return urethra ;
-                default: 
-                    return pharynx ;
-            }
+            if (index < 1)
+                return rectum ;
+            if (index < 2)
+                return urethra ;
+            else 
+                return pharynx ;
 	}
 	
     @Override
@@ -405,9 +408,18 @@ abstract public class MSM extends Agent {
     {
         if (site.getSite().equals(RECTUM))
         {
-            int index = RAND.nextInt(2) ;
-            if (index == 0) return urethra ;
+            int index = RAND.nextInt(4) ;
+            if (index < 3) return urethra ;
             else return pharynx ;
+        }
+        else if (site.getSite().equals(PHARYNX))
+        {
+            int index = RAND.nextInt(5) ;
+            if (index < 2)
+                return pharynx ;
+            if (index < 4) 
+                return urethra ;
+            return rectum ;
         }
         else
         {
@@ -419,8 +431,8 @@ abstract public class MSM extends Agent {
 
     protected Site chooseNotRectumSite() 
     {
-        int index = RAND.nextInt(2) ;
-        if (index == 0)
+        int index = RAND.nextInt(4) ;
+        if (index < 3)
             return urethra ;
         return pharynx ;
     }
@@ -434,8 +446,8 @@ abstract public class MSM extends Agent {
 
     protected Site chooseNotUrethraSite() 
     {
-        int index = RAND.nextInt(2) ;
-        if (index == 0)
+        int index = RAND.nextInt(4) ;
+        if (index > 0)
             return rectum ;
         return pharynx ;
     }
@@ -648,7 +660,7 @@ abstract public class MSM extends Agent {
     @Override
     abstract int getMaxRelationships();
     
-    abstract double getProbabilityHIV() ;
+    abstract double getProportionHIV();
     
     final private double getAntiviralProbability()
     {
@@ -700,8 +712,8 @@ abstract public class MSM extends Agent {
     /**
      * Decides probabilistically whether MSM chooses to use a condom in a given encounter.
      * Choice is based on type of Relationship and properties of msm
+     * @param relationshipClazzName
      * @param msm
-     * @param relationshipName
      * @return true if condom is to be used, false otherwise
      */
     @Override
@@ -732,7 +744,7 @@ abstract public class MSM extends Agent {
      * @return (double) the probability of MSM joining an orgy when invited
      */
     @Override
-    abstract public double getJoinOrgyProbability();
+    abstract public double getJoinGroupSexEventProbability();
     
     /**
      * Probability of MSM screening on that day. Depends on prepStatus and statusHIV.
