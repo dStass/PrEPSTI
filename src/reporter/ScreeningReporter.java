@@ -22,6 +22,10 @@ public class ScreeningReporter extends Reporter {
     static String INFECTED = "infected" ;
     static String SYMPTOMATIC = "symptomatic" ;
     
+    public ScreeningReporter()
+    {
+        
+    }
     
     public ScreeningReporter(String simname, ArrayList<String> report) {
         super(simname, report);
