@@ -29,7 +29,7 @@ public class SafeMSM extends MSM{
     private double probabilityUseCondom = RAND.nextDouble() ;
     
     /** Probability of joining an orgy if invited. */
-    static double JOIN_ORGY_PROBABILITY = 0.0 ;
+    static double JOIN_GSE_PROBABILITY = 0.0 ;
     
     public SafeMSM(int startAge){
         super(startAge) ;
@@ -46,7 +46,7 @@ public class SafeMSM extends MSM{
     }
     
     /** Fraction of SafeMSM with positive HIV status. */
-    protected double getProbabilityHIV()
+    protected double getProportionHIV()
     { 
         return PROBABILITY_HIV ;
     }
@@ -93,9 +93,9 @@ public class SafeMSM extends MSM{
      * @return (double) the probability of MSM joining an orgy when invited
      */
     @Override
-    public double getJoinOrgyProbability()
+    public double getJoinGroupSexEventProbability()
     {
-        return JOIN_ORGY_PROBABILITY ;
+        return JOIN_GSE_PROBABILITY ;
     }
     
     
