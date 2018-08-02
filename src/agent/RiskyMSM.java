@@ -17,7 +17,7 @@ public class RiskyMSM extends MSM
     //static double probabilityRequireDiscloseHIV = 0.5 ;
     
     // The probability of positive HIV status
-    static double PROBABILITY_HIV = 0.12 ;
+    static double PROPORTION_HIV = 0.12 ;
     
     // The probability of disclosing HIV status if HIV positive
     static double PROBABILITY_DISCLOSE_POSITIVE_HIV = 0.40 ;
@@ -49,10 +49,14 @@ public class RiskyMSM extends MSM
         return MAX_RELATIONSHIPS ;
     }
     
-    
-    protected double getProbabilityHIV()
+    /**
+     *
+     * @return (double) The proportion of RiskyMSM who are HIV positive.
+     */
+    @Override
+    protected double getProportionHIV()
     { 
-        return PROBABILITY_HIV ;
+        return PROPORTION_HIV ;
     }
     
     /**
@@ -77,11 +81,14 @@ public class RiskyMSM extends MSM
     {
         String partnerDisclosure = partner.declareStatus() ;
         Boolean partnerSeroPosition = ((MSM) partner).getSeroPosition() ;
+        
+        if (getPrepStatus())
+            return false ;
         if (getSeroSort(relationshipClazzName))    // might use condom when serodiscordance or nondisclosure
         {
             if (!(getStatusHIV() == Boolean.getBoolean(partnerDisclosure))) 
                 return (RAND.nextDouble() < probabilityUseCondom ) ;
-            else if (!getPrepStatus() || !((MSM)partner).getPrepStatus())
+            else if (!((MSM)partner).getPrepStatus()) // !getPrepStatus() || 
                 return (RAND.nextDouble() < probabilityUseCondom ) ;
         }
         if (getSeroPosition())
@@ -95,7 +102,7 @@ public class RiskyMSM extends MSM
      * @return (double) the probability of MSM joining an orgy when invited
      */
     @Override
-    public double getJoinOrgyProbability()
+    public double getJoinGroupSexEventProbability()
     {
         return JOIN_ORGY_PROBABILITY ;
     }
