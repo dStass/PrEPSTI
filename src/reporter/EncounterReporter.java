@@ -35,24 +35,6 @@ public class EncounterReporter extends Reporter {
     {        
         super(simName + "encounter", reportFilePath) ;
     }
-    // Was hiding field in Reporter. May yet delete there
-    //ArrayList<String> input ;
-		
-    // Was hiding field in Reporter. May yet delete there
-    // Output report
-    //ArrayList<?> output ;
-
-            // File paths
-            private String logFilePath ;
-            private String errorFilePath ;
-            private String outputFilePath ;
-
-            private String globalFolder ;
-
-            // File objects
-            File logFile ;
-            File errorFile ;
-            File outputFile ;
 
         // Logger
         //java.util.logging.Logger logger = java.util.logging.Logger.getLogger("reporter") ;
@@ -76,7 +58,7 @@ public class EncounterReporter extends Reporter {
             for (String record : input)
             {
                 partnersReport = new ArrayList<HashMap<Object,ArrayList<Object>>>() ;
-                pairArray = reportAgentIdPairs(record) ;
+                pairArray = recordAgentIdPairs(record) ;
                 partnersReport.add(agentPartners(pairArray)) ;
             }
                 nextInput = updateReport() ;
@@ -204,6 +186,136 @@ public class EncounterReporter extends Reporter {
     }
     
     /**
+     * TODO: Implement complete census of Agents.
+     * @param census
+     * @return (ArrayList) Report on combinations of combinations of condom use
+     * with either seroSorting or seroPositioning.
+     */
+    public ArrayList<Object> prepareProtectionReport(ArrayList<String> census)
+    {
+        ArrayList<Object> protectionReport = new ArrayList<Object>() ;
+        String protectionRecord ;
+        
+        
+        int condomOnly ;
+        int onlySeroSort ;
+        int onlySeroPosition ;
+        int condomSeroSort ;
+        int condomSeroPosition ;
+        int unprotected ;
+        int total = 0 ;
+        boolean finished = false ;
+        
+        ArrayList<String> encounters ;
+        ArrayList<String> contacts ;
+        String[] agentIds = new String[2] ;
+        
+        boolean seroSort ;
+        boolean seroPosition ;
+        boolean condom ;
+        
+        // Make census easy to access.
+        HashMap<String,String> agentProperties = new HashMap<String,String>() ;
+        String agentKey ;
+        String agentValue ;
+        for (String record : census)
+        {
+            int agentIndex = 0 ;
+            while (agentIndex >= 0)
+            {
+                agentValue = extractBoundedString(AGENTID,record,agentIndex) ;
+                agentKey = extractValue(AGENTID,agentValue) ;
+                agentProperties.put(agentKey, agentValue) ;
+                agentIndex = record.indexOf(AGENTID,agentIndex + 1) ;
+            }
+        }
+        LOGGER.log(Level.INFO, "{0}", census);
+        boolean nextInput = true ; 
+        // Check each input file
+        while (nextInput)
+        {
+            // Check each record.
+            for (String record : input)
+            {
+                //LOGGER.info(record) ;
+                condomOnly = 0 ;
+                onlySeroSort = 0 ;
+                onlySeroPosition = 0 ;
+                condomSeroSort = 0 ;
+                condomSeroPosition = 0 ;
+                unprotected = 0 ;
+                total = 0 ;
+
+                // get Agent properties for each encounter 
+                encounters = extractArrayList(record,AGENTID0) ;
+                for (String encounter : encounters)
+                {
+                    seroPosition = false ;
+                    seroSort = false ;
+                    agentIds = extractAgentIds(encounter,0) ;
+                    finished = !(agentProperties.containsKey(agentIds[0]) && agentProperties.containsKey(agentIds[1])) ;
+                    for (String agentId : agentIds)
+                    {
+                        if (!(agentProperties.containsKey(agentId)))
+                            LOGGER.info("Missing agentId " + agentId); 
+                    
+                        if (false && extractValue("seroSort",agentProperties.get(agentId)).equals(TRUE))
+                        {
+                            seroSort = true ;
+                            break ;
+                        }
+                        else if (extractValue("seroPosition",agentProperties.get(agentId)).equals(TRUE))
+                        {
+                            seroPosition = true ;
+                            break ;
+                        }
+                    }
+
+                    // Get condom use for each Urethral contact and combine outcomes.
+                    contacts = extractArrayList(encounter,CONTACT) ;
+                    for (String contact : contacts)
+                    {
+                        if (contact.indexOf("condom") < 0)
+                            continue ;
+                        total++ ;
+                        condom = TRUE.equals(extractValue("condom",contact)) ;
+                        if (condom)
+                        {
+                            if (seroSort)
+                                condomSeroSort++ ;
+                            else if (seroPosition)
+                                condomSeroPosition++ ;
+                            else    // neither seroPosition nor seroSort
+                                condomOnly++ ;
+                        }
+                        else 
+                        {
+                            if (seroSort)
+                                onlySeroSort++ ;
+                            else if (seroPosition)
+                                onlySeroPosition++ ;
+                            else
+                                unprotected++ ;
+                        }
+                    } // contacts
+                }  // encounters
+                //if (finished) 
+                  //  break ;
+                protectionRecord = Reporter.addReportProperty("condomOnly",((double) condomOnly)/total) ;   
+                protectionRecord += Reporter.addReportProperty("onlySeroPosition",((double) onlySeroPosition)/total) ;
+                protectionRecord += Reporter.addReportProperty("onlySeroSort",((double) onlySeroSort)/total) ;
+                protectionRecord += Reporter.addReportProperty("condomSeroPosition",((double) condomSeroPosition)/total) ;
+                protectionRecord += Reporter.addReportProperty("condomSeroSort",((double) condomSeroSort)/total) ;
+                protectionRecord += Reporter.addReportProperty("unprotected",((double) unprotected)/total) ;
+                protectionReport.add(protectionRecord) ;
+            }    // report
+            nextInput = updateReport() ;
+        }
+        LOGGER.log(Level.INFO, "{0}", protectionReport);
+        return protectionReport ;    
+    }
+        
+    /**
      * TODO: Replace ArrayList with set.
      * @return (HashMap) key is the transmitting agentId and entries are receiving agentIds
      */
@@ -327,7 +439,7 @@ public class EncounterReporter extends Reporter {
         HashMap<Object,HashMap<Object,ArrayList<Object>>> agentToAgentReport 
                 = prepareAgentToAgentReport() ;
         
-        HashMap<Object,ArrayList<Object>> agentToAgentRecord = new HashMap<Object,ArrayList<Object>>() ;
+        HashMap<Object,ArrayList<Object>> agentToAgentRecord ; 
         
         for (Object agentId : agentToAgentReport.keySet())
         {
@@ -457,7 +569,7 @@ public class EncounterReporter extends Reporter {
      * @param report
      * @return ArrayList of String doublets
      */
-    private ArrayList<String[]> reportAgentIdPairs(String record)
+    private ArrayList<String[]> recordAgentIdPairs(String record)
     {
         ArrayList<String[]> agentIdPairs = new ArrayList<String[]>() ;
         for (int startIndex = 0 ; startIndex != -1; startIndex = indexOfProperty("agentId0", startIndex + 1, record))
@@ -599,19 +711,5 @@ public class EncounterReporter extends Reporter {
         return extractBoundedString("agentId0", string, indexStart) ;
     }
 
-    /**
-     * 
-     * @param report
-     * @param startIndex
-     * @return String[] pairs of agentIds corresponding to relationships described in report
-     */
-    private String[] extractAgentIds(String report, int startIndex)
-    {
-            String agentId0 = extractValue("agentId0", report, startIndex) ;
-
-            startIndex = indexOfProperty("agentId1", startIndex, report) ;
-            String agentId1 = extractValue("agentId1", report, startIndex) ;
-            return new String[] {agentId0,agentId1} ;
-    }
-
+    
 }
