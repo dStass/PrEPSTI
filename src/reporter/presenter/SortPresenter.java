@@ -27,42 +27,13 @@ public class SortPresenter extends Presenter {
     
     public static void main(String[] args) // "test1","encounter","population","fileName","test1","plotReceiveSortPrepStatusReport","false"
     {
-        LOGGER.info(args[0]);
-        String simName = args[0] ;
-        LOGGER.info(args[1]);
-        String unsortedName = "reporter." + args[1] + "Reporter" ;
-        LOGGER.info(args[2]);
-        String sortingName = "reporter." + args[2] + "Reporter" ;
-        LOGGER.info(args[3]);
-        String reportFileName = args[3] ;
-        LOGGER.info(args[4]);
-        String chartTitle = args[4] ;
-        String methodName = args[5] ;
-        
-        try
-        {
-        Class unsortedClazz = Class.forName(unsortedName) ; // .asSubclass(Reporter.class) ;
-        Class sortingClazz = Class.forName(sortingName) ;
-        Class[] argClazzArray = new Class[] {String.class,String.class} ;
-        LOGGER.info("Construct Reporters");
-        Reporter unsortedReporter = (Reporter) unsortedClazz.getDeclaredConstructor(argClazzArray).newInstance(simName,reportFileName) ;
-        Reporter sortingReporter =  (Reporter) sortingClazz.getDeclaredConstructor(argClazzArray).newInstance(simName,reportFileName) ;
-        LOGGER.info("sorters");
-        SortReporter sortReporter = new SortReporter(simName,unsortedReporter,sortingReporter) ;
-        SortPresenter sortPresenter = new SortPresenter(simName,chartTitle,sortReporter) ;
-        LOGGER.info("declare method");
-        Method method = sortPresenter.getClass().getMethod(methodName,String.class) ;
-        
-        if (args.length > 6)
-            method.invoke(sortPresenter, (Object[]) Arrays.copyOfRange(args,6,args.length)) ;
-        else
-            method.invoke(sortPresenter) ;
-        }
-        catch ( Exception e )
-        {
-            LOGGER.log(Level.SEVERE, "{0} {1}", new Object[] {e.toString(),e.getLocalizedMessage()});
-        }
-        
+        String simName = "NoPrepCalibration61Pop40000Cycles7000" ; // args[0] ;
+        String chartTitle = "relationships_in_past_ten_years" ; // args[1] ;
+        String reportFileName = "../output/test/" ; // args[2] ;
+        SortPresenter sortPresenter = new SortPresenter(simName,chartTitle,reportFileName,"infection","relationship") ;
+        //encounterPresenter.plotCondomUse();
+        sortPresenter.plotSortPrevalence(10,5) ;
+
     }
     
     public SortPresenter()
@@ -75,14 +46,12 @@ public class SortPresenter extends Presenter {
         super(applicationTitle, chartTitle);
     }
     
-    // TODO: Implement this, to construct SortPresenter from saved .txt file.
-    /*public SortPresenter(String simName, String chartTitle, String reportFilePath)
+    public SortPresenter(String simName, String chartTitle, String fileName, String unsortedName, String sortingName)
     {
-        super(simName,chartTitle,reportFilePath) ;
+        super(simName,chartTitle) ;
         applicationTitle = simName ;
-        setReporter(new SortReporter(simName,reportFilePath)) ;
+        setReporter(new SortReporter(simName,fileName,unsortedName,sortingName)) ;
     }
-    */
     
     public SortPresenter(String applicationTitle, String chartTitle, SortReporter reporter)
     {
@@ -126,27 +95,51 @@ public class SortPresenter extends Presenter {
      */
     public void plotSortPrevalence(int partnerCount, int backYear)
     {
-        HashMap<Object,Number> prevalenceSortCount = new HashMap<Object,Number>() ;
+        HashMap<Object,Number[]> prevalenceSortCount = new HashMap<Object,Number[]>() ;
         
-        ArrayList<Object> prevalenceSortReport ;
+        ArrayList<String> prevalenceSortReport = new ArrayList<String>() ;
+        String prevalenceSortReportEntry ; // = new ArrayList<Object>() ;
+        ArrayList<Double> prevalences = new ArrayList<Double>() ;
+        ArrayList<Integer> populations = new ArrayList<Integer>() ;
+        double populationRatio ; 
+        //int population ;
+                
         String prevalenceSortRecord ;
-        Number prevalence ;
-        for (int nbPartner = 1 ; nbPartner <= partnerCount ; nbPartner++ )
+        double prevalence ;
+        int totalPopulation = 0 ;
+        
+        String[] scoreNames = new String[] {"prevalence","nonprevalence"} ;
+        
+        prevalenceSortReport = reporter.prepareSortPrevalenceReport(partnerCount, backYear) ;
+        for (int partnerIndex = 0 ; partnerIndex <= partnerCount ; partnerIndex++ )
         {
-            LOGGER.info("nbPartner:" + String.valueOf(nbPartner));
-            prevalenceSortReport = reporter.prepareSortPrevalenceReport(nbPartner, backYear) ;
-            if (prevalenceSortReport.size() > 0)
+            prevalenceSortReportEntry = prevalenceSortReport.get(partnerIndex) ;
+            if (!prevalenceSortReportEntry.isEmpty())
             {
-                prevalenceSortRecord = String.valueOf(prevalenceSortReport.get((prevalenceSortReport.size()-1))) ;
-                prevalence = (Number) Double.valueOf(Reporter.extractValue("prevalence", prevalenceSortRecord)) ;
+                prevalences.add(Double.valueOf(Reporter.extractValue("prevalence", prevalenceSortReportEntry))) ;
+                int population = Integer.valueOf(Reporter.extractValue("population", prevalenceSortReportEntry));
+                populations.add(population) ;
             }
             else 
                 break ;
-            prevalenceSortCount.put(nbPartner, prevalence) ;
-            LOGGER.info(prevalenceSortRecord);
         }
         
-        plotHashMapNumber("nbPartners","prevalence", prevalenceSortCount) ;
+        totalPopulation = populations.get(0) ;
+                
+        // Normalise entries according to proportion of population with given number of previous partners
+        // All agents with two or more new partners also had one or more, so we normalise by this figure.
+        // Adjust number of loops according to when/whether previous loop executed break.
+        for (int nbPartner = 1 ; nbPartner < populations.size() ; nbPartner++ )
+        {
+            int index = nbPartner - 1 ;
+            // Normalise by this.
+            populationRatio = ((double) populations.get(index))/totalPopulation ;
+            
+            prevalence = prevalences.get(index) ;
+            prevalence = prevalence * populationRatio ;
+            prevalenceSortCount.put(nbPartner, new Number[] {prevalence, populationRatio - prevalence}) ;
+        }
+        plotHashMapNumber("nbPartners",scoreNames, prevalenceSortCount) ;
     }
     
     /**
