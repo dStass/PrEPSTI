@@ -22,12 +22,8 @@ import org.jfree.chart.* ;
  */
 public class Reporter {
 
-    // ArrayList<String> report properties
-    //ArrayList<String> generateReports ;
-    //ArrayList<String> encounterReports ;
-    //ArrayList<String> clearReports ;
-    //ArrayList<String> screenReports ;
-    
+    /** Name of simulation. */
+    protected String simName ;    
     /** Input report. */ 
     protected ArrayList<String> input ;
 
@@ -445,6 +441,21 @@ public class Reporter {
             return extractValue(propertyName, string, startIndex) ;
         return NONE ;
     }
+
+    /**
+     * 
+     * @param record
+     * @param startIndex
+     * @return String[] pairs of agentIds corresponding to relationships described in record
+     */
+    protected String[] extractAgentIds(String record, int startIndex)
+    {
+            String agentId0 = extractValue("agentId0", record, startIndex) ;
+
+            startIndex = indexOfProperty("agentId1", startIndex, record) ;
+            String agentId1 = extractValue("agentId1", record, startIndex) ;
+            return new String[] {agentId0,agentId1} ;
+    }
     
     /**
      * 
@@ -561,6 +572,7 @@ public class Reporter {
      * @param key - usually agentId but need not be.
      * @param entry - int to go into int[] at key. 
      * @param valueMap - Adding boundValue and sometimes key to this HashMap
+     * @param allowDuplicates
      * @return partnerMap - HashMap indicating partnerIds of each agent (key: agentId)
      */
     protected static HashMap<Object,ArrayList<Object>> updateHashMap(Object key, Object entry, HashMap<Object,ArrayList<Object>> valueMap, boolean allowDuplicates)
@@ -626,10 +638,10 @@ public class Reporter {
     }*/
     
     /**
-     * Puts entries in HashMap<Integer,HashMap<Integer,ArrayList<Integer>>>, 
+     * Puts entries in HashMap\<Integer,HashMap\<Integer,ArrayList\<Integer\>\>\>, 
      * creating keys in either HashMap when necessary and simply updating otherwise.
-     * @param keyString
-     * @param entryString
+     * @param key
+     * @param key2
      * @param cycle
      * @param valueMap
      * @return 
@@ -870,29 +882,96 @@ public class Reporter {
     /**
      * Stores an ArrayList (String) report as a csv file for other packages to read.
      * @param report 
+     * @param reportName 
      */
-    static public void writeCSV(ArrayList<String> report)
+    static public void writeCSV(ArrayList<Object> report, String reportName)
     {
         String folderPath = Community.FILE_PATH ;
         String fileName = Community.NAME_ROOT ;
-        String filePath = folderPath + fileName + ".csv" ;
+        String filePath = folderPath + fileName + reportName + ".csv" ;
         String line ;
-        ArrayList<String> properties = identifyProperties(report.get(0)) ;
-        String fileHeader = properties.get(0) ;
-        for (int index = 1 ; index < properties.size() ; index++ )
-            fileHeader += "," + properties.get(index) ;
+        Class valueClass ;
+        ArrayList<String> properties = new ArrayList<String>() ;
+        String fileHeader = "" ;
+        
+        Object firstRecord = report.get(0) ;
+        if (String.class.isInstance(firstRecord))
+        {
+            valueClass = String.class ;
+            properties = identifyProperties(((String) report.get(0))) ;
+            for (int index = 1 ; index < properties.size() ; index++ )
+                fileHeader += "," + properties.get(index) ;
+        }
+        else
+        {
+            valueClass = ArrayList.class ;
+            for (int index = 1 ; index < ((ArrayList<Object>) firstRecord).size() ; index++ )
+                firstRecord += "object_" + String.valueOf(index) + "," ;
+        }
+        fileHeader = fileHeader.substring(1) ;
+        
         try
         {
             BufferedWriter fileWriter = new BufferedWriter(new FileWriter(filePath,false));
             fileWriter.write(fileHeader) ;
             fileWriter.newLine();
-            for (String record : report)
+            for (Object record : report)
             {
                 line = "" ;
-                for (String property : properties)
-                    line += "," + extractValue(property,record) ;
+                if (String.class.equals(valueClass))
+                    for (String property : properties)
+                        line += "," + extractValue(property,(String) record) ;
+                else // valueClass == ArrayList
+                    for  (Object property : (ArrayList) record)
+                        line += "," + String.valueOf(property) ;
                 line = line.substring(1) ;
                 fileWriter.write(line) ;
+                fileWriter.newLine() ;
+            }
+            fileWriter.close() ;
+        }
+        catch( Exception e )
+        {
+            LOGGER.info(e.toString()) ;
+        }
+    }
+    
+    /**
+     * Stores a (HashMap of ArrayList or Object) report as a csv file for other packages to read.
+     * @param report 
+     * @param reportName 
+     */
+    static public void writeCSV(HashMap<Object,Object> report, String reportName)
+    {
+        String folderPath = Community.FILE_PATH ;
+        String fileName = Community.NAME_ROOT ;
+        String filePath = folderPath + fileName + reportName + ".csv" ;
+        String line ;
+        Object value ;
+        boolean arrayListValue ;
+        int nbProperties = 0 ;
+        //Determine if report values are ArrayList<Object>
+        Object firstRecord = report.values().iterator().next() ;
+        arrayListValue = (ArrayList.class.isInstance(firstRecord)) ;
+        if (arrayListValue)
+            nbProperties = ((ArrayList<Object>) firstRecord).size() ;
+        String fileHeader = "key" ;
+        for (int index = 1 ; index < nbProperties ; index++ )
+            fileHeader += "," + "object_" + String.valueOf(index) ;
+        try
+        {
+            BufferedWriter fileWriter = new BufferedWriter(new FileWriter(filePath,false));
+            fileWriter.write(fileHeader) ;
+            for (Object key : report.keySet())
+            {
+                value = report.get(key) ;
+                line = String.valueOf(key) ;
+                if (arrayListValue)
+                    for (Object item : (ArrayList<Object>) value)
+                        line += "," + String.valueOf(item) ;
+                else
+                    line += "," + String.valueOf(value) ;
+                fileWriter.write(line) ; 
                 fileWriter.newLine() ;
             }
             fileWriter.close() ;
@@ -942,6 +1021,7 @@ public class Reporter {
     public Reporter(String simname, ArrayList<String> report)
     {
         input = report ;
+        simName = simname ;
         //this.generateReports = generateReports ;
         //this.encounterReports = encounterReports ;
         //this.clearReports = clearReports ;
@@ -950,11 +1030,23 @@ public class Reporter {
     
     public Reporter(String simname, String fileName)
     {
-        //LOGGER.info(fileName) ;
-        reader = new Reader(simname,fileName) ;
-        input = reader.updateOutputArray() ;
+        initReporter(simname, fileName) ;
     }
 
+    /**
+     * Initialises Reporter from saved simulation files. Allows for easier
+     * construction using reflection.
+     * @param simname
+     * @param fileName 
+     */
+    protected final void initReporter(String simname, String fileName)
+    {
+        simName = simname ;
+        reader = new Reader(simname,fileName) ;
+        input = reader.updateOutputArray() ;
+    
+    }
+    
     /**
      * Loads the next Report file into input if there is another file to read.
      * @return true if update successful, false if all files have already been read.
@@ -972,6 +1064,42 @@ public class Reporter {
     }
     
     /**
+     * FIXME: only compatible with Reporter initiated from file.
+     * @return opening record of opening input file 
+     */
+    public String getInitialRecord()
+    {
+        String initialRecord = "" ;
+        try
+        {
+            initialRecord = reader.getInitialRecord() ;
+        }
+        catch( Exception e )
+        {
+            LOGGER.info(e.toString()) ;
+        }
+        return initialRecord ;
+    }
+    
+    /**
+     * FIXME: only compatible with Reporter initiated from file.
+     * @return final record of final input file 
+     */
+    public String getFinalRecord()
+    {
+        String finalRecord = "" ;
+        try
+        {
+            finalRecord = reader.getFinalRecord() ;
+        }
+        catch( Exception e )
+        {
+            LOGGER.info(e.toString()) ;
+        }
+        return finalRecord ;
+    }
+    
+    /**
      * 
      * @param reportNb
      * @return output[reportNb] or error String if not available
@@ -985,6 +1113,14 @@ public class Reporter {
         return message ;
     }
 
+    /**
+     * getter() for simName.
+     * @return (String) simName
+     */
+    public String getSimName()
+    {
+        return simName ;
+    }
 
     /**
      * Object to read saved File output and feed it to Reporter
@@ -1025,6 +1161,7 @@ public class Reporter {
                     outputArray.add(record) ;
                     record = fileReader.readLine() ;
                 }
+                fileReader.close() ;
             }
             catch ( Exception e )
             {
@@ -1061,7 +1198,7 @@ public class Reporter {
                 if (file.isFile()) 
                 {
                     String fileName = file.getName() ;
-                    if (fileName.contains(simName))
+                    if (fileName.startsWith(simName))
                         nameArray.add(fileName) ;
                 }
             //LOGGER.log(Level.INFO, "{0}", nameArray) ;
@@ -1071,26 +1208,40 @@ public class Reporter {
             return nameArray ;
         }
         
-    }
-    /*
-                outputCycle = 5 ;
-                globalFolder = "folder/address/here/" ;
-
-                logFilePath = globalFolder + simName ;
-                logFile = new File(logFilePath) ;
-
-                errorFilePath = globalFolder + simName ;
-                errorFile = new File(errorFilePath) ;
-
-                outputFilePath = globalFolder + simName ;
-                outputFile = new File(outputFilePath) ;
-                return ;
-        }
-
-        protected void outputAgents(Agent[] agents, int cycle)
+        /**
+         * @return opening record of opening input file
+         * @throws FileNotFoundException
+         * @throws IOException 
+         */
+        private String getInitialRecord() throws FileNotFoundException, IOException
         {
-                outputFile. 
-        }
-        */
+            BufferedReader fileReader = new BufferedReader(new FileReader(folderPath + fileNames.get(0))) ;
+            String record = fileReader.readLine() ;
+            //LOGGER.info(record) ;
+            if (record == null)
+                LOGGER.info(Level.WARNING + ":Empty report file");
 
+            return record ;
+        }
+    
+        /**
+         * @return opening record of opening input file
+         * @throws FileNotFoundException
+         * @throws IOException 
+         */
+        private String getFinalRecord() throws FileNotFoundException, IOException
+        {
+            // Read final input file
+            BufferedReader fileReader = new BufferedReader(new FileReader(folderPath + fileNames.get(fileNames.size()-1))) ;
+            String outputString = "" ;
+            // Find last line
+            for (String record = "" ;  record != null ; record = fileReader.readLine() )
+                outputString = record ;
+            if (outputString.isEmpty())
+                LOGGER.info(Level.WARNING + ":Empty report file");
+
+            return outputString ;
+        }
+    
+    }
 }
