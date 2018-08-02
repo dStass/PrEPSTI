@@ -33,11 +33,11 @@ public class Community {
     //static public String NAME_ROOT = "testPlotSortRelationshipsByAge"
     //static public String NAME_ROOT = "testPlotSortPrevalenceYear3Partners10"
     //static public String NAME_ROOT = "NoPrepCalibration40GSE7sizeContacts5"
-    //static public String NAME_ROOT = "calibration31"
-    static public String NAME_ROOT = "testMultiFilesCalibration42"
+    static public String NAME_ROOT = "testSiteSelectCalibration68"
+    //static public String NAME_ROOT = "NoPrepCalibration68"
             + "Pop" + String.valueOf(POPULATION) + "Cycles" + String.valueOf(MAX_CYCLES) ;
 
-    static public String FILE_PATH = "../output/test/" ;
+    static public String FILE_PATH = "output/test/" ;
     /** Dump reports to disk after this many cycles. */
     static final int DUMP_CYCLE = ((int) Math.pow(10, 7))/POPULATION ;
     /** Whether to dump partial reports during simulation. */
@@ -107,6 +107,16 @@ public class Community {
         long startTime = System.nanoTime() ;
         LOGGER.info("Seed:" + String.valueOf(System.currentTimeMillis()));
     
+        // Different file structures on Windows vs HPC
+        try
+        {
+        if (System.getProperty("os.name").startsWith("Windows"))
+            FILE_PATH = "../" + FILE_PATH ;
+        }
+        catch ( Exception e) // Happens on HPC
+        {
+            LOGGER.info(e.toString());
+        }
         // Establish Community of Agents for simulation
         LOGGER.info(Community.NAME_ROOT);
         Community community = new Community() ;
@@ -202,6 +212,7 @@ public class Community {
             populationRecord = cycleString + community.births(deltaPopulation) ;
         }
         // Final dump() or whole dump if no partial dumps
+        LOGGER.log(Level.INFO, "{0} {1}", new Object[] {DUMP_CYCLE,PARTIAL_DUMP});
         if (!PARTIAL_DUMP || (((Community.MAX_CYCLES)/DUMP_CYCLE) * DUMP_CYCLE) != Community.MAX_CYCLES )
             community.dump() ;
         community.dumpMetaData() ;
@@ -221,17 +232,20 @@ public class Community {
         //ScreeningPresenter screeningPresenter 
           //      = new ScreeningPresenter("prevalence",Community.NAME_ROOT,screeningReporter) ;
         //screeningPresenter.multiPlotScreening(new Object[] {"prevalence", new String[] {"Pharynx","Urethra","Rectum"},"coprevalence",new String[] {"Rectum","Pharynx"}});
-        ScreeningPresenter screeningPresenter2 
-                = new ScreeningPresenter("prevalence",Community.NAME_ROOT,screeningReporter) ;
-        screeningPresenter2.plotPrevalence();
+        //ScreeningPresenter screeningPresenter2 
+          //      = new ScreeningPresenter("prevalence",Community.NAME_ROOT,screeningReporter) ;
+        //screeningPresenter2.plotPrevalence();
         //screeningPresenter2.plotIncidencePerCycle();
         ScreeningPresenter screeningPresenter3 
-                = new ScreeningPresenter("multi prevalence",Community.NAME_ROOT + "Incidence",screeningReporter) ;
-        screeningPresenter3.multiPlotScreening(new Object[] {"coprevalence",new String[] {"Pharynx","Rectum"},"prevalence",new String[] {"Pharynx","Rectum","Urethra"}});
+                = new ScreeningPresenter("multi prevalence",Community.NAME_ROOT,screeningReporter) ;
+        screeningPresenter3.multiPlotScreening(new Object[] {"prevalence","coprevalence",new String[] {"Pharynx","Rectum"},new String[] {"Urethra","Rectum"},"prevalence",new String[] {"Pharynx","Rectum","Urethra"}});
         
         //EncounterReporter encounterReporter = new EncounterReporter("Agent to Agent",community.encounterReport) ;
-        //EncounterPresenter encounterPresenter = new EncounterPresenter(Community.NAME_ROOT,"agent to agent", encounterReporter) ;
-        //encounterPresenter.plotCondomUse();
+        //EncounterReporter encounterReporter = new EncounterReporter(Community.NAME_ROOT,Community.FILE_PATH) ;
+//        EncounterPresenter encounterPresenter = new EncounterPresenter(Community.NAME_ROOT,"agent to agent", encounterReporter) ;
+//        encounterPresenter.plotCondomUse();
+//        EncounterPresenter encounterPresenter2 = new EncounterPresenter(Community.NAME_ROOT,"agent to agent", encounterReporter) ;
+//        encounterPresenter2.plotProtection();
         //encounterPresenter.plotNbTransmissions(); 
         //encounterPresenter.plotTransmittingSites(new String[] {"Urethra","Rectum","Pharynx"});
         //encounterPresenter.plotFromSiteToSite(new String[] {"Urethra","Rectum","Pharynx"});
@@ -578,8 +592,9 @@ public class Community {
         {
             MSM newAgent = MSM.birthMSM(0) ;
             agents.add(newAgent) ;
-            record += Reporter.addReportProperty("agentId",newAgent.getAgentId()) ;
-            record += Reporter.addReportProperty("age",newAgent.getAge()) ; 
+            record += newAgent.getCensusReport() ;
+            //record += Reporter.addReportProperty("agentId",newAgent.getAgentId()) ;
+            //record += Reporter.addReportProperty("age",newAgent.getAge()) ; 
             currentPopulation++ ;
         }
         record += Reporter.addReportProperty("currentPopulation",currentPopulation) ;
@@ -644,18 +659,12 @@ public class Community {
             {
                 // WARNING: May cause future problems with hetero couples
                 // Does agent have lower agentId than partner
-                //indexInteger = (int) Math.pow(2, relationshipIndex);
                 // Avoid checking relationship twice by accessing only through the 
                 // agent with the lower agentId
                 // TODO: Incorporate this into Agent.Method()
                 //int agentId = agent.getAgentId() ;
                 //int partnerId = relationship.getPartnerId(agentId) ;
-                /*if (partnerId < agentId)
-                        continue ;
-                */
-                //Relationship relationship = currentRelationships.get(relationshipIndex) ;
-                //if ((indexInteger & lowerAgentId) != indexInteger)
-
+                
                 if (agent != relationship.getLowerIdAgent())
                     continue ;
                 try
@@ -841,6 +850,10 @@ public class Community {
     {
         ArrayList<String> metaLabels = new ArrayList<String>() ; 
         ArrayList<Object> metaData = new ArrayList<Object>() ; 
+        metaLabels.add("Community.POPULATION") ;
+        metaData.add(Community.POPULATION) ;
+        metaLabels.add("Community.MAX_CYCLES") ;
+        metaData.add(Community.MAX_CYCLES) ;
         metaLabels.add("community.randomSeed") ;
         metaData.add(RANDOM_SEED) ;
         metaLabels.add("agent.randomSeed") ;
