@@ -11,8 +11,8 @@ package agent;
  */
 public class RiskyMSM extends MSM
 {
-    /** The maximum number of relationships an agent may be willing to sustain. */
-    static int MAX_RELATIONSHIPS = 3;
+    /** The maximum number of Regular Relationships an agent may be willing to sustain. */
+    static int MAX_RELATIONSHIPS = MSM.MAX_RELATIONSHIPS ;
     
     //static double probabilityRequireDiscloseHIV = 0.5 ;
     
