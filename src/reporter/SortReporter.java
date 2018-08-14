@@ -59,9 +59,9 @@ public class SortReporter extends Reporter {
             Class<?> unsortedReporterClazz = Class.forName(unsortedClassName) ;
             Class<?> sortingReporterClazz = Class.forName(sortingClassName) ;
             this.unsortedReporter = (Reporter) unsortedReporterClazz.newInstance() ;
-            unsortedReporter.initReporter(simName + unsortedName, reportFilePath);
+            unsortedReporter.initReporter(simName, reportFilePath);
             this.sortingReporter = (Reporter) sortingReporterClazz.newInstance() ;
-            sortingReporter.initReporter(simName + sortingName, reportFilePath);
+            sortingReporter.initReporter(simName, reportFilePath);
         }
         catch ( Exception e )
         {
@@ -95,47 +95,15 @@ public class SortReporter extends Reporter {
         return Reporter.sortRecord(transmissionRecord, sortingReport, values) ;
     }
     
-    
-    public HashMap<Object,HashMap<Object,ArrayList<Object>>>
-        prepareReceiveSortPrepStatusReport(String value )
-    {
-        HashMap<Object,HashMap<Object,ArrayList<Object>>> outputHashMap 
-                = prepareReceiveSortPrepStatusReport(new String[] {value}).get(value) ;
-        return outputHashMap ;
-    }
-
-    /**
-     * 
-     * @param values
-     * @return HashMap sorting values -> correspondingTransmissionReport
-     */
-    public HashMap<Object,HashMap<Object,HashMap<Object,ArrayList<Object>>>> 
-        prepareReceiveSortPrepStatusReport(String[] values )
-    {
-        LOGGER.info("prepareAgentToAgentReport()");
-        //EncounterReporter encounterReporter = new EncounterReporter(NONE, reporter.input) ;
-        HashMap<Object,HashMap<Object,ArrayList<Object>>> transmissionReport = ((EncounterReporter) unsortedReporter).prepareAgentToAgentReport() ;
-        //LOGGER.log(Level.INFO, "{0}", transmissionReport);
-        LOGGER.info("sortPrepStatus()");
-        //PopulationReporter populationReporter = new PopulationReporter(NONE, report) ;
-        HashMap<Object,ArrayList<Object>> sortingReport = ((PopulationReporter) sortingReporter).sortPrepStatus() ;
-        LOGGER.log(Level.INFO, "{0}", sortingReport);
-        
-        LOGGER.info("sortReport()");
-        //String[] values = new String[] {TRUE, FALSE} ;
-        return Reporter.sortReport(transmissionReport, sortingReport, values) ;
-    }
-        
-        
     /**
      * 
      * @return HashMap of age to mean number of Relationships entered into by 
      * that age.
      */
-    public HashMap<Object,Double> prepareAgeNumberEnteredRelationshipRecord()
+    public HashMap<Object,Number> prepareAgeNumberEnteredRelationshipRecord()
     {
-        HashMap<Object,Double> ageNumberEnteredRelationshipRecord 
-                = new HashMap<Object,Double>() ;
+        HashMap<Object,Number> ageNumberEnteredRelationshipRecord 
+                = new HashMap<Object,Number>() ;
 
         // key:age value:ArrayList of new Relationships for each Agent, sums to 
         //total number of new Relationships formed by that age.
@@ -277,7 +245,7 @@ public class SortReporter extends Reporter {
         ArrayList<ArrayList<Object>> sortingReport = ((RelationshipReporter) sortingReporter).prepareAgentCommenceReport() ;
         
         // New partners per agentId
-        HashMap<Object,Integer> agentCommenceCount = new HashMap<Object,Integer>() ;
+        HashMap<Object,Number> agentCommenceCount = new HashMap<Object,Number>() ;
 
         // Modify backYears if necessary so you don't go past beginning of simulation
         if (daysPerYear*backYears > recordIndex)
@@ -294,7 +262,7 @@ public class SortReporter extends Reporter {
         // Which Agents have had more than Array_position new Relationships in last backYears
         for (Object agentKey : agentCommenceCount.keySet())    
         {
-            int relationshipCount = agentCommenceCount.get(agentKey) ;
+            int relationshipCount = Integer.valueOf(String.valueOf(agentCommenceCount.get(agentKey))) ;
             if (relationshipCount <= partnerCount)
                 screenSortAgentNewPartnersReport.get(relationshipCount-1).add(agentKey) ;
             else  // Had partnerCount or more new partners
