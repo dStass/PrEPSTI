@@ -34,7 +34,7 @@ public class ScreeningReporter extends Reporter {
 
     public ScreeningReporter(String simName, String reportFilePath)
     {
-        super(simName+"infection",reportFilePath) ;
+        super(simName,reportFilePath) ;
     }
  
     /**
@@ -93,7 +93,7 @@ public class ScreeningReporter extends Reporter {
      * symptomatic infection, and proportion of symptomatic infection at site given 
      * by siteName in each report cycle.
      */
-    public ArrayList<Object> prepareSitePrevalenceReport(String siteName) 
+    public ArrayList<Object> preparePrevalenceReport(String siteName) 
     {
         ArrayList<Object> sitePrevalenceReport = new ArrayList<Object>() ;
         
@@ -127,7 +127,7 @@ public class ScreeningReporter extends Reporter {
      * @param siteNames
      * @return ArrayList of coprevalence of coninfection of Sites named in siteNames.
      */
-    public ArrayList<Object> prepareSiteCoPrevalenceReport(String[] siteNames) 
+    public ArrayList<Object> prepareCoPrevalenceReport(String[] siteNames) 
     {
         ArrayList<Object> siteCoPrevalenceReport = new ArrayList<Object>() ;
         
@@ -135,9 +135,7 @@ public class ScreeningReporter extends Reporter {
         int[] nbSymptomatic ;
         Double coprevalence ;
         String entry ;
-        boolean nextInput = true ; 
-        
-        while (nextInput)
+        for (boolean nextInput = true ; nextInput ; nextInput = updateReport())
         {
             for (String record : input)
             {
@@ -153,7 +151,6 @@ public class ScreeningReporter extends Reporter {
                 siteCoPrevalenceReport.add("coprevalence:" + String.valueOf(coprevalence) + " ") ;
                 //LOGGER.info("coprevalence:" + String.valueOf(coprevalence) + " ");
             }
-            nextInput = updateReport() ;
         }
         return siteCoPrevalenceReport ;
     }
@@ -165,6 +162,11 @@ public class ScreeningReporter extends Reporter {
      */
     public ArrayList<Object> prepareIncidenceReport()
     {
+        return prepareIncidenceReport("") ;
+    }
+    
+    public ArrayList<Object> prepareIncidenceReport(String siteName)
+    {
         ArrayList<Object> incidenceReport = new ArrayList<Object>() ;
         
         int incidents ;
@@ -172,11 +174,13 @@ public class ScreeningReporter extends Reporter {
         int population = Community.POPULATION ;
         String output ;
         
-        boolean nextInput = true ; 
-        while (nextInput)
-        {
+        // Loop through Reporter input files 
+        for (boolean nextInput = true ; nextInput ; nextInput = updateReport() )
             for (String record : input)
             {
+                if (!siteName.isEmpty())
+                    record = boundedStringByContents(siteName,AGENTID,record) ;
+                
                 incidents = countValueIncidence("treated","",record,0)[1];
                 incidence = ((double) incidents)/population;
 
@@ -185,8 +189,6 @@ public class ScreeningReporter extends Reporter {
 
                 incidenceReport.add(output) ;
             }
-                nextInput = updateReport() ;
-        }
         return incidenceReport ;
     }
     
