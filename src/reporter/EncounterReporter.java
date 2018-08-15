@@ -13,10 +13,13 @@ import community.* ;
 import java.io.* ;
 import java.util.Arrays ;
 import java.util.ArrayList ;
+import java.util.Collection;
+import java.util.Collections;
 //import java.util.Collections;
 //import java.util.Comparator;
 import java.util.HashMap ;
 import java.util.logging.Level;
+import static reporter.Reporter.extractArrayList;
 
 
 public class EncounterReporter extends Reporter {
@@ -33,7 +36,7 @@ public class EncounterReporter extends Reporter {
 
     public EncounterReporter(String simName, String reportFilePath)
     {        
-        super(simName + "encounter", reportFilePath) ;
+        super(simName, reportFilePath) ;
     }
 
         // Logger
@@ -147,9 +150,38 @@ public class EncounterReporter extends Reporter {
             nbTransmissions.add(recordArray) ;
         }
         return nbTransmissions ;
-            
-        
     }
+    
+    
+    public HashMap<Object,HashMap<Object,ArrayList<Object>>>
+        prepareReceiveSortPrepStatusReport(String value )
+    {
+        HashMap<Object,HashMap<Object,ArrayList<Object>>> outputHashMap 
+                = prepareReceiveSortPrepStatusReport(new String[] {value}).get(value) ;
+        return outputHashMap ;
+    }
+
+    /**
+     * 
+     * @param values
+     * @return HashMap sorting values -> correspondingTransmissionReport
+     */
+    public HashMap<Object,HashMap<Object,HashMap<Object,ArrayList<Object>>>> 
+        prepareReceiveSortPrepStatusReport(String[] values )
+    {
+        LOGGER.info("prepareAgentToAgentReport()") ;
+        HashMap<Object,HashMap<Object,ArrayList<Object>>> transmissionReport = prepareAgentToAgentReport() ;
+        //LOGGER.log(Level.INFO, "{0}", transmissionReport);
+        LOGGER.info("sortPrepStatus()");
+        PopulationReporter populationReporter = new PopulationReporter(Community.NAME_ROOT, Community.FILE_PATH) ;
+        HashMap<Object,ArrayList<Object>> sortingReport = populationReporter.sortPrepStatus() ;
+        LOGGER.log(Level.INFO, "{0}", sortingReport);
+        
+        LOGGER.info("sortReport()");
+        //String[] values = new String[] {TRUE, FALSE} ;
+        return Reporter.sortReport(transmissionReport, sortingReport, values) ;
+    }
+    
     
     /**
      * 
@@ -453,13 +485,109 @@ public class EncounterReporter extends Reporter {
     }
 		
     /**
+     * 
+     * @return (HashMap) Number of Agents responsible for given number of transmissions.
+     */
+    public HashMap<Object,Number> prepareNumberAgentTransmissionReport()
+    {
+        HashMap<Object,Number> numberAgentTransmissionReport = new HashMap<Object,Number>() ;
+
+        HashMap<Object,Integer> agentTransmissionCountReport = prepareAgentTransmissionCountReport() ;
+        
+        Collection<Integer> agentTransmissionCountValues = agentTransmissionCountReport.values() ;
+        
+        int maxValue = Collections.max(agentTransmissionCountValues) ;
+        
+        // To track how agentIds have had more than given Relationships
+        int nbAgents ;
+        
+        for (int key = maxValue ; key > 0 ; key-- )
+        {
+            nbAgents = Collections.frequency(agentTransmissionCountValues,key) ;
+            numberAgentTransmissionReport.put(key, nbAgents) ;
+        }
+        
+        return numberAgentTransmissionReport ;
+    }        
+   
+    /**
+     * Sorts transmission Report according to sortingProperty of Agents.
+     * @param sortingProperty
+     * @return (HashMap) sortingProperty -> (HashMap) agentTransmissionReport
+     */
+    public HashMap<Object,HashMap<Object,Number>> prepareNumberAgentTransmissionReport(String sortingProperty)
+    {
+        HashMap<Object,HashMap<Object,Number>> numberAgentTransmissionReport = new HashMap<Object,HashMap<Object,Number>>() ;
+
+        HashMap<Object,Integer> agentTransmissionCountReport = prepareAgentTransmissionCountReport() ;
+        HashMap<Object,Number> transmissionReport ;
+        
+        PopulationReporter sortingReporter = new PopulationReporter(simName,Community.FILE_PATH) ;
+        HashMap<Object,Object> sortingReport = sortingReporter.sortedAgentIds(sortingProperty) ;
+        
+        HashMap<Object,HashMap<Object,Integer>> sortedAgentTransmissionCountReport 
+                = sortReport(agentTransmissionCountReport, sortingReport) ;
+        
+        for (Object sortingKey : agentTransmissionCountReport.keySet())
+        {
+            transmissionReport = new HashMap<Object,Number>() ;
+            
+            Collection<Integer> agentTransmissionCountValues = sortedAgentTransmissionCountReport.get(sortingKey).values() ;
+        
+            int maxValue = Collections.max(agentTransmissionCountValues) ;
+
+            // To track how agentIds have had more than given Relationships
+            int nbAgents ;
+
+            for (int key = maxValue ; key > 0 ; key-- )
+            {
+                nbAgents = Collections.frequency(agentTransmissionCountValues,key) ;
+                transmissionReport.put(key, nbAgents) ;
+            }
+
+            numberAgentTransmissionReport.put(sortingKey, transmissionReport) ;
+        }
+        
+        return numberAgentTransmissionReport ;
+    }        
+   
+    /**
+     * 
+     * @return (HashMap) Number of Agents responsible for a given number 
+     * or more transmissions.
+     */
+    public HashMap<Object,Number> prepareCumulativeAgentTransmissionReport()
+    {
+        HashMap<Object,Number> cumulativeAgentTransmissionReport = new HashMap<Object,Number>() ;
+
+        HashMap<Object,Integer> agentTransmissionCountReport = prepareAgentTransmissionCountReport() ;
+        
+        Collection<Integer> agentTransmissionCountValues = agentTransmissionCountReport.values() ;
+        
+        int maxValue = Collections.max(agentTransmissionCountValues) ;
+        
+        // To track how agentIds have had more than given Relationships
+        int agentsOver = 0 ;
+        
+        for (int key = maxValue ; key > 0 ; key-- )
+        {
+            agentsOver += Collections.frequency(agentTransmissionCountValues,key) ;
+            cumulativeAgentTransmissionReport.put(key, agentsOver) ;
+        }
+        
+        return cumulativeAgentTransmissionReport ;
+        
+    }        
+   
+    
+    /**
      * @param siteNames (String[]) names of body sites in sexual contact
      * @return String[] report of sexual contacts where STI transmission occurred
      */    
-    public HashMap<Object,Integer> prepareFromSiteToSiteReport(String siteNames[])
+    public HashMap<Object,Number> prepareFromSiteToSiteReport(String siteNames[])
     {
         // Output HashMap
-        HashMap<Object,Integer> fromSiteToSiteReport = new HashMap<Object,Integer>() ;
+        HashMap<Object,Number> fromSiteToSiteReport = new HashMap<Object,Number>() ;
         int contactIndex ;
         
         // String describing sexual contact
@@ -490,7 +618,7 @@ public class EncounterReporter extends Reporter {
             //LOGGER.info(report);
             while (contactIndex >= 0)
             {
-                contactString = extractBoundedString("contact",report,contactIndex) ;
+                contactString = extractBoundedString(CONTACT,report,contactIndex) ;
                 
                 // This reset is needed here
                 fromName = "" ;
@@ -535,7 +663,7 @@ public class EncounterReporter extends Reporter {
                     fromSiteToSiteReport = incrementHashMap(key,fromSiteToSiteReport) ;
                     break ;
                 }
-                contactIndex = indexOfProperty("contact",contactIndex+1,report) ;
+                contactIndex = indexOfProperty(CONTACT,contactIndex+1,report) ;
             }
         }
         return fromSiteToSiteReport ;
@@ -607,7 +735,7 @@ public class EncounterReporter extends Reporter {
             indexStart = indexOfProperty("agentId0",indexStart+1, record) ;
             
             // Initialise output for encounter
-            indexContact = indexOfProperty("contact",encounterString) ;
+            indexContact = indexOfProperty(CONTACT,encounterString) ;
             
             // Skip to next loop if no contact
             if (indexContact < 0)
@@ -619,14 +747,14 @@ public class EncounterReporter extends Reporter {
             // check contacts for desired value of propertyName
             while (indexContact >= 0)
             {
-                contactString = boundedStringByValue(propertyName,value,"contact",encounterString) ; 
+                contactString = boundedStringByValue(propertyName,value,CONTACT,encounterString) ; 
                 // if contactString contains actual contact information
                 if (!"".equals(contactString)) 
                 {
                         encounterOutput += contactString ;
                 }
                 // Find next contact
-                indexContact = indexOfProperty("contact", indexContact + 1, encounterString) ;
+                indexContact = indexOfProperty(CONTACT, indexContact + 1, encounterString) ;
             }
             // Only include encounter in output if any of its contacts are included 
             if (encounterOutput.length() > 0)
@@ -661,21 +789,21 @@ public class EncounterReporter extends Reporter {
             encounterString = extractEncounter(report, indexStart) ;
 
             // Initialise output for encounter
-            indexContact = indexOfProperty("contact",encounterString) ;
+            indexContact = indexOfProperty(CONTACT,encounterString) ;
             String encounterOpening = encounterString.substring(0, indexContact ) ;
             String encounterOutput = "" ;
 
             // check contacts for desired value of propertyName
             while (indexContact >= 0)
             {
-                contactString = boundedStringByContents(propertyName,"contact",encounterString) ; 
+                contactString = boundedStringByContents(propertyName,CONTACT,encounterString) ; 
                 // if contactString contains actual contact information
                 if (!"".equals(contactString)) 
                 {
                         encounterOutput += contactString ;
                 }
                 // Find next contact
-                indexContact = indexOfProperty("contact", indexContact + 1, encounterString) ;
+                indexContact = indexOfProperty(CONTACT, indexContact + 1, encounterString) ;
             }
             // Only include encounter in output if any of its contacts are included 
             if (encounterOutput.length() > 0)
@@ -698,7 +826,7 @@ public class EncounterReporter extends Reporter {
      */
     private String extractContact(String encounter, int indexStart)
     {
-        return extractBoundedString("contact", encounter, indexStart) ;
+        return extractBoundedString(CONTACT, encounter, indexStart) ;
     }
 
     /**
