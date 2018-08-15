@@ -30,6 +30,9 @@ abstract public class MSM extends Agent {
     /** Names of Sites for MSM */ 
     static public String[] SITE_NAMES = new String[] {"rectum","urethra","pharynx"} ;
     
+    /** The maximum number of Regular Relationships an agent may be willing to sustain. */
+    static int MAX_RELATIONSHIPS = 3;
+    
     /** The probability of disclosing HIV status if HIV positive */
     static double PROBABILITY_DISCLOSE_POSITIVE_HIV = 0.40 ;
     /** The probability of disclosing HIV status if HIV negative */
@@ -119,23 +122,23 @@ abstract public class MSM extends Agent {
     private boolean prepStatus ;
 	
     /** Transmission probabilities per sexual contact from Urethra to Rectum */
-    static double URETHRA_TO_RECTUM = 0.99 ;    // 0.84 ;    // 0.8 ;
+    static double URETHRA_TO_RECTUM = 0.9 ;    // 0.84 ;    // 0.8 ;
     /** Transmission probabilities sexual contact from Urethra to Pharynx. */
-    static double URETHRA_TO_PHARYNX = 0.5 ; // 0.63 ;    // 0.7 ;
+    static double URETHRA_TO_PHARYNX = 0.8 ; // 0.63 ;    // 0.7 ;
     /** Transmission probabilities sexual contact from Rectum to Urethra. */ 
-    static double RECTUM_TO_URETHRA = 0.035 ; // 0.023 ;    // 0.3 ;
+    static double RECTUM_TO_URETHRA = 0.015 ; // 0.023 ;    // 0.3 ;
     /** Transmission probabilities sexual contact from Rectum to Pharynx. */
-    static double RECTUM_TO_PHARYNX = 0.01 ;    // 0.1 ;
+    static double RECTUM_TO_PHARYNX = 0.04 ;    // 0.1 ;
     /** Transmission probabilities sexual contact in Pharynx to Urethra intercourse. */
-    static double PHARYNX_TO_URETHRA = 0.03 ; // 0.086 ;    // 0.2 ;
+    static double PHARYNX_TO_URETHRA = 0.015 ; // 0.086 ;    // 0.2 ;
     /** Transmission probabilities sexual contact in Pharynx to Rectum intercourse. */
-    static double PHARYNX_TO_RECTUM = 0.06 ;    // 0.2 ;
+    static double PHARYNX_TO_RECTUM = 0.04 ;    // 0.2 ;
     /** Transmission probabilities sexual contact in Pharynx to Pharynx intercourse (kissing). */
-    static double PHARYNX_TO_PHARYNX = 0.04 ;
+    static double PHARYNX_TO_PHARYNX = 0.065 ;
     /** Transmission probabilities sexual contact in Urethra to Urethra intercourse (docking). */
     static double URETHRA_TO_URETHRA = 0.01 ;
     /** Transmission probabilities sexual contact in Rectum to Rectum intercourse. */
-    static double RECTUM_TO_RECTUM = 0.004 ;
+    static double RECTUM_TO_RECTUM = 0.05 ;
     
     /** The probability of screening in a given cycle with statusHIV true. */
     static double SCREEN_PROBABILITY_HIV_POSITIVE = 0.0029 ;
@@ -408,9 +411,13 @@ abstract public class MSM extends Agent {
     {
         if (site.getSite().equals(RECTUM))
         {
-            int index = RAND.nextInt(4) ;
-            if (index < 3) return urethra ;
-            else return pharynx ;
+            int index = RAND.nextInt(6) ;
+            if (index < 3) 
+                return urethra ;
+            else if (index < 5) 
+                return pharynx ;
+            else 
+                return rectum ;
         }
         else if (site.getSite().equals(PHARYNX))
         {
