@@ -143,26 +143,32 @@ public class Reporter {
     
     /**
      * Sorts String entries of unsortedReport according to value of propertyName.
-     * @param propertyName
-     * @param selectString
      * @param unsortedReport
      * @param sortingReport
-     * @param values
      * @return 
-     * FIXME: There are redundant parameters and the final form is not yet decided.
      */
-    protected static HashMap<Object,ArrayList<String>> sortReport(String propertyName, String selectString, 
-            ArrayList<String> unsortedReport, HashMap<Object, ArrayList<Object>> sortingReport, Object[] values)
+    protected static HashMap<Object,HashMap<Object,Integer>> sortReport(HashMap<Object,Integer> unsortedReport, 
+            HashMap<Object,Object> sortingReport)
     {
-        HashMap<Object,ArrayList<String>> outputHashMap = new HashMap<Object,ArrayList<String>>() ;
-        for (Object value : values )
-            outputHashMap.put(value, new ArrayList<String>()) ;
+        HashMap<Object,HashMap<Object,Integer>> outputHashMap = new HashMap<Object,HashMap<Object,Integer>>() ;
+        //HashMap<Object,?> entryHashMap = new HashMap<Object,Object>() ;
         
-        for (String record : unsortedReport)
+        ArrayList<String> unsortedEntries ;
+        Object sortingValue ;
+                
+        for (Object unsortedKey : unsortedReport.keySet())
         {
-            ArrayList<String> entries = new ArrayList<String>() ;
-            String value = extractValue(propertyName, record) ;
-            outputHashMap.get(value).add(record) ;
+                Object sortingKey = (Object) sortingReport.get(unsortedKey) ;
+                /*if (!entryHashMap.containsKey(sortingKey))
+                    entryHashMap.put(sortingValue, ) ;
+                entryHashMap.put(sortingValue,entryHashMap.get(sortingValue) + entry) ;
+            }
+            for (Object entryKey : entryHashMap.keySet())
+            {*/
+                if (!outputHashMap.containsKey(sortingKey))
+                    outputHashMap.put(sortingKey, new HashMap<Object,Integer>()) ;
+                outputHashMap.get(sortingKey).put(unsortedKey, unsortedReport.get(unsortedKey)) ;
+            //}
         }
         return outputHashMap ;
     }
@@ -320,18 +326,13 @@ public class Reporter {
      */
     protected static String boundedStringByContents(String propertyName, String bound, String string)
     {
-        int indexStart = indexOfProperty(bound,string) ;
         String boundedOutput = "" ;
         String boundedString ;
-        while (indexStart >= 0)
+        for (int indexStart = indexOfProperty(bound,string) ; indexStart >= 0 ; indexStart = indexOfProperty(bound,indexStart+1,string) )
         {
             boundedString = extractBoundedString(bound, string, indexStart) ;
             if (boundedString.contains(propertyName))   //(compareValue(propertyName,value,boundedString)) 
                 boundedOutput += boundedString ;
-                
-            indexStart = indexOfProperty(bound,indexStart+1,string) ;
-            //LOGGER.log(Level.INFO, "index:{0} propertyName:{3} boundedString:{2}", new Object[] {indexStart,bound,boundedString,propertyName});
-        
         }
         return boundedOutput ;
     }
@@ -340,19 +341,36 @@ public class Reporter {
      * 
      * @param string
      * @param bound
-     * @return (ArrayList<String>) of bounded substrings of string.
+     * @return (ArrayList\<String\>) of bounded substrings of string.
      */
     protected static ArrayList<String> extractArrayList(String string, String bound)
     {
-        int indexStart = indexOfProperty(bound, string) ;
+        return extractArrayList(string, bound, "") ;
+    }
+    
+        /**
+     * 
+     * @param string
+     * @param bound
+     * @param flag
+     * @return (ArrayList\<String\>) of bounded substrings of string containing 
+     * flag as a substring.
+     */
+    protected static ArrayList<String> extractArrayList(String string, String bound, String flag)
+    {
         ArrayList<String> outputArray = new ArrayList<String>() ;
         String extractedString ;
-        while (indexStart >= 0) 
+        
+        // Require bounded strings contain flag.
+        if (!flag.isEmpty())
+            string = boundedStringByContents(flag,bound,string) ;
+        
+        // Extract individual bounded strings.
+        for (int indexStart = indexOfProperty(bound, string) ; indexStart >= 0 ;  indexStart = indexOfProperty(bound, indexStart+1, string))
         {
             extractedString = extractBoundedString(bound, string, indexStart);
             if (!extractedString.isEmpty()) 
                 outputArray.add(extractedString) ;
-            indexStart = indexOfProperty(bound, indexStart+1, string) ;
         }
         return outputArray ;
     }
@@ -445,6 +463,16 @@ public class Reporter {
     /**
      * 
      * @param record
+     * @return String[] pairs of agentIds corresponding to relationships described in record
+     */
+    protected String[] extractAgentIds(String record)
+    {
+        return extractAgentIds(record, 0) ;
+    }
+    
+    /**
+     * 
+     * @param record
      * @param startIndex
      * @return String[] pairs of agentIds corresponding to relationships described in record
      */
@@ -503,13 +531,12 @@ public class Reporter {
     {
         int count = 0 ;
         int total = 0 ;
-        int index = indexOfProperty(propertyName, startIndex, string) ;
-        while ( index >= 0 )
+        for (int index = indexOfProperty(propertyName, startIndex, string) ; index >= 0 ; 
+            index = indexOfProperty(propertyName, index+1, string))
         {
             total++ ;
             if (compareValue(propertyName, value, string, index))
                 count++ ;
-            index = indexOfProperty(propertyName, index+1, string) ;
         }
         if (total == 0)
             return new int[] {0,0} ;
@@ -604,18 +631,14 @@ public class Reporter {
      * @param valueMap - Adding boundValue and sometimes key to this HashMap
      * @return partnerMap - HashMap indicating partnerIds of each agent (key: agentId)
      */
-    protected static HashMap<Object,Integer> incrementHashMap(Object key, HashMap<Object,Integer> valueMap)
+    protected static HashMap<Object,Number> incrementHashMap(Object key, HashMap<Object,Number> valueMap)
     {
         //HashMap<Integer,ArrayList<Integer>> partnerMap = new HashMap<Integer,ArrayList<Integer>>() ;
         
         if (valueMap.containsKey(key))
-        {
-            valueMap.put(key, valueMap.get(key) + 1) ;
-        }
+            valueMap.put(key, Integer.valueOf(String.valueOf(valueMap.get(key))) + 1) ;
         else
-        {
             valueMap.put(key, 1) ;
-        }
         
         return valueMap ;
     }
@@ -1042,13 +1065,17 @@ public class Reporter {
     protected final void initReporter(String simname, String fileName)
     {
         simName = simname ;
-        reader = new Reader(simname,fileName) ;
+        String reporterName = this.getClass().asSubclass(this.getClass()).getSimpleName().toLowerCase() ;
+        // What sort of Reporter is this? Needed to identify files.
+        reporterName = reporterName.substring(0,reporterName.lastIndexOf("reporter")) ;
+        reader = new Reader(simname, reporterName, fileName) ;
         input = reader.updateOutputArray() ;
     
     }
     
     /**
      * Loads the next Report file into input if there is another file to read.
+     * Resets fileIndex to 0 if there is not.
      * @return true if update successful, false if all files have already been read.
      */
     public boolean updateReport()
@@ -1101,6 +1128,16 @@ public class Reporter {
     
     /**
      * 
+     * @param metaDatum
+     * @return (String) value of metaDatum from reader.metaData .
+     */
+    public String getMetaDatum(String metaDatum)
+    {
+        return reader.getMetaDatum(metaDatum) ;
+    }
+    
+    /**
+     * 
      * @param reportNb
      * @return output[reportNb] or error String if not available
      */
@@ -1131,11 +1168,17 @@ public class Reporter {
         private ArrayList<String> fileNames = new ArrayList<String>() ;
         private String folderPath ;
         private int fileIndex = 0;
+        private String simName ;
+        ArrayList<String> metaData ;
         
-        protected Reader(String simName, String filePath)
+        protected Reader(String simName, String reporterName, String filePath)
         {
+            this.simName = simName ;
             this.folderPath = filePath ;
-            fileNames = initFileNames(simName) ;
+            if ("screening".equals(reporterName))    // TODO: Remove need for this step
+                reporterName = "infection" ;
+            fileNames = initFileNames(simName + reporterName) ;
+            initMetaData() ;
         }
         
         /**
@@ -1146,7 +1189,7 @@ public class Reporter {
         protected ArrayList<String> updateOutputArray()
         {
             ArrayList<String> outputArray = new ArrayList<String>() ;
-            String record = "" ;
+            String record ;
             if (fileIndex >= fileNames.size())
                 return outputArray ;
             try
@@ -1187,7 +1230,7 @@ public class Reporter {
         /**
          * 
          * @param simName
-         * @return ArrayList of fileNames
+         * @return ArrayList of fileNames, excluding the METADATA file.
          */
         protected ArrayList<String> initFileNames(String simName)
         {
@@ -1243,5 +1286,44 @@ public class Reporter {
             return outputString ;
         }
     
+        /**
+         * Initialises metaData property of Reader from file,
+         */
+        private void initMetaData() 
+        {
+            metaData = new ArrayList<String>() ;
+            try
+            {
+                BufferedReader fileReader = new BufferedReader(new FileReader(folderPath + simName + "-METADATA.txt")) ;
+                ArrayList<String> outputString = new ArrayList<String>() ;
+                // Find last line
+                for (String record = "" ;  record != null ; record = fileReader.readLine() )
+                    outputString.add(record) ;
+
+                metaData = outputString ;
+            }
+            catch (Exception e)
+            {
+                LOGGER.info(e.toString()) ;
+            }
+        }
+        
+        /**
+         * 
+         * @param metaDatum
+         * @return (String) value of metaDatum from metaData.
+         */
+        private String getMetaDatum(String metaDatum)
+        {
+            for (String record : metaData)
+            {
+                if (record.isEmpty())
+                    continue ;
+                int colonIndex = record.indexOf(":") ;
+                if (metaDatum.equals(record.substring(0, colonIndex)))
+                    return record.substring(colonIndex + 1) ;
+            }
+            return "" ;
+        }
     }
 }
