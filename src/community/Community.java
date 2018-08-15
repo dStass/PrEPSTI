@@ -29,12 +29,12 @@ import org.jfree.chart.* ;
  *******************************************************************/
 public class Community {
     static public int POPULATION = 40000;
-    static public int MAX_CYCLES = 5000;
+    static public int MAX_CYCLES = 7500;
     //static public String NAME_ROOT = "testPlotSortRelationshipsByAge"
     //static public String NAME_ROOT = "testPlotSortPrevalenceYear3Partners10"
-    //static public String NAME_ROOT = "NoPrepCalibration40GSE7sizeContacts5"
-    static public String NAME_ROOT = "testSiteSelectCalibration68"
-    //static public String NAME_ROOT = "NoPrepCalibration68"
+    static public String NAME_ROOT = "NoPrepCalibration93"
+    //static public String NAME_ROOT = "testSiteSelectCalibration68"
+    //static public String NAME_ROOT = "introPrep2000Setting05"
             + "Pop" + String.valueOf(POPULATION) + "Cycles" + String.valueOf(MAX_CYCLES) ;
 
     static public String FILE_PATH = "output/test/" ;
@@ -107,16 +107,6 @@ public class Community {
         long startTime = System.nanoTime() ;
         LOGGER.info("Seed:" + String.valueOf(System.currentTimeMillis()));
     
-        // Different file structures on Windows vs HPC
-        try
-        {
-        if (System.getProperty("os.name").startsWith("Windows"))
-            FILE_PATH = "../" + FILE_PATH ;
-        }
-        catch ( Exception e) // Happens on HPC
-        {
-            LOGGER.info(e.toString());
-        }
         // Establish Community of Agents for simulation
         LOGGER.info(Community.NAME_ROOT);
         Community community = new Community() ;
@@ -165,7 +155,7 @@ public class Community {
             if (cycle == ((cycle/outputInterval) * outputInterval))
                 LOGGER.log(Level.INFO, "Cycle no. {0}", cycleString);
 
-            if (false && cycle >= 6000)
+            if (false && cycle >= 2000)
                 community.interveneCommunity() ;
             //LOGGER.log(Level.INFO,"{0} {1}", new Object[] {Relationship.NB_RELATIONSHIPS,Relationship.NB_RELATIONSHIPS_CREATED});
             // update relationships and perform sexual encounters, report them
@@ -238,7 +228,7 @@ public class Community {
         //screeningPresenter2.plotIncidencePerCycle();
         ScreeningPresenter screeningPresenter3 
                 = new ScreeningPresenter("multi prevalence",Community.NAME_ROOT,screeningReporter) ;
-        screeningPresenter3.multiPlotScreening(new Object[] {"prevalence","coprevalence",new String[] {"Pharynx","Rectum"},new String[] {"Urethra","Rectum"},"prevalence",new String[] {"Pharynx","Rectum","Urethra"}});
+        screeningPresenter3.multiPlotScreening(new Object[] {"prevalence","prevalence",new String[] {"Pharynx","Rectum","Urethra"},"coprevalence",new String[] {"Pharynx","Rectum"}});  // ,"coprevalence",new String[] {"Pharynx","Rectum"},new String[] {"Urethra","Rectum"}
         
         //EncounterReporter encounterReporter = new EncounterReporter("Agent to Agent",community.encounterReport) ;
         //EncounterReporter encounterReporter = new EncounterReporter(Community.NAME_ROOT,Community.FILE_PATH) ;
@@ -297,11 +287,11 @@ public class Community {
         //RelationshipPresenter relationshipPresenter 
           //      = new RelationshipPresenter("Cumulative Relationships to date","Cumulative Relationships to date",relationshipReporter) ;
         //relationshipPresenter.plotCumulativeRelationships();
-        //RelationshipReporter relationshipReporter 
-          //      = new RelationshipReporter("Mean number of Relationships",community.relationshipReport) ;
-        //RelationshipPresenter relationshipPresenter2 
-          //      = new RelationshipPresenter("Mean number of Relationships",Community.NAME_ROOT,relationshipReporter) ;
-        //relationshipPresenter2.plotMeanNumberRelationshipsReport();
+        RelationshipReporter relationshipReporter 
+                = new RelationshipReporter(Community.NAME_ROOT,Community.FILE_PATH) ; 
+        RelationshipPresenter relationshipPresenter2 
+                = new RelationshipPresenter("Mean number of Relationships",Community.NAME_ROOT,relationshipReporter) ;
+        relationshipPresenter2.plotMeanNumberRelationshipsReport();
         
     }
 
@@ -860,6 +850,10 @@ public class Community {
         metaData.add(Agent.GET_RANDOM_SEED()) ;
         metaLabels.add("site.randomSeed") ;
         metaData.add(Site.GET_RANDOM_SEED()) ;
+        metaLabels.add("Relationship.BURNIN_COMMENCE") ;
+        metaData.add(Relationship.BURNIN_COMMENCE) ;
+        metaLabels.add("Relationship.BURNIN_BREAKUP") ;
+        metaData.add(Relationship.BURNIN_BREAKUP) ;
         
         scribe.dumpMetaData(metaLabels,metaData) ;
     }
