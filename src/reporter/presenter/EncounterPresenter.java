@@ -28,12 +28,16 @@ public class EncounterPresenter extends Presenter {
     {
         try
         {
-            String simName = "introPrepCalibration48Pop40000Cycles20000" ; // args[0] ;
-            String chartTitle = "condom_use" ; // args[1] ;
-            String reportFileName = "../output/test/" ; // args[2] ;
+            String simName = "noPrepCalibration86Pop40000Cycles5000" ; // Community.NAME_ROOT ; // "introPrepCalibration48Pop40000Cycles7000" ; // args[0] ;
+            String chartTitle = "site_to_site" ; // args[1] ;
+            String reportFileName = "output/test/" ; // args[2] ;
             EncounterPresenter encounterPresenter = new EncounterPresenter(simName,chartTitle,reportFileName) ;
             //encounterPresenter.plotCondomUse();
-            encounterPresenter.plotProtection() ;
+            //encounterPresenter.plotProtection() ;
+            //encounterPresenter.plotNbTransmissions();
+            //encounterPresenter.plotNumberAgentTransmissionReport() ;
+            encounterPresenter.plotFromSiteToSite(new String[] {"Rectum","Urethra","Pharynx"});
+            //encounterPresenter.plotReceiveSortPrepStatusReport("true") ;
 
             //String methodName = args[3] ;
             //Method method = EncounterPresenter.class.getMethod(methodName) ;
@@ -86,7 +90,7 @@ public class EncounterPresenter extends Presenter {
     public void plotTransmittingSites(String[] siteNames)
     {
         // HashMap to be plotted
-        HashMap<Object,Integer> transmittingSites = new HashMap<Object,Integer>() ;
+        HashMap<Object,Number> transmittingSites = new HashMap<Object,Number>() ;
         for (String name : siteNames)
             transmittingSites.put(name, 0) ;
 
@@ -105,7 +109,7 @@ public class EncounterPresenter extends Presenter {
                 count = 0 ;
                 for (Object site : infectedStatus)
                     count += Integer.valueOf((String) site) ;
-                count += transmittingSites.get(name) ;
+                count += Integer.valueOf(String.valueOf(transmittingSites.get(name))) ;
                 transmittingSites.put(name, count) ;
             }
         
@@ -113,14 +117,51 @@ public class EncounterPresenter extends Presenter {
         
     }
     
-    
+    /**
+     * Plots the number of site-specific transmissions
+     * @param siteNames - The Sites to be considered in this plot.
+     */
     public void plotFromSiteToSite(String[] siteNames)
     {
         // HashMap to be plotted
         // (String) key has format infectedsiteToReceivingsite
-        HashMap<Object,Integer> fromSiteToSiteReport = reporter.prepareFromSiteToSiteReport(siteNames) ;
-        plotHashMap("Site to Site","transmissions",fromSiteToSiteReport) ;
+        HashMap<Object,Number> fromSiteToSiteReport = reporter.prepareFromSiteToSiteReport(siteNames) ;
         
+        plotHashMap("Site to Site","transmissions",fromSiteToSiteReport) ;        
+    }
+    
+    /**
+     * Plots the number of Agents responsible for the given number of transmissions.
+     */
+    public void plotNumberAgentTransmissionReport()
+    {
+        HashMap<Object,Number> numberAgentTransmissionReport = reporter.prepareNumberAgentTransmissionReport() ;
+        
+        plotHashMap("Number of transmissions","No of agents",numberAgentTransmissionReport) ;
+    }
+    
+    /**
+     * Plots the number of Agents responsible for the given number of transmissions
+     * after sorting them for sortingProperty.
+     */
+    public void plotNumberAgentTransmissionReport(String sortingProperty)
+    {
+        HashMap<Object,HashMap<Object,Number>> numberAgentTransmissionReport = reporter.prepareNumberAgentTransmissionReport(sortingProperty) ;
+        
+        HashMap<Object,Number[]> plotHashMap = prepareSortedHashMap(numberAgentTransmissionReport) ;
+        String[] scoreNames = (String[]) numberAgentTransmissionReport.keySet().toArray() ;
+        
+        plotHashMap("Number of transmissions",scoreNames,plotHashMap) ;
+    }
+    
+    /**
+     * Plots the number of Agents responsible for at least the given number of transmissions.
+     */
+    public void plotCumulativeAgentTransmissionReport()
+    {
+        HashMap<Object,Number> cumulativeAgentTransmissionReport = reporter.prepareCumulativeAgentTransmissionReport() ;
+        
+        plotHashMap("Minimum number of transmissions","No of agents",cumulativeAgentTransmissionReport) ;
     }
     
     /**
@@ -148,8 +189,9 @@ public class EncounterPresenter extends Presenter {
     public void plotProtection()
     {
         PopulationReporter populationReporter = new PopulationReporter(applicationTitle,Community.FILE_PATH) ;
+        LOGGER.info("prepareBirthReport()");
         ArrayList<String> census = populationReporter.prepareBirthReport() ;
-        
+        LOGGER.log(Level.INFO, "{0}", census);
         plotProtection(census) ;
     }
     
@@ -216,6 +258,28 @@ public class EncounterPresenter extends Presenter {
     /*
     Everything below here are conditional plots.
     */
+    
+    /**
+     * Plots the number of infections received by Agents with PrEP status,
+     * given by (boolean) value, per cycle.
+     * @param value 
+     */
+    public void plotReceiveSortPrepStatusReport(String value)
+    {
+        LOGGER.info("prepareReceiveSortPrepStatusReport");
+        HashMap<Object,HashMap<Object,ArrayList<Object>>> receiveSortPrepStatusReport 
+                = reporter.prepareReceiveSortPrepStatusReport(value) ;
+        LOGGER.log(Level.INFO, "{0}", receiveSortPrepStatusReport);
+        HashMap<Object,HashMap<Object,ArrayList<Object>>> invertedPrepStatusReport 
+                = SortReporter.invertHashMapHashMap(receiveSortPrepStatusReport) ;
+        LOGGER.info("prepareTransmissionCountReport");
+        ArrayList<ArrayList<Object>> nbTransmissionReport 
+                = reporter.prepareReceiveCountReport(invertedPrepStatusReport) ;
+        LOGGER.log(Level.INFO, "{0}", nbTransmissionReport);
+        LOGGER.info("plotCycleValue");
+        plotEventsPerCycle("nbTransmissions", nbTransmissionReport) ;
+    }
+    
     
     
 }
