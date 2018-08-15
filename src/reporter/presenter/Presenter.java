@@ -6,20 +6,29 @@ package reporter.presenter;
 
 import reporter.* ;
 import community.Community ;
+import java.awt.Color;
+import java.awt.Font ;
 
 import org.jfree.chart.* ;
 import org.jfree.chart.ui.ApplicationFrame ;
+import org.jfree.chart.plot.* ;
 import org.jfree.chart.axis.* ;
+import org.jfree.chart.ui.RectangleAnchor;
+//import org.jfree.chart.ui.RefineryUtilities;
+import org.jfree.chart.ui.TextAnchor;
+
 import org.jfree.chart.plot.PlotOrientation ;
 import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.chart.ChartUtils ;
-import org.jfree.chart.renderer.category.GroupedStackedBarRenderer;
+import org.jfree.chart.renderer.category.GroupedStackedBarRenderer ;
+import org.jfree.chart.annotations.XYTextAnnotation ;
 import org.jfree.data.KeyToGroupMap;
 import org.jfree.data.category.* ;
 import org.jfree.data.general.* ;
 import org.jfree.data.xy.XYDataset; 
 import org.jfree.data.xy.XYSeries ;  
 import org.jfree.data.xy.XYSeriesCollection ;
+
 
 import java.lang.reflect.* ;
 import java.util.Arrays ;
@@ -157,6 +166,7 @@ public class Presenter {
             if (scoreName.indexOf(name) >= 0)
                 scoreName += "/" + name ;
         // Send data to be processed and presented
+        LOGGER.info(chartTitle) ;
         chart_awt.callPlotChart(chartTitle,scoreData,scoreName,legend) ;
         return ;
     }
@@ -208,35 +218,47 @@ public class Presenter {
         chart_awt.callPlotScatterPlot(chartTitle, hashMapReport, scoreName, categoryName) ;
     }
     
-    protected void plotHashMap(String categoryName, String scoreName, HashMap<Object,Integer> hashMapReport )
+    /**
+     * Converts values of (HashMap) hashMapReportInteger from Integer to Number
+     * and passes it to plotHashMap().
+     * TODO: Convert all Methods calling this one to call plotHashMap() and then
+     * remove this Method.
+     * @param categoryName
+     * @param scoreName
+     * @param hashMapReport 
+     */
+    protected void plotHashMapInteger(String categoryName, String scoreName, HashMap<Object,Integer> hashMapReport )
     {
         HashMap<Object,Number> numberHashMap = new HashMap<Object,Number>() ;
         for (Object key : hashMapReport.keySet())
             numberHashMap.put(key, (Number) hashMapReport.get(key)) ;
         
-        plotHashMapNumber(categoryName,scoreName,numberHashMap) ;
+        plotHashMap(categoryName,scoreName,numberHashMap) ;
     }
     
-    protected void plotHashMapDouble(String categoryName, String scoreName, HashMap<Object,Double> hashMapReport )
-    {
-        HashMap<Object,Number> numberHashMap = new HashMap<Object,Number>() ;
-        for (Object key : hashMapReport.keySet())
-            numberHashMap.put(key, (Number) hashMapReport.get(key)) ;
-        
-        plotHashMapNumber(categoryName,scoreName,numberHashMap) ;
-    }
-    
-    protected void plotHashMapNumber(String categoryName, String scoreName, HashMap<Object,Number> hashMapReport ) 
+    /**
+     * Sends hashMapReport to chart_awt to be plotted in a stacked bar chart.
+     * @param categoryName
+     * @param scoreName
+     * @param hashMapReport 
+     */
+    protected void plotHashMap(String categoryName, String scoreName, HashMap<Object,Number> hashMapReport ) 
     {
         HashMap<Object,Number[]> newHashMapReport = new HashMap<Object,Number[]>() ;
         
         for (Object key : hashMapReport.keySet())
             newHashMapReport.put(key, new Number[] {hashMapReport.get(key)}) ;
         
-        plotHashMapNumber(categoryName, new String[] {scoreName}, newHashMapReport) ;
+        plotHashMap(categoryName, new String[] {scoreName}, newHashMapReport) ;
     }
     
-    protected void plotHashMapNumber(String categoryName, String[] scoreNames, HashMap<Object,Number[]> hashMapReport )
+    /**
+     * Sends hashMapReport to chart_awt to be plotted in a stacked bar chart.
+     * @param categoryName
+     * @param scoreNames
+     * @param hashMapReport
+     */
+    protected void plotHashMap(String categoryName, String[] scoreNames, HashMap<Object,Number[]> hashMapReport )
     {
         LOGGER.info("plotHashMap()") ;
         //ArrayList<String> categoryInteger = new ArrayList<String>() ;
@@ -245,6 +267,7 @@ public class Presenter {
         Number[] hashMapValue ;
         
         categoryData.clear();
+        // Put keys in order
         for (Object key : hashMapReport.keySet())
         {
             if (key.equals(null))
@@ -252,6 +275,7 @@ public class Presenter {
             categoryEntry.add(key) ;
         }
         categoryEntry.sort(null);
+        
         for (Object key : categoryEntry)
         {
             ArrayList<Number> scoreEntry = new ArrayList<Number>() ;
@@ -262,6 +286,67 @@ public class Presenter {
         }
         //categoryData.add(categoryEntry) ;
         chart_awt.callStackedPlotChart(chartTitle,categoryEntry,scoreNumbers,scoreNames,categoryName) ;
+    }
+    
+    
+    protected void plotHashMapArea(String categoryName, String scoreName, HashMap<Object,Number[]> hashMapReport )
+    {
+        LOGGER.info("plotHashMapArea()") ;
+        Double xTrack ;    // Tracks where the x-coordinate of the variable-width bars
+        double gap = 0.01 ;    // Gap between bars in barChart
+        //ArrayList<String> categoryInteger = new ArrayList<String>() ;
+        ArrayList<Number[]> scoreNumbers = new ArrayList<Number[]>() ;
+        ArrayList<Object> categoryEntry = new ArrayList<Object>() ;
+        Number[] hashMapValue ;
+        Number[] scoreEntry ;
+            
+        categoryData.clear();
+        // Put keys in order
+        for (Object key : hashMapReport.keySet())
+        {
+            if (key.equals(null))
+                continue ;
+            categoryEntry.add(key) ;
+        }
+        categoryEntry.sort(null);
+        
+        hashMapValue = hashMapReport.get(1) ;
+        xTrack = - ((Double) hashMapValue[0])/2.0 ;
+        for (Object key : categoryEntry)
+        {
+            // left-hand corner
+            scoreEntry = new Number[2] ;
+            hashMapValue = hashMapReport.get(key) ;
+            Number score = hashMapValue[1] ;
+            scoreEntry[0] = xTrack ;
+            scoreEntry[1] = score ;
+            scoreNumbers.add(scoreEntry.clone()) ;
+            // centre
+            xTrack += ((Double) hashMapValue[0]) ;
+            scoreEntry = new Number[2] ;
+            scoreEntry[0] = xTrack ;
+            scoreEntry[1] = score ;
+            scoreNumbers.add(scoreEntry.clone()) ;
+            // right-hand corner
+            xTrack += ((Double) hashMapValue[0]) ;
+            scoreEntry = new Number[2] ;
+            scoreEntry[0] = xTrack ;
+            scoreEntry[1] = score ;
+            scoreNumbers.add(scoreEntry.clone()) ;
+            // Go to zero and make gap
+            scoreEntry = new Number[2] ;
+            scoreEntry[0] = xTrack ;
+            scoreEntry[1] = 0 ;
+            scoreNumbers.add(scoreEntry.clone()) ;
+            xTrack += gap ;
+            scoreEntry = new Number[2] ;
+            scoreEntry[0] = xTrack ;
+            scoreEntry[1] = 0 ;
+            scoreNumbers.add(scoreEntry.clone()) ;
+        }
+        
+        
+        chart_awt.callAreaPlotChart(chartTitle, categoryEntry, scoreNumbers, scoreName, categoryName);
     }
     
     /**
@@ -356,6 +441,47 @@ public class Presenter {
             LOGGER.info(e.getLocalizedMessage());
         }
         return reportArray ;
+    }
+    
+    /**
+     * Converts sorted HashMaps to the format used for plotting.
+     * @param sortedHashMap
+     * @return (HashMap) unsortedKey -> (Number[]) values in order determined by 
+     * looping through keySet.
+     */
+    public HashMap<Object,Number[]> prepareSortedHashMap(HashMap<Object,HashMap<Object,Number>> sortedHashMap)
+    {
+        HashMap<Object,Number[]> plottingHashMap = new HashMap<Object,Number[]>() ;
+        
+        HashMap<Object,Number> subHashMap ;
+        HashMap<Object,ArrayList<Number>> constructionHashMap = new HashMap<Object,ArrayList<Number>>() ;
+        
+        int nbKeys = 0 ;
+        for (Object sortingKey : sortedHashMap.keySet())
+        {
+            subHashMap = sortedHashMap.get(sortingKey) ;
+            for (Object subKey : subHashMap.keySet())
+            {
+                if (!constructionHashMap.containsKey(subKey))
+                {
+                    constructionHashMap.put(subKey, new ArrayList<Number>()) ;
+                    // What if subKey not present under earlier sortingKey?
+                    for (int index = 0 ; index < nbKeys ; index++ )
+                        constructionHashMap.get(subKey).add(0) ;
+                }
+                Number entry = subHashMap.get(subKey) ;
+                if (entry == null)    // What if subKey missing under this sortingKey 
+                    entry = 0 ;
+                constructionHashMap.get(subKey).add(entry) ;
+            }
+            nbKeys++ ;
+        }
+        
+        // Replace ArrayList<Number> with Number[]
+        for (Object subKey : constructionHashMap.keySet())
+            plottingHashMap.put(subKey, (Number[]) constructionHashMap.get(subKey).toArray()) ;
+        
+        return plottingHashMap ;
     }
     
     /**
@@ -581,6 +707,22 @@ public class Presenter {
             plotStackedBarChart(chartTitle, dataset, scoreNames, xLabel) ;
         }
         
+        /**
+         * Invokes plotAreaChart after preparing suitable (XYDataset) dataset.
+         * @param chartTitle
+         * @param categoryArray
+         * @param scoreArray
+         * @param scoreName
+         * @param xLabel 
+         */
+        private void callAreaPlotChart(String chartTitle, ArrayList<Object> categoryArray, ArrayList<Number[]> scoreArray, String scoreName, String xLabel)
+        {
+            //LOGGER.info("callPlotChartInteger()") ;
+            String[] legend = new String[] {""} ;
+            XYDataset dataset = createAreaPlotDataset(scoreArray, legend) ;
+            plotAreaChart(chartTitle, dataset, scoreName, xLabel, categoryArray, legend) ;
+        }
+        
         
         
         /**
@@ -675,7 +817,47 @@ public class Presenter {
             }
             saveChart(lineChart,chartTitle) ;
             displayChart(lineChart) ;
+        }
+        
+        /**
+         * Generates Area plot of dataset.
+         * @param chartTitle
+         * @param dataset
+         * @param yLabel
+         * @param xLabel
+         * @param legend 
+         */
+        private void plotAreaChart(String chartTitle, XYDataset dataset, String yLabel, String xLabel, ArrayList<Object> categoryList, String[] legend)
+        {
+            boolean showLegend = !(legend[0].isEmpty()) ;
+            JFreeChart areaChart = ChartFactory.createXYAreaChart(applicationTitle,xLabel,
+                yLabel,dataset,PlotOrientation.VERTICAL,showLegend, true, false);
             
+            areaChart.getXYPlot().getDomainAxis().setTickLabelsVisible(false);
+            areaChart.getXYPlot().getDomainAxis().setTickMarksVisible(false);
+            
+            int xPos = 1 ;
+            for (Object label : categoryList)
+            {
+                XYTextAnnotation xyTextAnnotation = new 
+        XYTextAnnotation(String.valueOf(label) + " or more",dataset.getXValue(0, xPos),dataset.getYValue(0, xPos)/4) ;
+                xyTextAnnotation.setFont(new Font("SansSerif", Font.BOLD, 11));
+                xyTextAnnotation.setBackgroundPaint(Color.RED);
+                areaChart.getXYPlot().addAnnotation(xyTextAnnotation);
+            
+            /*final Marker categoryMarker = new ValueMarker(dataset.getXValue(0, xPos));
+                //currentEnd.setPaint(Color.red);
+                categoryMarker.setLabelBackgroundColor(Color.red);
+                categoryMarker.setPaint(Color.LIGHT_GRAY);
+                categoryMarker.setLabel("" + String.valueOf(label) + " or more") ;
+                categoryMarker.setLabelAnchor(RectangleAnchor.BOTTOM_RIGHT) ;
+                categoryMarker.setLabelTextAnchor(TextAnchor.BOTTOM_LEFT);
+                areaChart.getXYPlot().addDomainMarker(categoryMarker);*/
+                xPos += 5 ;
+            }
+            
+            saveChart(areaChart,chartTitle) ;
+            displayChart(areaChart) ;
         }
         
         private void displayChart(JFreeChart barChart)
@@ -692,8 +874,9 @@ public class Presenter {
         
         private void saveChart(JFreeChart barChart, String title)
         {
-            String directory = "../" + Community.FILE_PATH ;
+            String directory = Community.FILE_PATH ;
             String address = directory + title + Community.NAME_ROOT + ".jpg" ;
+            LOGGER.info(address) ;
             //int width = 2560 ;
             int width = 1280 ;
             //int width = 640 ;
@@ -799,13 +982,10 @@ public class Presenter {
             int dataSize ;
             ArrayList<Object> data ;
             int plotTotal ;
-            if (legend.length > 0)
-                plotTotal = legend.length ;
-            else
-            {
-                plotTotal = 1 ;
+            
+            if (legend.length == 0)
                 legend = new String[] {""} ;
-            }
+            plotTotal = legend.length ;
             
             for (int plotNumber = 0 ; plotNumber < plotTotal ; plotNumber++ )
             {
@@ -834,6 +1014,50 @@ public class Presenter {
                 }
             }
             return xySeriesCollection ;
+        }
+        
+        /**
+         * 
+         * @param scoreData
+         * @param legend
+         * @return (XYSeriesCollection) dataset for plotting XYAreaGraphs
+         */
+        private XYSeriesCollection createAreaPlotDataset(ArrayList<Number[]> scoreData, String[] legend)
+        {
+            // ArrayList<String> categoryData = data.get(0) ;
+            // ArrayList<String> scoreData = data.get(1) ;
+            Number[] scoreValueArray ;
+            Number xValue ;
+            Number yValue ;
+            
+            int dataSize ;
+            ArrayList<Number[]> data ;
+
+            XYSeries xySeries = new XYSeries(0) ;
+
+            //data = scoreData.get(0) ;
+            dataSize = scoreData.size();
+
+            for (int index = 0 ; index < dataSize; index++ )
+            {
+                scoreValueArray = scoreData.get(index) ;
+                xValue = scoreValueArray[0] ;
+                yValue = scoreValueArray[1] ;
+                xySeries.add(xValue, yValue, false);
+            }
+            
+            //TODO: Expand to include multiplot plots on same graph
+            /*try
+            {
+                xySeriesCollection.addSeries((XYSeries) xySeries.clone()) ;
+            }
+            catch ( CloneNotSupportedException cnse )
+            {
+                LOGGER.log(Level.SEVERE, cnse.toString());
+            }*/
+
+            
+            return new XYSeriesCollection(xySeries) ;//xySeriesCollection ;
         }
         
         /**
