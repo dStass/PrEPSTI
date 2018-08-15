@@ -9,8 +9,9 @@ import java.lang.reflect.* ;
 import java.util.ArrayList ;
 import java.util.Arrays;
 import java.util.HashMap ;
-import java.util.logging.Level;
 
+import community.Community ;
+import java.util.logging.Level;
 import reporter.Reporter ;
 import reporter.SortReporter ;
 import reporter.EncounterReporter ;
@@ -27,13 +28,13 @@ public class SortPresenter extends Presenter {
     
     public static void main(String[] args) // "test1","encounter","population","fileName","test1","plotReceiveSortPrepStatusReport","false"
     {
-        String simName = "NoPrepCalibration61Pop40000Cycles7000" ; // args[0] ;
-        String chartTitle = "relationships_in_past_ten_years" ; // args[1] ;
-        String reportFileName = "../output/test/" ; // args[2] ;
+        String simName = "NoPrepCalibration86Pop40000Cycles5000" ; // Community.NAME_ROOT ; // "testPlotCondomUsePop4000Cycles500" ; // args[0] ;
+        String chartTitle = "Relationships_past_three_years" ; // args[1] ;
+        String reportFileName = "output/test/" ; // args[2] ;
         SortPresenter sortPresenter = new SortPresenter(simName,chartTitle,reportFileName,"infection","relationship") ;
-        //encounterPresenter.plotCondomUse();
-        sortPresenter.plotSortPrevalence(10,5) ;
-
+        sortPresenter.plotSortPrevalence(5,3) ;
+        //SortPresenter sortPresenter = new SortPresenter(simName,chartTitle,reportFileName,"infection","relationship") ;
+        //sortPresenter.plotAgeNumberEnteredRelationshipRecord() ;
     }
     
     public SortPresenter()
@@ -69,27 +70,6 @@ public class SortPresenter extends Presenter {
     }
 
     /**
-     * Plots the number of infections received by Agents with PrEP status,
-     * given by (boolean) value, per cycle.
-     * @param value 
-     */
-    public void plotReceiveSortPrepStatusReport(String value)
-    {
-        LOGGER.info("prepareReceiveSortPrepStatusReport");
-        HashMap<Object,HashMap<Object,ArrayList<Object>>> receiveSortPrepStatusReport 
-                = reporter.prepareReceiveSortPrepStatusReport(value) ;
-        LOGGER.log(Level.INFO, "{0}", receiveSortPrepStatusReport);
-        HashMap<Object,HashMap<Object,ArrayList<Object>>> invertedPrepStatusReport 
-                = SortReporter.invertHashMapHashMap(receiveSortPrepStatusReport) ;
-        LOGGER.info("prepareTransmissionCountReport");
-        ArrayList<ArrayList<Object>> nbTransmissionReport 
-                = ((EncounterReporter) reporter.getUnsortedReporter()).prepareReceiveCountReport(invertedPrepStatusReport) ;
-        LOGGER.log(Level.INFO, "{0}", nbTransmissionReport);
-        LOGGER.info("plotCycleValue");
-        plotEventsPerCycle("nbTransmissions", nbTransmissionReport) ;
-    }
-    
-    /**
      * Plots the prevalence of STI among MSM with partnerCount new Relationships in the 
      * past backYears years.
      */
@@ -106,9 +86,10 @@ public class SortPresenter extends Presenter {
                 
         String prevalenceSortRecord ;
         double prevalence ;
-        int totalPopulation = 0 ;
-        
-        String[] scoreNames = new String[] {"prevalence","nonprevalence"} ;
+        int referencePopulation ;
+        int population;
+                
+        String scoreNames = "prevalence" ;
         
         prevalenceSortReport = reporter.prepareSortPrevalenceReport(partnerCount, backYear) ;
         for (int partnerIndex = 0 ; partnerIndex <= partnerCount ; partnerIndex++ )
@@ -116,16 +97,16 @@ public class SortPresenter extends Presenter {
             prevalenceSortReportEntry = prevalenceSortReport.get(partnerIndex) ;
             if (!prevalenceSortReportEntry.isEmpty())
             {
-                prevalences.add(Double.valueOf(Reporter.extractValue("prevalence", prevalenceSortReportEntry))) ;
-                int population = Integer.valueOf(Reporter.extractValue("population", prevalenceSortReportEntry));
+                population = Integer.valueOf(Reporter.extractValue("population", prevalenceSortReportEntry));
                 populations.add(population) ;
+                prevalences.add(Double.valueOf(Reporter.extractValue("prevalence", prevalenceSortReportEntry))) ;
             }
             else 
                 break ;
         }
         
-        totalPopulation = populations.get(0) ;
-                
+        referencePopulation = populations.get(0) ;    // Community.POPULATION ;
+        LOGGER.info(String.valueOf(referencePopulation));
         // Normalise entries according to proportion of population with given number of previous partners
         // All agents with two or more new partners also had one or more, so we normalise by this figure.
         // Adjust number of loops according to when/whether previous loop executed break.
@@ -133,13 +114,13 @@ public class SortPresenter extends Presenter {
         {
             int index = nbPartner - 1 ;
             // Normalise by this.
-            populationRatio = ((double) populations.get(index))/totalPopulation ;
+            populationRatio = ((double) populations.get(index))/referencePopulation ;
             
             prevalence = prevalences.get(index) ;
-            prevalence = prevalence * populationRatio ;
-            prevalenceSortCount.put(nbPartner, new Number[] {prevalence, populationRatio - prevalence}) ;
+            //prevalence = prevalence * populationRatio ;
+            prevalenceSortCount.put(nbPartner, new Number[] {populationRatio, prevalence}) ;
         }
-        plotHashMapNumber("nbPartners",scoreNames, prevalenceSortCount) ;
+        plotHashMapArea("nbPartners",scoreNames, prevalenceSortCount) ;
     }
     
     /**
@@ -147,10 +128,10 @@ public class SortPresenter extends Presenter {
      */
     public void plotAgeNumberEnteredRelationshipRecord()
     {
-        HashMap<Object,Double> ageNumberEnteredRelationshipRecord 
+        HashMap<Object,Number> ageNumberEnteredRelationshipRecord 
                 = reporter.prepareAgeNumberEnteredRelationshipRecord() ;
         
-        plotHashMapDouble("age","nbPartners", ageNumberEnteredRelationshipRecord ) ;
+        plotHashMap("age","nbPartners", ageNumberEnteredRelationshipRecord ) ;
     }
     
 }
