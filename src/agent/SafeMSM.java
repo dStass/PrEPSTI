@@ -99,4 +99,9 @@ public class SafeMSM extends MSM{
     }
     
     
+    @Override
+    public void adjustCondomUse()
+    {
+        probabilityUseCondom = 0.0 ;
+    }
 }
