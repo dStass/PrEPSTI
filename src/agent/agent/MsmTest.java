@@ -170,43 +170,40 @@ public class MsmTest {
         assert (consent0) : "msm0.consent() yields 'false' when it should yield 'true'. Test 8" ;
         assert (consent1) : "msm1.consent() yields 'false' when it should yield 'true'. Test 8" ;
         
-        LOGGER.info("msmTest.testConsent() passed successfully") ;
-                
+        LOGGER.info("msmTest.testConsent() passed successfully") ;           
     }
     
     /**
-     * Do MSM using PrEP screen on screening day as they should?
-     * Do non PrEP users give valid probability for screening?
+     * Check that properties are properly adjusted when statusHIV is set.
      */
-    public void testGetScreenProbability()
+    public void testSetStatus()
     {
-        boolean testResult0 ;
-        boolean testResult1 ;
+        msm0.setStatusHIV(true);
+        assert (msm0.getStatusHIV()) : "msm0.getStatusHIV() should be 'true'. Test 1" ;
+        assert (!msm0.getPrepStatus()) : "msm0.getStatusHIV() should be 'false'. Test 2" ;
         
-        // Test for MSM on PrEP
-        msm0.setPrepStatus(true) ;
-        // always test on screening day 
-        // TODO: Check for results of changing static in subclass
-        int prepScreenCycle = 3 * msm0.getScreenCycle() ;
-        String[] testArgs = {Integer.toString(prepScreenCycle)} ;
-        assert (msm0.getScreenProbability(testArgs) == 1.0 ) : 
-                "MSM on PrEP failed to screen on screening day" ;
-        // never screen otherwise
-        String[] testArgs1 = {Integer.toString(prepScreenCycle) + 1} ;
-        assert (msm0.getScreenProbability(testArgs1) == 0.0 ) :
-                "MSM on PrEP screened on non-screening day";
-            
-        // Non-PrEP users
-        msm0.setPrepStatus(false);
-        boolean testNonPrep = (0 < msm0.getScreenProbability(testArgs1)) ;
-        testNonPrep = (testNonPrep && (msm0.getScreenProbability(testArgs1) < 1)) ;
-        assert (testNonPrep) : "NonPrep MSM gave invalid screenProbability" ;
-        
-        
-        // Non-prep users 
-        
+        msm1.setStatusHIV(false);
+        assert (!msm1.getStatusHIV()) : "msm1.getStatusHIV() should be 'false'. Test 3" ;
+        assert (!msm0.getAntiViralStatus()) : "msm1.getAntiViralStatus() should be 'false'. Test 4" ;
     }
-
+    
+    /**
+     * Test that Sites are chosen with proper accounting for relevant factors
+     * such as seroPositioning and statusHIV.
+     * 
+     * The (String) parameter in MSM.chooseSites is the Class name of the 
+     * Relationship, which is currently unused.
+     */
+    public void testChooseSites()
+    {
+        setStatusHIV(true,false) ;
+        
+        msm0.setSeroPosition(true);
+        Site[] sites = MSM.chooseSites(msm0, msm1, "") ;
+        
+        assert (Urethra.class.isInstance(sites[0])) : "Site chosen for msm0 must not be Urethra." ;
+    }
+    
     /**
      * Method to set statusHIV of both MSMs for above tests
      * @param statusHIV0
@@ -261,7 +258,7 @@ public class MsmTest {
             return 0;
         }
 
-        public double getProbabilityHIV() {
+        public double getProportionHIV() {
             return 0.0;
         }
 
