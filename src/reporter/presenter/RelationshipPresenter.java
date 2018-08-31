@@ -5,12 +5,12 @@
  */
 package reporter.presenter;
 
-import java.lang.reflect.Method;
+//import java.lang.reflect.Method;
 import reporter.* ;
-import community.Community ;
+//import community.Community ;
 
 import java.util.ArrayList ;
-import java.util.Arrays;
+//import java.util.Arrays;
 import java.util.HashMap;
 import java.util.logging.Level;
 
@@ -25,14 +25,16 @@ public class RelationshipPresenter extends Presenter{
     
     public static void main(String[] args)
     {
-        String simName = "noPrepCalibration86Pop40000Cycles5000" ; // Community.NAME_ROOT ; // "testPlotCondomUsePop4000Cycles500" ; // args[0] ;
-        String chartTitle = "relationships_of_length" ; // args[1] ;
+        String simName = "NoPrepCalibration86Pop40000Cycles5000" ; // Community.NAME_ROOT ; // "introPrepCalibration49Pop40000Cycles5000" ; // "NoPrepSetting01Pop40000Cycles5000" ; // 
+        //String simName = "testPop30000Cycles500" ; // Community.NAME_ROOT ; // "testPlotCondomUsePop4000Cycles500" ; // args[0] ;
+        String chartTitle = "cumulative_relationship_transmissions" ; // args[1] ;
         String reportFileName = "output/test/" ; // args[2] ;
         RelationshipPresenter relationshipPresenter = new RelationshipPresenter(simName,chartTitle,reportFileName) ;
         //relationshipPresenter.plotCumulativeRelationshipGaps() ;
+        //relationshipPresenter.plotCumulativeRelationships() ;
         //relationshipPresenter.plotCumulativeRelationshipLengths() ;
-        //relationshipPresenter.plotRelationshipCumulativeTransmissions() ;
-        relationshipPresenter.plotRelationshipLength() ;
+        relationshipPresenter.plotRelationshipCumulativeTransmissions() ;
+        //relationshipPresenter.plotRelationshipLength() ;
         
     }
     
@@ -114,16 +116,16 @@ public class RelationshipPresenter extends Presenter{
         HashMap<Object,Number> relationshipLengthReport = reporter.prepareLengthAtBreakupReport() ;
         
         // Comment out if Casual Relationships are to be included
-        relationshipLengthReport.remove(1) ;
+        // relationshipLengthReport.remove(1) ;
         
-        plotHashMap("Length", "Number of relationships", relationshipLengthReport ) ;
+        plotHashMap("Length", "Length of relationships", relationshipLengthReport ) ;
     }
 
     public void plotCumulativeRelationshipLengths()
     {
         HashMap<Object,Number> cumulativeRelationshipLengthReport = reporter.prepareCumulativeLengthReport() ;
         
-        plotHashMap("Number of relationships","Cumulative length distribution",cumulativeRelationshipLengthReport) ;
+        plotHashMap("Cumulative length distribution","Number of relationships",binCumulativeHashMap(cumulativeRelationshipLengthReport,"Number of relationships")) ;
     }
     
     public void plotCumulativeRelationships()
@@ -167,12 +169,12 @@ public class RelationshipPresenter extends Presenter{
      */
     public void plotRelationshipCumulativeTransmissions()
     {
-        EncounterReporter encounterReporter = new EncounterReporter(Community.NAME_ROOT, Community.FILE_PATH) ;
-        LOGGER.info(reporter.getSimName());
+        EncounterReporter encounterReporter 
+                = new EncounterReporter(reporter.getSimName(), reporter.getFolderPath()) ;
         HashMap<Object,Number> relationshipCumulativeTransmissionReport
         = reporter.prepareRelationshipCumulativeTransmissionReport(encounterReporter) ;
         
-        plotHashMap("Number of Transmissions","Cumulative relationships",relationshipCumulativeTransmissionReport) ;
+        plotHashMap("Number of Transmissions","Cumulative relationships",binCumulativeHashMap(relationshipCumulativeTransmissionReport,"Cumulative relationships")) ;
     }
             
             
