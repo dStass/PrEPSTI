@@ -17,26 +17,29 @@ import java.util.Random;
 
 import java.lang.reflect.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
+//import java.util.HashMap;
 import java.util.logging.Level;
 
-import org.jfree.chart.* ;
+//import org.jfree.chart.* ;
 
 /******************************************************************
  * @author Michael Luke Walker
  *
  *******************************************************************/
 public class Community {
-    static public int POPULATION = 40000;
-    static public int MAX_CYCLES = 7500;
-    //static public String NAME_ROOT = "testPlotSortRelationshipsByAge"
-    //static public String NAME_ROOT = "testPlotSortPrevalenceYear3Partners10"
-    static public String NAME_ROOT = "NoPrepCalibration93"
-    //static public String NAME_ROOT = "testSiteSelectCalibration68"
-    //static public String NAME_ROOT = "introPrep2000Setting05"
+    static public int POPULATION = 40000 ;
+    static public int MAX_CYCLES = 5000 ;
+    //static public String NAME_ROOT = "test4" 
+    static public String NAME_ROOT = "NoPrepCalibration11" 
+    //static public String NAME_ROOT = "DecliningCondoms5"
             + "Pop" + String.valueOf(POPULATION) + "Cycles" + String.valueOf(MAX_CYCLES) ;
 
+    //static private String COMMENT = "" ;
+    static final String COMMENT = "" ;    /*very cycle after 1000 stops N=5 more Agents "
+            + "from ever choosing condoms. "
+            + "Assumes number of Agents at least N times number of cycles minus 1000." ;*/
     static public String FILE_PATH = "output/test/" ;
     /** Dump reports to disk after this many cycles. */
     static final int DUMP_CYCLE = ((int) Math.pow(10, 7))/POPULATION ;
@@ -139,14 +142,20 @@ public class Community {
             outputInterval = POPULATION/2 ;
         else
             outputInterval = POPULATION / (MAX_CYCLES) ;
-        if (outputInterval < 10)
-            outputInterval = 10 ;
+        if (outputInterval < 100)
+            outputInterval = 100 ;
         
         // Generate relationships for simulation
         for (int burnin = 0 ; burnin < 2000 ; burnin++ )
         {
             Relationship.BURNIN_COMMENCE = community.generateRelationships() + Relationship.BURNIN_COMMENCE ;
             Relationship.BURNIN_BREAKUP = community.clearRelationships().substring(6) + Relationship.BURNIN_BREAKUP ;
+            // 6 = "clear:".length()
+        }
+        
+        //for (Agent agent : community.agents)
+        {
+          //  LOGGER.log(Level.INFO, "agentId:{0} nbRelationships:{1}", new Object[] {agent.getAgentId(),agent.getCurrentPartnerIds().size()});
         }
         
         //outputInterval = 1 ;
@@ -155,8 +164,8 @@ public class Community {
             if (cycle == ((cycle/outputInterval) * outputInterval))
                 LOGGER.log(Level.INFO, "Cycle no. {0}", cycleString);
 
-            if (false && cycle >= 2000)
-                community.interveneCommunity() ;
+            if (false && cycle >= 1000)
+                community.interveneCommunity(5*(cycle-1000)) ;
             //LOGGER.log(Level.INFO,"{0} {1}", new Object[] {Relationship.NB_RELATIONSHIPS,Relationship.NB_RELATIONSHIPS_CREATED});
             // update relationships and perform sexual encounters, report them
             relationshipRecord = cycleString + community.generateRelationships();
@@ -202,7 +211,6 @@ public class Community {
             populationRecord = cycleString + community.births(deltaPopulation) ;
         }
         // Final dump() or whole dump if no partial dumps
-        LOGGER.log(Level.INFO, "{0} {1}", new Object[] {DUMP_CYCLE,PARTIAL_DUMP});
         if (!PARTIAL_DUMP || (((Community.MAX_CYCLES)/DUMP_CYCLE) * DUMP_CYCLE) != Community.MAX_CYCLES )
             community.dump() ;
         community.dumpMetaData() ;
@@ -227,7 +235,7 @@ public class Community {
         //screeningPresenter2.plotPrevalence();
         //screeningPresenter2.plotIncidencePerCycle();
         ScreeningPresenter screeningPresenter3 
-                = new ScreeningPresenter("multi prevalence",Community.NAME_ROOT,screeningReporter) ;
+                = new ScreeningPresenter(Community.NAME_ROOT,"multi prevalence",screeningReporter) ;
         screeningPresenter3.multiPlotScreening(new Object[] {"prevalence","prevalence",new String[] {"Pharynx","Rectum","Urethra"},"coprevalence",new String[] {"Pharynx","Rectum"}});  // ,"coprevalence",new String[] {"Pharynx","Rectum"},new String[] {"Urethra","Rectum"}
         
         //EncounterReporter encounterReporter = new EncounterReporter("Agent to Agent",community.encounterReport) ;
@@ -287,11 +295,11 @@ public class Community {
         //RelationshipPresenter relationshipPresenter 
           //      = new RelationshipPresenter("Cumulative Relationships to date","Cumulative Relationships to date",relationshipReporter) ;
         //relationshipPresenter.plotCumulativeRelationships();
-        RelationshipReporter relationshipReporter 
-                = new RelationshipReporter(Community.NAME_ROOT,Community.FILE_PATH) ; 
-        RelationshipPresenter relationshipPresenter2 
-                = new RelationshipPresenter("Mean number of Relationships",Community.NAME_ROOT,relationshipReporter) ;
-        relationshipPresenter2.plotMeanNumberRelationshipsReport();
+        //RelationshipReporter relationshipReporter 
+          //      = new RelationshipReporter(Community.NAME_ROOT,Community.FILE_PATH) ; 
+        //RelationshipPresenter relationshipPresenter2 
+          //      = new RelationshipPresenter("Mean number of Relationships",Community.NAME_ROOT,relationshipReporter) ;
+        //relationshipPresenter2.plotMeanNumberRelationshipsReport();
         
     }
 
@@ -356,18 +364,20 @@ public class Community {
     /**
      * For addressing specific questions. Code will flux dramatically.
      */
-    private String interveneCommunity()
+    private String interveneCommunity(int agentId)
     {
-        for (Agent agent : agents)
+        for (int index = 0 ; index < 8 ; index++ )
+            agents.get(agentId + index).adjustCondomUse();
+        /*for (Agent agent : agents)
         {
-            if (!((MSM) agent).getPrepStatus())
+            if (false && !((MSM) agent).getPrepStatus())
             {
                 //double prepProbability = ((MSM) agent).getProbabilityPrep() ;
                 ((MSM) agent).reinitPrepStatus(true) ; // RAND.nextDouble() < prepProbability) ;
                 break ;
             }
-        }
-        return "PrEP introduced" ; // gradually" ;
+        }*/
+        return "condom use halved for " ;  // PrEP introduced" ; // gradually" ;
     }
     
     /**
@@ -840,20 +850,31 @@ public class Community {
     {
         ArrayList<String> metaLabels = new ArrayList<String>() ; 
         ArrayList<Object> metaData = new ArrayList<Object>() ; 
+        metaLabels.add("Community.NAME_ROOT") ;
+        metaData.add(Community.NAME_ROOT) ;
+        metaLabels.add("Community.FILE_PATH") ;
+        metaData.add(Community.FILE_PATH) ;
         metaLabels.add("Community.POPULATION") ;
         metaData.add(Community.POPULATION) ;
         metaLabels.add("Community.MAX_CYCLES") ;
         metaData.add(Community.MAX_CYCLES) ;
         metaLabels.add("community.randomSeed") ;
         metaData.add(RANDOM_SEED) ;
+        
+        metaLabels.add("agent.SITE_NAMES") ;
+        metaData.add(Arrays.asList(Agent.SITE_NAMES)) ;
         metaLabels.add("agent.randomSeed") ;
         metaData.add(Agent.GET_RANDOM_SEED()) ;
+        
         metaLabels.add("site.randomSeed") ;
         metaData.add(Site.GET_RANDOM_SEED()) ;
         metaLabels.add("Relationship.BURNIN_COMMENCE") ;
         metaData.add(Relationship.BURNIN_COMMENCE) ;
         metaLabels.add("Relationship.BURNIN_BREAKUP") ;
         metaData.add(Relationship.BURNIN_BREAKUP) ;
+        
+        metaLabels.add("Comment") ;
+        metaData.add(Community.COMMENT) ;
         
         scribe.dumpMetaData(metaLabels,metaData) ;
     }
