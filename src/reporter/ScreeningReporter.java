@@ -14,6 +14,7 @@ import community.Community ;
 
 import java.io.* ;
 import java.util.ArrayList ;
+import java.util.HashMap;
 import java.util.logging.Level;
 
 
@@ -36,17 +37,72 @@ public class ScreeningReporter extends Reporter {
     {
         super(simName,reportFilePath) ;
     }
+    
+    /**
+     * 
+     * @param siteNames
+     * @return Records of final prevalences for specified siteNames and in total.
+     */
+    public HashMap<Object,Number> prepareFinalPrevalencesRecord(String[] siteNames)
+    {
+        HashMap<Object,Number> finalPrevalencesRecord = new HashMap<Object,Number>() ;
+        
+        int prevalence ;
+        
+        String finalPrevalenceRecord = getFinalRecord() ;
+        
+        double population = Double.valueOf(getMetaDatum("Community.POPULATION")) ;
+        for (String siteName : siteNames)
+        {
+            // Count infected siteName
+            prevalence = countValueIncidence(siteName,TRUE,finalPrevalenceRecord,0)[1];
+            finalPrevalencesRecord.put(siteName,prevalence/population) ;
+        }
+        
+        prevalence = countValueIncidence(AGENTID,"",finalPrevalenceRecord,0)[1];
+        finalPrevalencesRecord.put("total",prevalence/population) ;
+        
+        return finalPrevalencesRecord ;
+    }
  
     /**
      * 
-     * @return (ArrayList\<String\>) indicating the total coprevalence, coprevalence of 
+     * @param siteNames
+     * @return Records of final symptomatic prevalences for specified siteNames and in total.
+     */
+    public HashMap<Object,Number> prepareFinalSymptomaticRecord(String[] siteNames)
+    {
+        HashMap<Object,Number> finalSymptomaticRecords = new HashMap<Object,Number>() ;
+        
+        int symptomatic ;
+        
+        String finalSymptomaticRecord = getFinalRecord() ;
+        
+        double population = Double.valueOf(getMetaDatum("Community.POPULATION")) ;
+        for (String siteName : siteNames)
+        {
+            // Count infected siteName
+            symptomatic = countValueIncidence(siteName,TRUE,finalSymptomaticRecord,0)[0];
+            finalSymptomaticRecords.put(siteName,symptomatic/population) ;
+        }
+        
+        ArrayList<String> infectionArray = extractArrayList(finalSymptomaticRecord,AGENTID,TRUE) ;
+        symptomatic = infectionArray.size() ;
+        finalSymptomaticRecords.put("total",symptomatic/population) ;
+        
+        return finalSymptomaticRecords ;
+    }
+ 
+    /**
+     * 
+     * @return (ArrayList) indicating the total coprevalence, coprevalence of 
      * symptomatic infection, and proportion of symptomatic infection in each report cycle.
      */
     public ArrayList<Object> preparePrevalenceReport()
     {
         ArrayList<Object> prevalenceReport = new ArrayList<Object>() ;
         
-        int population = Community.POPULATION ;
+        int population = Integer.valueOf(getMetaDatum("Community.POPULATION")) ;
         int nbInfected ;
         int nbSymptomatic ;
         String entry ;
@@ -89,7 +145,7 @@ public class ScreeningReporter extends Reporter {
     
     /**
      * 
-     * @return (ArrayList\<String\>) indicating the total coprevalence, coprevalence of 
+     * @return (ArrayList) indicating the total coprevalence, coprevalence of 
      * symptomatic infection, and proportion of symptomatic infection at site given 
      * by siteName in each report cycle.
      */
@@ -97,11 +153,9 @@ public class ScreeningReporter extends Reporter {
     {
         ArrayList<Object> sitePrevalenceReport = new ArrayList<Object>() ;
         
-        boolean nextInput = true ; 
-        
-        while (nextInput)
+        for (boolean nextInput = true ; nextInput ; nextInput = updateReport() )
         {
-            int population = Community.POPULATION ;
+            int population = Integer.valueOf(getMetaDatum("Community.POPULATION")) ;
             int[] nbSymptomatic ;
             String entry ;
             for (String record : input)
@@ -117,7 +171,7 @@ public class ScreeningReporter extends Reporter {
                 entry += addReportProperty("proportion",((double) nbSymptomatic[0])/nbSymptomatic[1]) ;
                 sitePrevalenceReport.add(entry) ;
             }
-            nextInput = updateReport() ;
+            
         }
         return sitePrevalenceReport ;
     }
@@ -131,7 +185,7 @@ public class ScreeningReporter extends Reporter {
     {
         ArrayList<Object> siteCoPrevalenceReport = new ArrayList<Object>() ;
         
-        int population = Community.POPULATION ;
+        int population = Integer.valueOf(getMetaDatum("Community.POPULATION")) ;
         int[] nbSymptomatic ;
         Double coprevalence ;
         String entry ;
@@ -171,7 +225,7 @@ public class ScreeningReporter extends Reporter {
         
         int incidents ;
         double incidence ;
-        int population = Community.POPULATION ;
+        int population = Integer.valueOf(getMetaDatum("Community.POPULATION")) ;
         String output ;
         
         // Loop through Reporter input files 
