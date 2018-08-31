@@ -107,4 +107,13 @@ public class RiskyMSM extends MSM
         return JOIN_ORGY_PROBABILITY ;
     }
     
+    /**
+     * Called to adjust the changing condom use over time.
+     */
+    @Override
+    public void adjustCondomUse()
+    {
+        probabilityUseCondom = 0.0 ;
+    }
+    
 }
