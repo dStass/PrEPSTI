@@ -20,8 +20,7 @@ import java.util.logging.Logger;
 //import java.util.List;
 
 /**
- * @author Michael Walker
- * @email mlwalker@kirby.unsw.edu.au
+ * @author <a href = "mailto:mlwalker@kirby.unsw.edu.au">Michael Walker</a>
  *
  */
 public abstract class Agent {
@@ -64,7 +63,8 @@ public abstract class Agent {
     static final long RANDOM_SEED = System.nanoTime() ;
     static final Random RAND = new Random(RANDOM_SEED) ;
     
-    /** get RANDOM_SEED. */
+    /** get RANDOM_SEED.
+     * @return  */
     static public final long GET_RANDOM_SEED()
     {
         return RANDOM_SEED ;
@@ -169,11 +169,28 @@ public abstract class Agent {
         return chooseSites(agent0, agent1) ;
     }
     
+    /**
+     * TODO: Implement Method based on relative frequency of types of sexual contact.
+     * @param agent0
+     * @param agent1
+     * @param relationshipClazzName
+     * @return Probabilistically chosen Site[2] of Sites for sexual contact.
+     */
+    public static Site[] chooseSitesNew(Agent agent0, Agent agent1, String relationshipClazzName)
+    {
+        return chooseSites(agent0, agent1, relationshipClazzName) ;
+    }
+    
+    /**
+     * @param agent0
+     * @param agent1
+     * @return Probabilistically chosen Site[2] of Sites for sexual contact.
+     */
     public static Site[] chooseSites(Agent agent0, Agent agent1)
     {
-            Site site0 = agent0.chooseSite() ;
-            Site site1 = agent1.chooseSite(site0) ;
-    return new Site[] {site0,site1} ;
+        Site site0 = agent0.chooseSite() ;
+        Site site1 = agent1.chooseSite(site0) ;
+        return new Site[] {site0,site1} ;
     }
 
     /**
@@ -191,6 +208,13 @@ public abstract class Agent {
     	return 0.5 ;
     }
 	
+    /**
+     * 
+     * @param agent0
+     * @param agent1
+     * @param relationshipName
+     * @return (boolean) whether condom is used in sexual encounter.
+     */
     public static boolean useCondom(Agent agent0, Agent agent1, String relationshipName)
     {
         return ((agent0.chooseCondom(relationshipName, agent1)) || (agent1.chooseCondom(relationshipName, agent0))) ;
@@ -213,7 +237,7 @@ public abstract class Agent {
             initConcurrency() ;
             initInfidelity() ;
             
-            initRelationshipOdds() ;
+            // initRelationshipOdds() ;    // Defined in preamble.
 
             Class<?> clazz = this.getClass() ;
             agent = clazz.asSubclass(clazz).getSimpleName() ;
@@ -250,11 +274,11 @@ public abstract class Agent {
         try
         {
             // odds of choosing a Monogomous Relationship
-            double monogomousOdds = RAND.nextDouble() * Monogomous.BREAKUP_PROBABILITY ;
+            monogomousOdds = RAND.nextDouble() * Monogomous.BREAKUP_PROBABILITY ;
             // odds of choosing a Regular Relationship
-            double regularOdds = RAND.nextDouble() * Regular.BREAKUP_PROBABILITY ;
+            regularOdds = RAND.nextDouble() * Regular.BREAKUP_PROBABILITY ;
             // odds of choosing a Casual Relationship
-            double casualOdds = RAND.nextDouble() * Casual.BREAKUP_PROBABILITY ;
+            casualOdds = RAND.nextDouble() * Casual.BREAKUP_PROBABILITY ;
         }
         catch ( Exception e )
         {
@@ -262,11 +286,37 @@ public abstract class Agent {
         }
 
     }
-    public int getAge() {
+    
+    /**
+     * Initialises Agent infectedStatus while ensuring consistency with 
+     * Site.infectedStatus .
+     */
+    final public void initInfectedStatus()
+    {
+        boolean infected = false ;    //  getInfectedStatus() ;
+        for (Site site : getSites())
+        {
+            infected = infected || site.initialiseInfection() ;
+            setSymptomatic(site) ;
+        }
+        setInfectedStatus(infected) ;
+    }
+       
+    /**
+     * 
+     * @return (int) age of Agent.
+     */
+    public int getAge() 
+    {
             return age;
     }
 
-    public void setAge(int age) {
+    /**
+     * Sets age of Agent to (int) age.
+     * @param age 
+     */
+    public void setAge(int age) 
+    {
             this.age = age;
     }
 
@@ -356,11 +406,11 @@ public abstract class Agent {
     public String getCensusReport()
     {
         String censusReport = "" ;
-        censusReport += "agentId:" + String.valueOf(agentId) + " " ;  // Reporter.addReportProperty("agentId",agentId) ;
-        censusReport += "class:" + agent + " " ;  // Reporter.addReportProperty("class",agent) ;
+        censusReport += Reporter.addReportProperty("agentId",agentId) ;
+        censusReport += Reporter.addReportProperty("class",agent) ;
         censusReport += "age:" + String.valueOf(getAge()) + " " ;  // Reporter.addReportProperty("startAge", getAge()) ;
-        //censusReport += "concurrency:" + String.valueOf(concurrency) + " " ;  // Reporter.addReportProperty("concurrency",concurrency) ;
-        //censusReport += "infidelity:" + String.valueOf(infidelity) + " " ;  // Reporter.addReportProperty("infidelity",infidelity) ;
+        censusReport += Reporter.addReportProperty("concurrency",concurrency) ;
+        censusReport += Reporter.addReportProperty("infidelity",infidelity) ;
         censusReport += Reporter.addReportProperty("screenInterval",getScreenCycle()) ;
         
         /*Class fieldClazz ;
@@ -448,6 +498,12 @@ public abstract class Agent {
             cyclesModYear = 0 ;
         }
     }
+    
+    /**
+     * Called to adjust condom use.
+     */
+    abstract public void adjustCondomUse() ;
+    
     /**
      * Invoked every 365 cycles to age the agent by one year.
      * In turn invokes ageEffects() to handle the effects of age.
@@ -493,10 +549,11 @@ public abstract class Agent {
 
     /**
      * 
+     * @param relationshipClazzName
      * @param partner
      * @return true if Agent decides to use a condom, false otherwise
      */
-    abstract protected boolean chooseCondom(String relationshipClazzName, Agent partner) ;
+    abstract protected boolean chooseCondom(String relationshipClazzName, Agent partner);
             
     /**
      * Probabilistically transmits infection to receiving site.
@@ -686,6 +743,8 @@ public abstract class Agent {
      */
     public boolean consent(String relationshipClazzName, Agent partner)
     {
+        if (currentPartnerIds.contains(partner.agentId))    // One Relationship per partner
+            return false ;
         if (inMonogomous)
             if (RAND.nextDouble() > infidelity) 
                 return false ;
@@ -720,8 +779,8 @@ public abstract class Agent {
 
     /**
      * Sets the availability according to the number of relationships and participation in 
-     * a monogomous relationship
-     * @return (Boolean) available
+     * a Regular relationship
+     * @return (boolean) available
      */
     protected boolean updateAvailable()
     {
@@ -736,7 +795,6 @@ public abstract class Agent {
 
     /**
      * Adds relationship to ArrayList relationships and initiates entry into a relationship
-     * TODO: Ensure that Agent never has more than one concurrent Relationship with the same partner
      * @param relationship
      * @return String report number of Relationships
      */
@@ -927,7 +985,7 @@ public abstract class Agent {
         
     }
 
-    //TODO: Clean up leaveRelationshipType(int agentNb)
+    //TODO: Clean up leaveRelationship(int agentNb)
     private void leaveRelationship(int agentNb)
     {
             //Convert agentNb to Object so not treated as index
@@ -1016,9 +1074,7 @@ public abstract class Agent {
     }
 
     /**
-     * Calls agent.death() to see if they die and removes them from agents
-     * if so
-     * @param agent
+     * Calls death() to see if Agent dies and removes from agents if so.
      * @return true if agent dies and false otherwise
      */
     final public boolean grimReaper()
