@@ -8,7 +8,8 @@ package community.community;
 import agent.* ;
 import site.* ;
 import reporter.Reporter ;
-import community.Relationship;
+import community.* ;
+import java.lang.reflect.InvocationTargetException;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -43,56 +44,77 @@ public class RelationshipTest {
 
     /**
      * Test of encounter method, of class Relationship.
+     * @throws java.lang.Exception
      */
     @Test
-    public void testEncounter() throws Exception {
+    public void testEncounter() throws Exception{
         System.out.println("encounter");
         Relationship instance = new Relationship();
         String expResult = "";
         
-        MSM msm0 = new RiskyMSM(20) ;
-        for (Site site : msm0.getSites())
+        for (String checkSiteName : MSM.SITE_NAMES)
         {
-            if ("Urethra".equals(site.getSite()))
-                msm0.receiveInfection(1.1,site) ;
-            else
-                site.treat();
-        }
-        
-        MSM msm1 = new SafeMSM(30) ;
-        for (Site site : msm1.getSites())
-        {
-            if ("Urethra".equals(site.getSite()))
-                msm0.receiveInfection(1.1,site) ;
-            else
-                site.treat();
-        }
-        
-        String result = instance.testEncounter();
-        
-        System.out.println(result);
-        
-        if (result.indexOf("Urethra") < 0)
-            assertEquals(-1,result.indexOf("transmission:")) ;
-        else
-            assert(!Reporter.extractAllValues("Urethra", result, 0).contains("0")) ;
-        //assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        //fail("The test case is a prototype.");
-    }
+            // MSMs both infected at Urethra only
+            MSM msm0 = new RiskyMSM(20) ;
+            for (Site site : msm0.getSites())
+            {
+                if (checkSiteName.equals(site.getSite()))
+                    msm0.receiveInfection(1.1,site) ;    // Must receive infection, +0.1 margin against round-off
+                else
+                    site.treat();
+            }
 
-    /**
-     * Test of getReport method, of class Relationship.
-     */
+            MSM msm1 = new SafeMSM(30) ;
+            for (Site site : msm1.getSites())
+            {
+                if (checkSiteName.equals(site.getSite()))
+                    msm1.receiveInfection(1.1,site) ;    // Must receive infection, +0.1 margin against round-off
+                else
+                    site.treat();
+            }
+
+            String result = instance.testEncounter();
+
+            System.out.println(result);
+
+            if (!result.contains(checkSiteName))    // checkSiteName not mentioned in result
+                assertEquals(-1,result.indexOf("transmission:")) ;    // implies no transmission
+            else    // Urethra is mentioned in result
+                assert(!Reporter.extractAllValues(checkSiteName, result, 0).contains("0")) ;    // checkSiteName must be infected
+            //assertEquals(expResult, result);
+        }
+    }
+        
     @Test
-    public void testGetReport() {
-        System.out.println("getReport");
-        Relationship instance = new Relationship();
-        String expResult = "";
-        String result = instance.getRecord();
-        assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
+    public void testRelationship() throws Exception
+    {
+        Agent agent0 = new SafeMSM(20) ;
+        Agent agent1 = new SafeMSM(19) ;
+        
+        Casual casual = new Casual(agent0,agent1) ;
+        
+        assert(agent0.getCurrentRelationships().size() == 1) : "agent0 should have exactly one Relationship" ;
+        assert(agent1.getCurrentRelationships().size() == 1) : "agent1 should have exactly one Relationship" ;
+        
+        assert(agent0.getCurrentRelationships().contains(casual)) : "agent0.currentRelationships should have (Casual) casual" ;
+        assert(agent1.getCurrentRelationships().contains(casual)) : "agent1.currentRelationships should have (Casual) casual" ;
+        
+        assert(agent0.getCurrentPartnerIds().size() == 1) : "agent0 should have exactly one partner" ;
+        assert(agent1.getCurrentPartnerIds().size() == 1) : "agent1 should have exactly one partner" ;
+        
+        assert(agent0.getCurrentPartnerIds().contains(agent1.getAgentId())) : "agent0 should have agent1 as partner" ;
+        assert(agent1.getCurrentPartnerIds().contains(agent0.getAgentId())) : "agent0 should have agent1 as partner" ;
+        
+        agent0.leaveRelationship(casual) ;
+        agent1.leaveRelationship(casual) ;
+        
+        assert(agent0.getCurrentRelationships().isEmpty()) : "agent0 should have no Relationships" ;
+        assert(agent1.getCurrentRelationships().isEmpty()) : "agent1 should have no Relationships" ;
+        assert(agent0.getCurrentPartnerIds().isEmpty()) : "agent0 should have no current partners" ;
+        assert(agent1.getCurrentPartnerIds().isEmpty()) : "agent1 should have no current partners" ;
+        
+        // TODO: Sort out permissions to test Relaitonship.addAgents(agent0,agent1) 
     }
     
+
 }
