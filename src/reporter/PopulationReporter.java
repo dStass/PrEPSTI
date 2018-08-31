@@ -37,7 +37,7 @@ public class PopulationReporter extends Reporter {
     /**
      * FIXME: Passing and implementation of fileName not finalised.
      * @param simName
-     * @param fileName 
+     * @param reportFilePath
      */
     public PopulationReporter(String simName, String reportFilePath)
     {
@@ -99,7 +99,7 @@ public class PopulationReporter extends Reporter {
     /**
      * 
      * @param sortingProperty
-     * @return (HashMap) agentId -> (String) value of sortingProperty
+     * @return (HashMap) agentId maps to (String) value of sortingProperty
      */
     protected HashMap<Object,Object> sortedAgentIds(String sortingProperty)
     {
@@ -120,8 +120,71 @@ public class PopulationReporter extends Reporter {
         return sortedHashMap ;
     }
     
+    /**
+     * FIXME: Only works for final record.
+     * @param recordNb
+     * @return List of agentIds of Agents living at recordNb.
+     */
+    public ArrayList<Object> prepareAgentsAliveRecord(int recordNb)
+    {
+        ArrayList<Object> agentsAliveRecord = new ArrayList<Object>() ;
+        
+        int maxAgentId = getMaxAgentId() ;
+        ArrayList<Object> agentsDeadRecord = prepareAgentsDeadRecord(recordNb) ;
+        // Cycle through all born and keep those who haven't died.
+        for (int agentAlive = 0 ; agentAlive <= maxAgentId ; agentAlive++ )
+            if (!agentsDeadRecord.contains(String.valueOf(agentAlive)))
+                agentsAliveRecord.add(String.valueOf(agentAlive)) ;
+        
+        return agentsAliveRecord ;
+    }
     
+    /**
+     * TODO: Extend to allow specification of record number, currently fixed at final record.
+     * @return (int) agentId of last Agent born.
+     */
+    public int getMaxAgentId()
+    {
+        ArrayList<String> populationReport = getFinalReport() ;
+        
+        String populationRecord ;
+        int deathIndex ;
+        String birthRecord = "" ;
+        int birthIndex = -1 ;
+        //Cycle backwards until final birth is found
+        for( int recordIndex = populationReport.size() -1 ; birthIndex < 0 ; recordIndex-- )
+        {
+            populationRecord = populationReport.get(recordIndex);
+            deathIndex = populationRecord.indexOf(DEATH);
+            birthRecord = populationRecord.substring(0, deathIndex);
+            birthIndex = birthRecord.lastIndexOf(AGENTID) ;
+        }
+        
+        return Integer.valueOf(extractValue(AGENTID,birthRecord,birthIndex)) ;
+    }
     
+    /**
+     * Cycles through deathReport up to recordNb to find agentIds of Agents who 
+     * have died.
+     * @param recordNb
+     * @return List of agentIds of dead Agents.
+     */
+    public ArrayList<Object> prepareAgentsDeadRecord(int recordNb)
+    {
+        ArrayList<Object> agentsDeadRecord = new ArrayList<Object>() ;
+        
+        ArrayList<String> deathReport = prepareDeathReport() ;
+        
+        for (int recordIndex = 0 ; recordIndex < recordNb ; recordIndex++ )
+        {
+            String record = deathReport.get(recordIndex) ;
+            //LOGGER.info(record);
+            ArrayList<Object> deadAgentList = extractAllValues(AGENTID, record) ;
+            agentsDeadRecord.addAll(deadAgentList) ;
+        }
+            
+        return agentsDeadRecord ;
+    }
     /**
      * 
      * @return ArrayList of ArrayLists of (String) agentIds of agents 'born'
@@ -173,8 +236,7 @@ public class PopulationReporter extends Reporter {
         ArrayList<ArrayList<Object>> agentDeathReport = new ArrayList<ArrayList<Object>>() ;
         
         ArrayList<String> deathReport = prepareDeathReport() ;
-        int ageIndex ;
-        int agentIdIndex ;
+        
         for (int recordNb = 0 ; recordNb < deathReport.size() ; recordNb++ )
         {
             ArrayList<Object> agentDeathRecord = new ArrayList<Object>() ;  //.clear();
@@ -209,8 +271,7 @@ public class PopulationReporter extends Reporter {
         {
             ageDeathRecord = new ArrayList<Object>() ;  //.clear();
             String record = deathReport.get(reportNb) ;
-            LOGGER.log(Level.INFO, "{0} {1}", new Object[] {reportNb,record});
-            ArrayList<Object> agentIds = extractAllValues(record,AGENTID,0) ;
+            ArrayList<Object> agentIds = extractAllValues(AGENTID,record) ;
             for (Object agentId : agentIds)
                 agentAgeHashMap.put(agentId, reportNb/daysInYear) ;
         }
@@ -218,13 +279,13 @@ public class PopulationReporter extends Reporter {
         for (int recordNb = 0 ; recordNb < birthReport.size() ; recordNb++ )
         {
             String record = birthReport.get(recordNb) ;
-            ArrayList<String> birthRecords = extractArrayList(AGENTID,record) ;
+            ArrayList<String> birthRecords = extractArrayList(record,AGENTID) ;
             for (String birthRecord : birthRecords )
             {
-                String agentId = extractValue(birthRecord,AGENTID) ;
+                String agentId = extractValue(AGENTID,birthRecord) ;
                 if (agentAgeHashMap.keySet().contains(agentId))
                 {
-                    int birthAge = Integer.valueOf(extractValue(birthRecord,AGE)) ;
+                    int birthAge = Integer.valueOf(extractValue(AGE,birthRecord)) ;
                     agentAgeHashMap.put(agentId, agentAgeHashMap.get(agentId) - recordNb/daysInYear + birthAge) ;
                 }
             }
@@ -253,7 +314,7 @@ public class PopulationReporter extends Reporter {
     }
     
     /**
-     * cycle -> (ArrayList) agentIds
+     * cycle maps to (ArrayList) agentIds
      * @return (ArrayList) report of (ArrayList) of agentId who dies in each cycle.
      */
     public ArrayList<ArrayList<Object>> prepareDeathsPerCycleReport()
@@ -270,6 +331,32 @@ public class PopulationReporter extends Reporter {
         
     }
     
+    /**
+     * 
+     * @param startRecordNb
+     * @param endRecordNb
+     * @return List of agentIds of agents who died from startRecordNb to before
+     * endRecordNb.
+     */
+    public ArrayList<Object> prepareDeathsDuringPeriodReport(int startRecordNb, int endRecordNb)
+    {
+        ArrayList<Object> deathsDuringPeriodReport = new ArrayList<Object>() ;
+        
+        ArrayList<String> deathReport = prepareDeathReport() ;
+        
+        for (int recordNb = startRecordNb ; recordNb < endRecordNb ; recordNb++ )
+        {
+            ArrayList<Object> stringArray = extractAllValues(AGENTID,deathReport.get(recordNb),0) ;
+            deathsDuringPeriodReport.addAll(stringArray) ;
+        }
+        
+        return deathsDuringPeriodReport ;
+    }
+    
+    /**
+     * 
+     * @return Report listing deaths in each cycle.
+     */
     private ArrayList<String> prepareDeathReport()
     {
         ArrayList<String> deathReport = new ArrayList<String>() ;
