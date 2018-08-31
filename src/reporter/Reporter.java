@@ -7,15 +7,15 @@ import community.* ;
 
 import java.io.* ;
 
-import java.lang.reflect.*;
+//import java.lang.reflect.*;
 import java.util.ArrayList ;
-import java.util.Arrays;
-import java.util.Collections;
+//import java.util.Arrays;
+//import java.util.Collections;
 import java.util.HashMap ;
 
 import java.util.logging.Level;
 
-import org.jfree.chart.* ;
+//import org.jfree.chart.* ;
 
 /**
  * @author Michael Walker
@@ -48,6 +48,8 @@ public class Reporter {
     static public String AGENTID0 = "agentId0" ;
     /** static String representation of 'agentId1'. */
     static public String AGENTID1 = "agentId1" ;
+    /** static String representation of 'relationshipId'. */
+    static public String RELATIONSHIPID = "relationshipId" ;
     
     /** Logger of Reporter Class. */
     static final java.util.logging.Logger LOGGER = java.util.logging.Logger.getLogger("reporter") ;
@@ -73,7 +75,7 @@ public class Reporter {
      * Avoid having to add ":" whenever the index of a property name is needed.
      * Used when startIndex is zero or not given
      * @param property
-     * @param report
+     * @param record
      * @return indexOf(property + ":")
      */
     public static final int indexOfProperty(String property, String record)
@@ -341,7 +343,7 @@ public class Reporter {
      * 
      * @param string
      * @param bound
-     * @return (ArrayList\<String\>) of bounded substrings of string.
+     * @return (ArrayList(String)) of bounded substrings of string.
      */
     protected static ArrayList<String> extractArrayList(String string, String bound)
     {
@@ -353,7 +355,7 @@ public class Reporter {
      * @param string
      * @param bound
      * @param flag
-     * @return (ArrayList\<String\>) of bounded substrings of string containing 
+     * @return (ArrayList(String)) of bounded substrings of string containing 
      * flag as a substring.
      */
     protected static ArrayList<String> extractArrayList(String string, String bound, String flag)
@@ -408,6 +410,17 @@ public class Reporter {
      * 
      * @param propertyName
      * @param string
+     * @return ArrayList of (String) values of propertyName from String string
+     */
+    public static ArrayList<Object> extractAllValues(String propertyName, String string)
+    {
+        return extractAllValues(propertyName,string,0) ;
+    }
+    
+    /**
+     * 
+     * @param propertyName
+     * @param string
      * @param startIndex
      * @return ArrayList of (String) values of propertyName from String string
      */
@@ -428,7 +441,8 @@ public class Reporter {
      * The space character indicates the end of the value.  
      * @param propertyName - property whose value is wanted
      * @param string - information source/report
-     * @param startIndex - string index of value, assumed exact if > 0, otherwise search
+     * @param startIndex - string index of value, assumed exact if index greater 
+     * than 0, otherwise search
      * @return (String) value of valueName as stored in string
      */
     public static String extractValue(String propertyName, String string, int startIndex)
@@ -636,7 +650,7 @@ public class Reporter {
         //HashMap<Integer,ArrayList<Integer>> partnerMap = new HashMap<Integer,ArrayList<Integer>>() ;
         
         if (valueMap.containsKey(key))
-            valueMap.put(key, Integer.valueOf(String.valueOf(valueMap.get(key))) + 1) ;
+            valueMap.put(key, valueMap.get(key).intValue() + 1) ;
         else
             valueMap.put(key, 1) ;
         
@@ -661,7 +675,7 @@ public class Reporter {
     }*/
     
     /**
-     * Puts entries in HashMap\<Integer,HashMap\<Integer,ArrayList\<Integer\>\>\>, 
+     * Puts entries in HashMap(Integer,HashMap(Integer,ArrayList(Integer))), 
      * creating keys in either HashMap when necessary and simply updating otherwise.
      * @param key
      * @param key2
@@ -690,7 +704,7 @@ public class Reporter {
     }
     
     /**
-     * Converts HashMap<Object,ArrayList<Object>> to HashMap<String,ArrayList<String>>
+     * Converts HashMap(Object,ArrayList(Object)) to HashMap(String,ArrayList(String)) .
      * @param objectHashMap
      * @return 
      */
@@ -712,7 +726,7 @@ public class Reporter {
     }
 		
     /**
-     * Converts HashMap<Object,ArrayList<Object>> to HashMap<Number,ArrayList<Number>>
+     * Converts HashMap(Object,ArrayList(Object)) to HashMap(Number,ArrayList(Number))
      * @param objectHashMap
      * @return 
      */
@@ -734,8 +748,9 @@ public class Reporter {
     }
 		
     /**
-     * Converts HashMap<Object,HashMap<Object,ArrayList<Object>>> to HashMap<Number,HashMap<Number,ArrayList<Number>>>
-     * @param objectHashMap
+     * Converts HashMap(Object,HashMap(Object,ArrayList(Object)))
+     * to HashMap(Number,HashMap(Number,ArrayList(Number)))
+     * @param objectHashMapHashMap
      * @return 
      */
     static protected HashMap<Number,HashMap<Number,ArrayList<Number>>> hashMapHashMapNumber(HashMap<Object,HashMap<Object,ArrayList<Object>>> objectHashMapHashMap )
@@ -755,7 +770,7 @@ public class Reporter {
     /**
      * Restructures paramHashMap so that most-nested values become keys.
      * Values are HashTable of ArrayList of nested keys.
-     * key1 -> key2 -> arrayValue becomes arrayValue -> key1 -> key2 .
+     * key1 maps to key2 maps to arrayValue becomes arrayValue maps to key1 maps to key2 .
      * @param paramHashMap
      * @return HashTable
      */
@@ -906,12 +921,12 @@ public class Reporter {
      * Stores an ArrayList (String) report as a csv file for other packages to read.
      * @param report 
      * @param reportName 
+     * @param simName 
+     * @param folderPath 
      */
-    static public void writeCSV(ArrayList<Object> report, String reportName)
+    static public void writeCSV(ArrayList<Object> report, String reportName, String simName, String folderPath)
     {
-        String folderPath = Community.FILE_PATH ;
-        String fileName = Community.NAME_ROOT ;
-        String filePath = folderPath + fileName + reportName + ".csv" ;
+        String filePath = folderPath + simName + reportName + ".csv" ;
         String line ;
         Class valueClass ;
         ArrayList<String> properties = new ArrayList<String>() ;
@@ -921,11 +936,11 @@ public class Reporter {
         if (String.class.isInstance(firstRecord))
         {
             valueClass = String.class ;
-            properties = identifyProperties(((String) report.get(0))) ;
+            properties = identifyProperties(String.valueOf(report.get(0))) ;    // TODO: Try (String) instead of String.valueOf()
             for (int index = 1 ; index < properties.size() ; index++ )
                 fileHeader += "," + properties.get(index) ;
         }
-        else
+        else    // Probably redundant, but we'll see. 
         {
             valueClass = ArrayList.class ;
             for (int index = 1 ; index < ((ArrayList<Object>) firstRecord).size() ; index++ )
@@ -964,11 +979,9 @@ public class Reporter {
      * @param report 
      * @param reportName 
      */
-    static public void writeCSV(HashMap<Object,Object> report, String reportName)
+    static public void writeCSV(HashMap<Object,Object> report, String reportName, String simName, String folderPath)
     {
-        String folderPath = Community.FILE_PATH ;
-        String fileName = Community.NAME_ROOT ;
-        String filePath = folderPath + fileName + reportName + ".csv" ;
+        String filePath = folderPath + simName + reportName + ".csv" ;
         String line ;
         Object value ;
         boolean arrayListValue ;
@@ -1008,7 +1021,7 @@ public class Reporter {
     /**
      * TODO: Unit test
      * @param record
-     * @return (ArrayList) 
+     * @return (ArrayList) String names of properties with given values in record.
      */
     static ArrayList<String> identifyProperties(String record)
     {
@@ -1070,7 +1083,7 @@ public class Reporter {
         reporterName = reporterName.substring(0,reporterName.lastIndexOf("reporter")) ;
         reader = new Reader(simname, reporterName, fileName) ;
         input = reader.updateOutputArray() ;
-    
+        
     }
     
     /**
@@ -1090,6 +1103,39 @@ public class Reporter {
         return true ;
     }
     
+    /**
+     * Resets reader to first input file before returning.
+     * @return Last saved file of reader.
+     */
+    public ArrayList<String> getFinalReport()
+    {
+        ArrayList<String> finalReport = reader.getFinalReport() ;
+        updateReport() ;
+        return finalReport ;
+    }
+    
+    /**
+     * 
+     * @return (String) Path to folder with input files from simulation.
+     */
+    public String getFolderPath()
+    {
+        return reader.getFolderPath() ;
+    }
+    
+    /**
+     * 
+     * @return (ArrayList(String)) complete input from concatenation of all
+     * input files.
+     */
+    public ArrayList<String> getFullInput()
+    {
+        ArrayList<String> fullInput = (ArrayList<String>) input.clone() ;
+        
+        while(updateReport())
+            fullInput.addAll((ArrayList<String>) input.clone()) ;
+        return fullInput ;
+    }
     /**
      * FIXME: only compatible with Reporter initiated from file.
      * @return opening record of opening input file 
@@ -1133,12 +1179,12 @@ public class Reporter {
      */
     public String getMetaDatum(String metaDatum)
     {
-        return reader.getMetaDatum(metaDatum) ;
+        return reader.getMetaDatum(metaDatum).trim() ;
     }
     
     /**
      * 
-     * @param reportNb
+     * @param recordNb
      * @return output[reportNb] or error String if not available
      */
     protected String presentRecord(int recordNb)
@@ -1171,6 +1217,11 @@ public class Reporter {
         private String simName ;
         ArrayList<String> metaData ;
         
+        protected Reader()
+        {
+            
+        }
+        
         protected Reader(String simName, String reporterName, String filePath)
         {
             this.simName = simName ;
@@ -1179,6 +1230,15 @@ public class Reporter {
                 reporterName = "infection" ;
             fileNames = initFileNames(simName + reporterName) ;
             initMetaData() ;
+        }
+        
+        /**
+         * 
+         * @return (String) path to folder with Reader's files.
+         */
+        protected String getFolderPath()
+        {
+            return folderPath ;
         }
         
         /**
@@ -1241,7 +1301,7 @@ public class Reporter {
                 if (file.isFile()) 
                 {
                     String fileName = file.getName() ;
-                    if (fileName.startsWith(simName))
+                    if (fileName.startsWith(simName) && fileName.endsWith(".txt"))
                         nameArray.add(fileName) ;
                 }
             //LOGGER.log(Level.INFO, "{0}", nameArray) ;
@@ -1286,6 +1346,13 @@ public class Reporter {
             return outputString ;
         }
     
+        
+        private ArrayList<String> getFinalReport()
+        {
+            fileIndex = fileNames.size() - 1 ;
+            return updateOutputArray() ;
+        }
+        
         /**
          * Initialises metaData property of Reader from file,
          */
