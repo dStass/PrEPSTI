@@ -26,28 +26,24 @@ public class EncounterPresenter extends Presenter {
     
     public static void main(String[] args)
     {
-        try
-        {
-            String simName = "noPrepCalibration86Pop40000Cycles5000" ; // Community.NAME_ROOT ; // "introPrepCalibration48Pop40000Cycles7000" ; // args[0] ;
-            String chartTitle = "site_to_site" ; // args[1] ;
-            String reportFileName = "output/test/" ; // args[2] ;
-            EncounterPresenter encounterPresenter = new EncounterPresenter(simName,chartTitle,reportFileName) ;
-            //encounterPresenter.plotCondomUse();
-            //encounterPresenter.plotProtection() ;
-            //encounterPresenter.plotNbTransmissions();
-            //encounterPresenter.plotNumberAgentTransmissionReport() ;
-            encounterPresenter.plotFromSiteToSite(new String[] {"Rectum","Urethra","Pharynx"});
-            //encounterPresenter.plotReceiveSortPrepStatusReport("true") ;
+        //String simName = "testPop30000Cycles500" ; // Community.NAME_ROOT ; // "introPrepCalibration48Pop40000Cycles7000" ; // args[0] ;
+        String simName = "NoPrepCalibration86Pop40000Cycles5000" ; // Community.NAME_ROOT ; // "introPrepCalibration48Pop40000Cycles7000" ; // args[0] ;
+        String chartTitle = "infections_of_PrEP_users" ; // args[1] ;
+        //String chartTitle = "agents_caused_number_transmissions" ; // args[1] ;
+        String reportFileName = "output/test/" ; // args[2] ;
+        EncounterPresenter encounterPresenter = new EncounterPresenter(simName,chartTitle,reportFileName) ;
+        //encounterPresenter.plotCondomUse();
+        //encounterPresenter.plotProtection() ;
+        //encounterPresenter.plotNbTransmissions();
+        //encounterPresenter.plotCumulativeAgentTransmissionReport() ;
+        //encounterPresenter.plotNumberAgentTransmissionReport() ;
+        //encounterPresenter.plotFromSiteToSite(new String[] {"Rectum","Urethra","Pharynx"});
+        encounterPresenter.plotReceiveSortPrepStatusReport("true") ;
 
-            //String methodName = args[3] ;
-            //Method method = EncounterPresenter.class.getMethod(methodName) ;
+        //String methodName = args[3] ;
+        //Method method = EncounterPresenter.class.getMethod(methodName) ;
 
-            //method.invoke(encounterPresenter, (Object[]) Arrays.copyOfRange(args,4,args.length)) ;
-        }
-        catch ( Exception e )
-        {
-            LOGGER.log(Level.SEVERE, "{0}", e.toString());
-        }
+        //method.invoke(encounterPresenter, (Object[]) Arrays.copyOfRange(args,4,args.length)) ;
     }
     
     public EncounterPresenter()
@@ -109,7 +105,7 @@ public class EncounterPresenter extends Presenter {
                 count = 0 ;
                 for (Object site : infectedStatus)
                     count += Integer.valueOf((String) site) ;
-                count += Integer.valueOf(String.valueOf(transmittingSites.get(name))) ;
+                count += transmittingSites.get(name).intValue() ;
                 transmittingSites.put(name, count) ;
             }
         
@@ -137,7 +133,7 @@ public class EncounterPresenter extends Presenter {
     {
         HashMap<Object,Number> numberAgentTransmissionReport = reporter.prepareNumberAgentTransmissionReport() ;
         
-        plotHashMap("Number of transmissions","No of agents",numberAgentTransmissionReport) ;
+        plotHashMap("Number of transmissions","No of agents",binHashMap(numberAgentTransmissionReport,"Nb_of_Agents")) ;
     }
     
     /**
@@ -151,7 +147,7 @@ public class EncounterPresenter extends Presenter {
         HashMap<Object,Number[]> plotHashMap = prepareSortedHashMap(numberAgentTransmissionReport) ;
         String[] scoreNames = (String[]) numberAgentTransmissionReport.keySet().toArray() ;
         
-        plotHashMap("Number of transmissions",scoreNames,plotHashMap) ;
+        plotHashMap("Number of transmissions",scoreNames,binHashMap(plotHashMap,scoreNames)) ;
     }
     
     /**
@@ -161,7 +157,7 @@ public class EncounterPresenter extends Presenter {
     {
         HashMap<Object,Number> cumulativeAgentTransmissionReport = reporter.prepareCumulativeAgentTransmissionReport() ;
         
-        plotHashMap("Minimum number of transmissions","No of agents",cumulativeAgentTransmissionReport) ;
+        plotHashMap("Cumulative number of transmissions","No of agents",binCumulativeHashMap(cumulativeAgentTransmissionReport,"No of agents")) ;
     }
     
     /**
