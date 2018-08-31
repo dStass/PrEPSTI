@@ -6,12 +6,12 @@
 package reporter;
 
 import agent.MSM;
-import community.Community;
-import reporter.* ;
+/*import reporter.* ;
 import reporter.EncounterReporter ;
 //import reporter.ScreeningReporter ;
 import reporter.RelationshipReporter ;
 import reporter.PopulationReporter ;
+*/
 
 import java.util.ArrayList ;
 import java.util.HashMap ;
@@ -27,17 +27,23 @@ public class SortReporter extends Reporter {
     Reporter sortingReporter ;
     Reporter unsortedReporter ;
     
-    
+    public SortReporter()
+    {
         
-    public SortReporter(String simname, Reporter unsortedReporter, Reporter sortingReporter) {
+    }
+        
+    public SortReporter(String simname, Reporter unsortedReporter, Reporter sortingReporter) 
+    {
         super(simname,unsortedReporter.input) ;
         
         this.unsortedReporter = unsortedReporter ;
         this.sortingReporter = sortingReporter ;
     }
 /**
-     * @param simName
-     * @param fileName 
+     * @param simName (String) Root of simulation name.
+     * @param reportFilePath (String) Path to saved files.
+     * @param unsortedName (String) Reporter type whose output needs to be sorted.
+     * @param sortingName (String) Reporter type used to sort.
      */
     public SortReporter(String simName, String reportFilePath, String unsortedName, String sortingName)
     {
@@ -47,7 +53,7 @@ public class SortReporter extends Reporter {
         else
             unsortedClassName = unsortedName.substring(0,1).toUpperCase() + unsortedName.substring(1).toLowerCase() ;
         unsortedClassName = "reporter." + unsortedClassName + "Reporter" ;
-        String sortingClassName = "" ;
+        String sortingClassName ;
         if ("infection".equals(sortingName))
             sortingClassName = "Screening" ;
         else
@@ -81,7 +87,7 @@ public class SortReporter extends Reporter {
     }
     
     /**
-     * TODO: Sort out \<Object\> vs \<String\> both here and related Methods.
+     * TODO: Sort out Object vs String both here and related Methods.
      * @return HashMap of records sorted according to values.
      */
     public HashMap<Object,HashMap<Object,ArrayList<Object>>> prepareReceiveSortPrepStatusRecord(String[] values)
@@ -145,19 +151,215 @@ public class SortReporter extends Reporter {
         return ageNumberEnteredRelationshipRecord ;
     }
     
-
     /**
      * 
-     * @param partnerCount
+     * @param partnerCount (int) the maximum number of new partners in the given time frame.
+     * @param binSize (int) the range in partner number per bin.
+     * @param backYears (int) the number of previous years to consider.
+     * @param backMonths (int) plus the number of previous months to consider.
+     * @param backDays (int) plus the number of previous days to consider.
+     * @return Report of incidence of STI among MSM with partnerCount new Relationships in the 
+     * past backYears years, backMonths months and backDays days.
+     */
+    public HashMap<Object,Number[]> prepareSortIncidenceReport(int partnerCount, int binSize, int backYears, int backMonths, int backDays)
+    {
+        HashMap<Object,Number[]> sortIncidenceReport = new HashMap<Object,Number[]>() ;
+        String label ;
+        // Initialisation
+        int finalRecordNb = Integer.valueOf(sortingReporter.getMetaDatum("Community.MAX_CYCLES")) - 1 ;
+        int recordIndex = finalRecordNb ;    // TODO: Generalize to arbitrary recordIndex.
+        
+        // Digits in number of partners for ordering bin labels
+        int totalDigits = (int) Math.log10(partnerCount) + 1 ;
+        
+        // Report of numbers of new Relationships in given time to agentIds
+        ArrayList<ArrayList<Object>> screenSortAgentNewPartnersReport 
+            = prepareScreenSortAgentNewPartnersReport(partnerCount, backYears, backMonths, backDays, recordIndex) ;
+
+        // Reference population for determining relative bar widths
+        double referencePopulation = 0 ;
+        for ( int binIndex = 0 ; binIndex < binSize ; binIndex++ )
+            referencePopulation += screenSortAgentNewPartnersReport.get(binIndex).size() ;
+        
+        // Report of agentIds maps to number of incidents in given time
+        HashMap<Object,Number> sortAgentIncidentReport 
+                = prepareSortAgentIncidentsReport(backYears, backMonths, backDays) ;
+        // HashMap (binned) numbers of new Relationships maps to total incidence
+        // of all corresponding agentIds
+        
+        for (int partnerIndex = 0 ; partnerIndex <= partnerCount ; partnerIndex = partnerIndex + binSize )
+        {
+            int incidents = 0 ;
+            double population = 0 ;
+            
+            //Adjust final bin size if 
+            if ((partnerCount + 1) < (partnerIndex + binSize))
+                binSize = partnerCount + 1 - partnerIndex ;
+            for ( int binIndex = 0 ; binIndex < binSize ; binIndex++ )
+            {
+                ArrayList<Object> agentIdList = screenSortAgentNewPartnersReport.get(partnerIndex + binIndex) ;
+                population += agentIdList.size() ;
+                for (Object agentId : agentIdList)
+                    if (sortAgentIncidentReport.containsKey(agentId))    // if Agent had incidents of STI
+                        incidents += sortAgentIncidentReport.get(agentId).intValue() ;
+            }
+            
+            // Label bin
+            label = String.valueOf(partnerIndex) ;
+            // Pad start of label with spaces for proper ordering
+            int nbDigits = label.length() ;
+            for (int digitIndex = nbDigits ; digitIndex < totalDigits ; digitIndex++ )
+                label = " ".concat(label) ;
+            
+            if (binSize > 1)
+            {
+                if (partnerCount > (partnerIndex + binSize))
+                    label += "-" + String.valueOf(partnerIndex + binSize - 1) ;
+                else if (partnerCount > (partnerIndex))
+                    label += "-" + String.valueOf(partnerCount - 1) ;
+            }
+            //LOGGER.log(Level.INFO, "{0} {1} {2}", new Object[] {referencePopulation,population/referencePopulation,((double) incidents)/population});
+            sortIncidenceReport.put(label, new Number[] {population/referencePopulation,((double) incidents)/population}) ;
+        }
+        
+        return sortIncidenceReport ;
+    }
+    
+    /**
+     * 
+     * @param maxConcurrency (int) the maximum number of new partners in the given time frame.
+     * @param backYears (int) the number of previous years to consider.
+     * @param backMonths (int) plus the number of previous months to consider.
+     * @param backDays (int) plus the number of previous days to consider.
+     * @return Report of incidence of STI in the past backYears years, backMonths months and backDays days
+     * among MSM with concurrency between 0 and maxConcurrency .
+     */
+    public HashMap<Object,Number[]> prepareSortConcurrencyIncidenceReport(int maxConcurrency, int backYears, int backMonths, int backDays)
+    {
+        HashMap<Object,Number[]> sortIncidenceReport = new HashMap<Object,Number[]>() ;
+        String label ;
+        // Initialisation
+        int finalRecordNb = Integer.valueOf(sortingReporter.getMetaDatum("Community.MAX_CYCLES")) - 1 ;
+        int recordIndex = finalRecordNb ;    // TODO: Generalize to arbitrary recordIndex.
+        
+        // Digits in number of partners for ordering bin labels
+        int totalDigits = (int) Math.log10(maxConcurrency) + 1 ;
+        
+        // Report of numbers of new Relationships in given time to agentIds
+        ArrayList<ArrayList<Object>> sortAgentConcurrencyReport 
+            = prepareAgentConcurrencyReport(maxConcurrency, backYears, backMonths, backDays, recordIndex) ;
+        LOGGER.log(Level.INFO, "{0}", sortAgentConcurrencyReport);
+
+        // Reference population for determining relative bar widths
+        double referencePopulation = sortAgentConcurrencyReport.get(0).size() ;
+        
+        // Report of agentIds maps to number of incidents in given time
+        HashMap<Object,Number> sortAgentIncidentReport 
+                = prepareSortAgentIncidentsReport(backYears, backMonths, backDays) ; // Removed binSize=1
+        // HashMap (binned) numbers of new Relationships maps to total incidence
+        // of all corresponding agentIds
+        
+        int incidents = 0 ;
+        double population ;
+        for (int concurrencyIndex = 1 ; concurrencyIndex <= maxConcurrency ; concurrencyIndex++ )
+        {
+            ArrayList<Object> agentIdList = sortAgentConcurrencyReport.get(concurrencyIndex - 1) ;
+            population = agentIdList.size() ;
+            for (Object agentId : agentIdList)
+                if (sortAgentIncidentReport.containsKey(agentId))    // if Agent had incidents of STI
+                    incidents = sortAgentIncidentReport.get(agentId).intValue() ;
+            //LOGGER.log(Level.INFO, "{0} {1} {2}", new Object[] {referencePopulation,population/referencePopulation,((double) incidents)/population});
+            sortIncidenceReport.put(concurrencyIndex, new Number[] {population/referencePopulation,((double) incidents)/population}) ;
+        }
+        return sortIncidenceReport ;
+    }
+    
+    private ArrayList<ArrayList<Object>> prepareAgentConcurrencyReport(int maxConcurrency, int backYears, int backMonths, int backDays, int recordIndex)
+    {
+        ArrayList<ArrayList<Object>> agentConcurrencyReport = new ArrayList<ArrayList<Object>>() ;
+        for (int concurrency = 0 ; concurrency < maxConcurrency ; concurrency++ )    // No zero concurrency!
+            agentConcurrencyReport.add(new ArrayList<Object>()) ;
+        
+        ArrayList<Object> agentsAlive = ((PopulationReporter) sortingReporter).prepareAgentsAliveRecord(recordIndex) ;
+        
+        ArrayList<String> birthReport = ((PopulationReporter) sortingReporter).prepareBirthReport() ;
+        for (String record : birthReport)
+        {
+            ArrayList<String> agentList = extractArrayList(record,AGENTID) ;
+            for (String agentRecord : agentList)
+            {
+                Object agentId = extractValue(AGENTID,agentRecord) ;
+                if (!agentsAlive.contains(agentId))
+                    continue ;
+                int concurrency = Integer.valueOf(extractValue("concurrency",agentRecord)) ;
+                agentConcurrencyReport.get(concurrency - 1).add(agentId) ;    // -1 due to concurrency != 0
+            }
+        }
+        return agentConcurrencyReport ;
+    }
+    
+    /**
+     * 
      * @param backYears
+     * @param backMonths
+     * @param backDays
+     * @return report where agentId maps to incidents in the last backYears. backMonths and backDays
+     */
+    public HashMap<Object,Number> prepareSortAgentIncidentsReport(int backYears, int backMonths, int backDays)
+    {
+        HashMap<Object,Number> agentIncidenceCount = new HashMap<Object,Number>() ;
+        
+        int daysPerYear = 365 ;
+        int daysPerMonth = 31 ;
+        
+        int finalRecordNb = Integer.valueOf(sortingReporter.getMetaDatum("Community.MAX_CYCLES")) - 1 ;
+        int recordIndex = finalRecordNb ;    // TODO: Generalize to arbitrary recordIndex.
+        
+        // transmitting agentId maps to receiving agentId maps to (ArrayList) cycle of infection
+        HashMap<Object,HashMap<Object,ArrayList<Object>>> agentToAgentReport = ((EncounterReporter) unsortedReporter).prepareAgentToAgentReport() ;
+        // Inverts to Cycle maps to infecting agentId maps to (ArrayList) receiviing AgentIds
+        HashMap<Object,HashMap<Object,ArrayList<Object>>> invertedHashMap = EncounterReporter.invertHashMapHashMap(agentToAgentReport) ;
+        
+        ArrayList<ArrayList<Object>> unsortedReport = ((EncounterReporter) unsortedReporter).prepareReceiveCountReport(invertedHashMap) ;
+        
+        // New partners per agentId
+
+        // Modify backYears if necessary so you don't go past beginning of simulation
+        if (daysPerYear*backYears > recordIndex)
+            backYears = recordIndex/daysPerYear ;
+        // Modify backYears if necessary so you don't go past beginning of simulation
+        if ((daysPerYear*backYears + daysPerMonth*backMonths) > recordIndex)
+            backMonths = (recordIndex - daysPerYear*backYears)/daysPerMonth ;
+        
+        int backCycles = backYears*daysPerYear + backMonths*daysPerMonth + backDays ;
+        if (backCycles > recordIndex)
+            backCycles = (recordIndex - 1) ;
+        
+        // Count new relationships for each Agent over past backYears years
+        for (int cycle = 0 ; cycle < backCycles ; cycle++)
+        {
+            ArrayList<Object> receivingAgentIds = unsortedReport.get(recordIndex - cycle) ;
+            for (Object agentId : receivingAgentIds)
+                agentIncidenceCount = incrementHashMap(agentId,agentIncidenceCount) ;
+        }
+        return agentIncidenceCount ;
+    }
+
+    
+    /**
+     * 
+     * @param maxPartnerCount
+     * @param binSize (int) Range of partner numbers in each bin
+     * @param backYears
+     * @param backMonths
+     * @param backDays
      * @return prevalence report including only those Agents with the given number of
      * new Relationships in the last backYears
      */
-    public ArrayList<String> prepareSortPrevalenceReport(int partnerCount, int backYears)
+    public ArrayList<String> prepareSortPrevalenceReport(int maxPartnerCount, int binSize, int backYears, int backMonths, int backDays)
     {
         ArrayList<String> prevalenceReport = new ArrayList<String>() ;
-        int daysPerYear = 365 ;
-        int maxCycles = Community.MAX_CYCLES ;
+        int finalRecordNb = Integer.valueOf(sortingReporter.getMetaDatum("Community.MAX_CYCLES")) - 1 ;
         int population ;
         int nbInfected ;
         int nbSymptomatic ;
@@ -172,58 +374,68 @@ public class SortReporter extends Reporter {
                     + siteName.substring(1) ;
         }
         
-        ArrayList<Object> agentIdArray = new ArrayList<Object>() ; 
+        ArrayList<Object> agentIdList ;
         
         // FIXME: Only considers prevalences in final cycle.
-        int recordIndex = maxCycles- 1 ;
+        int recordIndex = finalRecordNb ;
         String record = unsortedReporter.getFinalRecord() ;
-        
-        // More than Nb new Relationships -> agentIds
+        ArrayList<String> infections = extractArrayList(record,AGENTID) ;
+                
+        // Nb new Relationships maps to agentIds
         ArrayList<ArrayList<Object>> screenSortAgentNewPartnersReport 
-            = prepareScreenSortAgentNewPartnersReport(partnerCount, backYears, recordIndex) ;
+            = prepareScreenSortAgentNewPartnersReport(maxPartnerCount, backYears, backMonths, backDays, recordIndex) ;
 
-        for (int partnerIndex = partnerCount ; partnerIndex >= 0 ; partnerIndex--)
+        // Count through number of partners
+        for (int partnerIndex = 0 ; partnerIndex <= maxPartnerCount ; partnerIndex += binSize )
         {
-            // Want prevalence only among agents with given number of partners.
-            agentIdArray.addAll(screenSortAgentNewPartnersReport.get(partnerIndex)) ;
-            population = agentIdArray.size() ;
+            population = 0 ;
             nbInfected = 0 ;
             nbSymptomatic = 0 ;
-            // Determine nb of infected
-            ArrayList<String> infections = extractArrayList(record,AGENTID) ;
-            // Determine nb of symptomatic infected
-            for (String infection : infections)
+            if ((partnerIndex + binSize) > (maxPartnerCount + 1))    // If next bin goes past maxPartnerCount
+                binSize = maxPartnerCount + 1 - partnerIndex ;       // adjust binSize accordingly (binSize not used again)
+            for (int binIndex = 0 ; binIndex < binSize ; binIndex++ )
             {
-                if (!agentIdArray.contains(extractValue(AGENTID,infection))) 
+                // Want prevalence only among agents with given number of partners.
+                agentIdList = screenSortAgentNewPartnersReport.get(partnerIndex+binIndex) ;
+                
+                population += agentIdList.size() ;
+                // Determine nb of infected
+                for (String infection : infections)
+                {
+                    if (!agentIdList.contains(extractValue(AGENTID,infection))) 
                         continue ;
-                nbInfected++ ;
-                for (String siteName : siteNames)
-                    if (compareValue(siteName,TRUE,infection))
-                    {
-                        nbSymptomatic++ ;
-                        break ;
-                    }
+                    nbInfected++ ;
+                    // Determine nb of symptomatic infected
+                    for (String siteName : siteNames)
+                        if (compareValue(siteName,TRUE,infection))
+                        {
+                            nbSymptomatic++ ;
+                            break ;
+                        }
+                }
+                //LOGGER.info(record) ;
             }
-            //LOGGER.info(record) ;
 
             //population = Community.POPULATION ;
             if (population > 0)
             {
                 entry = addReportProperty("prevalence",((double) nbInfected)/population) ;
                 entry += addReportProperty("symptomatic",((double) nbSymptomatic)/population) ;
-                entry += addReportProperty("proportion",((double) nbSymptomatic)/nbInfected) ;
-                entry += addReportProperty("population",population) ;
             }
             else
             {
                 entry = addReportProperty("prevalence",0.0) ;
                 entry += addReportProperty("symptomatic",0.0) ;
-                entry += addReportProperty("proportion",0.0) ;
-                entry += addReportProperty("population",0) ;
             }
-
-            prevalenceReport.add(0,entry) ;
+            if (nbInfected > 0)
+                entry += addReportProperty("proportion",((double) nbSymptomatic)/nbInfected) ;
+            else 
+                entry += addReportProperty("proportion",0.0) ;
+            entry += addReportProperty("population",population) ;
+            
+            prevalenceReport.add(entry) ;
         }
+
         return prevalenceReport ;
     }
     
@@ -231,16 +443,17 @@ public class SortReporter extends Reporter {
      * 
      * @param partnerCount
      * @param backYears
-     * @return count -> agentIds
+     * @return Number of new Relationships maps to agentIds
      */
-    public ArrayList<ArrayList<Object>> prepareScreenSortAgentNewPartnersReport(int partnerCount, int backYears, int recordIndex)
+    public ArrayList<ArrayList<Object>> prepareScreenSortAgentNewPartnersReport(int partnerCount, int backYears, int backMonths, int backDays, int recordIndex)
     {
-        // number of partners -> agentIds
+        // number of partners maps to agentIds
         ArrayList<ArrayList<Object>> screenSortAgentNewPartnersReport = new ArrayList<ArrayList<Object>>() ;
         for (int count = 0 ; count <= partnerCount ; count++ )
             screenSortAgentNewPartnersReport.add(new ArrayList<Object>()) ;
         
         int daysPerYear = 365 ;
+        int daysPerMonth = 31 ;
         
         ArrayList<ArrayList<Object>> sortingReport = ((RelationshipReporter) sortingReporter).prepareAgentCommenceReport() ;
         
@@ -250,21 +463,34 @@ public class SortReporter extends Reporter {
         // Modify backYears if necessary so you don't go past beginning of simulation
         if (daysPerYear*backYears > recordIndex)
             backYears = recordIndex/daysPerYear ;
-        //for (int cyclesBack = daysPerYear*backYears ; cyclesBack > recordIndex ; cyclesBack = daysPerYear * backYears )
-          //  backYears-- ;
+        // Modify backYears if necessary so you don't go past beginning of simulation
+        if ((daysPerYear*backYears + daysPerMonth*backMonths) > recordIndex)
+            backMonths = (recordIndex - daysPerYear*backYears)/daysPerMonth ;
         
-        // TODO: Avoid multiple double looping over recent years
+        int backCycles = backYears*daysPerYear + backMonths*daysPerMonth + backDays ;
+        if (backCycles > recordIndex)
+            backCycles = (recordIndex - 1) ;
+        
         // Count new relationships for each Agent over past backYears years
-        for (int cycle = 0 ; cycle < backYears*daysPerYear ; cycle++)
+        for (int cycle = 0 ; cycle < backCycles ; cycle++)
             for (Object agentId : sortingReport.get(recordIndex-cycle))
                 agentCommenceCount = incrementHashMap(agentId,agentCommenceCount) ;
+        //LOGGER.log(Level.INFO, "{0}", agentCommenceCount);
 
-        // Which Agents have had more than Array_position new Relationships in last backYears
-        for (Object agentKey : agentCommenceCount.keySet())    
+        PopulationReporter populationReporter = new PopulationReporter(sortingReporter.simName,sortingReporter.getFolderPath()) ;
+        ArrayList<Object> agentsAlive = populationReporter.prepareAgentsAliveRecord(recordIndex) ;
+        
+        // Which Agents have had Array_position new Relationships in last backYears
+        for (Object agentKey : agentsAlive)    
         {
-            int relationshipCount = Integer.valueOf(String.valueOf(agentCommenceCount.get(agentKey))) ;
+            if (!agentCommenceCount.keySet().contains(agentKey))    // Agents with no new Relationships in given time
+            {
+                screenSortAgentNewPartnersReport.get(0).add(agentKey) ;    //LOGGER.log(Level.INFO, "{0}", agentKey);
+                continue ;
+            }
+            int relationshipCount = agentCommenceCount.get(agentKey).intValue() ;
             if (relationshipCount <= partnerCount)
-                screenSortAgentNewPartnersReport.get(relationshipCount-1).add(agentKey) ;
+                screenSortAgentNewPartnersReport.get(relationshipCount).add(agentKey) ;
             else  // Had partnerCount or more new partners
                 screenSortAgentNewPartnersReport.get(partnerCount).add(agentKey) ;
         }
