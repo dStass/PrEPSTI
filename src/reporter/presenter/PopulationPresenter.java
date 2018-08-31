@@ -25,19 +25,19 @@ public class PopulationPresenter extends Presenter{
     
     public static void main(String[] args)
     {
-        try
+        //try
         {
-            String simName = "noPrepCalibration86Pop40000Cycles5000" ; // Community.NAME_ROOT ; // "introPrepCalibration48Pop40000Cycles7000" ; // args[0] ;
-            String chartTitle = "population_per_cycle" ; // args[1] ;
+            String simName = "NoPrepCalibration86Pop40000Cycles5000" ; // Community.NAME_ROOT ; // "introPrepCalibration48Pop40000Cycles7000" ; // args[0] ;
+            String chartTitle = "age_at_death" ; // args[1] ;
             String reportFileName = "output/test/" ; // args[2] ;
             PopulationPresenter populationPresenter = new PopulationPresenter(simName,chartTitle,reportFileName) ;
         
-            populationPresenter.plotPopulationPerCycle();
+            populationPresenter.plotAgeAtDeath();
         }
-        catch ( Exception e )
+        /*catch ( Exception e )
         {
             LOGGER.log(Level.SEVERE, "{0}", e.getLocalizedMessage());
-        }
+        }*/
     }
     
     public PopulationPresenter()
@@ -104,7 +104,7 @@ public class PopulationPresenter extends Presenter{
     {
         HashMap<Object,Number> ageAtDeathReport = reporter.prepareAgeAtDeathReport() ;
         LOGGER.log(Level.INFO,"{0}",ageAtDeathReport) ;
-        plotHashMap("Age", "Number of deaths", ageAtDeathReport ) ;
+        plotHashMap("Age", "Number of deaths", binHashMap(ageAtDeathReport,"Nb_of_deaths") ) ;
     }
 
 
