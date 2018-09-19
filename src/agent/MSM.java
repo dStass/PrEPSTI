@@ -31,7 +31,7 @@ abstract public class MSM extends Agent {
     static public String[] SITE_NAMES = new String[] {"rectum","urethra","pharynx"} ;
     
     /** The maximum number of Regular Relationships an agent may be willing to sustain. */
-    static int MAX_RELATIONSHIPS = 3;
+    static int MAX_RELATIONSHIPS = 3 ;
     
     /** The probability of disclosing HIV status if HIV positive */
     static double PROBABILITY_DISCLOSE_POSITIVE_HIV = 0.40 ;
@@ -110,7 +110,7 @@ abstract public class MSM extends Agent {
     /** Given seroSort or seroPosition, whether being on antiviral is sufficient. */
     private boolean acceptAntiViral ;
     /** Probability of accepting proposed Casual Relationship */
-    private double consentCasualProbability = RAND.nextDouble() * 7/92 ;
+    private double consentCasualProbability = RAND.nextDouble() * 1/14 ;
     
     /** Status for HIV infection. */
     private boolean statusHIV ;
@@ -122,23 +122,23 @@ abstract public class MSM extends Agent {
     private boolean prepStatus ;
 	
     /** Transmission probabilities per sexual contact from Urethra to Rectum */
-    static double URETHRA_TO_RECTUM = 0.9 ;    // 0.84 ;    // 0.8 ;
+    static double URETHRA_TO_RECTUM = 0.45 ; // 0.21 ; // 0.42 ; 
     /** Transmission probabilities sexual contact from Urethra to Pharynx. */
-    static double URETHRA_TO_PHARYNX = 0.7 ; // 0.63 ;    // 0.7 ;
+    static double URETHRA_TO_PHARYNX = 0.45 ; // 0.15 ; // 0.32 ; 
     /** Transmission probabilities sexual contact from Rectum to Urethra. */ 
-    static double RECTUM_TO_URETHRA = 0.01 ; // 0.023 ;    // 0.3 ;
+    static double RECTUM_TO_URETHRA = 0.01 ; // 0.06 ; // 0.12 ;
     /** Transmission probabilities sexual contact from Rectum to Pharynx. */
-    static double RECTUM_TO_PHARYNX = 0.063 ;    // 0.1 ;
+    static double RECTUM_TO_PHARYNX = 0.075 ; // 0.025 ; // 0.05 ;
     /** Transmission probabilities sexual contact in Pharynx to Urethra intercourse. */
-    static double PHARYNX_TO_URETHRA = 0.01 ; // 0.086 ;    // 0.2 ;
+    static double PHARYNX_TO_URETHRA = 0.01 ; // 0.022 ; // 0.043 ; 
     /** Transmission probabilities sexual contact in Pharynx to Rectum intercourse. */
-    static double PHARYNX_TO_RECTUM = 0.06 ;    // 0.2 ;
+    static double PHARYNX_TO_RECTUM = 0.075 ; // 0.05 ; // 0.1 ; // 
     /** Transmission probabilities sexual contact in Pharynx to Pharynx intercourse (kissing). */
-    static double PHARYNX_TO_PHARYNX = 0.055 ;
+    static double PHARYNX_TO_PHARYNX = 0.04 ; // 0.01 ; // .018 ; 
     /** Transmission probabilities sexual contact in Urethra to Urethra intercourse (docking). */
-    static double URETHRA_TO_URETHRA = 0.008 ;
+    static double URETHRA_TO_URETHRA = 0.001 ; // 0.002 ; // 0.004 ;
     /** Transmission probabilities sexual contact in Rectum to Rectum intercourse. */
-    static double RECTUM_TO_RECTUM = 0.055 ;
+    static double RECTUM_TO_RECTUM = 0.04 ; // 0.007 ; // .013 ; 
     
     /** The probability of screening in a given cycle with statusHIV true. */
     static double SCREEN_PROBABILITY_HIV_POSITIVE = 0.0029 ;
@@ -641,24 +641,50 @@ abstract public class MSM extends Agent {
     
     /**
      * Initialise prepStatus and set up screenCycle and screenTime accordingly.
+     * screenCycle is initiated here because it is prepStatus dependent.
      * @param prep 
      */
     private void initPrepStatus(boolean prep)
     {
         setPrepStatus(prep) ;
+        initScreenCycle() ;
         
-        if (prep)
-            setScreenCycle(((int) new GammaDistribution(31,1).sample()) + 31) ;
+    }
+    
+    /**
+     * Initialises screenCycle from a Gamma distribution to determine how often 
+     * an MSM is screened, and then starts the cycle in a random place so that 
+     * not every MSM gets screened at the same time.
+     */
+    private void initScreenCycle()
+    {
+        if (getPrepStatus())
+            setScreenCycle(((int) new GammaDistribution(31,1).sample()) + 61) ;
         else
         {
-            if (statusHIV)
+            int firstScreenCycle = (int) (499.0/333.0 * (new GammaDistribution(7,55).sample())) ;
+            setScreenCycle(firstScreenCycle) ;  // 49.9% screen within a year 2016
+            /*if (statusHIV)
                 setScreenCycle(((int) new GammaDistribution(6,55).sample())) ;  // 65% screen within a year
             else
                 setScreenCycle(((int) new GammaDistribution(8,55).sample())) ;  // 35% screen within a year
+            */
         }
         // Randomly set timer for first STI screen 
         setScreenTime(RAND.nextInt(getScreenCycle())) ;
-
+    }
+    
+    
+    public void reinitScreenCycle(int year) throws Exception
+    {
+        // Screening frequency compared to 2016 figure. per 1000 in last year.
+        double testBase = 499 ;
+        // Frequencies, given by per 1000 per year, from 2007-2016
+        double[] testRates = new double[] {333,340,398,382,383,382,391,419,445,499} ;
+        double ratio = testBase/testRates[year] ;
+        int newScreenCycle = (int) ratio*getScreenCycle() ;
+        
+        setScreenCycle(newScreenCycle) ;
     }
     
     /**
@@ -684,9 +710,15 @@ abstract public class MSM extends Agent {
      * Called to adjust condom use.
      */
     @Override
-    abstract public void adjustCondomUse();
+    public void adjustCondomUse()
+    {
+        adjustProbabilityUseCondom() ;
+    }
     
-    
+    /**
+     * Adjusts probabilityUseCondom to reflect behavioural trends
+     */
+    abstract public void adjustProbabilityUseCondom() ;
 
     /**
      * Whether to enter a proposed relationship of class relationshipClazz .
