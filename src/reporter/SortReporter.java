@@ -103,51 +103,63 @@ public class SortReporter extends Reporter {
     
     /**
      * 
-     * @return HashMap of age to mean number of Relationships entered into by 
-     * that age.
+     * @return HashMap of age maps to mean number of Relationships entered into by 
+     * that age. Calculated from final age of each Agent, meaning age-at-death or
+     * age at end of simulation.
      */
-    public HashMap<Object,Number> prepareAgeNumberEnteredRelationshipRecord()
+    public HashMap<Object,HashMap<Object,Number>> prepareAgeNumberEnteredRelationshipRecord(String[] relationshipClassNames)
     {
-        HashMap<Object,Number> ageNumberEnteredRelationshipRecord 
-                = new HashMap<Object,Number>() ;
+        HashMap<Object,HashMap<Object,Number>> ageNumberEnteredRelationshipRecord 
+                = new HashMap<Object,HashMap<Object,Number>>() ;
+        for (String relationshipClassName : relationshipClassNames)
+            ageNumberEnteredRelationshipRecord.put(relationshipClassName, new HashMap<Object,Number>()) ;
+        
 
         // key:age value:ArrayList of new Relationships for each Agent, sums to 
         //total number of new Relationships formed by that age.
-        HashMap<Object,ArrayList<Object>> ageEnteredRelationshipRecord 
-                = new HashMap<Object,ArrayList<Object>>() ;
+        HashMap<Object,HashMap<Object,ArrayList<Object>>> ageEnteredRelationshipRecord 
+                = new HashMap<Object,HashMap<Object,ArrayList<Object>>>() ;
+        for (String relationshipClassName : relationshipClassNames)
+            ageEnteredRelationshipRecord.put(relationshipClassName, new HashMap<Object,ArrayList<Object>>()) ;
         
         //key:agentId value: Age for final record in report
         HashMap<Object,Integer> sortAgeRecord = ((PopulationReporter) sortingReporter).sortAgeRecord() ;
         
         // Each record is a HashMap indicating new relationshipIds for relevant (key) Agents
-        ArrayList<HashMap<Object,ArrayList<Object>>> agentsEnteredRelationshipReport 
-                = ((RelationshipReporter) unsortedReporter).prepareAgentsEnteredRelationshipReport() ;
+        ArrayList<HashMap<Object,HashMap<Object,ArrayList<Object>>>> agentsEnteredRelationshipReport 
+                = ((RelationshipReporter) unsortedReporter).prepareAgentsEnteredRelationshipReport(relationshipClassNames) ;
         
-        for (HashMap<Object,ArrayList<Object>> enteredRelationshipRecord : agentsEnteredRelationshipReport)
-            for (Object agentId : enteredRelationshipRecord.keySet())
-                ageEnteredRelationshipRecord =
-                        updateHashMap(sortAgeRecord.get(agentId),enteredRelationshipRecord.get(agentId).size(),ageEnteredRelationshipRecord) ; 
-        
-        for (Object ageKey : ageEnteredRelationshipRecord.keySet())
-        {
-            ArrayList<Object> ageRecord = (ArrayList<Object>) ageEnteredRelationshipRecord.get(ageKey) ;
-            
-            // Agents forming no Relationships and hence no contribution to ageRecord must still be counted.
-            int nbEntries = 0 ;
-            for (Object agentId : sortAgeRecord.keySet())
-                if (sortAgeRecord.get(agentId).equals(ageKey))
-                    nbEntries++ ;
-            // int nbEntries = ageRecord.size() ;
-            
-            // Add new Relationships formed by that age
-            int sum = 0 ;
-            for (Object number : ageRecord)
-                sum += (Integer) number ;
-            
-            // Take the mean per Agent
-            double mean = ((double) sum)/nbEntries ;
-            ageNumberEnteredRelationshipRecord.put(ageKey,mean) ;
-        }
+        // Find Relationships entered by Agents with given final age.
+        for (HashMap<Object,HashMap<Object,ArrayList<Object>>> enteredRelationshipRecord : agentsEnteredRelationshipReport)
+            for (Object relationshipClassName : enteredRelationshipRecord.keySet())
+                for (Object agentId : enteredRelationshipRecord.get(relationshipClassName).keySet())
+                    ageEnteredRelationshipRecord.put(relationshipClassName,
+                            updateHashMap(sortAgeRecord.get(agentId),
+                                    enteredRelationshipRecord.get(relationshipClassName).get(agentId).size(),ageEnteredRelationshipRecord.get(relationshipClassName))) ; 
+
+        for (Object relationshipClassName : ageEnteredRelationshipRecord.keySet())
+            for (Object ageKey : ageEnteredRelationshipRecord.get(relationshipClassName).keySet())
+            {
+                ArrayList<Object> ageRecord = (ArrayList<Object>) ageEnteredRelationshipRecord.get(relationshipClassName).get(ageKey) ;
+                //LOGGER.log(Level.INFO, "ageKey:{0} ageRecord:{1}", new Object[] {ageKey,ageRecord});
+
+                // Count Agents of final age ageKey 
+                // Agents forming no Relationships and hence no contribution to ageRecord must still be counted.
+                int nbEntries = 0 ;
+                for (Object agentId : sortAgeRecord.keySet())
+                    if (sortAgeRecord.get(agentId).equals(ageKey))
+                        nbEntries++ ;
+                // int nbEntries = ageRecord.size() ;
+
+                // Add new Relationships formed by that age
+                int sum = 0 ;
+                for (Object number : ageRecord)
+                    sum += (Integer) number ;
+
+                // Take the mean per Agent
+                double mean = ((double) sum)/nbEntries ;
+                ageNumberEnteredRelationshipRecord.get(relationshipClassName).put(ageKey,mean) ;
+            }
         return ageNumberEnteredRelationshipRecord ;
     }
     
@@ -463,12 +475,12 @@ public class SortReporter extends Reporter {
         // Modify backYears if necessary so you don't go past beginning of simulation
         if (daysPerYear*backYears > recordIndex)
             backYears = recordIndex/daysPerYear ;
-        // Modify backYears if necessary so you don't go past beginning of simulation
+        // Modify backMonths if necessary so you don't go past beginning of simulation
         if ((daysPerYear*backYears + daysPerMonth*backMonths) > recordIndex)
             backMonths = (recordIndex - daysPerYear*backYears)/daysPerMonth ;
         
         int backCycles = backYears*daysPerYear + backMonths*daysPerMonth + backDays ;
-        if (backCycles > recordIndex)
+        if (backCycles >= recordIndex)
             backCycles = (recordIndex - 1) ;
         
         // Count new relationships for each Agent over past backYears years
