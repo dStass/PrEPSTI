@@ -108,12 +108,22 @@ public class RiskyMSM extends MSM
     }
     
     /**
-     * Called to adjust the changing condom use over time.
+     * Adjusts probabilityUseCondom to reflect behavioural trends
      */
     @Override
+    public void adjustProbabilityUseCondom()
+    {
+        probabilityUseCondom *= RAND.nextDouble() ;
+    }
+    
+    
+    /**
+     * Called to adjust the changing condom use over time.
+     */
+    /*@Override
     public void adjustCondomUse()
     {
         probabilityUseCondom = 0.0 ;
-    }
+    }*/
     
 }
