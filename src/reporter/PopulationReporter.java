@@ -90,6 +90,7 @@ public class PopulationReporter extends Reporter {
     }
     
     
+    @Override
     public String getInitialRecord()
     {
         String initialRecord = super.getInitialRecord() ;
@@ -139,6 +140,47 @@ public class PopulationReporter extends Reporter {
         return agentsAliveRecord ;
     }
     
+    /**
+     * 
+     * @param propertyName
+     * @param propertyValue
+     * @param fullReport
+     * @return (ArrayList) Report filtered according to propertyValue of Agents.
+     */
+    protected ArrayList<String> filterByAgent(String propertyName, String propertyValue, ArrayList<String> fullReport)
+    {
+        if (propertyName.isEmpty())
+            return fullReport ;
+        
+        ArrayList<String> filteredReport = new ArrayList<String>() ;
+        
+        String filteredRecord ;
+        
+        HashMap<Object,String> censusPropertyReport = prepareCensusPropertyReport(propertyName) ;
+        
+        String agentString ;
+        if (fullReport.get(0).contains(AGENTID))
+            agentString = AGENTID ;
+        else
+            agentString = AGENTID0 ;
+        
+        for (String fullRecord : fullReport)
+        {
+            ArrayList<String> propertyList = extractArrayList(fullRecord,agentString) ;
+            filteredRecord = "" ;
+            
+            for (String propertyEntry : propertyList)
+            {
+                String agentId = extractValue(agentString,propertyEntry) ;
+                String agentValue = extractValue(propertyName,censusPropertyReport.get(agentId)) ;
+                if (compareValue(propertyName,propertyValue,agentValue,0)) ;
+                    filteredRecord += propertyEntry ;
+            }
+            filteredReport.add(filteredRecord) ;
+        }
+        return filteredReport ;
+        
+    }
     /**
      * TODO: Extend to allow specification of record number, currently fixed at final record.
      * @return (int) agentId of last Agent born.
@@ -452,6 +494,89 @@ public class PopulationReporter extends Reporter {
 //            sortAgeRecord = updateHashMap(ageRange,agentId,sortAgeRecord) ;
 //        }
         return agentAgeHashMap ;
+    }
+    
+    /**
+     * 
+     * @param propertyName
+     * @param pairs
+     * @return (HashMap) pair of agentIds maps to whether they are concordant in propertyName.
+     */
+    public HashMap<String[],Boolean> getConcordants(String propertyName, ArrayList<String[]> pairs)
+    {
+        HashMap<String[],Boolean> concordants = new HashMap<String[],Boolean>() ;
+        
+        HashMap<Object,String> censusPropertyReport = prepareCensusPropertyReport(propertyName) ;
+        
+        String status0 ;
+        String status1 ;
+        for (String[] pair : pairs)
+        {
+            status0 = censusPropertyReport.get(pair[0]);
+            status1 = censusPropertyReport.get(pair[1]);
+            concordants.put(pair,status0 == status1) ;
+        }
+        
+        return concordants ;
+    }
+    
+    /**
+     * 
+     * @return (HashMap) agentId maps to String describing census properties.
+     */
+    public HashMap<Object,String> prepareCensusPropertyReport()
+    {
+        HashMap<Object,String> censusPropertyReport = new HashMap<Object,String>() ;
+        
+        ArrayList<String>  birthReport = prepareBirthReport() ;
+        
+        int nbCycles = birthReport.size() ;
+        
+        for (String birthRecord : birthReport)
+        {
+            ArrayList<String> birthArray = extractArrayList(birthRecord,AGENTID) ;
+            for (String birthAgent : birthArray)
+            {
+                Object agentId = extractValue(AGENTID,birthAgent) ;
+                String propertyValue ;
+                String censusEntry = "" ;
+                ArrayList<String> propertyNames = identifyProperties(birthAgent) ;
+                propertyNames.remove(AGENTID) ;
+                for (String propertyName : propertyNames)
+                {
+                    propertyValue = extractValue(propertyName,birthAgent);
+                    censusEntry += Reporter.addReportProperty(propertyName, propertyValue) ;
+                }
+                censusPropertyReport.put(agentId, censusEntry) ;
+            }
+        }
+        return censusPropertyReport ;
+    }
+    
+    /**
+     * 
+     * @param propertyName
+     * @return (HashMap) agentId maps to (String) value of propertyName
+     */
+    public HashMap<Object,String> prepareCensusPropertyReport(String propertyName)
+    {
+        HashMap<Object,String> censusPropertyReport = new HashMap<Object,String>() ;
+        
+        ArrayList<String>  birthReport = prepareBirthReport() ;
+        
+        int nbCycles = birthReport.size() ;
+        
+        for (String birthRecord : birthReport)
+        {
+            ArrayList<String> birthArray = extractArrayList(birthRecord,AGENTID) ;
+            for (String birthAgent : birthArray)
+            {
+                Object agentId = extractValue(AGENTID,birthAgent) ;
+                String propertyValue = extractValue(propertyName,birthAgent) ;
+                censusPropertyReport.put(agentId, propertyValue) ;
+            }
+        }
+        return censusPropertyReport ;
     }
     
     /**
