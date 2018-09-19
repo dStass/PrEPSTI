@@ -30,16 +30,18 @@ import java.util.logging.Level;
  *******************************************************************/
 public class Community {
     static public int POPULATION = 40000 ;
-    static public int MAX_CYCLES = 5000 ;
-    //static public String NAME_ROOT = "test4" 
-    static public String NAME_ROOT = "NoPrepCalibration11" 
-    //static public String NAME_ROOT = "DecliningCondoms5"
+    static public int MAX_CYCLES = 20000 ;
+    //static public String NAME_ROOT = "RelationshipCalibration6" 
+    static public String NAME_ROOT = "NoPrepCalibration39" 
+    //        + "DecliningCondomsAlteredTesting"
             + "Pop" + String.valueOf(POPULATION) + "Cycles" + String.valueOf(MAX_CYCLES) ;
 
-    //static private String COMMENT = "" ;
-    static final String COMMENT = "" ;    /*very cycle after 1000 stops N=5 more Agents "
-            + "from ever choosing condoms. "
-            + "Assumes number of Agents at least N times number of cycles minus 1000." ;*/
+    static private String COMMENT = "" ;
+    /*static final String COMMENT = "every cycle after 1000 Agents "
+            + "reduce their chances of choosing condoms. "
+            + "Every year after cycle 1000 testing rates are altered to compare with "
+            + "long-term data." ;*/
+            //+ "Assumes number of Agents at least N times number of cycles minus 1000." ;*/
     static public String FILE_PATH = "output/test/" ;
     /** Dump reports to disk after this many cycles. */
     static final int DUMP_CYCLE = ((int) Math.pow(10, 7))/POPULATION ;
@@ -108,7 +110,7 @@ public class Community {
         
         // Record starting time to measure running time
         long startTime = System.nanoTime() ;
-        LOGGER.info("Seed:" + String.valueOf(System.currentTimeMillis()));
+        LOGGER.log(Level.INFO, "Seed:{0}", String.valueOf(System.currentTimeMillis()));
     
         // Establish Community of Agents for simulation
         LOGGER.info(Community.NAME_ROOT);
@@ -164,8 +166,8 @@ public class Community {
             if (cycle == ((cycle/outputInterval) * outputInterval))
                 LOGGER.log(Level.INFO, "Cycle no. {0}", cycleString);
 
-            if (false && cycle >= 1000)
-                community.interveneCommunity(5*(cycle-1000)) ;
+            //community.interveneCommunity(cycle) ;
+            
             //LOGGER.log(Level.INFO,"{0} {1}", new Object[] {Relationship.NB_RELATIONSHIPS,Relationship.NB_RELATIONSHIPS_CREATED});
             // update relationships and perform sexual encounters, report them
             relationshipRecord = cycleString + community.generateRelationships();
@@ -364,9 +366,29 @@ public class Community {
     /**
      * For addressing specific questions. Code will flux dramatically.
      */
-    private String interveneCommunity(int agentId)
+    private String interveneCommunity(int cycle)
     {
-        for (int index = 0 ; index < 8 ; index++ )
+        if (cycle < 1000)
+            return "" ;
+        
+        int year = (cycle-1000)/365 ;
+        if (year * 365 == (cycle - 1000))
+        {
+            for (Agent agent : agents)
+            {
+                try
+                {
+                    ((MSM) agent).reinitScreenCycle(year);
+                }
+                catch( Exception e ) // cycle extends beyond trend data
+                {
+                    break ;
+                }
+            }
+        }
+
+        int agentId = 5*(cycle-1000) ;
+        for (int index = 0 ; index < 5 ; index++ )
             agents.get(agentId + index).adjustCondomUse();
         /*for (Agent agent : agents)
         {
@@ -670,7 +692,8 @@ public class Community {
                 try
                 {
                     if (RAND.nextDouble() < relationship.getEncounterProbability())
-                        record += relationship.encounter() ;
+                        record += Reporter.addReportProperty(Reporter.RELATIONSHIPID, relationship.getRelationshipId()) 
+                                + relationship.encounter() ;
                     //System.out.println(record);
                 }
                 catch (NoSuchMethodException nsme)
