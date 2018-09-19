@@ -28,6 +28,7 @@ public class EncounterReporter extends Reporter {
     static String CONTACT = "contact" ;
 
     static String TRANSMISSION = "transmission" ;
+    static String CONDOM = "condom" ;
 
     public EncounterReporter()
     {
@@ -46,33 +47,6 @@ public class EncounterReporter extends Reporter {
 
         // Logger
         //java.util.logging.Logger logger = java.util.logging.Logger.getLogger("reporter") ;
-
-    /**
-     * Cycles through encounterReports, finding the agent pairs and storing HashTable 
-     * of each agent's partners for each cycle
-     *  
-     * @return ArrayList(HashMap)
-     */
-    public ArrayList<HashMap<Object,ArrayList<Object>>> preparePartnersReport()
-    {
-        ArrayList<HashMap<Object,ArrayList<Object>>> partnersReport  
-                = new ArrayList<HashMap<Object,ArrayList<Object>>>() ;
-        ArrayList<String[]> pairArray ;
-
-        boolean nextInput = true ; 
-        
-        while (nextInput)
-        {
-            for (String record : input)
-            {
-                partnersReport = new ArrayList<HashMap<Object,ArrayList<Object>>>() ;
-                pairArray = recordAgentIdPairs(record) ;
-                partnersReport.add(agentPartners(pairArray)) ;
-            }
-                nextInput = updateReport() ;
-        }
-        return partnersReport ;
-    }
 
     /**
      * 
@@ -103,17 +77,13 @@ public class EncounterReporter extends Reporter {
     {
         ArrayList<Object> nbTransmissions = new ArrayList<Object>() ;
         
-        boolean nextInput = true ; 
-        
-        while (nextInput)
-        {
+        for (boolean nextInput = true ; nextInput ; nextInput = updateReport() )
             for (String record : input)
             {
                 int[] incidence = countValueIncidence("transmission", TRUE, record, 0) ;
                 nbTransmissions.add("transmission:" + String.valueOf(incidence[0])) ;
             }
-            nextInput = updateReport() ;
-        }
+            
         return nbTransmissions ;
     }
     
@@ -183,6 +153,105 @@ public class EncounterReporter extends Reporter {
         return Reporter.sortReport(transmissionReport, sortingReport, values) ;
     }
     
+    /**
+     * 
+     * @param backYears
+     * @param backMonths
+     * @param backDays
+     * @return (HashMap) Number of condomless intercourse acts maps to the Number
+     * of Agents to have committed that many such acts in the last backYears years,
+     * backMonths months and backDays days.
+     */        
+    public HashMap<Object,Number> prepareNumberAgentCondomlessReport(int backYears, int backMonths, int backDays, String relationshipClazzName, String concordanceName, boolean concordant)
+    {
+        HashMap<Object,Number> numberAgentCondomlessReport = new HashMap<Object,Number>() ;
+        
+        HashMap<Object,ArrayList<Object>> agentCondomlessReport 
+                = prepareAgentCondomlessReport(backYears, backMonths, backDays, relationshipClazzName, concordanceName, concordant) ;
+        
+        for (ArrayList<Object> condomlessValue : agentCondomlessReport.values() ) 
+        {
+            int intercourses = condomlessValue.size() ;
+            numberAgentCondomlessReport = incrementHashMap(intercourses,numberAgentCondomlessReport) ;
+        }
+        
+        return numberAgentCondomlessReport ;
+    }
+    
+    /**
+     * 
+     * @return (HashMap) agentId maps to the cycles in which they had condomless 
+     * anal intercourse in a (relationshipClazzName) Relationship.
+     */
+    private HashMap<Object,ArrayList<Object>> prepareAgentCondomlessReport(int backYears, int backMonths, int backDays, String relationshipClazzName)
+    {
+        return prepareAgentCondomlessReport(backYears, backMonths, backDays, relationshipClazzName, "", true) ;
+    }
+    
+    /**
+     * 
+     * @return (HashMap) agentId maps to the cycles in which they had condomless 
+     * anal intercourse in a (relationshipClazzName) Relationship con/dis-cordant 
+     * according to concordanceName.
+     */
+    private HashMap<Object,ArrayList<Object>> prepareAgentCondomlessReport(int backYears, int backMonths, int backDays, String relationshipClazzName, String concordanceName, boolean concordant)
+    {
+        HashMap<Object,ArrayList<Object>> agentCondomlessIntercourse = new HashMap<Object,ArrayList<Object>>() ;
+        
+        RelationshipReporter relationshipReporter = new RelationshipReporter(simName,getFolderPath()) ;
+        HashMap<Object,String[]> relationshipAgentReport = relationshipReporter.prepareRelationshipAgentReport() ;
+        LOGGER.log(Level.INFO, "relationshipAgentReport {0}", relationshipAgentReport);
+        
+        int maxCycles = Integer.valueOf(getMetaDatum("Community.MAX_CYCLES")) ;
+        int backCycles = getBackCycles(backYears, backMonths, backDays, maxCycles) ;
+        int startCycle = maxCycles - backCycles ;
+        
+        ArrayList<String> encounterReport = getBackCyclesReport(0, 0, backCycles) ;
+        LOGGER.log(Level.INFO, "encounterReport {0}", encounterReport.get(0));
+        ArrayList<String> condomlessReport = prepareFilteredReport(CONDOM,FALSE,encounterReport) ;
+        LOGGER.log(Level.INFO, "condomlessReport {0}", condomlessReport.get(0));
+        ArrayList<String> concordantReport = relationshipReporter.filterByConcordance(concordanceName, concordant, condomlessReport) ;
+        LOGGER.log(Level.INFO, "concordantReport {0}", concordantReport.get(0));
+        ArrayList<String> finalReport = relationshipReporter.filterRelationshipClazzReport(relationshipClazzName,concordantReport) ;
+        LOGGER.log(Level.INFO, "finalReport {0}", finalReport);
+        
+        int reportSize = finalReport.size() ;
+        for (int recordNb = 0 ; recordNb < reportSize ; recordNb++ ) 
+        {
+            String record = finalReport.get(recordNb) ;
+            ArrayList<String> encounters = extractArrayList(record,RELATIONSHIPID) ; 
+            for (String encounter : encounters)
+            {
+                String[] agentIds = relationshipAgentReport.get(extractValue(RELATIONSHIPID,encounter)) ;
+                for (String agentId : agentIds)
+                    agentCondomlessIntercourse = updateHashMap(agentId,startCycle + recordNb,agentCondomlessIntercourse) ;
+            }
+        }
+        
+        return agentCondomlessIntercourse ;
+    }
+    
+    /**
+     * Filters records leaving only those encounters containing propertyName with (String) value.
+     * @param propertyName
+     * @param value
+     * @param fullReport
+     * @return 
+     */
+    private ArrayList<String> prepareFilteredReport(String propertyName, String value, ArrayList<String> fullReport)
+    {
+        ArrayList<String> filteredReport = new ArrayList<String>() ;
+        
+        String filteredRecord ;
+        
+        for (String record : fullReport)
+        {
+            filteredRecord = encounterByValue(propertyName,value,record);
+            filteredReport.add(filteredRecord) ;
+        }
+        
+        return filteredReport ;
+    }
     
     /**
      * 
@@ -198,13 +267,10 @@ public class EncounterReporter extends Reporter {
         int[] condomData ;
         String reportOutput ;
         
-        boolean nextInput = true ; 
-        
-        while (nextInput)
-        {
+        for (boolean nextInput = true ; nextInput ; nextInput = updateReport() )
             for (String record : input)
             {
-                condomData = countValueIncidence("condom",TRUE,record,0) ;
+                condomData = countValueIncidence(CONDOM,TRUE,record,0) ;
                 usages = condomData[0] ;
                 opportunities = condomData[1] ;
                 proportion = ((double) usages)/opportunities ;
@@ -213,8 +279,7 @@ public class EncounterReporter extends Reporter {
                 reportOutput += Reporter.addReportProperty("proportion", proportion) ;
                 condomUseReport.add(reportOutput) ;
             }
-            nextInput = updateReport() ;
-        }
+        
         return condomUseReport ;
     }
     
@@ -229,6 +294,8 @@ public class EncounterReporter extends Reporter {
         ArrayList<Object> protectionReport = new ArrayList<Object>() ;
         String protectionRecord ;
         
+        RelationshipReporter relationshipReporter = new RelationshipReporter(simName,getFolderPath()) ;
+        HashMap<Object,String[]> relationshipAgentReport = relationshipReporter.prepareRelationshipAgentReport() ;
         
         int condomOnly ;
         int onlySeroSort ;
@@ -263,9 +330,7 @@ public class EncounterReporter extends Reporter {
             }
         }
         LOGGER.log(Level.INFO, "{0}", census);
-        boolean nextInput = true ; 
-        // Check each input file
-        while (nextInput)
+        for (boolean nextInput = true ; nextInput ; nextInput = updateReport())
         {
             // Check each record.
             for (String record : input)
@@ -280,12 +345,12 @@ public class EncounterReporter extends Reporter {
                 total = 0 ;
 
                 // get Agent properties for each encounter 
-                encounters = extractArrayList(record,AGENTID0) ;
+                encounters = extractArrayList(record,RELATIONSHIPID) ;
                 for (String encounter : encounters)
                 {
                     seroPosition = false ;
                     seroSort = false ;
-                    agentIds = extractAgentIds(encounter,0) ;
+                    agentIds = relationshipAgentReport.get(extractValue(RELATIONSHIPID,encounter)) ;
                     finished = !(agentProperties.containsKey(agentIds[0]) && agentProperties.containsKey(agentIds[1])) ;
                     for (String agentId : agentIds)
                     {
@@ -308,10 +373,10 @@ public class EncounterReporter extends Reporter {
                     contacts = extractArrayList(encounter,CONTACT) ;
                     for (String contact : contacts)
                     {
-                        if (contact.indexOf("condom") < 0)
+                        if (contact.indexOf(CONDOM) < 0)
                             continue ;
                         total++ ;
-                        condom = TRUE.equals(extractValue("condom",contact)) ;
+                        condom = TRUE.equals(extractValue(CONDOM,contact)) ;
                         if (condom)
                         {
                             if (seroSort)
@@ -342,7 +407,6 @@ public class EncounterReporter extends Reporter {
                 protectionRecord += Reporter.addReportProperty("unprotected",((double) unprotected)/total) ;
                 protectionReport.add(protectionRecord) ;
             }    // report
-            nextInput = updateReport() ;
         }
         LOGGER.log(Level.INFO, "{0}", protectionReport);
         return protectionReport ;    
@@ -355,6 +419,9 @@ public class EncounterReporter extends Reporter {
     public HashMap<Object,ArrayList<Object>> prepareAgentToAgentRecord()
     {
         HashMap<Object,ArrayList<Object>> transmissionRecord = new HashMap<Object,ArrayList<Object>>() ;
+        
+        RelationshipReporter relationshipReporter = new RelationshipReporter(simName,getFolderPath()) ;
+        HashMap<Object,String[]> relationshipAgentReport = relationshipReporter.prepareRelationshipAgentReport() ;
         
         // Only consider contacts where transmission occurred
         ArrayList<String> transmissionReport = prepareTransmissionReport() ;
@@ -369,11 +436,10 @@ public class EncounterReporter extends Reporter {
         // Check each record (cycle) in transmissionReport
         for (String record : transmissionReport)
         {
-            encounterIndex = record.indexOf(AGENTID0);
-            while (encounterIndex >= 0)
+            for (encounterIndex = record.indexOf(RELATIONSHIPID) ; encounterIndex >= 0 ; encounterIndex = record.indexOf(RELATIONSHIPID,encounterIndex+1))
             {
                 String encounterString = extractEncounter(record,encounterIndex) ;
-                agentIdPair = extractAgentIds(encounterString,0);
+                agentIdPair = relationshipAgentReport.get(extractValue(RELATIONSHIPID,encounterString,0)) ;
                 
                 // Check each sexual contact 
                 contactIndex = encounterString.indexOf(CONTACT);
@@ -392,7 +458,6 @@ public class EncounterReporter extends Reporter {
                         Reporter.updateHashMap(Integer.valueOf(agentIdPair[1]), Integer.valueOf(agentIdPair[0]), transmissionRecord) ;
                     contactIndex = encounterString.indexOf(CONTACT,contactIndex+1);
                 }
-                encounterIndex = record.indexOf(AGENTID0,encounterIndex+1) ;
             }
         }
         return transmissionRecord ;
@@ -407,6 +472,9 @@ public class EncounterReporter extends Reporter {
     {
         HashMap<Object,HashMap<Object,ArrayList<Object>>> objectReport = 
                             new HashMap<Object,HashMap<Object,ArrayList<Object>>>() ;
+        
+        RelationshipReporter relationshipReporter = new RelationshipReporter(simName,getFolderPath()) ;
+        HashMap<Object,String[]> relationshipAgentReport = relationshipReporter.prepareRelationshipAgentReport() ;
         
         
         // Only consider contacts where transmission occurred
@@ -423,11 +491,10 @@ public class EncounterReporter extends Reporter {
         for (int cycle = 0 ; cycle < transmissionReport.size(); cycle++ )
         {
             String record = transmissionReport.get(cycle) ;
-            encounterIndex = record.indexOf(AGENTID0);
-            while (encounterIndex >= 0)
+            for (encounterIndex = record.indexOf(RELATIONSHIPID) ; encounterIndex >= 0 ; encounterIndex = record.indexOf(RELATIONSHIPID,encounterIndex+1) )
             {
                 String encounterString = extractEncounter(record,encounterIndex) ;
-                agentIdPair = extractAgentIds(encounterString,0);
+                agentIdPair = relationshipAgentReport.get(extractValue(RELATIONSHIPID,encounterString,0)) ;
                 
                 // Check each sexual contact 
                 contactIndex = encounterString.indexOf(CONTACT);
@@ -452,7 +519,6 @@ public class EncounterReporter extends Reporter {
                     }
                     //contactIndex = encounterString.indexOf(CONTACT,contactIndex+1);
                 }
-                encounterIndex = record.indexOf(AGENTID0,encounterIndex+1) ;
             }
         }
         //return hashMapHashMapNumber(objectReport) ;
@@ -523,20 +589,23 @@ public class EncounterReporter extends Reporter {
         HashMap<Object,Integer> agentTransmissionCountReport = prepareAgentTransmissionCountReport() ;
         HashMap<Object,Number> transmissionReport ;
         
-        PopulationReporter sortingReporter = new PopulationReporter(simName,Community.FILE_PATH) ;
+        PopulationReporter sortingReporter = new PopulationReporter(simName,getFolderPath()) ;
         HashMap<Object,Object> sortingReport = sortingReporter.sortedAgentIds(sortingProperty) ;
-        
+        LOGGER.log(Level.INFO, "{0}", sortingReport);
         HashMap<Object,HashMap<Object,Integer>> sortedAgentTransmissionCountReport 
                 = sortReport(agentTransmissionCountReport, sortingReport) ;
         
-        for (Object sortingKey : agentTransmissionCountReport.keySet())
+        // Find highest value to count down from amongst all sorting variables
+        ArrayList<Integer> agentTransmissionCountList = new ArrayList<Integer>() ;
+        for (HashMap<Object,Integer> agentTransmissionCount : sortedAgentTransmissionCountReport.values()) 
+            agentTransmissionCountList.addAll(agentTransmissionCount.values()) ;
+        int maxValue = Collections.max(agentTransmissionCountList) ;
+            
+        for (Object sortingKey : sortedAgentTransmissionCountReport.keySet())
         {
             transmissionReport = new HashMap<Object,Number>() ;
-            
             Collection<Integer> agentTransmissionCountValues = sortedAgentTransmissionCountReport.get(sortingKey).values() ;
         
-            int maxValue = Collections.max(agentTransmissionCountValues) ;
-
             // To track how agentIds have had more than given Relationships
             int nbAgents ;
 
@@ -545,7 +614,6 @@ public class EncounterReporter extends Reporter {
                 nbAgents = Collections.frequency(agentTransmissionCountValues,key) ;
                 transmissionReport.put(key, nbAgents) ;
             }
-
             numberAgentTransmissionReport.put(sortingKey, transmissionReport) ;
         }
         
@@ -692,25 +760,6 @@ public class EncounterReporter extends Reporter {
     }
 
     /**
-     * Extracts pairs of agentId0, agentId1 corresponding to relationships
-     * @param report
-     * @return ArrayList of String doublets
-     */
-    private ArrayList<String[]> recordAgentIdPairs(String record)
-    {
-        ArrayList<String[]> agentIdPairs = new ArrayList<String[]>() ;
-        for (int startIndex = 0 ; startIndex != -1; startIndex = indexOfProperty(AGENTID0, startIndex + 1, record))
-        {
-            String[] agentIdPair = extractAgentIds(record,startIndex) ;
-            agentIdPairs.add(agentIdPair) ;
-
-            // Find startIndex for next loop
-            //startIndex = indexOfProperty(AGENTID0, startIndex + 1,report) ;
-        }
-        return agentIdPairs ;
-    }
-
-    /**
      * Extracts encounter reports where propertyName.value = value for at least 
      * one contact
      * @param propertyName
@@ -720,23 +769,17 @@ public class EncounterReporter extends Reporter {
      */
     private String encounterByValue(String propertyName, String value, String record)
     {
-        int indexStart = 0 ;
         int indexContact ;
         String methodOutput = "" ;
         String encounterString ;
         String contactString ;
-        while (indexStart >= 0)
+        for (int indexStart = 0 ; indexStart >= 0 ; indexStart = indexOfProperty(RELATIONSHIPID,indexStart+1, record) )
         {
             // Encounter to study
             encounterString = extractEncounter(record, indexStart) ;
 
-            // Prepare for next loop
-            indexStart = indexOfProperty(AGENTID0,indexStart+1, record) ;
-            
-            // Initialise reportOutput for encounter
-            indexContact = indexOfProperty(CONTACT,encounterString) ;
-            
             // Skip to next loop if no contact
+            indexContact = indexOfProperty(CONTACT,encounterString) ;
             if (indexContact < 0)
                 continue ;
             
@@ -744,26 +787,18 @@ public class EncounterReporter extends Reporter {
             String encounterOutput = "" ;
 
             // check contacts for desired value of propertyName
-            while (indexContact >= 0)
-            {
-                contactString = boundedStringByValue(propertyName,value,CONTACT,encounterString) ; 
-                // if contactString contains actual contact information
-                if (!"".equals(contactString)) 
-                {
-                        encounterOutput += contactString ;
-                }
-                // Find next contact
-                indexContact = indexOfProperty(CONTACT, indexContact + 1, encounterString) ;
-            }
+            contactString = boundedStringByValue(propertyName,value,CONTACT,encounterString) ; 
+            encounterOutput += contactString ;
+                
             // Only include encounter in reportOutput if any of its contacts are included 
             if (encounterOutput.length() > 0)
                 methodOutput += encounterOpening + encounterOutput ; // Include agentId
 
         }
         // If no positive cases are returned
-        if ("".equalsIgnoreCase(methodOutput)) 
+        if ("".equals(methodOutput)) 
             methodOutput = "None" ;
-
+        
         return methodOutput ;
     }
     
@@ -777,12 +812,11 @@ public class EncounterReporter extends Reporter {
      */
     private String encounterByContents(String propertyName, String report)
     {
-        int indexStart = 0 ;
         int indexContact ;
         String methodOutput = "" ;
         String encounterString ;
         String contactString ;
-        while (indexStart >= 0)
+        for (int indexStart = 0 ; indexStart >= 0 ; indexStart = indexOfProperty(RELATIONSHIPID,indexStart+1, report) )
         {
             // Encounter to study
             encounterString = extractEncounter(report, indexStart) ;
@@ -792,24 +826,12 @@ public class EncounterReporter extends Reporter {
             String encounterOpening = encounterString.substring(0, indexContact ) ;
             String encounterOutput = "" ;
 
-            // check contacts for desired value of propertyName
-            while (indexContact >= 0)
-            {
-                contactString = boundedStringByContents(propertyName,CONTACT,encounterString) ; 
-                // if contactString contains actual contact information
-                if (!"".equals(contactString)) 
-                {
-                        encounterOutput += contactString ;
-                }
-                // Find next contact
-                indexContact = indexOfProperty(CONTACT, indexContact + 1, encounterString) ;
-            }
+            // check contacts for desired propertyName
+            contactString = boundedStringByContents(propertyName,CONTACT,encounterString) ; 
+            encounterOutput += contactString ;
             // Only include encounter in reportOutput if any of its contacts are included 
             if (encounterOutput.length() > 0)
                 methodOutput += encounterOpening + encounterOutput ; // Include agentId
-
-            // Prepare for next loop
-            indexStart = indexOfProperty(AGENTID0,indexStart+1, report) ;
         }
         // If no positive cases are returned
         if ("".equalsIgnoreCase(methodOutput)) 
@@ -835,7 +857,7 @@ public class EncounterReporter extends Reporter {
      */
     private String extractEncounter(String string, int indexStart)
     {
-        return extractBoundedString(AGENTID0, string, indexStart) ;
+        return extractBoundedString(RELATIONSHIPID, string, indexStart) ;
     }
 
     
