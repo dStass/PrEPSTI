@@ -98,10 +98,19 @@ public class SafeMSM extends MSM{
         return JOIN_GSE_PROBABILITY ;
     }
     
+    /**
+     * Adjusts probabilityUseCondom to reflect behavioural trends
+     */
+    @Override
+    public void adjustProbabilityUseCondom()
+    {
+        probabilityUseCondom *= RAND.nextDouble() ;
+    }
     
+    /*
     @Override
     public void adjustCondomUse()
     {
         probabilityUseCondom = 0.0 ;
-    }
+    }*/
 }
