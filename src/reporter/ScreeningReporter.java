@@ -41,6 +41,33 @@ public class ScreeningReporter extends Reporter {
     /**
      * 
      * @param siteNames
+     * @return Records of final incidence for specified siteNames and in total.
+     */
+    public HashMap<Object,Number> prepareFinalIncidenceRecord(String[] siteNames)
+    {
+        HashMap<Object,Number> finalIncidence = new HashMap<Object,Number>() ;
+        
+        int incidence ;
+        
+        String finalIncidenceRecord = getFinalRecord() ;
+        
+        double population = Double.valueOf(getMetaDatum("Community.POPULATION")) ;
+        for (String siteName : siteNames)
+        {
+            // Count infected siteName
+            incidence = countValueIncidence(siteName,TRUE,finalIncidenceRecord,0)[1];
+            finalIncidence.put(siteName,incidence/population) ;
+        }
+        
+        incidence = countValueIncidence(AGENTID,"",finalIncidenceRecord,0)[1];
+        finalIncidence.put("all",incidence/population) ;
+        
+        return finalIncidence ;
+    }
+ 
+    /**
+     * 
+     * @param siteNames
      * @return Records of final prevalences for specified siteNames and in total.
      */
     public HashMap<Object,Number> prepareFinalPrevalencesRecord(String[] siteNames)
@@ -60,7 +87,7 @@ public class ScreeningReporter extends Reporter {
         }
         
         prevalence = countValueIncidence(AGENTID,"",finalPrevalenceRecord,0)[1];
-        finalPrevalencesRecord.put("total",prevalence/population) ;
+        finalPrevalencesRecord.put("all",prevalence/population) ;
         
         return finalPrevalencesRecord ;
     }
@@ -88,7 +115,7 @@ public class ScreeningReporter extends Reporter {
         
         ArrayList<String> infectionArray = extractArrayList(finalSymptomaticRecord,AGENTID,TRUE) ;
         symptomatic = infectionArray.size() ;
-        finalSymptomaticRecords.put("total",symptomatic/population) ;
+        finalSymptomaticRecords.put("all",symptomatic/population) ;
         
         return finalSymptomaticRecords ;
     }
@@ -102,7 +129,7 @@ public class ScreeningReporter extends Reporter {
     {
         ArrayList<Object> prevalenceReport = new ArrayList<Object>() ;
         
-        int population = Integer.valueOf(getMetaDatum("Community.POPULATION")) ;
+        int population = Community.POPULATION ; // Integer.valueOf(getMetaDatum("Community.POPULATION")) ;
         int nbInfected ;
         int nbSymptomatic ;
         String entry ;
