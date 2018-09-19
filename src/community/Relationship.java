@@ -94,10 +94,14 @@ public class Relationship {
      */
     static Class chooseRelationship(Agent agent0, Agent agent1 )
     {
+        // Odds for different Relationships
     	double monogomousOdds = agent0.getMonogomousOdds() + agent1.getMonogomousOdds() ;
     	double regularOdds = agent0.getRegularOdds() + agent1.getRegularOdds() ;
     	double casualOdds = agent0.getCasualOdds() + agent1.getCasualOdds() ;
+        
     	double totalOdds = monogomousOdds + regularOdds + casualOdds ;
+        
+        // Choose Relationship subclass 
     	double choice = RAND.nextDouble() * totalOdds ;
         if (choice < monogomousOdds)
     		return Monogomous.class ;
@@ -142,6 +146,7 @@ public class Relationship {
      * Arrange that agent0 should always have the lower agentId
      * @param agent0
      * @param agent1
+     * @return (String) report
      */
     final protected String addAgents(Agent agent0, Agent agent1)
     {
@@ -233,8 +238,8 @@ public class Relationship {
     	int contacts = chooseNbContacts() ;
     
         // Initialising Agents and corresponding Sites 
-    	report += "agentId0:" + Integer.toString(agent0.getAgentId()) + " " ;
-        report += "agentId1:" + Integer.toString(agent1.getAgentId()) + " " ;
+    	/*report += "agentId0:" + Integer.toString(agent0.getAgentId()) + " " ;
+        report += "agentId1:" + Integer.toString(agent1.getAgentId()) + " " ;*/
         
         // return if neither Agent is infected
         if ((!agent0.getInfectedStatus()) && (!agent1.getInfectedStatus()))
@@ -246,8 +251,6 @@ public class Relationship {
             //Class<?> agentClazz = agent0.getClass() ; //.asSubclass(agent0.getClass()) ;
 
             // TODO: Generalise to arbitrary Agent subClasses
-            //Method siteMethod = MSM.class.getMethod("chooseSites", Agent.class, Agent.class) ;
-                    //Site[] sites = (Site[]) siteMethod.invoke(agent0,agent1) ;
             Site[] sites = MSM.chooseSites(agent0, agent1) ;
             Site site0 = sites[0] ;
             Site site1 = sites[1] ;
@@ -282,7 +285,7 @@ public class Relationship {
                 
                 if (Agent.useCondom(agent0, agent1, relationship))
                 {
-                    infectProbability*= (1.0 - CONDOM_EFFECT) ;
+                    infectProbability *= (1.0 - CONDOM_EFFECT) ;
                     report += "true " ;
                 }
                 else 
@@ -304,8 +307,7 @@ public class Relationship {
 
                 // Probabilistically transmit infection to site1
                 //site1.receive(infectName0,transmit0) ;
-                report += Boolean.toString(agent1.receiveInfection(infectProbability,site1)) ;	   
-                report += " " ; 	
+                report += Reporter.addReportProperty("transmission", Boolean.toString(agent1.receiveInfection(infectProbability,site1))) ;  
             }
             else    // agent1 must be infected
             {
@@ -315,8 +317,7 @@ public class Relationship {
 
                 // Probabilistically transmit infection to site0
                 //site0.receive(infectName0,transmit0) ;
-                report += Boolean.toString(agent0.receiveInfection(infectProbability,site0)) ;	    	
-                report += " " ;
+                report += Reporter.addReportProperty("transmission", Boolean.toString(agent0.receiveInfection(infectProbability,site0))) ; 
             }
     	}
         return report ;   	
