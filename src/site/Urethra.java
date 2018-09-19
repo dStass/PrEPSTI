@@ -19,7 +19,7 @@ public class Urethra extends Site {
     static double SYMPTOMATIC_PROBABILITY = 0.8 ;
     
     /** Probability of Site being infected initially */
-    static double INITIAL = 0.03 ;
+    static double INITIAL = 0.01 ;
     
     /**
      * Duration of gonorrhoea infection in Urethra.
@@ -60,6 +60,7 @@ public class Urethra extends Site {
      * 
      * @return Probability of site being infected initially.
      */
+    @Override
     protected double getInfectedProbability()
     {
         return INITIAL ;
@@ -69,12 +70,14 @@ public class Urethra extends Site {
      * 
      * @return The probability of an infection at this Site causing symptoms
      */        
+    @Override
     protected double getSymptomaticProbability()
     {
         return SYMPTOMATIC_PROBABILITY ;
     }
 
     
+    @Override
     protected int getInfectionDuration()
     {
         return INFECTION_DURATION ;
