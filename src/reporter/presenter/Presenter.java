@@ -8,6 +8,7 @@ import reporter.* ;
 import community.Community ;
 import java.awt.Color;
 import java.awt.Font ;
+import java.io.BufferedWriter;
 
 import org.jfree.chart.* ;
 import org.jfree.chart.ui.ApplicationFrame ;
@@ -36,6 +37,7 @@ import java.util.ArrayList ;
 import java.util.* ;
 
 import java.io.File ;
+import java.io.FileWriter;
 import java.io.IOException ;
 import java.util.logging.Level;
 
@@ -58,10 +60,31 @@ public class Presenter {
     protected String applicationTitle ;
     protected String chartTitle ;
     
+    protected String BASE = "base" ;
+    protected String INTERVAL = "interval" ;
+    
     private BarChart_AWT chart_awt ;
     private Dataset dataset ;
+    private String folderPath = Community.FILE_PATH ;
 
     static final java.util.logging.Logger LOGGER = java.util.logging.Logger.getLogger("presenter") ;
+    
+    static protected String getTimePeriodString(int backYears, int backMonths, int backDays)
+    {
+        return String.valueOf(backYears) + "Y" 
+                + String.valueOf(backMonths) + "M" 
+                + String.valueOf(backDays) + "D" ;
+    }
+    
+    static private String getYLabel(String[] scoreNames)
+    {
+        String scoreName = "" ;
+        for (String name : scoreNames)
+            if (scoreName.indexOf(name) >= 0)
+                scoreName += "/" + name ;
+        
+        return scoreName ;
+    }
     
     public Presenter()
     {
@@ -81,6 +104,7 @@ public class Presenter {
         this.applicationTitle = simName ;
         this.chartTitle = chartTitle ;
         chart_awt = new BarChart_AWT(applicationTitle, chartTitle) ;
+        folderPath = reportFilePath ;
         setReporter(new Reporter(simName,reportFilePath)) ;
     }
     
@@ -98,16 +122,37 @@ public class Presenter {
     }
 
     /**
-     * Fits a spline to points from a report.
-     * @param xValues
-     * @param yValues
-     * @return (PolynomialSplineFunction) 
+     * Fits an Array of splines to Arrays of points from a report.
+     * @param hashMapReport
+     * @return (PolynomialSplineFunction[]) 
      */
-    protected PolynomialSplineFunction generateFunction(double[] xValues, double[] yValues)
+    protected PolynomialSplineFunction[] generateFunctions(HashMap<Object,Number[]> hashMapReport)
     {
+        int valueLength = 0 ;
+        for (Number[] value : hashMapReport.values())
+            valueLength = value.length ;
+        
+        PolynomialSplineFunction[] functions = new PolynomialSplineFunction[valueLength] ;
+        
         SplineInterpolator splineInterp = new SplineInterpolator();
-        return splineInterp.interpolate(xValues, yValues);
-            //double yy[int i] = polySplineF.value(x);
+        
+        int arrayLength = hashMapReport.keySet().size() ;
+        double[] xValues = new double[arrayLength] ;
+        double[][] yValues = new double[valueLength][arrayLength] ;
+        
+        int keyCount = 0 ;
+        for (Object key : hashMapReport.keySet())
+        {
+            xValues[keyCount] = Double.valueOf(key.toString()) ;
+            for (int functionIndex = 0 ; functionIndex < valueLength ; functionIndex++ )
+                yValues[functionIndex][keyCount] = hashMapReport.get(key)[functionIndex].doubleValue() ;
+            keyCount++ ;
+        }
+
+        for (int functionIndex = 0 ; functionIndex < valueLength ; functionIndex++ )
+            functions[functionIndex] = splineInterp.interpolate(xValues, yValues[functionIndex]);
+        
+        return functions ;
     }
     
     /**
@@ -146,8 +191,8 @@ public class Presenter {
         {
             // Initialise scoreValue
             scoreValue = 0.0 ;
-            categoryValue  = String.valueOf(categoryEntry.get(openSegmentNb)) + "-" 
-                    + String.valueOf(categoryEntry.get(closeSegmentNb-1)) ;
+            categoryValue  = //String.valueOf(categoryEntry.get(openSegmentNb)) + "-" +
+                    String.valueOf(categoryEntry.get(closeSegmentNb-1)) ;
             int nbDigits = ((int) Math.log10(Integer.valueOf(String.valueOf(categoryEntry.get(openSegmentNb))))) + 1 ;
             for (int addSpace = nbDigits ; addSpace < totalDigits ; addSpace++ )
                 categoryValue = " ".concat(categoryValue) ;
@@ -391,7 +436,91 @@ public class Presenter {
         
         // Send data to be processed and presented
         chart_awt.callPlotChart(chartTitle,scoreData,scoreName) ;
-        return ;
+    }
+    
+    /**
+     * Plots multiple spline plots of the data in reportArray on the same graph.
+     * @param categoryName
+     * @param scoreName
+     * @param reportArray 
+     */
+    protected void multiPlotSpline(String categoryName, String scoreName, HashMap<Object,Number[]> reportArray)
+    {
+        plotSpline(categoryName, scoreName, reportArray, new String[] {""}) ;
+    }
+    
+    /**
+     * Presents reportArray as a collection of spline plots.
+     * @param categoryName
+     * @param scoreName
+     * @param reportArray (HashMap) Report to be plotted.
+     */
+    protected void plotSpline(String categoryName, String scoreName, HashMap<Object,Number[]> reportArray, String[] legend)
+    {
+        //LOGGER.info("callPlotChart()") ;
+        // Extract data from reportArray
+        PolynomialSplineFunction[] functions = generateFunctions(reportArray) ;
+        
+        //double[] domain = getDomain(reportArray.keySet(),procedure,interval) ;
+        double[] domain = new double[reportArray.keySet().size()] ;
+        int index = 0 ;
+        for ( Object xValue : reportArray.keySet() )
+        {
+            domain[index] = Double.valueOf(xValue.toString()) ;
+            index++ ;
+        }
+        Arrays.sort(domain);
+        
+        // Send data to be processed and presented
+        chart_awt.callPlotSpline(chartTitle,functions,domain,scoreName,categoryName,legend) ;
+    }
+    
+    
+    protected void plotSpline(String categoryName, String scoreName, HashMap<Object,Number> reportArray)
+    {
+        HashMap<Object,Number[]> newReportArray = new HashMap<Object,Number[]>() ;
+        
+        for ( Object key : reportArray.keySet())
+        {
+            ArrayList<Number> numberList = new ArrayList<Number>() ;
+            numberList.add(reportArray.get(key)) ;
+            newReportArray.put(key, (Number[]) numberList.toArray()) ;
+        }
+        
+        plotSpline(categoryName, scoreName, newReportArray, new String[] {""}) ;
+    }
+    
+    /**
+     * 
+     * @param keys
+     * @param procedure
+     * @param interval
+     * @return (Double[]) of points on x-axis for interpolating spline.
+     */
+    private double[] getDomain(Set keys, String procedure, int interval)
+    {
+        int keyCount = 0 ;
+        double[] domain = new double[keys.size()] ;
+        if (procedure.equals(BASE))
+        {
+            for (int nextValue = 1 ; nextValue <= keys.size() ; nextValue *= interval)
+                if (keys.contains(nextValue))
+                {
+                    domain[keyCount] = Double.valueOf(String.valueOf(nextValue)) ;
+                    keyCount++ ;
+                }
+        }
+        else if (procedure.equals(INTERVAL))
+        {
+            for (int nextValue = 0 ; nextValue < keys.size() ; nextValue += interval )
+                if (keys.contains(nextValue))
+                {
+                    domain[keyCount] = Double.valueOf(String.valueOf(nextValue)) ;
+                    keyCount++ ;
+                }
+        }
+        
+        return Arrays.copyOf(domain, keyCount) ;
     }
     
     /**
@@ -719,32 +848,28 @@ public class Presenter {
         HashMap<Object,Number[]> plottingHashMap = new HashMap<Object,Number[]>() ;
         
         HashMap<Object,Number> subHashMap ;
-        HashMap<Object,ArrayList<Number>> constructionHashMap = new HashMap<Object,ArrayList<Number>>() ;
         
+        int arraySize = sortedHashMap.keySet().size() ;
         int nbKeys = 0 ;
         for (Object sortingKey : sortedHashMap.keySet())
         {
             subHashMap = sortedHashMap.get(sortingKey) ;
             for (Object subKey : subHashMap.keySet())
             {
-                if (!constructionHashMap.containsKey(subKey))
+                if (!plottingHashMap.containsKey(subKey))
                 {
-                    constructionHashMap.put(subKey, new ArrayList<Number>()) ;
-                    // What if subKey not present under earlier sortingKey?
+                    plottingHashMap.put(subKey, new Number[arraySize]) ;
+                    // If subKey not present under earlier sortingKey?
                     for (int index = 0 ; index < nbKeys ; index++ )
-                        constructionHashMap.get(subKey).add(0) ;
+                        plottingHashMap.get(subKey)[index] = 0 ;
                 }
                 Number entry = subHashMap.get(subKey) ;
-                if (entry == null)    // What if subKey missing under this sortingKey 
+                if (entry == null)    // If subKey missing under this sortingKey 
                     entry = 0 ;
-                constructionHashMap.get(subKey).add(entry) ;
+                plottingHashMap.get(subKey)[nbKeys] = entry ;
             }
             nbKeys++ ;
         }
-        
-        // Replace ArrayList<Number> with Number[]
-        for (Object subKey : constructionHashMap.keySet())
-            plottingHashMap.put(subKey, (Number[]) constructionHashMap.get(subKey).toArray()) ;
         
         return plottingHashMap ;
     }
@@ -914,6 +1039,17 @@ public class Presenter {
         }
         
         /**
+         * Calls Method callPlotChart() for plots over time after generating dataset without legend
+         * @param chartTitle
+         * @param dataArray
+         * @param yLabel 
+         */
+        private void callPlotSpline(String chartTitle, PolynomialSplineFunction[] functions, double[] domain, String yLabel, String xLabel)
+        {
+            callPlotSpline(chartTitle, functions, domain, yLabel, xLabel, new String[] {""}) ;
+        }
+        
+        /**
          * Calls Method plotLineChart() for plots over time after generating dataset
          * @param chartTitle
          * @param dataArray
@@ -921,9 +1057,34 @@ public class Presenter {
          */
         private void callPlotChart(String chartTitle, ArrayList<ArrayList<Object>> dataArray, String yLabel, String[] legend)
         {
+            callPlotChart(chartTitle, dataArray, yLabel, "cycle", legend) ;
+        }
+        
+        /**
+         * Calls Method plotLineChart() for plots over time after generating dataset
+         * @param chartTitle
+         * @param dataArray 
+         * @param yLabel 
+         */
+        private void callPlotChart(String chartTitle, ArrayList<ArrayList<Object>> dataArray, String yLabel, String xLabel, String[] legend)
+        {
             //LOGGER.info("callPlotChart()") ;
             XYSeriesCollection dataset = createXYDataset(dataArray,legend) ;
-            plotLineChart(chartTitle, dataset, yLabel, "cycle", legend) ;
+            plotLineChart(chartTitle, dataset, yLabel, xLabel, legend) ;
+        }
+        
+        /**
+         * Calls Method plotLineChart() for plots over time after generating dataset
+         * @param chartTitle
+         * @param function (PolynomialSplineFunction) Spline for plotting curves
+         * @param domain (double[]) Points on x-axis for plotting.
+         * @param yLabel 
+         */
+        private void callPlotSpline(String chartTitle, PolynomialSplineFunction[] functions, double[] domain, String yLabel, String xLabel, String[] legend)
+        {
+            //LOGGER.info("callPlotChart()") ;
+            XYSeriesCollection dataset = createXYDataset(functions, domain, legend) ;
+            plotLineChart(chartTitle, dataset, yLabel, xLabel, legend) ;
         }
         
         /**
@@ -1044,8 +1205,10 @@ public class Presenter {
         private void plotStackedBarChart(String chartTitle, CategoryDataset dataset, String[] scoreNames , String xLabel)
         {
             LOGGER.info("plotBarChart()");
+            String scoreName = getYLabel(scoreNames) ;
+        
             JFreeChart barChart = ChartFactory.createStackedBarChart(chartTitle,xLabel,
-                scoreNames[0],dataset,PlotOrientation.VERTICAL,true, true, false);
+                scoreName,dataset,PlotOrientation.VERTICAL,true, true, false);
             
             GroupedStackedBarRenderer renderer = new GroupedStackedBarRenderer();
             KeyToGroupMap map = new KeyToGroupMap("G1");
@@ -1090,8 +1253,12 @@ public class Presenter {
             JFreeChart lineChart = ChartFactory.createXYLineChart(chartTitle,xLabel,
                 yLabel,dataset,PlotOrientation.VERTICAL,showLegend, true, false);
             
-            NumberAxis domainAxis = (NumberAxis) lineChart.getXYPlot().getDomainAxis() ;
-            domainAxis.setTickUnit(new NumberTickUnit(dataset.getItemCount(0)/20)) ;
+            //lineChart.getXYPlot().setDomainAxis(new LogarithmicAxis(xLabel));
+            
+            //NumberAxis domainAxis = (NumberAxis) lineChart.getXYPlot().getDomainAxis() ;
+            //double upperBound = domainAxis.getRange().getUpperBound() ;
+            //domainAxis.setRange(2.0,upperBound);
+            //domainAxis.setTickUnit(new NumberTickUnit(dataset.getItemCount(0)/20)) ;
             
             // Set unit tick distance if range is integer.
             //LOGGER.info(String.valueOf(dataset.getX(0,0)));
@@ -1157,12 +1324,12 @@ public class Presenter {
             setContentPane( chartPanel ); 
             pack() ;
             setVisible(true) ;
-            LOGGER.info(System.getProperty("os.name")) ;
+            //LOGGER.info(System.getProperty("os.name")) ;
         }
         
         private void saveChart(JFreeChart barChart)
         {
-            String directory = Community.FILE_PATH ;
+            String directory = folderPath ;
             String address = directory + applicationTitle + chartTitle + ".jpg" ;
             LOGGER.info(address) ;
             //int width = 2560 ;
@@ -1185,6 +1352,54 @@ public class Presenter {
                 //LOGGER.log(Level.SEVERE, ioe.getMessage());
                 LOGGER.info(ioe.getLocalizedMessage());
             }
+        }
+        
+        /**
+         * Writes a prospective dataset to .RData file instead of generating a 
+         * graph with JFreeChart.
+         * @param scoreData
+         * @param yLabel
+         * @param xLabel
+         * @param legend 
+         */
+        private void exportDataset(ArrayList<ArrayList<Object>> scoreData, String yLabel, String xLabel, String[] legend)
+        {
+            String firstLine = xLabel + "," + yLabel + ",PlotNb" ;
+            
+            String filePath = folderPath + applicationTitle + chartTitle + ".csv" ;
+            
+            int dataSize;
+            String plotLabel ;
+            
+            try
+            {
+                BufferedWriter fileWriter = new BufferedWriter(new FileWriter(filePath,false));
+                fileWriter.write(firstLine) ;
+                fileWriter.newLine() ;
+                
+                int plotTotal = legend.length ;
+                for (int plotNumber = 0 ; plotNumber < plotTotal ; plotNumber++ )
+                {
+                    ArrayList<Object> data = scoreData.get(plotNumber) ;
+                    dataSize = data.size();
+                    plotLabel = String.valueOf(plotNumber);
+
+                    for (int index = 0 ; index < dataSize; index++ )
+                    {
+                        String fileLine = String.valueOf(index) + "," ;
+                        fileLine += String.valueOf(data.get(index)) + "," ;
+                        fileLine += plotLabel ;
+                        fileWriter.write(fileLine) ; 
+                        fileWriter.newLine() ;
+                    }
+                }
+                fileWriter.close() ;
+            }
+            catch ( Exception e )
+            {
+                LOGGER.log(Level.SEVERE, e.toString());
+            }
+
         }
         
         /**
@@ -1355,17 +1570,37 @@ public class Presenter {
 
         /**
          * Generate Dataset for a given double[] of domain values from a function.
-         * @param function
+         * @param functions
          * @param domain
          * @return 
          */
-        private XYSeriesCollection createXYDataset(PolynomialSplineFunction function, double[] domain)
+        private XYSeriesCollection createXYDataset(PolynomialSplineFunction[] functions, double[] domain, String[] legend)
         {
-            XYSeries xySeries = new XYSeries("") ;
-            for (double x : domain)
-                xySeries.add(x, function.value(x), false);
+            XYSeriesCollection xySeriesCollection = new XYSeriesCollection() ;
             
-            return new XYSeriesCollection(xySeries) ;
+            int plotTotal ;
+            
+            if (legend.length == 0)
+                legend = new String[] {""} ;
+            plotTotal = legend.length ;
+            
+            for (int plotNumber = 0 ; plotNumber < plotTotal ; plotNumber++ )
+            {
+                XYSeries xySeries = new XYSeries(legend[plotNumber]) ;
+
+                for (double x : domain)
+                    xySeries.add(x, functions[plotNumber].value(x), false);
+            
+                try
+                {
+                    xySeriesCollection.addSeries((XYSeries) xySeries.clone());
+                }
+                catch ( CloneNotSupportedException cnse )
+                {
+                    LOGGER.log(Level.SEVERE, cnse.toString());
+                }
+            }
+            return xySeriesCollection ;
         }
         
         /**
