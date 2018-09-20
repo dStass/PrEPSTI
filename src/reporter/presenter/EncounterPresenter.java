@@ -27,18 +27,21 @@ public class EncounterPresenter extends Presenter {
     public static void main(String[] args)
     {
         //String simName = "testPop30000Cycles500" ; // Community.NAME_ROOT ; // "introPrepCalibration48Pop40000Cycles7000" ; // args[0] ;
-        String simName = "NoPrepCalibration86Pop40000Cycles5000" ; // Community.NAME_ROOT ; // "introPrepCalibration48Pop40000Cycles7000" ; // args[0] ;
-        String chartTitle = "infections_of_PrEP_users" ; // args[1] ;
-        //String chartTitle = "agents_caused_number_transmissions" ; // args[1] ;
+        String simName = "NoPrepCalibration33Pop40000Cycles3000" ; // "NoPrepCalibration86Pop40000Cycles5000" ; // "introPrepCalibration48Pop40000Cycles7000" ; // args[0] ;
+        //String chartTitle = "infections_of_PrEP_users" ; // args[1] ;
+        String chartTitle = "proportion_of_nonHIV_Agents_had_CLAI" ; // args[1] ;
         String reportFileName = "output/test/" ; // args[2] ;
+        LOGGER.info(chartTitle) ;
         EncounterPresenter encounterPresenter = new EncounterPresenter(simName,chartTitle,reportFileName) ;
         //encounterPresenter.plotCondomUse();
         //encounterPresenter.plotProtection() ;
         //encounterPresenter.plotNbTransmissions();
         //encounterPresenter.plotCumulativeAgentTransmissionReport() ;
-        //encounterPresenter.plotNumberAgentTransmissionReport() ;
+        //encounterPresenter.plotPercentAgentCondomlessReport(new String[] {"Casual","Regular","Monogomous"}, 0, 1, 0, "", false) ;
+        encounterPresenter.plotPercentAgentCondomlessReport(new String[] {"Casual","Regular","Monogomous"}, 0, 2, 0, "statusHIV", false) ; 
+        //encounterPresenter.plotNumberAgentTransmissionReport("statusHIV") ;
         //encounterPresenter.plotFromSiteToSite(new String[] {"Rectum","Urethra","Pharynx"});
-        encounterPresenter.plotReceiveSortPrepStatusReport("true") ;
+        //encounterPresenter.plotReceiveSortPrepStatusReport("true") ;
 
         //String methodName = args[3] ;
         //Method method = EncounterPresenter.class.getMethod(methodName) ;
@@ -133,7 +136,7 @@ public class EncounterPresenter extends Presenter {
     {
         HashMap<Object,Number> numberAgentTransmissionReport = reporter.prepareNumberAgentTransmissionReport() ;
         
-        plotHashMap("Number of transmissions","No of agents",binHashMap(numberAgentTransmissionReport,"Nb_of_Agents")) ;
+        plotSpline("Number of transmissions","No of agents",numberAgentTransmissionReport) ;
     }
     
     /**
@@ -143,11 +146,22 @@ public class EncounterPresenter extends Presenter {
     public void plotNumberAgentTransmissionReport(String sortingProperty)
     {
         HashMap<Object,HashMap<Object,Number>> numberAgentTransmissionReport = reporter.prepareNumberAgentTransmissionReport(sortingProperty) ;
+        LOGGER.log(Level.INFO, "{0}", numberAgentTransmissionReport);
         
+        //(HashMap) unsortedKey maps to (Number[]) values in order determined by 
+        // looping through keySet.
         HashMap<Object,Number[]> plotHashMap = prepareSortedHashMap(numberAgentTransmissionReport) ;
-        String[] scoreNames = (String[]) numberAgentTransmissionReport.keySet().toArray() ;
+        LOGGER.log(Level.INFO, "{0}", plotHashMap);
         
-        plotHashMap("Number of transmissions",scoreNames,binHashMap(plotHashMap,scoreNames)) ;
+        String[] legend = new String[numberAgentTransmissionReport.keySet().size()] ;
+        int nameIndex = 0 ;
+        for (Object scoreName : numberAgentTransmissionReport.keySet())
+        {
+            legend[nameIndex] = sortingProperty + " " + scoreName.toString() ;
+            nameIndex++ ;
+        }
+        
+        plotSpline("Number of transmissions","Number of Agents",plotHashMap,legend) ;
     }
     
     /**
@@ -157,7 +171,7 @@ public class EncounterPresenter extends Presenter {
     {
         HashMap<Object,Number> cumulativeAgentTransmissionReport = reporter.prepareCumulativeAgentTransmissionReport() ;
         
-        plotHashMap("Cumulative number of transmissions","No of agents",binCumulativeHashMap(cumulativeAgentTransmissionReport,"No of agents")) ;
+        plotSpline("Cumulative number of transmissions","No of agents",cumulativeAgentTransmissionReport) ;
     }
     
     /**
@@ -225,6 +239,46 @@ public class EncounterPresenter extends Presenter {
     {
         HashMap<Object,ArrayList<Object>> transmittingAgentsReport = reporter.prepareAgentToAgentRecord() ;
         plotHashMapScatter("infectious agent", "receiving agent", transmittingAgentsReport ) ;
+    }
+    
+    /**
+     * Plots the percent of Agents who have been involved in each subclass of Relationship 
+     * who have partaken in condomless anal intercourse within those Relationships.
+     * 
+     * @param relationshipClassNames
+     * @param backYears
+     * @param backMonths
+     * @param backDays 
+     */
+    public void plotPercentAgentCondomlessReport(String[] relationshipClassNames, int backYears, int backMonths, int backDays, String concordanceName, boolean concordant)
+    {
+        HashMap<Object,Number> percentCondomlessRelationship = new HashMap<Object,Number>() ;
+        
+        RelationshipReporter relationshipReporter = new RelationshipReporter(reporter.getSimName(),reporter.getFolderPath()) ;
+        HashMap<Object,Number> numberAgentsEnteredRelationshipReport 
+                = relationshipReporter.prepareNumberAgentsEnteredRelationshipReport(relationshipClassNames, backYears, backMonths, backDays) ;
+        // prepareAgentNumberRelationshipsReport(String[] relationshipClassNames) 
+        
+        for (String relationshipClazzName : relationshipClassNames)
+        {
+            double totalAgents = numberAgentsEnteredRelationshipReport.get(relationshipClazzName).doubleValue() ;
+            if (totalAgents == 0)
+            {
+                percentCondomlessRelationship.put(relationshipClazzName,0.0) ;
+                continue ;
+            }
+            // (HashMap) Number of condomless intercourse acts maps to the Number
+            // of Agents to have committed that many such acts 
+            HashMap<Object,Number> numberAgentCondomlessReport 
+                    = reporter.prepareNumberAgentCondomlessReport(backYears, backMonths, backDays, relationshipClazzName, concordanceName, concordant) ;
+            int activeAgents = 0 ;
+            for (Object numberKey : numberAgentCondomlessReport.keySet())
+                activeAgents += numberAgentCondomlessReport.get(numberKey).intValue() ;
+        
+            percentCondomlessRelationship.put(relationshipClazzName,activeAgents/totalAgents) ;
+        }
+        
+        plotHashMap("Relationship class","percentage engaged in CLAI",percentCondomlessRelationship) ;
     }
     
     /**
