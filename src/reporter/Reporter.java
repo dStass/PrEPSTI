@@ -9,8 +9,8 @@ import java.io.* ;
 
 //import java.lang.reflect.*;
 import java.util.ArrayList ;
-//import java.util.Arrays;
-//import java.util.Collections;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap ;
 
 import java.util.logging.Level;
@@ -32,6 +32,15 @@ public class Reporter {
     
     /** Reader for accessing saved reports. */
     protected Reader reader ;
+    
+    /** Names of properties for filtering records. */
+    private ArrayList<String> filterPropertyNames = new ArrayList<String>() ;
+    
+    /**
+     * (String) values of properties for filtering records. An empty
+     * String means that the property need only be present
+     */
+    private ArrayList<String> filterPropertyValues = new ArrayList<String>() ;
 
     /** The number of Community cycles to pass between reports. */ 
     protected int outputCycle = 1 ;
@@ -142,6 +151,30 @@ public class Reporter {
             String message = NONE ;
             return (Object) message ;
     }
+    
+    /**
+     * Filters records leaving only those encounters containing propertyName with (String) value.
+     * @param propertyName
+     * @param value
+     * @param bound
+     * @param fullReport
+     * @return 
+     */
+    protected static ArrayList<String> filterReport(String propertyName, String value, String bound, ArrayList<String> fullReport)
+    {
+        ArrayList<String> filteredReport = new ArrayList<String>() ;
+        
+        String filteredRecord ;
+        
+        for (String record : fullReport)
+        {
+            filteredRecord = boundedStringByValue(propertyName,value,bound,record);
+            filteredReport.add(filteredRecord) ;
+        }
+        
+        return filteredReport ;
+    }
+    
     
     /**
      * Sorts String entries of unsortedReport according to value of propertyName.
@@ -256,20 +289,16 @@ public class Reporter {
      */
     protected static String boundedStringByValue(String propertyName, String value, String bound, String string)
     {
-        int indexStart = indexOfProperty(bound,string) ;
         String boundedOutput = "" ;
         String boundedString ;
-        while (indexStart >= 0)
+        for (int indexStart = indexOfProperty(bound,string) ; indexStart >= 0 ; indexStart = indexOfProperty(bound,indexStart+1,string))
         {
             boundedString = extractBoundedString(bound, string, indexStart) ;
             
             // This if statement moved to compareValue()
             //if (indexOfProperty(propertyName,boundedString) >= 0)
-            //{
                 if (compareValue(propertyName,value,boundedString)) 
                     boundedOutput += boundedString ;
-            //}
-            indexStart = indexOfProperty(bound,indexStart+1,string) ;
         }
         return boundedOutput ;
     }
@@ -527,7 +556,7 @@ public class Reporter {
      */
     protected static boolean compareValue(String propertyName, String value, String string, int startIndex)
     {
-        if (indexOfProperty(propertyName,string) >= 0)
+        if (indexOfProperty(propertyName,startIndex,string) >= 0)
             return extractValue(propertyName, string, startIndex).equals(value) ;
         return false ;
     }
@@ -634,6 +663,27 @@ public class Reporter {
             entryArray.add(entry) ;
             valueMap.put(key, entryArray) ;
         }
+
+        return valueMap ;
+    }
+    
+    /**
+     * Adds (Integer) entry to value of (Object) key in valueMap.
+     * @param key
+     * @param entry
+     * @param valueMap
+     * @return 
+     */
+    protected static HashMap<Object,Integer> updateHashMap(Object key, Integer entry, HashMap<Object,Integer> valueMap)
+    {
+        Integer listEntry ;
+        
+        if (valueMap.containsKey(key))
+            listEntry = valueMap.get(key) ;
+        else
+            listEntry = 0 ;
+            
+        valueMap.put(key, listEntry + entry) ;
 
         return valueMap ;
     }
@@ -799,6 +849,109 @@ public class Reporter {
         }
         return invertedHashMap ;
     }
+        
+    /**
+     * Convert ArrayList of HashMaps to form usable by multiPlotCycle().
+     * @param initialList
+     * @param initialKeys
+     * @return (HashMap) of Number[] 
+     */
+    static public ArrayList<ArrayList<Object>> 
+        invertArrayHashMap(ArrayList<HashMap<Object,Number>> initialList, Object[] initialKeys)
+    {
+        ArrayList<ArrayList<Object>> invertedList = new ArrayList<ArrayList<Object>>() ;
+        
+        int arraySize = initialKeys.length ;
+        
+        for (HashMap<Object,Number> record : initialList)
+        {
+            ArrayList<Number> innerList = new ArrayList<Number>() ;
+            
+            // Substitute values into invertedMap        
+            for (int index = 0 ; index < arraySize ; index++ )
+            {
+                Object key = initialKeys[index] ;
+                if (record.containsKey(key))
+                    innerList.add(record.get(key)) ;
+                else
+                    innerList.add(0) ;
+            }
+            
+            invertedList.add((ArrayList<Object>) innerList.clone()) ;
+        }
+        
+        return invertedList ;
+    }
+    
+    /**
+     * Convert HashMap of HashMaps to form usable by plotHashMap().
+     * @param initialMap
+     * @param initialKeys
+     * @return (HashMap) of Number[] 
+     */
+    static public HashMap<Object,Number[]> 
+        invertHashMapArray(HashMap<Object,HashMap<Object,Number>> initialMap, Object[] initialKeys)
+    {
+        HashMap<Object,Number[]> invertedMap = new HashMap<Object,Number[]>() ;
+        
+        HashMap<Object,Number> innerMap ;
+        
+        ArrayList<Number> invertList ;
+        
+        int arraySize = initialKeys.length ;
+        
+        // Set up invertedMap to be able to hold values
+        for (Object key : initialKeys)
+            for (Object innerKey : initialMap.get(key).keySet()) 
+                if (!invertedMap.containsKey(innerKey))
+                    invertedMap.put(innerKey, new Number[initialKeys.length]) ;
+            
+        // Substitute values into invertedMap        
+        for (int index = 0 ; index < arraySize ; index++ )
+            for (Object innerKey : invertedMap.keySet())
+            {
+                Object key = initialKeys[index] ;
+                if (initialMap.get(key).containsKey(innerKey))
+                    invertedMap.get(innerKey)[index] = initialMap.get(key).get(innerKey) ;
+                else
+                    invertedMap.get(innerKey)[index] = 0 ;
+            }
+        
+        return invertedMap ;
+    }
+    
+    /**
+     * Convert HashMap of HashMaps to form usable by plotSpline().
+     * @param initialMap
+     * @param initialKeys
+     * @return (HashMap) of (ArrayList) of Number 
+     */
+    static public HashMap<Object,Number[]> 
+        invertHashMapList(HashMap<Object,HashMap<Object,Number>> initialMap, Object[] initialKeys)
+    {
+        HashMap<Object,Number[]> invertedMap = new HashMap<Object,Number[]>() ;
+        
+        int arraySize = initialKeys.length ;
+        
+        // Set up invertedMap to be able to hold values
+        for (Object key : initialKeys)
+            for (Object innerKey : initialMap.get(key).keySet()) 
+                if (!invertedMap.containsKey(innerKey))
+                    invertedMap.put(innerKey, new Number[arraySize]) ;
+            
+        // Substitute values into invertedMap        
+        for (int index = 0 ; index < arraySize ; index++ )
+            for (Object innerKey : invertedMap.keySet())
+            {
+                Object key = initialKeys[index] ;
+                if (initialMap.containsKey(key) && initialMap.get(key).containsKey(innerKey))
+                    invertedMap.get(innerKey)[index] = initialMap.get(key).get(innerKey) ;
+                else
+                    invertedMap.get(innerKey)[index] = 0 ;
+            }
+        
+        return invertedMap ;
+    }
     
     /**
      * Sorts hashMap entries according to sortBoundedStringArray, only including values in
@@ -879,6 +1032,37 @@ public class Reporter {
             outputHashMap.put(value, keyHashMap) ;
         }
         return outputHashMap ;
+    }
+    
+    /**
+     * Used to go back from end of Report by a specified amount. Checks that this 
+     * does not go past the beginning of the report to cause an error.
+     * @param backYears
+     * @param backMonths
+     * @param backDays
+     * @param maxCycles
+     * @return (int) The number of cycles specified by backYears, backMonths, backDays
+     * or maxCycles, whichever is smaller. 
+     */
+    static protected int getBackCycles(int backYears, int backMonths, int backDays, int maxCycles)
+    {
+        int daysPerYear = 365 ;
+        int daysPerMonth = 31 ;
+        int backCycles ;
+        
+        // Don't go further back than records allow.
+        if ((backYears * daysPerYear) > maxCycles)
+            backYears = maxCycles/daysPerYear ;
+        backCycles = backYears * daysPerYear ;
+        
+        if ((backMonths * daysPerMonth + backCycles) > maxCycles)
+            backMonths = ((maxCycles - backCycles)/daysPerMonth) ;
+        backCycles += backMonths * daysPerMonth + backDays ;
+        
+        if (backCycles > maxCycles)
+            backCycles = maxCycles ;
+        
+        return backCycles ;
     }
     
     /**
@@ -1091,7 +1275,7 @@ public class Reporter {
      * Resets fileIndex to 0 if there is not.
      * @return true if update successful, false if all files have already been read.
      */
-    public boolean updateReport()
+    protected boolean updateReport()
     {
         if (reader.fileIndex >= reader.fileNames.size())
         {
@@ -1107,12 +1291,29 @@ public class Reporter {
      * Resets reader to first input file before returning.
      * @return Last saved file of reader.
      */
-    public ArrayList<String> getFinalReport()
+    protected ArrayList<String> getFinalReport()
     {
         ArrayList<String> finalReport = reader.getFinalReport() ;
         updateReport() ;
         return finalReport ;
     }
+    
+    
+    protected ArrayList<String> getBackCyclesReport(int backYears, int backMonths, int backDays)
+    {
+        int maxCycles = Integer.valueOf(getMetaDatum("Community.MAX_CYCLES")) ;
+        int backCycles = getBackCycles(backYears, backMonths, backDays, maxCycles) ;
+        
+        return reader.getBackCyclesReport(backCycles) ;
+    }
+    
+    protected int getBackCycles(int backYears, int backMonths, int backDays)
+    {
+        int maxCycles = Integer.valueOf(getMetaDatum("Community.MAX_CYCLES")) ;
+        
+        return getBackCycles(backYears, backMonths, backDays, maxCycles) ;
+    }
+    
     
     /**
      * 
@@ -1136,6 +1337,7 @@ public class Reporter {
             fullInput.addAll((ArrayList<String>) input.clone()) ;
         return fullInput ;
     }
+    
     /**
      * FIXME: only compatible with Reporter initiated from file.
      * @return opening record of opening input file 
@@ -1194,6 +1396,63 @@ public class Reporter {
 
         String message = "Requested cycle " + Integer.toString(recordNb) + "unavailable" ;
         return message ;
+    }
+    
+    /**
+     * Adds filter to Reporter.
+     * @param name
+     * @param value 
+     */
+    protected void addFilter(String name, String value)
+    {
+        filterPropertyNames.add(name) ;
+        filterPropertyValues.add(value) ;
+    }
+    
+    /**
+     * Removes from each Record those bounded substrings either missing required 
+     * property or with incorrect value for that property.
+     * TODO: Implement Arrays of values.
+     * @param rawReport
+     * @return 
+     */
+    protected ArrayList<String> applyFilters(ArrayList<String> rawReport)
+    {
+        ArrayList<String> filteredReport = new ArrayList<String>() ;
+        
+        String bound = getFilterBound(rawReport.get(0)) ;
+        
+        for (int filterIndex = 0 ; filterIndex < filterPropertyNames.size() ; filterIndex++ )
+        {
+            String filterName = filterPropertyNames.get(filterIndex) ;
+            String filterValue = filterPropertyValues.get(filterIndex) ;
+            if (filterValue.isEmpty())    // Require contents only
+                for (String record : rawReport)
+                    filteredReport.add(boundedStringByContents(filterName,bound,record)) ;
+            else    // Property filterName required to have filterValue
+                for (String record : rawReport)
+                    filteredReport.add(boundedStringByValue(filterName, filterValue, bound, record)); // Filter record
+        }
+        return filteredReport ;
+    }
+    
+    /**
+     * 
+     * @param rawRecord - Usually first record in Report to be filtered.
+     * @return 
+     */
+    protected String getFilterBound(String rawRecord)
+    {
+        String bound ;
+        int commaIndex = rawRecord.indexOf(",") ;
+        int spaceIndex = rawRecord.indexOf(" ") ;
+        int colonIndex1 = rawRecord.indexOf(":") ;
+        int colonIndex2 = rawRecord.indexOf(":",colonIndex1+1) ;
+        if (colonIndex2 > spaceIndex)
+            bound = rawRecord.substring(commaIndex+1, colonIndex1) ;
+        else    // spaceIndex > colonIndex2
+            bound = rawRecord.substring(colonIndex1+1, colonIndex2) ;
+        return bound ;
     }
 
     /**
@@ -1346,11 +1605,62 @@ public class Reporter {
             return outputString ;
         }
     
-        
+        /**
+         * 
+         * @return (ArrayList) Final saved installment of report.
+         */
         private ArrayList<String> getFinalReport()
         {
             fileIndex = fileNames.size() - 1 ;
             return updateOutputArray() ;
+        }
+        
+        /**
+         * Reads backwards through the files. Used when only last backCycles are 
+         * of interest.
+         * @param backCycles
+         * @return Report of last backCycles read from files .
+         */
+        private ArrayList<String> getBackCyclesReport(int backCycles)
+        {
+            ArrayList<String> outputList = new ArrayList<String>() ;
+            ArrayList<String> fileList = new ArrayList<String>() ;
+            
+            fileIndex = fileNames.size() - 1 ;
+            // From which line do we had files
+            int fromLine = 0 ;
+            
+            try
+            {
+                while (backCycles > 0)
+                {
+                    BufferedReader fileReader = new BufferedReader(new FileReader(folderPath + getFileName())) ;
+                    fileIndex = fileIndex - 2 ; // -2 to compensate for fileIndex++ in getFileName()
+
+                    for (String record = fileReader.readLine() ;  record != null ; record = fileReader.readLine() )
+                    {
+                        fileList.add(record) ;
+                        backCycles-- ;
+                    }
+                    LOGGER.log(Level.INFO, "backCycles:{0} {1} {2}", new Object[] {backCycles,fileList.size(),fileList.clone()});
+                    if (backCycles < 0)
+                        fromLine = -backCycles ;
+
+                    outputList.addAll(0,fileList.subList(fromLine, fileList.size())) ;
+
+                    fileReader.close() ;
+                }
+            }
+            catch ( Exception e )
+            {
+                LOGGER.log(Level.SEVERE, "{0}", e.toString());
+            }
+            if (outputList.isEmpty())
+                LOGGER.log(Level.SEVERE, "Empty Report from File at {0}", new Object[]{folderPath});
+            
+            fileIndex = 0 ;
+            
+            return outputList ;
         }
         
         /**
