@@ -500,7 +500,7 @@ public abstract class Agent {
     }
     
     /**
-     * Called to adjust condom use.
+     * Called to adjust condom use to reflect behavioural trends.
      */
     abstract public void adjustCondomUse() ;
     
@@ -733,9 +733,9 @@ public abstract class Agent {
     /**
      * Whether to enter a proposed relationship of class relationshipClazz .
      * Currently according to whether in a monogomous relationship and 
- the number of relationships already entered compared to concurrency.
- It is advisable for subclasses of Agent to invoke this Method if they 
- override with super.consent() .
+     * the number of relationships already entered compared to concurrency.
+     * It is advisable for subclasses of Agent to invoke this Method if they 
+     * override with super.consent() .
      * 
      * @param relationshipClazzName - name relationship subclass
      * @param partner - agent for sharing proposed relationship
@@ -743,8 +743,6 @@ public abstract class Agent {
      */
     public boolean consent(String relationshipClazzName, Agent partner)
     {
-        if (currentPartnerIds.contains(partner.agentId))    // One Relationship per partner
-            return false ;
         if (inMonogomous)
             if (RAND.nextDouble() > infidelity) 
                 return false ;
