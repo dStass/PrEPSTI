@@ -27,8 +27,8 @@ public class SortPresenter extends Presenter {
     
     public static void main(String[] args) // "test1","encounter","population","fileName","test1","plotReceiveSortPrepStatusReport","false"
     {
-        String simName = "NoPrepCalibration33Pop40000Cycles3000" ;
-        //String simName = "RelationshipCalibration6Pop40000Cycles10000" ; // Community.NAME_ROOT ; // "testPlotCondomUsePop4000Cycles500" ; // args[0] ;
+        //String simName = "NoPrepCalibration49Pop40000Cycles20000" ; // "NoPrepCalibration33Pop40000Cycles3000" ;
+        String simName = "RelationshipCalibration15Pop40000Cycles20000" ; // Community.NAME_ROOT ; // "testPlotCondomUsePop4000Cycles500" ; // args[0] ;
         String chartTitle = "mean_relationships_by_given_age" ; // args[1] ;
         String reportFileName = "output/test/" ; // args[2] ;
         
@@ -79,6 +79,7 @@ public class SortPresenter extends Presenter {
     /**
      * Plots the score of STI among MSM with partnerCount new Relationships in the 
      * past backYears years.
+     * @param scoreName
      * @param partnerCount (int) the maximum number of new partners in the given time frame.
      * @param binSize (int) the range in partner number per bin.
      * @param backYear (int) the number of previous years to consider.
@@ -142,7 +143,7 @@ public class SortPresenter extends Presenter {
             else
                 nbDigits = ((int) Math.log10(nbPartners)) + 1 ;
             binLabel = String.valueOf(nbPartners) ;
-            for (int addSpace = nbDigits ; nbDigits < totalDigits ; nbDigits++ )
+            for (int addSpace = nbDigits ; addSpace < totalDigits ; addSpace++ )
                 binLabel = " ".concat(binLabel) ;
             
             if (binSize > 1)
@@ -190,7 +191,6 @@ public class SortPresenter extends Presenter {
      * Plots the incidence of STI among MSM with partnerCount new Relationships in the 
      * past backYears years, backMonths months and backDays days.
      * @param partnerCount (int) the maximum number of new partners in the given time frame.
-     * @param binSize (int) the range in partner number per bin.
      * @param backYears (int) the number of previous years to consider.
      * @param backMonths (int) plus the number of previous months to consider.
      * @param backDays (int) plus the number of previous days to consider.
@@ -218,9 +218,8 @@ public class SortPresenter extends Presenter {
         HashMap<Object,Number[]> invertedHashMap 
                 = Reporter.invertHashMapArray(ageNumberEnteredRelationshipRecord,relationshipClassNames) ;
         
-        String[] scoreNames = new String[] {"Number of relationships"} ;
             
-        plotHashMap("age", scoreNames, invertedHashMap ) ;
+        plotHashMap("age", relationshipClassNames, invertedHashMap ) ;
     }
     
 }
