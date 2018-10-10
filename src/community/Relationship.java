@@ -136,9 +136,23 @@ public class Relationship {
     	relationship = clazz.asSubclass(clazz).getSimpleName() ;
     }
     
+    /**
+     * Getter Method for relationshipId
+     * @return relationshipId
+     */
     final public int getRelationshipId()
     {
         return relationshipId ;
+    }
+    
+    /**
+     * Setter Method for relationshipId. Used for rebooting 
+     * previous simulation.
+     * @param relationshipId 
+     */
+    final public void setRelationshipId(int relationshipId)
+    {
+        this.relationshipId = relationshipId ;
     }
     
     /**
@@ -259,7 +273,7 @@ public class Relationship {
             int infectStatus0 = site0.getInfectedStatus() ;
             int infectStatus1 = site1.getInfectedStatus() ;
             // no risk of transmission if both sites have same infectStatus
-            if (infectStatus0 == infectStatus1) 
+            if (true && (infectStatus0 == infectStatus1)) 
                 continue ;	
 
             
