@@ -68,8 +68,10 @@ public class ScreeningPresenter extends Presenter {
     public static void main(String[] args)
     {
         //String simName = "testPop30000Cycles500" ; // Community.NAME_ROOT ; // "introPrepCalibration48Pop40000Cycles7000" ; // args[0] ;
-        String simName = "NoPrepCalibration33Pop40000Cycles3000" ; // "DecliningCondoms3Pop40000Cycles5000" ; // "NoPrepCalibration86Pop40000Cycles5000" ; // "introPrepCalibration49Pop40000Cycles5000" ; // "NoPrepSetting01Pop40000Cycles5000" ; // 
-        String chartTitle = NOTIFICATION ; // args[1] ;
+        //String simName = "NoPrepCalibration59Pop40000Cycles5000" ; // "DecliningCondoms3Pop40000Cycles5000" ; // "NoPrepCalibration86Pop40000Cycles5000" ; // "introPrepCalibration49Pop40000Cycles5000" ; // "NoPrepSetting01Pop40000Cycles5000" ; // 
+        String simName = "TESTPop40000Cycles400" ;
+        //String chartTitle = NOTIFICATION ; // args[1] ;
+        String chartTitle = "testing" ; // args[1] ;
         String reportFileName = "output/test/" ; // args[2] ;
 
         ScreeningPresenter screeningPresenter = new ScreeningPresenter(simName,chartTitle,reportFileName) ;
@@ -78,6 +80,8 @@ public class ScreeningPresenter extends Presenter {
         //String[] simNames = new String[] {"NoPrepCalibration86bPop40000Cycles5000","NoPrepCalibration86cPop40000Cycles5000","NoPrepCalibration86dPop40000Cycles5000"} ;
 
         //screeningPresenter.coplotPrevalence(simNames) ;
+        
+        screeningPresenter.plotNumberAgentTestingReport(1, 0, 0) ;
 
         //screeningPresenter.plotIncidencePerCycle(new String[] {"Rectum"});
         //screeningPresenter.multiPlotScreening(new Object[] {SYMPTOMATIC,new String[] {"Pharynx","Rectum","Urethra"}});
@@ -86,7 +90,7 @@ public class ScreeningPresenter extends Presenter {
         //screeningPresenter.plotFinalSymptomatic(new String[] {"Pharynx","Rectum","Urethra"}) ;
         //screeningPresenter.plotFinalPrevalences(new String[] {"Pharynx","Rectum","Urethra"}) ;
         //screeningPresenter.plotFinalIncidence(new String[] {"Pharynx","Rectum","Urethra"}) ;
-        screeningPresenter.plotNotificationPerCycle() ;    
+        //screeningPresenter.plotNotificationPerCycle() ;    
 
 
         //String methodName = args[3] ;
@@ -334,7 +338,22 @@ public class ScreeningPresenter extends Presenter {
         multiPlotCycleValue(NOTIFICATION, incidenceReports, siteNames) ;
     }
     
+    /**
+     * Plots the proportion of Agents who have had a given number of tests in the 
+     * given time period.
+     * @param backYears
+     * @param backMonths
+     * @param backDays 
+     */
+    public void plotNumberAgentTestingReport(int backYears, int backMonths, int backDays)
+    {
+        HashMap<Object,Number> numberAgentTestingReport 
+                = reporter.prepareNumberAgentTestingReport(backYears, backMonths, backDays) ;
     
+        String yLabel = "proportion of Agents in last " + getTimePeriodString(backYears, backMonths, backDays) ;
+        
+        plotSpline("Number of tests", yLabel, numberAgentTestingReport) ;
+    }
     
     /**
      * Generates above plots and puts them on the same set of axes with a legend.
