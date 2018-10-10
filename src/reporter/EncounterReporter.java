@@ -4,7 +4,7 @@
 package reporter ;
 
 import community.* ;
-
+import site.* ;
 /**
 * @author Michael Walker
 */
@@ -15,6 +15,7 @@ import java.util.Arrays ;
 import java.util.ArrayList ;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Set ;
 //import java.util.Collections;
 //import java.util.Comparator;
 import java.util.HashMap ;
@@ -29,6 +30,8 @@ public class EncounterReporter extends Reporter {
 
     static String TRANSMISSION = "transmission" ;
     static String CONDOM = "condom" ;
+    static String RECTUM = "Rectum" ;
+    static String URETHRA = "Urethra" ;
 
     public EncounterReporter()
     {
@@ -152,6 +155,130 @@ public class EncounterReporter extends Reporter {
         //String[] values = new String[] {TRUE, FALSE} ;
         return Reporter.sortReport(transmissionReport, sortingReport, values) ;
     }
+        
+    /**
+     * The number of Agents who have always, or not always, used a condom during anal
+     * sex, or never had anal sex in the given time period.
+     * @param backYears
+     * @param backMonths
+     * @param backDays
+     * @param relationshipClazzNames
+     * @return 
+     */
+    public HashMap<Object,Number[]> prepareNumberCondomlessReport(int backYears, int backMonths, int backDays, String[] relationshipClazzNames)
+    {
+        HashMap<Object,Number[]> numberCondomlessReport = new HashMap<Object,Number[]>() ;
+        String[] condomStati = new String[] {"always","not_always","no_AI"} ;
+        for (String status : condomStati)
+            numberCondomlessReport.put(status, new Number[relationshipClazzNames.length]) ;
+        
+        int statusIndex ;
+        
+        HashMap<String,HashMap<Object,ArrayList<Object>>> agentAnalIntercourseReport ;
+        
+        // Prepare agentRelationshipsRecord
+        RelationshipReporter relationshipReporter = new RelationshipReporter(simName,getFolderPath()) ;
+        Class[] parameterClazzes = new Class[] {String[].class,int.class,int.class,int.class} ;
+        Object[] parameters = new Object[] {relationshipClazzNames, backYears, backMonths, backDays} ;
+        HashMap<Object,HashMap<Object,ArrayList<Object>>> agentRelationshipsRecord 
+                = (HashMap<Object,HashMap<Object,ArrayList<Object>>>) getRecord("agentRelationships",relationshipReporter,parameterClazzes,parameters) ;
+        //relationshipReporter.prepareAgentRelationshipsRecord(relationshipClazzNames, backYears, backMonths, backDays) ;
+        
+        String relationshipClazz ;
+        String condomStatus ;
+        double agentsInvolved ;
+        for (int relationshipClazzIndex = 0 ; relationshipClazzIndex < relationshipClazzNames.length ; relationshipClazzIndex++ )
+        {
+            relationshipClazz = relationshipClazzNames[relationshipClazzIndex] ;
+            agentsInvolved = (double) agentRelationshipsRecord.get(relationshipClazz).keySet().size() ;
+            agentAnalIntercourseReport 
+                = prepareAgentAnalIntercourseReport(backYears, backMonths, backDays, relationshipClazz) ;
+            // Those agentIds who had anal intercourse but did not always use condoms.
+            Set withoutCondomSet = agentAnalIntercourseReport.get(FALSE).keySet() ;
+        
+            // Those agentIds who had anal intercourse and always used condoms
+            Set withCondomSet = agentAnalIntercourseReport.get(TRUE).keySet() ;
+            withCondomSet.removeAll(withoutCondomSet) ;
+            int withCondom = withCondomSet.size() ;
+            int withoutCondom = withoutCondomSet.size() ;
+            
+            // Proportion always using condom for anal sex
+            statusIndex = 0 ;
+            condomStatus = condomStati[statusIndex] ;
+            Number[] numberReportEntries 
+                = numberCondomlessReport.get(condomStatus) ;
+            numberReportEntries[relationshipClazzIndex] = withCondom/agentsInvolved ;
+            numberCondomlessReport.put(condomStatus, (Number[]) numberReportEntries.clone()) ;
+            // Proportion sometimes having condomless anal sex
+            statusIndex = 1 ;
+            condomStatus = condomStati[statusIndex] ;
+            numberReportEntries 
+                = numberCondomlessReport.get(condomStatus) ;
+            numberReportEntries[relationshipClazzIndex] = withoutCondom/agentsInvolved ;
+            numberCondomlessReport.put(condomStatus, (Number[]) numberReportEntries.clone()) ;
+            // Proportion who never had anal sex
+            statusIndex = 2 ;
+            condomStatus = condomStati[statusIndex] ;
+            numberReportEntries 
+                = numberCondomlessReport.get(condomStatus) ;
+            numberReportEntries[relationshipClazzIndex] = (agentsInvolved - withCondom - withoutCondom)/agentsInvolved ;
+            numberCondomlessReport.put(condomStatus, (Number[]) numberReportEntries.clone()) ;
+            
+        }
+        
+        return numberCondomlessReport ;
+    }
+        
+    /**
+     * 
+     * @param backYears
+     * @param backMonths
+     * @param backDays
+     * @param relationshipClazzName
+     * @return (HashMap) agentId maps to (ArrayList) of cycles in which they took 
+     * part in anal intercourse.
+     */
+    public HashMap<String,HashMap<Object,ArrayList<Object>>> prepareAgentAnalIntercourseReport(int backYears, int backMonths, int backDays, String relationshipClazzName)
+    {
+        HashMap<String,HashMap<Object,ArrayList<Object>>> agentAnalIntercourseReport 
+                = new HashMap<String,HashMap<Object,ArrayList<Object>>>() ;
+        
+        RelationshipReporter relationshipReporter = new RelationshipReporter(simName,getFolderPath()) ;
+        HashMap<Object,String[]> relationshipAgentReport = (HashMap<Object,String[]>) getReport("relationshipAgent",relationshipReporter) ; //  relationshipReporter.prepareRelationshipAgentReport() ;
+        LOGGER.log(Level.INFO, "relationshipAgentReport {0}", relationshipAgentReport);
+        
+        int maxCycles = Integer.valueOf(getMetaDatum("Community.MAX_CYCLES")) ;
+        int backCycles = getBackCycles(backYears, backMonths, backDays, maxCycles) ;
+        int startCycle = maxCycles - backCycles ;
+        
+        ArrayList<String> encounterReport = this.getBackCyclesReport(0, 0, backCycles) ;
+        LOGGER.log(Level.INFO, "encounterReport {0}", encounterReport);
+        ArrayList<String> relationshipClassReport = relationshipReporter.filterRelationshipClazzReport(relationshipClazzName,encounterReport) ;
+        LOGGER.log(Level.INFO, "relationshipClassReport {0}", relationshipClassReport);
+        ArrayList<String> intercourseReport = prepareFilteredReport(CONDOM,"",relationshipClassReport) ;
+        LOGGER.log(Level.INFO, "intercourseReport {0}", intercourseReport);
+        for (String condom : new String[] {TRUE,FALSE})
+        {
+            agentAnalIntercourseReport.put(condom, new HashMap<Object,ArrayList<Object>>()) ;
+            
+            // Filter by condom use
+            ArrayList<String> condomReport = prepareFilteredReport(CONDOM,condom,intercourseReport) ;
+
+            for (int recordNb = 0 ; recordNb < backCycles ; recordNb++ ) 
+            {
+                String record = condomReport.get(recordNb) ;
+                ArrayList<String> encounters = extractArrayList(record,RELATIONSHIPID) ; 
+                for (String encounter : encounters)
+                {
+                    Object[] agentIds = relationshipAgentReport.get(extractValue(RELATIONSHIPID,encounter)) ;
+                    for (Object agentId : agentIds)
+                        agentAnalIntercourseReport.put(CONDOM, updateHashMap(agentId,(startCycle + recordNb),agentAnalIntercourseReport.get(CONDOM))) ;
+                }
+            }
+        
+        }
+        return agentAnalIntercourseReport ;
+    }
     
     /**
      * 
@@ -199,21 +326,16 @@ public class EncounterReporter extends Reporter {
         HashMap<Object,ArrayList<Object>> agentCondomlessIntercourse = new HashMap<Object,ArrayList<Object>>() ;
         
         RelationshipReporter relationshipReporter = new RelationshipReporter(simName,getFolderPath()) ;
-        HashMap<Object,String[]> relationshipAgentReport = relationshipReporter.prepareRelationshipAgentReport() ;
-        LOGGER.log(Level.INFO, "relationshipAgentReport {0}", relationshipAgentReport);
+        HashMap<Object,String[]> relationshipAgentReport = (HashMap<Object,String[]>) getReport("relationshipAgent",relationshipReporter) ; //  relationshipReporter.prepareRelationshipAgentReport() ;
         
         int maxCycles = Integer.valueOf(getMetaDatum("Community.MAX_CYCLES")) ;
         int backCycles = getBackCycles(backYears, backMonths, backDays, maxCycles) ;
         int startCycle = maxCycles - backCycles ;
         
         ArrayList<String> encounterReport = getBackCyclesReport(0, 0, backCycles) ;
-        LOGGER.log(Level.INFO, "encounterReport {0}", encounterReport.get(0));
         ArrayList<String> condomlessReport = prepareFilteredReport(CONDOM,FALSE,encounterReport) ;
-        LOGGER.log(Level.INFO, "condomlessReport {0}", condomlessReport.get(0));
         ArrayList<String> concordantReport = relationshipReporter.filterByConcordance(concordanceName, concordant, condomlessReport) ;
-        LOGGER.log(Level.INFO, "concordantReport {0}", concordantReport.get(0));
         ArrayList<String> finalReport = relationshipReporter.filterRelationshipClazzReport(relationshipClazzName,concordantReport) ;
-        LOGGER.log(Level.INFO, "finalReport {0}", finalReport);
         
         int reportSize = finalReport.size() ;
         for (int recordNb = 0 ; recordNb < reportSize ; recordNb++ ) 
@@ -232,7 +354,7 @@ public class EncounterReporter extends Reporter {
     }
     
     /**
-     * Filters records leaving only those encounters containing propertyName with (String) value.
+     * Filters records leaving only those encounters containing propertyName withCondom (String) value.
      * @param propertyName
      * @param value
      * @param fullReport
@@ -246,7 +368,10 @@ public class EncounterReporter extends Reporter {
         
         for (String record : fullReport)
         {
-            filteredRecord = encounterByValue(propertyName,value,record);
+            if (value.isEmpty())
+                filteredRecord = encounterByContents(propertyName,record);
+            else
+                filteredRecord = encounterByValue(propertyName,value,record);
             filteredReport.add(filteredRecord) ;
         }
         
@@ -287,7 +412,7 @@ public class EncounterReporter extends Reporter {
      * TODO: Implement complete census of Agents.
      * @param census
      * @return (ArrayList) Report on combinations of combinations of condom use
-     * with either seroSorting or seroPositioning.
+ withCondom either seroSorting or seroPositioning.
      */
     public ArrayList<Object> prepareProtectionReport(ArrayList<String> census)
     {
@@ -295,7 +420,7 @@ public class EncounterReporter extends Reporter {
         String protectionRecord ;
         
         RelationshipReporter relationshipReporter = new RelationshipReporter(simName,getFolderPath()) ;
-        HashMap<Object,String[]> relationshipAgentReport = relationshipReporter.prepareRelationshipAgentReport() ;
+        HashMap<Object,String[]> relationshipAgentReport = (HashMap<Object,String[]>) getReport("relationshipAgent",relationshipReporter) ; //  relationshipReporter.prepareRelationshipAgentReport() ;
         
         int condomOnly ;
         int onlySeroSort ;
@@ -413,7 +538,7 @@ public class EncounterReporter extends Reporter {
     }
         
     /**
-     * TODO: Replace ArrayList with set.
+     * TODO: Replace ArrayList withCondom set.
      * @return (HashMap) key is the transmitting agentId and entries are receiving agentIds
      */
     public HashMap<Object,ArrayList<Object>> prepareAgentToAgentRecord()
@@ -421,7 +546,7 @@ public class EncounterReporter extends Reporter {
         HashMap<Object,ArrayList<Object>> transmissionRecord = new HashMap<Object,ArrayList<Object>>() ;
         
         RelationshipReporter relationshipReporter = new RelationshipReporter(simName,getFolderPath()) ;
-        HashMap<Object,String[]> relationshipAgentReport = relationshipReporter.prepareRelationshipAgentReport() ;
+        HashMap<Object,String[]> relationshipAgentReport = (HashMap<Object,String[]>) getReport("relationshipAgent",relationshipReporter) ; //   relationshipReporter.prepareRelationshipAgentReport() ;
         
         // Only consider contacts where transmission occurred
         ArrayList<String> transmissionReport = prepareTransmissionReport() ;
@@ -474,7 +599,7 @@ public class EncounterReporter extends Reporter {
                             new HashMap<Object,HashMap<Object,ArrayList<Object>>>() ;
         
         RelationshipReporter relationshipReporter = new RelationshipReporter(simName,getFolderPath()) ;
-        HashMap<Object,String[]> relationshipAgentReport = relationshipReporter.prepareRelationshipAgentReport() ;
+        HashMap<Object,String[]> relationshipAgentReport = (HashMap<Object,String[]>) getReport("relationshipAgent",relationshipReporter) ; //  relationshipReporter.prepareRelationshipAgentReport() ;
         
         
         // Only consider contacts where transmission occurred
