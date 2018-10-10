@@ -119,6 +119,72 @@ public class ScreeningReporter extends Reporter {
         
         return finalSymptomaticRecords ;
     }
+    
+    /**
+     * 
+     * @param backYears
+     * @param backMonths
+     * @param backDays
+     * @return (HashMap) Report number of tests maps to number of Agents taking 
+     * that many tests in given time frame.
+     */
+    public HashMap<Object,Number> prepareNumberAgentTestingReport(int backYears, int backMonths, int backDays)
+    {
+        HashMap<Object,Number> numberAgentTestingReport = new HashMap<Object,Number>() ;
+        
+        // (HashMap) agentId maps to (ArrayList) of cycles in which Agent was tested.
+        HashMap<Object,ArrayList<Object>> agentTestingReport 
+                = prepareAgentTestingReport(backYears, backMonths, backDays) ;
+        
+        int population = Integer.valueOf(getMetaDatum("Community.POPULATION")) ;
+        int untested = population ;
+        
+        int nbTests ;
+        for (ArrayList<Object> value : agentTestingReport.values())
+        {
+            nbTests = value.size() ;
+            numberAgentTestingReport = incrementHashMap(nbTests,numberAgentTestingReport) ;
+            untested-- ;
+        }
+        numberAgentTestingReport.put(0, untested) ;
+        
+        for (Object tests : numberAgentTestingReport.keySet())
+            numberAgentTestingReport.put(tests,(numberAgentTestingReport.get(tests).doubleValue())/population) ;
+        
+        return numberAgentTestingReport ;
+    }
+    
+    /**
+     * 
+     * @param backYears
+     * @param backMonths
+     * @param backDays
+     * @return (HashMap) agentId maps to (ArrayList) of cycles in which Agent was tested.
+     */
+    public HashMap<Object,ArrayList<Object>> prepareAgentTestingReport(int backYears, int backMonths, int backDays)
+    {
+        HashMap<Object,ArrayList<Object>> agentTestingReport = new HashMap<Object,ArrayList<Object>>() ; 
+        
+        int maxCycles = getMaxCycles() ;
+        int backCycles = getBackCycles(backYears, backMonths, backDays, maxCycles) ;
+        int startCycle = maxCycles - backCycles ;
+        
+        ArrayList<String> inputReport = getBackCyclesReport(backYears, backMonths, backDays) ;
+        String record ;
+        String agentId ;
+        for (int cycle = 0 ; cycle < backCycles ; cycle++ )
+        {
+            record = inputReport.get(cycle) ;
+            
+            ArrayList<String> agentReport = extractArrayList(record,AGENTID,"tested") ;
+            for (String agentRecord : agentReport)
+            {
+                agentId = extractValue(AGENTID,agentRecord) ;
+                updateHashMap(agentId, startCycle + cycle, agentTestingReport) ;
+            }
+        }
+        return agentTestingReport ;
+    }
  
     /**
      * 
