@@ -30,13 +30,13 @@ import java.util.logging.Level;
  *******************************************************************/
 public class Community {
     static public int POPULATION = 40000 ;
-    static public int MAX_CYCLES = 20000 ;
-    //static public String NAME_ROOT = "RelationshipCalibration6" 
-    static public String NAME_ROOT = "NoPrepCalibration39" 
+    static public int MAX_CYCLES = 15000 ;
+    //static public String NAME_ROOT = "RelationshipCalibration16" 
+    static public String NAME_ROOT = "NoPrepCalibration86" 
     //        + "DecliningCondomsAlteredTesting"
             + "Pop" + String.valueOf(POPULATION) + "Cycles" + String.valueOf(MAX_CYCLES) ;
 
-    static private String COMMENT = "" ;
+    static private String COMMENT = "" ; // "Uses parameters from NoPrepCalibration53" ;
     /*static final String COMMENT = "every cycle after 1000 Agents "
             + "reduce their chances of choosing condoms. "
             + "Every year after cycle 1000 testing rates are altered to compare with "
@@ -49,6 +49,12 @@ public class Community {
     static final boolean PARTIAL_DUMP = (DUMP_CYCLE > 0) ;
     /** How many digits represent cycles in DUMP filename. */
     static final int DUMP_DIGITS = (int) Math.floor(Math.log10(MAX_CYCLES-1)) + 1 ;
+    
+    /**
+     * (String) Name of previous burn-in to reload.
+     * Not reloaded if this is an empty string.
+     */
+    static final String RELOAD_BURNIN = "" ;
     
     static public String getFilePath()
     {
@@ -147,18 +153,23 @@ public class Community {
         if (outputInterval < 100)
             outputInterval = 100 ;
         
-        // Generate relationships for simulation
-        for (int burnin = 0 ; burnin < 2000 ; burnin++ )
+        if (RELOAD_BURNIN.isEmpty())
         {
-            Relationship.BURNIN_COMMENCE = community.generateRelationships() + Relationship.BURNIN_COMMENCE ;
-            Relationship.BURNIN_BREAKUP = community.clearRelationships().substring(6) + Relationship.BURNIN_BREAKUP ;
-            // 6 = "clear:".length()
+            // Generate relationships for simulation
+            for (int burnin = 0 ; burnin < 2000 ; burnin++ )
+            {
+                Relationship.BURNIN_COMMENCE = community.generateRelationships() + Relationship.BURNIN_COMMENCE ;
+                Relationship.BURNIN_BREAKUP += community.clearRelationships().substring(6) ;
+                // 6 = "clear:".length()
+            }
+
+            //for (Agent agent : community.agents)
+            {
+              //  LOGGER.log(Level.INFO, "agentId:{0} nbRelationships:{1}", new Object[] {agent.getAgentId(),agent.getCurrentPartnerIds().size()});
+            }
         }
-        
-        //for (Agent agent : community.agents)
-        {
-          //  LOGGER.log(Level.INFO, "agentId:{0} nbRelationships:{1}", new Object[] {agent.getAgentId(),agent.getCurrentPartnerIds().size()});
-        }
+        else
+            community.reloadBurnin() ;
         
         //outputInterval = 1 ;
         for (int cycle = 0; cycle < MAX_CYCLES; cycle++)
@@ -671,9 +682,7 @@ public class Community {
     {
         String record = "" ;
         ArrayList<Relationship> currentRelationships ;
-        int lowerAgentId ;
-        int indexInteger ;
-
+        
         // LOGGER.info("nb relationships: " + relationships.size());
         for (Agent agent : agents)
         {
@@ -784,6 +793,7 @@ public class Community {
             // Due for an STI screen?
             if (RAND.nextDouble() < agent.getScreenProbability(new String[] {Integer.toString(cycle)})) 
             {
+                record += Reporter.addReportLabel("tested") ;
                 if (infected)
                 {
                     //LOGGER.info("screening agentId:"+String.valueOf(agent.getAgentId())) ;
@@ -820,6 +830,7 @@ public class Community {
                 else if (agent.getSymptomatic())
                     if (agent.treatSymptomatic())  
                     {
+                        record += Reporter.addReportLabel("tested") ;
                         record += Reporter.addReportLabel("treated") ;
                         //LOGGER.info("treated");
                     }
@@ -885,7 +896,7 @@ public class Community {
         metaData.add(RANDOM_SEED) ;
         
         metaLabels.add("agent.SITE_NAMES") ;
-        metaData.add(Arrays.asList(Agent.SITE_NAMES)) ;
+        metaData.add(Arrays.asList(MSM.SITE_NAMES)) ; //TODO: Use Agent.SITE_NAMES
         metaLabels.add("agent.randomSeed") ;
         metaData.add(Agent.GET_RANDOM_SEED()) ;
         
@@ -900,6 +911,48 @@ public class Community {
         metaData.add(Community.COMMENT) ;
         
         scribe.dumpMetaData(metaLabels,metaData) ;
+    }
+    
+    /**
+     * Reloads the Relationships saved during burn-in of a previous simulation.
+     */
+    private void reloadBurnin()
+    {
+        Reporter reporter = new Reporter(Community.RELOAD_BURNIN, Community.FILE_PATH) ;
+        
+        String breakupString = reporter.getMetaDatum("Community.BURNIN_BREAKUP") ;
+        ArrayList<Object> breakupList = Reporter.extractAllValues(Relationship.RELATIONSHIP_ID, breakupString) ;
+        String commenceString = reporter.getMetaDatum("Community.BURNIN_COMMENCE") ;
+        
+        String boundedString ;
+        String relationshipId = "" ; 
+        int agentId0 ;
+        int agentId1 ;
+        for (int commenceIndex = 0 ; commenceIndex >= 0 ; commenceIndex = commenceString.indexOf(Relationship.RELATIONSHIP_ID,commenceIndex+1)) 
+        {
+            boundedString = Reporter.extractBoundedString(Relationship.RELATIONSHIP_ID, commenceString, commenceIndex);
+            relationshipId = Reporter.extractValue(Relationship.RELATIONSHIP_ID, boundedString) ;
+            if (!breakupList.contains(relationshipId)) 
+            {
+                String relationshipClazzName = Reporter.extractValue("relationship", boundedString) ;
+                try
+                {
+                    Relationship relationship = (Relationship) Class.forName(relationshipClazzName).newInstance();
+                    relationship.setRelationshipId(Integer.valueOf(relationshipId)) ;
+                    nbRelationships++ ;
+                    agentId0 = Integer.valueOf(Reporter.extractValue(Reporter.AGENTID0,boundedString)) ;
+                    agentId1 = Integer.valueOf(Reporter.extractValue(Reporter.AGENTID1,boundedString)) ;
+                    relationship.addAgents(agents.get(agentId0), agents.get(agentId1)) ;
+                    
+                }
+                catch ( Exception e )
+                {
+                    LOGGER.severe(e.toString()) ;
+                }
+            }
+            
+        }
+        Relationship.NB_RELATIONSHIPS_CREATED = Integer.valueOf(relationshipId) + 1 ;
     }
     
     /**
