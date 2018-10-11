@@ -25,18 +25,25 @@ public class RelationshipPresenter extends Presenter{
     
     public static void main(String[] args)
     {
-        String simName = "NoPrepCalibration39Pop40000Cycles20000" ; // "NoPrepCalibration86Pop40000Cycles5000" ; // "introPrepCalibration49Pop40000Cycles5000" ; // "NoPrepSetting01Pop40000Cycles5000" ; // 
-        //String simName = "testPop30000Cycles500" ; // "testPlotCondomUsePop4000Cycles500" ; // args[0] ;
-        String chartTitle = "Nb_Agents_had_given_relationships" ; // args[1] ;
+        //String simName = "NoPrepCalibration61Pop40000Cycles5000" ; // "NoPrepCalibration86Pop40000Cycles5000" ; // "introPrepCalibration49Pop40000Cycles5000" ; // "NoPrepSetting01Pop40000Cycles5000" ; // 
+        String simName = "TESTPop40000Cycles1000" ;
+        //String simName = "RelationshipCalibration16Pop40000Cycles20000" ; // "testPlotCondomUsePop4000Cycles500" ; // args[0] ;
+        //String chartTitle = "Nb_Agents_had_given_relationships" ; // args[1] ;
         //String chartTitle = "cumulative_relationships" ; // args[1] ;
+        String chartTitle = "yearly_mean_nb_relationships" ;
         String reportFileName = "output/test/" ; // args[2] ;
+        
         LOGGER.info(chartTitle) ;
+        String[] relationshipClazzNames = new String[] {"Casual","Regular","Monogomous"} ; // "Casual","Regular","Monogomous"
         RelationshipPresenter relationshipPresenter = new RelationshipPresenter(simName,chartTitle,reportFileName) ;
+        //relationshipPresenter.plotBreakupsPerCycle() ;
         //relationshipPresenter.plotCumulativeRelationshipGaps() ;
         //relationshipPresenter.plotCumulativeRelationships(new String[] {"Casual","Regular","Monogomous"}) ;
         //relationshipPresenter.plotCumulativeRelationshipLengths() ;
         //relationshipPresenter.plotRelationshipCumulativeTransmissions() ;
-        relationshipPresenter.plotMeanNumberRelationshipsReport(new String[] {"Casual","Regular","Monogomous"});
+        //relationshipPresenter.plotMeanNumberRelationshipsReport(new String[] {"Casual","Regular","Monogomous"});
+        relationshipPresenter.plotAgentRelationshipsMeanYears(relationshipClazzNames, 3, 6, 0, 2017) ;
+        //relationshipPresenter.plotAgentRelationshipsMean(new String[] {"Casual","Regular","Monogomous"}, 0, 6, 0) ;
         //relationshipPresenter.plotRelationshipLength() ;
         //relationshipPresenter.plotNumberAgentsEnteredRelationship(new String[] {"Casual","Regular","Monogomous"}, 0, 6, 0) ;
     }
@@ -118,17 +125,69 @@ public class RelationshipPresenter extends Presenter{
      * @param backMonths
      * @param backDays 
      */
+    private void plotNumberAgentsEnteredRelationshipYears(String[] relationshipClassNames, int backYears, int backMonths, int backDays, int lastYear)
+    {
+        HashMap<Object,Number[]> numberAgentsEnteredRelationshipYears
+        = reporter.prepareNumberAgentsEnteredRelationshipYears(relationshipClassNames, backYears, backMonths, backDays, lastYear) ;
+
+        plotHashMap("Year", relationshipClassNames, numberAgentsEnteredRelationshipYears) ;
+    }
+
+    /**
+     * Plots how many Agents had entered into each given relationshipClassName during
+     * given time. Does not indicate number of relationships per Agent.
+     * @param relationshipClassNames
+     * @param backYears
+     * @param backMonths
+     * @param backDays 
+     */
     private void plotNumberAgentsEnteredRelationship(String[] relationshipClassNames, int backYears, int backMonths, int backDays)
     {
         HashMap<Object,Number> numberAgentsEnteredRelationshipReport 
         = reporter.prepareNumberAgentsEnteredRelationshipReport(relationshipClassNames, backYears, backMonths, backDays) ;
     
-        String timePeriod = String.valueOf(backYears) + "Y" 
-                + String.valueOf(backMonths) + "M" 
-                + String.valueOf(backDays) + "D" ;
+        String timePeriod = getTimePeriodString(backYears, backMonths, backDays) ;
         
+        plotHashMap("Class of Relationships","Proportion of Agents in last " + timePeriod, numberAgentsEnteredRelationshipReport) ;
+    }
+    
+    /**
+     * Plots the mean number of relationships per Agent of each given class during 
+     * the specified period.
+     * @param relationshipClassNames
+     * @param backYears
+     * @param backMonths
+     * @param backDays 
+     */
+    public void plotAgentRelationshipsMean(String[] relationshipClassNames, int backYears, int backMonths, int backDays)
+    {
+        //(HashMap) relationshipClassName maps to mean number of
+        // Relationships of given class per agentId involved in during given time period).
+        HashMap<Object,Number> agentRelationshipsMean
+            = reporter.prepareAgentRelationshipsMean(relationshipClassNames, backYears, backMonths, backDays) ;
         
-        plotHashMap("Class of Relationships","Number of Agents in last " + timePeriod, numberAgentsEnteredRelationshipReport) ;
+        String timePeriod = getTimePeriodString(backYears, backMonths, backDays) ;
+        
+        plotHashMap("Class of Relationships","Relationships per Agent for last " + timePeriod, agentRelationshipsMean) ;
+    }
+    
+    /**
+     * Plots the mean number of relationships per Agent of each given class during 
+     * backMonths months and backDays days for backYears years counting back from
+     * last Year
+     * @param relationshipClassNames
+     * @param backYears
+     * @param backMonths
+     * @param backDays 
+     */
+    private void plotAgentRelationshipsMeanYears(String[] relationshipClassNames, int backYears, int backMonths, int backDays, int lastYear) 
+    {
+        HashMap<Object,Number[]> agentRelationshipsMeanYears
+            = reporter.prepareAgentRelationshipsMeanYears(relationshipClassNames, backYears, backMonths, backDays, lastYear) ; 
+        
+        //String timePeriod = getTimePeriodString(backYears, backMonths, backDays) ;
+        
+        plotHashMap("Year", relationshipClassNames, agentRelationshipsMeanYears) ;
     }
     
     /**
@@ -151,6 +210,10 @@ public class RelationshipPresenter extends Presenter{
         plotSpline("Cumulative length distribution","Number of relationships",cumulativeRelationshipLengthReport) ;
     }
     
+    /**
+     * Plot how many agentIds have more had how many or more Relationships
+     * @param relationshipClassNames 
+     */
     public void plotCumulativeRelationships(String[] relationshipClassNames)
     {
         // A snapshot of how many agentIds have more had how many or more Relationships
@@ -190,6 +253,7 @@ public class RelationshipPresenter extends Presenter{
      */
     public void plotMeanNumberRelationshipsReport(String[] relationshipClassNames)
     {
+        // (ArrayList) records of mean number of each Relationship class per Agent
         ArrayList<HashMap<Object,Number>> meanNumberRelationshipsReport 
                 = reporter.prepareMeanNumberRelationshipsReport(relationshipClassNames) ;
         
