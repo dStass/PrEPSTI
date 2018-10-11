@@ -60,20 +60,35 @@ public class Presenter {
     protected String applicationTitle ;
     protected String chartTitle ;
     
-    protected String BASE = "base" ;
-    protected String INTERVAL = "interval" ;
+    static protected String BASE = "base" ;
+    static protected String INTERVAL = "interval" ;
+    static protected String PROPORTION = "proportion" ;
     
     private BarChart_AWT chart_awt ;
-    private Dataset dataset ;
+    
     private String folderPath = Community.FILE_PATH ;
 
     static final java.util.logging.Logger LOGGER = java.util.logging.Logger.getLogger("presenter") ;
     
     static protected String getTimePeriodString(int backYears, int backMonths, int backDays)
     {
-        return String.valueOf(backYears) + "Y" 
-                + String.valueOf(backMonths) + "M" 
-                + String.valueOf(backDays) + "D" ;
+        String timeString = "" ;
+        if (backYears > 1) 
+            timeString += String.valueOf(backYears) + " Years " ;
+        else if (backYears == 1) 
+            timeString += " 1 Year " ;
+        
+        if (backMonths > 1) 
+            timeString += String.valueOf(backMonths) + " Months " ;
+        else if (backMonths == 1) 
+            timeString += " 1 Month " ;
+        
+        if (backDays > 1) 
+            timeString += String.valueOf(backDays) + " Days" ;
+        else if (backDays == 1) 
+            timeString += " 1 Day" ;
+        
+        return timeString ;
     }
     
     static private String getYLabel(String[] scoreNames)
@@ -481,11 +496,7 @@ public class Presenter {
         HashMap<Object,Number[]> newReportArray = new HashMap<Object,Number[]>() ;
         
         for ( Object key : reportArray.keySet())
-        {
-            ArrayList<Number> numberList = new ArrayList<Number>() ;
-            numberList.add(reportArray.get(key)) ;
-            newReportArray.put(key, (Number[]) numberList.toArray()) ;
-        }
+            newReportArray.put(key, new Number[] {reportArray.get(key)}) ;
         
         plotSpline(categoryName, scoreName, newReportArray, new String[] {""}) ;
     }
