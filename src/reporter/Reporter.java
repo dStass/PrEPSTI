@@ -7,7 +7,7 @@ import community.* ;
 
 import java.io.* ;
 
-//import java.lang.reflect.*;
+import java.lang.reflect.*;
 import java.util.ArrayList ;
 import java.util.Arrays;
 import java.util.Collections;
@@ -32,6 +32,12 @@ public class Reporter {
     
     /** Reader for accessing saved reports. */
     protected Reader reader ;
+    
+    /**
+     * To avoid generating reports more than once. 
+     * reportName maps to report.
+     */
+    static public HashMap<String,Object> reportList = new HashMap<String,Object>() ;
     
     /** Names of properties for filtering records. */
     private ArrayList<String> filterPropertyNames = new ArrayList<String>() ;
@@ -59,6 +65,10 @@ public class Reporter {
     static public String AGENTID1 = "agentId1" ;
     /** static String representation of 'relationshipId'. */
     static public String RELATIONSHIPID = "relationshipId" ;
+    
+    /** Number of days in a year. */
+    static final int DAYS_PER_YEAR = 365 ;
+
     
     /** Logger of Reporter Class. */
     static final java.util.logging.Logger LOGGER = java.util.logging.Logger.getLogger("reporter") ;
@@ -374,7 +384,7 @@ public class Reporter {
      * @param bound
      * @return (ArrayList(String)) of bounded substrings of string.
      */
-    protected static ArrayList<String> extractArrayList(String string, String bound)
+    public static ArrayList<String> extractArrayList(String string, String bound)
     {
         return extractArrayList(string, bound, "") ;
     }
@@ -413,7 +423,7 @@ public class Reporter {
      * @param indexStart - index in string of first bound
      * @return subString of string bounded by bound
      */
-    protected static String extractBoundedString(String bound, String string, int indexStart)
+    public static String extractBoundedString(String bound, String string, int indexStart)
     {
         int index0 = indexOfProperty(bound, indexStart, string) ;
         if (index0 == -1)
@@ -797,6 +807,22 @@ public class Reporter {
         return numberHashMap ;
     }
 		
+    /**
+     * Given objectHashMap maps key to ((HashMap) subKey maps to object), finds 
+     * number of subKeys for each key.
+     * @param objectHashMap
+     * @return (HashMap) showing number of keys in each subHashMap.
+     */
+    static protected HashMap<Object,Number> countSubKeys(HashMap<Object,HashMap<Object,ArrayList<Object>>> objectHashMap)
+    {
+        HashMap<Object,Number> outputHashMap = new HashMap<Object,Number>() ;
+        
+        for (Object key : objectHashMap.keySet() )  // numberRecentRelationshipsReport.keySet())
+            outputHashMap.put(key, objectHashMap.get(key).keySet().size()) ;
+    
+        return outputHashMap ;
+    }
+    
     /**
      * Converts HashMap(Object,HashMap(Object,ArrayList(Object)))
      * to HashMap(Number,HashMap(Number,ArrayList(Number)))
@@ -1288,6 +1314,17 @@ public class Reporter {
     }
     
     /**
+     * 
+     * @param backCycles
+     * @param endCycle
+     * @return Report of backCycles records leading up to endCycle'th
+     */
+    protected ArrayList<String> getBackCyclesReport(int backCycles, int endCycle)
+    {
+        return reader.getBackCyclesReport(backCycles, endCycle) ;
+    }
+        
+    /**
      * Resets reader to first input file before returning.
      * @return Last saved file of reader.
      */
@@ -1298,13 +1335,26 @@ public class Reporter {
         return finalReport ;
     }
     
+    /**
+     * Reads value from corresponding METADATA file.
+     * @return (int) the total number of cycles in the corresponding simulation.
+     */
+    protected int getMaxCycles()
+    {
+        return Integer.valueOf(getMetaDatum("Community.MAX_CYCLES")) ;
+    }
     
     protected ArrayList<String> getBackCyclesReport(int backYears, int backMonths, int backDays)
     {
-        int maxCycles = Integer.valueOf(getMetaDatum("Community.MAX_CYCLES")) ;
-        int backCycles = getBackCycles(backYears, backMonths, backDays, maxCycles) ;
-        
+        int backCycles = getBackCycles(backYears, backMonths, backDays) ;
         return reader.getBackCyclesReport(backCycles) ;
+    }
+    
+    protected ArrayList<String> getBackCyclesReport(int backYears, int backMonths, int backDays, int endCycle)
+    {
+        int backCycles = getBackCycles(backYears, backMonths, backDays, endCycle) ;
+        
+        return reader.getBackCyclesReport(backCycles,endCycle) ;
     }
     
     protected int getBackCycles(int backYears, int backMonths, int backDays)
@@ -1399,6 +1449,104 @@ public class Reporter {
     }
     
     /**
+     * If report reportName has already been found and stored then return it.
+     * Otherwise, find prepareReport method, prepare the report and store it in
+     * Reporter.reportList for later. Used when there are no parameters.
+     * @param reportName
+     * @param reporter
+     * @return reporter.report specified by reportName
+     */
+    public Object getReport(String reportName, Reporter reporter)
+    {
+        return getReport(reportName, reporter, new Class[] {}, new Object[] {}) ;
+    }
+    
+    
+    /**
+     * If report reportName has already been found and stored then return it.
+     * Otherwise, find prepareReport method, prepare the report and store it in
+     * Reporter.reportList for later.
+     * @param reportName
+     * @param reporter
+     * @param parametersClazzes
+     * @param parameters
+     * @return (Object) reporter.report specified by reportName
+     */
+    public Object getReport(String reportName, Reporter reporter, Class[] parametersClazzes, Object[] parameters)
+    {
+        if (reportList.containsKey(reportName))
+        {
+            //LOGGER.info("recall " + reportName) ;
+            return reportList.get(reportName) ;
+        }
+        
+        String methodName = reportName.substring(0, 1).toUpperCase() 
+                + reportName.substring(1) ;
+        methodName = "prepare" + methodName + "Report" ;
+        
+        return getReport(reportName, methodName, reporter, parametersClazzes, parameters) ;
+    }
+    
+    /**
+     * Invokes Method methodName
+     * @param reportName
+     * @param methodName
+     * @param reporter
+     * @param parametersClazzes
+     * @param parameters
+     * @return (Object) reporter.report specified by reportName
+     */
+    public Object getReport(String reportName, String methodName, Reporter reporter, Class[] parametersClazzes, Object[] parameters)
+    {
+        Object report = new Object() ;
+        
+        Class reporterClazz = reporter.getClass().asSubclass(Reporter.class) ;
+        
+        try
+        {
+            // Call prepareReport()
+            Method prepareMethod = reporterClazz.getDeclaredMethod(methodName, parametersClazzes) ;
+            report = prepareMethod.invoke(reporter, parameters) ;
+            // Save in reportList for later retrieval
+            reportList.put(reportName, report) ;
+            //LOGGER.log(Level.INFO, "{0}", reportList.keySet());
+        }
+        catch ( Exception e )
+        {
+            LOGGER.severe(e.toString());
+        }
+        //LOGGER.log(Level.INFO, "{1} {0}", new Object[] {report,reportName}) ;
+        
+        return report ;
+    }
+    
+    /**
+     * If report reportName has already been found and stored then return it.
+     * Otherwise, find prepareReport method, prepare the report and store it in
+     * Reporter.reportList for later.
+     * @param recordName
+     * @param reporter
+     * @param parametersClazzes
+     * @param parameters
+     * @return reporter.report specified by reportName
+     */
+    public Object getRecord(String recordName, Reporter reporter, Class[] parametersClazzes, Object[] parameters)
+    {
+        if (reportList.containsKey(recordName))
+        {
+            //LOGGER.info("recall " + recordName) ;
+            return reportList.get(recordName) ;
+        }
+        
+        String methodName = recordName.substring(0, 1).toUpperCase() 
+                + recordName.substring(1) ;
+        methodName = "prepare" + methodName + "Record" ;
+        
+        return getReport(recordName, methodName, reporter, parametersClazzes, parameters) ;
+    }
+    
+    
+    /**
      * Adds filter to Reporter.
      * @param name
      * @param value 
@@ -1473,6 +1621,7 @@ public class Reporter {
         private ArrayList<String> fileNames = new ArrayList<String>() ;
         private String folderPath ;
         private int fileIndex = 0;
+        private int cyclesPerFile ;
         private String simName ;
         ArrayList<String> metaData ;
         
@@ -1488,6 +1637,7 @@ public class Reporter {
             if ("screening".equals(reporterName))    // TODO: Remove need for this step
                 reporterName = "infection" ;
             fileNames = initFileNames(simName + reporterName) ;
+            cyclesPerFile = initCyclesPerFile() ;
             initMetaData() ;
         }
         
@@ -1571,6 +1721,21 @@ public class Reporter {
         }
         
         /**
+         * 
+         * @return (int) number of cycles in each file.
+         */
+        private int initCyclesPerFile()
+        {
+            if (fileNames.size() == 1)
+                return Integer.valueOf(getMetaDatum("Community.MAX_CYCLES")) ;
+            String fileName1 = fileNames.get(1) ;
+            int dashIndex = fileName1.indexOf("-") + 1 ; // Want following position
+            int dotIndex = fileName1.indexOf("txt") - 1 ; // -1 for "."
+            
+            return Integer.valueOf(fileName1.substring(dashIndex,dotIndex)) ;
+        }
+        
+        /**
          * @return opening record of opening input file
          * @throws FileNotFoundException
          * @throws IOException 
@@ -1616,6 +1781,82 @@ public class Reporter {
         }
         
         /**
+         * 
+         * @param cycle
+         * @return (ArrayList) Report containing the specified (int) cycle
+         */
+        private void getSpecificFile(int cycle)
+        {
+            fileIndex = cycle/cyclesPerFile - 1 ;
+        }
+        
+        /**
+         * 
+         * @param backCycles
+         * @param endCycle
+         * @return Report of backCycles records leading up to endCycle'th
+         */
+        private ArrayList<String> getBackCyclesReport(int backCycles, int endCycle)
+        {
+            ArrayList<String> outputList = new ArrayList<String>() ;
+            
+            try
+            {
+                int startCycle = endCycle - backCycles ;
+                getSpecificFile(startCycle) ;
+                BufferedReader fileReader = new BufferedReader(new FileReader(folderPath + fileNames.get(fileIndex))) ;
+                boolean firstLoop = true ;
+
+                int startLine = startCycle % cyclesPerFile ;
+                int endLine = startLine + backCycles ;
+                int pauseLine ;
+                String outputString ;
+
+                int readLines = 0 ;
+                // Skip unwanted lines
+                for (int lineNb = 0 ; lineNb < startLine ; lineNb++ )
+                    fileReader.readLine() ;
+                while (readLines < backCycles)
+                {
+                    // File already read if this is first time in readLines loop
+                    if (!firstLoop)
+                    {
+                        fileReader = new BufferedReader(new FileReader(folderPath + fileNames.get(fileIndex))) ;
+                        firstLoop = false ;
+                    }
+
+                    outputString = fileReader.readLine();
+                    readLines++ ; 
+
+                    // End loop at end of file if not before
+                    pauseLine = endLine;
+                    if (pauseLine > cyclesPerFile)
+                        pauseLine = cyclesPerFile ;
+
+                    for (int lineNb = startLine ; lineNb < pauseLine ; lineNb++ )
+                    {
+                        if (outputString == null)
+                            break ;
+                        outputList.add(outputString) ;
+                        outputString = fileReader.readLine() ;
+                        readLines++ ;
+                    }
+
+                    // Prepare for next file
+                    startLine = 0 ;
+                    endLine -= readLines ;
+                    fileIndex++ ;
+                }
+            }
+            catch( Exception e )
+            {
+                LOGGER.severe(e.toString());
+                assert(false) ;
+            }
+            return outputList ;
+        }
+                
+        /**
          * Reads backwards through the files. Used when only last backCycles are 
          * of interest.
          * @param backCycles
@@ -1642,7 +1883,6 @@ public class Reporter {
                         fileList.add(record) ;
                         backCycles-- ;
                     }
-                    LOGGER.log(Level.INFO, "backCycles:{0} {1} {2}", new Object[] {backCycles,fileList.size(),fileList.clone()});
                     if (backCycles < 0)
                         fromLine = -backCycles ;
 
