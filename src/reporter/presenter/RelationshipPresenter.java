@@ -25,12 +25,14 @@ public class RelationshipPresenter extends Presenter{
     
     public static void main(String[] args)
     {
-        //String simName = "NoPrepCalibration61Pop40000Cycles5000" ; // "NoPrepCalibration86Pop40000Cycles5000" ; // "introPrepCalibration49Pop40000Cycles5000" ; // "NoPrepSetting01Pop40000Cycles5000" ; // 
-        String simName = "TESTPop40000Cycles1000" ;
-        //String simName = "RelationshipCalibration16Pop40000Cycles20000" ; // "testPlotCondomUsePop4000Cycles500" ; // args[0] ;
+        String simName = "NoPrepCalibration10Pop40000Cycles1000" ; // "NoPrepCalibration86Pop40000Cycles5000" ; // "introPrepCalibration49Pop40000Cycles5000" ; // "NoPrepSetting01Pop40000Cycles5000" ; // 
+        //String simName = "TESTPop40000Cycles400" ;
+        //String simName = "RelationshipCalibration4Pop40000Cycles200" ; // "testPlotCondomUsePop4000Cycles500" ; // args[0] ;
+        //String simName = "RelationshipCalibration16Pop40000Cycles1200" ; // "testPlotCondomUsePop4000Cycles500" ; // args[0] ;
         //String chartTitle = "Nb_Agents_had_given_relationships" ; // args[1] ;
         //String chartTitle = "cumulative_relationships" ; // args[1] ;
-        String chartTitle = "yearly_mean_nb_relationships" ;
+        String chartTitle = "mean_nb_relationships" ;
+        //String chartTitle = "agents_entered_relationships" ;
         String reportFileName = "output/test/" ; // args[2] ;
         
         LOGGER.info(chartTitle) ;
@@ -38,14 +40,16 @@ public class RelationshipPresenter extends Presenter{
         RelationshipPresenter relationshipPresenter = new RelationshipPresenter(simName,chartTitle,reportFileName) ;
         //relationshipPresenter.plotBreakupsPerCycle() ;
         //relationshipPresenter.plotCumulativeRelationshipGaps() ;
-        //relationshipPresenter.plotCumulativeRelationships(new String[] {"Casual","Regular","Monogomous"}) ;
+        //relationshipPresenter.plotCumulativeRelationships(10, new String[] {"Casual","Regular","Monogomous"}, 0, 6, 0) ;
         //relationshipPresenter.plotCumulativeRelationshipLengths() ;
         //relationshipPresenter.plotRelationshipCumulativeTransmissions() ;
-        //relationshipPresenter.plotMeanNumberRelationshipsReport(new String[] {"Casual","Regular","Monogomous"});
-        relationshipPresenter.plotAgentRelationshipsMeanYears(relationshipClazzNames, 3, 6, 0, 2017) ;
+        relationshipPresenter.plotMeanNumberRelationshipsReport(new String[] {"Casual","Regular","Monogomous"});
+        //relationshipPresenter.plotAgentRelationshipsMeanYears(relationshipClazzNames, 3, 6, 0, 2017) ;
         //relationshipPresenter.plotAgentRelationshipsMean(new String[] {"Casual","Regular","Monogomous"}, 0, 6, 0) ;
         //relationshipPresenter.plotRelationshipLength() ;
+        //relationshipPresenter.plotRecentRelationshipsReport(relationshipClazzNames,0,6,0) ;
         //relationshipPresenter.plotNumberAgentsEnteredRelationship(new String[] {"Casual","Regular","Monogomous"}, 0, 6, 0) ;
+        //relationshipPresenter.plotNumberAgentsEnteredRelationshipYears(new String[] {"Casual","Regular","Monogomous"}, 2, 6, 0, 2017) ;
     }
     
     public RelationshipPresenter()
@@ -214,11 +218,29 @@ public class RelationshipPresenter extends Presenter{
      * Plot how many agentIds have more had how many or more Relationships
      * @param relationshipClassNames 
      */
-    public void plotCumulativeRelationships(String[] relationshipClassNames)
+    public void plotCumulativeRelationships(int nbRelationships, String[] relationshipClassNames, int backYears, int backMonths, int backDays)
+    {
+        HashMap<Object,Number> output = new HashMap<Object,Number>() ;
+        
+        // A snapshot of how many agentIds have more had how many or more Relationships
+        HashMap<Object,HashMap<Object,Number>> cumulativeRelationshipRecord 
+                = reporter.prepareCumulativeRelationshipRecord(nbRelationships, relationshipClassNames, backYears, backMonths, backDays) ;
+        
+        for (Object className : cumulativeRelationshipRecord.keySet())
+            output.put(className, cumulativeRelationshipRecord.get(className).get(nbRelationships)) ;
+        
+        plotHashMap("Class of Relationships","Number of Agents",output) ;
+    }
+    
+    /**
+     * Plot how many agentIds have more had how many or more Relationships
+     * @param relationshipClassNames 
+     */
+    public void plotCumulativeRelationships(String[] relationshipClassNames, int backYears, int backMonths, int backDays)
     {
         // A snapshot of how many agentIds have more had how many or more Relationships
         HashMap<Object,HashMap<Object,Number>> cumulativeRelationshipRecord 
-                = reporter.prepareCumulativeRelationshipRecord(relationshipClassNames) ;
+                = reporter.prepareCumulativeRelationshipRecord(-1,relationshipClassNames, backYears, backMonths, backDays) ;
         
         HashMap<Object,Number[]> invertedHashMap 
                 = Reporter.invertHashMapList(cumulativeRelationshipRecord,relationshipClassNames) ;
@@ -227,7 +249,7 @@ public class RelationshipPresenter extends Presenter{
     }
     
     /**
-     * Plots how many Agents had many partners in last given backYears years, 
+     * Plots how many Agents had how many partners in last given backYears years, 
      * backMonths months and backDays days.
      * @param backYears
      * @param backMonths
@@ -250,16 +272,28 @@ public class RelationshipPresenter extends Presenter{
     
     /**
      * Plots the mean number of Relationships per Agent over time.
+     * @param relationshipClassNames
      */
     public void plotMeanNumberRelationshipsReport(String[] relationshipClassNames)
     {
         // (ArrayList) records of mean number of each Relationship class per Agent
-        ArrayList<HashMap<Object,Number>> meanNumberRelationshipsReport 
+        ArrayList<HashMap<Object,String>> meanNumberRelationshipsReport 
                 = reporter.prepareMeanNumberRelationshipsReport(relationshipClassNames) ;
-        
-        ArrayList<ArrayList<Object>> invertedReport = Reporter.invertArrayHashMap(meanNumberRelationshipsReport,relationshipClassNames) ;
-        
-        multiPlotCycleValue("Mean number of partners",invertedReport,relationshipClassNames) ;
+        LOGGER.log(Level.INFO, "{0}", meanNumberRelationshipsReport);
+        //ArrayList<ArrayList<Object>> invertedReport = Reporter.invertArrayHashMap(meanNumberRelationshipsReport,relationshipClassNames) ;
+        //LOGGER.log(Level.INFO, "{0}", invertedReport);
+        ArrayList<ArrayList<Object>> invertedReport = new ArrayList<ArrayList<Object>>() ;
+        for (String relationshipClassName : relationshipClassNames)
+        {
+            ArrayList<String> record = new ArrayList<String>() ;
+            for (HashMap<Object,String> report : meanNumberRelationshipsReport)
+            {
+                record.add(report.get(relationshipClassName)) ;
+            }
+            invertedReport.add((ArrayList<Object>) record.clone()) ;
+        }
+        LOGGER.log(Level.INFO, "{0}", invertedReport);
+        multiPlotCycleValue("meanNb",invertedReport,relationshipClassNames) ;
     }
     
     /**
