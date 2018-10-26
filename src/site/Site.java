@@ -4,7 +4,7 @@
 package site;
 
 import java.util.Random ;
-
+        
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -20,13 +20,19 @@ abstract public class Site {
     final private String site ;
 
     /** Generate and record Random number seed. */
-    static final long RANDOM_SEED = System.nanoTime() ;
-    static final Random RAND = new Random(RANDOM_SEED) ;
+    static long RANDOM_SEED = System.nanoTime() ;
+    static Random RAND = new Random(RANDOM_SEED) ;
     
     /** get RANDOM_SEED. */
     static public final long GET_RANDOM_SEED()
     {
         return RANDOM_SEED ;
+    }
+    
+    static public void SET_RAND(long seed)
+    {
+        RANDOM_SEED = seed ;
+        RAND = new Random(RANDOM_SEED) ;
     }
     
     
