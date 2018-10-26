@@ -30,9 +30,9 @@ import java.util.logging.Level;
  *******************************************************************/
 public class Community {
     static public int POPULATION = 40000 ;
-    static public int MAX_CYCLES = 1000 ;
+    static public int MAX_CYCLES = 10000 ;
     //static public String NAME_ROOT = "RelationshipCalibration4" 
-    static public String NAME_ROOT = "NoPrepCalibration16" 
+    static public String NAME_ROOT = "NoPrepCalibration17" 
     //        + "DecliningCondomsAlteredTesting"
             + "Pop" + String.valueOf(POPULATION) + "Cycles" + String.valueOf(MAX_CYCLES) ;
 
