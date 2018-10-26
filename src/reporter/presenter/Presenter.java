@@ -8,6 +8,7 @@ import reporter.* ;
 import community.Community ;
 import java.awt.Color;
 import java.awt.Font ;
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 
 import org.jfree.chart.* ;
@@ -37,6 +38,7 @@ import java.util.ArrayList ;
 import java.util.* ;
 
 import java.io.File ;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException ;
 import java.util.logging.Level;
@@ -63,7 +65,9 @@ public class Presenter {
     static protected String BASE = "base" ;
     static protected String INTERVAL = "interval" ;
     static protected String PROPORTION = "proportion" ;
-    
+    static protected String GROUP = "GROUP" ;
+    static final String CSV = ".csv" ;
+    static final String COMMA = Reporter.COMMA ;
     private BarChart_AWT chart_awt ;
     
     private String folderPath = Community.FILE_PATH ;
@@ -94,11 +98,58 @@ public class Presenter {
     static private String getYLabel(String[] scoreNames)
     {
         String scoreName = "" ;
+        boolean grouped = scoreNames[0].contains(GROUP) ;
+        String name2 ;
         for (String name : scoreNames)
-            if (scoreName.indexOf(name) >= 0)
-                scoreName += "/" + name ;
+        {
+            name2 = name ;
+            if (grouped)
+                name2 = name.substring(0, name.indexOf(GROUP)) ;
+            if (!scoreName.contains(name2))
+                scoreName += "/" + name2 ;
+        }
         
-        return scoreName ;
+        return scoreName.substring(1) ;
+    }
+    
+    public static void main(String[] args)
+    {
+        String simName = "RelationshipCalibration5Pop40000Cycles500" ;
+        //String simName = "NoPrepCalibration12Pop40000Cycles2000" ;
+        String folder = "output/test/" ;
+        //String chartTitle = "Pharynx" ;
+        String chartTitle = "meanNb" ;
+        LOGGER.info(chartTitle) ;
+        String[] relationshipClassNames = new String[] {"Casual","Regular","Monogomous"} ; // "Casual","Regular","Monogomous"
+        /*
+        ScreeningReporter screeningReporter = 
+                //new ScreeningReporter("prevalence",community.infectionReport) ;
+                new ScreeningReporter(simName,folder) ;
+        ArrayList<Object> pharynxPrevalenceReport = screeningReporter.preparePrevalenceReport("Pharynx") ;
+        LOGGER.log(Level.INFO, "{0}", pharynxPrevalenceReport.get(0));
+        Reporter.writeCSV(pharynxPrevalenceReport, "Pharynx", simName, folder);
+        */
+        
+        RelationshipReporter relationshipReporter = 
+                new RelationshipReporter(simName,folder) ;
+        // (ArrayList) records of mean number of each Relationship class per Agent
+        LOGGER.info("prepareMeanNumberRelationshipsReport");
+        ArrayList<HashMap<Object,String>> meanNumberRelationshipsReport 
+                = relationshipReporter.prepareMeanNumberRelationshipsReport(relationshipClassNames) ;
+        
+        ArrayList<ArrayList<Object>> plotReport = new ArrayList<ArrayList<Object>>() ;
+        for (HashMap<Object,String> report : meanNumberRelationshipsReport)
+        {
+            ArrayList<String> record = new ArrayList<String>() ;
+            for (String relationshipClassName : relationshipClassNames)
+                record.add(report.get(relationshipClassName)) ;
+            plotReport.add((ArrayList<Object>) record.clone()) ;
+        }
+        Reporter.writeCSV(plotReport, relationshipClassNames, chartTitle, simName, folder);
+        
+        Presenter presenter = new Presenter(simName, chartTitle) ;
+        
+        presenter.readCSV(simName, chartTitle, folder);
     }
     
     public Presenter()
@@ -136,6 +187,91 @@ public class Presenter {
         this.reporter = reporter ;
     }
 
+    /**
+     * Reads specified .csv file, reconstructs report and plots it through 
+     * appropriate plotting method.
+     * @param reportName
+     * @param folderName 
+     */
+    private void readCSV(String simName, String reportName, String folderPath)
+    {
+        String fileHeader ;
+        String[] arrayHeader  = new String[] {} ;
+        
+        // Plotting Integer or Double?
+        Object key ;
+        String[] recordArray ;
+        String scoreName = "" ;
+        Number[] valueArray ;
+        int recordLength = 0 ;
+        
+        // Yet to determine if Array or single Number
+        HashMap<Object,Number> hashMapNumber = new HashMap<Object,Number>() ;
+        HashMap<Object,Number[]> hashMapArray = new HashMap<Object,Number[]>() ;
+        
+        try
+        {
+            BufferedReader fileReader 
+                    = new BufferedReader(new FileReader(folderPath + simName + reportName + CSV)) ;
+            fileHeader = fileReader.readLine() ;
+            
+            arrayHeader = fileHeader.split(COMMA) ;
+            recordLength = arrayHeader.length ;
+
+            // Find last line
+            String record = fileReader.readLine() ;  
+            recordArray = record.split(COMMA) ;
+            if (recordLength > recordArray.length)
+            {
+                recordLength-- ;
+                scoreName = arrayHeader[recordLength] ;
+            }
+            
+            valueArray = new Number[recordLength - 1] ;
+            while (record != null)
+            {
+                recordArray = record.split(COMMA) ;
+                try
+                {
+                    key = Integer.valueOf(recordArray[0]) ;
+                }
+                catch ( Exception e )
+                {
+                    key = recordArray[0] ;
+                }
+
+                for (int index = 1 ; index < recordLength ; index++ )
+                {
+                    try
+                    {
+                        valueArray[index - 1] = (Number) Integer.valueOf(recordArray[index]) ;
+                    }
+                    catch ( Exception e )
+                    {
+                        valueArray[index - 1] = (Number) Double.valueOf(recordArray[index]) ;
+                    }
+                }
+                if (recordLength > 2)
+                    hashMapArray.put(key, (Number[]) valueArray.clone() ) ;
+                else
+                    hashMapNumber.put(key, valueArray[1]) ;
+                record = fileReader.readLine() ;
+            }
+        }
+        catch ( Exception e )
+        {
+            LOGGER.info(e.toString());
+        }
+        
+        if (recordLength > 2)
+        {
+            //plotHashMap(arrayHeader[0],(String[]) Arrays.copyOfRange(arrayHeader, 1, recordLength),hashMapArray) ;
+            plotSpline(arrayHeader[0],scoreName,hashMapArray,(String[]) Arrays.copyOfRange(arrayHeader, 1, recordLength)) ;
+        }
+        else
+            plotHashMap(arrayHeader[0],arrayHeader[1],hashMapNumber) ;
+    }
+    
     /**
      * Fits an Array of splines to Arrays of points from a report.
      * @param hashMapReport
@@ -543,8 +679,11 @@ public class Presenter {
     protected void callMultiPlotChart(String scoreName, ArrayList<ArrayList<Object>> reportArrays, String[] legend)
     {
         //LOGGER.info("callPlotChart()") ;
+        LOGGER.log(Level.INFO, "{0}", reportArrays);
         // Extract data from reportArray
         parseReportArrays(scoreName, reportArrays) ;
+        
+        LOGGER.log(Level.INFO, "{0}", scoreData);
         
         // Send data to be processed and presented
         chart_awt.callPlotChart(chartTitle,scoreData,scoreName,legend) ;
@@ -674,7 +813,7 @@ public class Presenter {
         // Put keys in order
         for (Object key : hashMapReport.keySet())
         {
-            if (key.equals(null))
+            if (key == null)
                 continue ;
             categoryEntry.add(key) ;
         }
@@ -943,6 +1082,7 @@ public class Presenter {
         for (ArrayList<Object> report : reports)
         {
             plotArray = new ArrayList<Object>() ;
+            LOGGER.log(Level.INFO, "{0}", report);
             for (Object record : report)
             {
                 String value = Reporter.extractValue(scoreName,String.valueOf(record)) ;
@@ -1217,15 +1357,21 @@ public class Presenter {
         {
             LOGGER.info("plotBarChart()");
             String scoreName = getYLabel(scoreNames) ;
+            String group = "G1" ;
         
             JFreeChart barChart = ChartFactory.createStackedBarChart(chartTitle,xLabel,
                 scoreName,dataset,PlotOrientation.VERTICAL,true, true, false);
             
             GroupedStackedBarRenderer renderer = new GroupedStackedBarRenderer();
-            KeyToGroupMap map = new KeyToGroupMap("G1");
+            KeyToGroupMap map = new KeyToGroupMap(group);
+            boolean grouped = scoreNames[0].contains(GROUP) ;
             for (String name : scoreNames)
-                map.mapKeyToGroup(name, "G1");
-            renderer.setSeriesToGroupMap(map); 
+            {
+                if (grouped)
+                    group = name.substring(0, name.indexOf(GROUP)) ;
+                map.mapKeyToGroup(name, group);
+            }
+            renderer.setSeriesToGroupMap(map);
             
             CategoryPlot plot = (CategoryPlot) barChart.getPlot();
             plot.setRenderer(renderer);
