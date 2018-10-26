@@ -57,6 +57,8 @@ public class Reporter {
     static String TRUE = "true" ;
     /** static String representation of 'false'. */
     static String FALSE = "false" ;
+    /** static String representation of ','. */
+    static public String COMMA = "," ;
     /** static String representation of 'agentId'. */
     static public String AGENTID = "agentId" ;
     /** static String representation of 'agentId0'. */
@@ -1136,45 +1138,90 @@ public class Reporter {
      */
     static public void writeCSV(ArrayList<Object> report, String reportName, String simName, String folderPath)
     {
-        String filePath = folderPath + simName + reportName + ".csv" ;
+        writeCSV(report, new String[] {reportName}, simName, folderPath) ;
+    }
+
+
+    /**
+     * Stores an ArrayList (String) report as a csv file for other packages to read.
+     * @param report 
+     * @param reportName 
+     * @param simName 
+     * @param folderPath 
+     */
+    static public void writeCSV(ArrayList<Object> report, String[] scoreNames, String simName, String folderPath)
+    {
+        String filePath ;
         String line ;
+        String plotProperty = "meanNb" ;
         Class valueClass ;
         ArrayList<String> properties = new ArrayList<String>() ;
-        String fileHeader = "" ;
+        String fileHeader = "cycle," ;
         
         Object firstRecord = report.get(0) ;
-        if (String.class.isInstance(firstRecord))
-        {
-            valueClass = String.class ;
-            properties = identifyProperties(String.valueOf(report.get(0))) ;    // TODO: Try (String) instead of String.valueOf()
-            for (int index = 1 ; index < properties.size() ; index++ )
-                fileHeader += "," + properties.get(index) ;
-        }
-        else    // Probably redundant, but we'll see. 
-        {
-            valueClass = ArrayList.class ;
-            for (int index = 1 ; index < ((ArrayList<Object>) firstRecord).size() ; index++ )
-                firstRecord += "object_" + String.valueOf(index) + "," ;
-        }
-        fileHeader = fileHeader.substring(1) ;
-        
+        valueClass = String.class ;
+        filePath = folderPath + simName + scoreNames[0] + ".csv";
+        properties = identifyProperties((String) report.get(0)) ;    // TODO: Try (String) instead of String.valueOf()
+        //for (int index = 1 ; index < properties.size() ; index++ )
+          //  fileHeader += "," + properties.get(index) ;
+        fileHeader += String.join(COMMA, properties) ;
         try
         {
             BufferedWriter fileWriter = new BufferedWriter(new FileWriter(filePath,false));
             fileWriter.write(fileHeader) ;
             fileWriter.newLine();
+            int cycle = 0 ;
             for (Object record : report)
             {
-                line = "" ;
-                if (String.class.equals(valueClass))
-                    for (String property : properties)
-                        line += "," + extractValue(property,(String) record) ;
-                else // valueClass == ArrayList
-                    for  (Object property : (ArrayList) record)
-                        line += "," + String.valueOf(property) ;
-                line = line.substring(1) ;
+                line = String.valueOf(cycle) ;
+                for (String property : properties)
+                    line += COMMA + extractValue(property,(String) record) ;
                 fileWriter.write(line) ;
                 fileWriter.newLine() ;
+                cycle++ ;
+            }
+            fileWriter.close() ;
+        }
+        catch( Exception e )
+        {
+            LOGGER.info(e.toString()) ;
+        }
+    }
+
+
+    /**
+     * Stores an ArrayList (String) report as a csv file for other packages to read.
+     * @param report 
+     * @param reportName 
+     * @param simName 
+     * @param folderPath 
+     */
+    static public void writeCSV(ArrayList<ArrayList<Object>> report, String[] scoreNames, String property, String simName, String folderPath)
+    {
+        String filePath ;
+        String line ;
+        String fileHeader = "cycle," ;
+        
+        {
+            filePath = folderPath + simName + property + ".csv";
+            fileHeader += String.join(COMMA, scoreNames) ;
+            fileHeader += COMMA + property ;
+        }
+        try
+        {
+            BufferedWriter fileWriter = new BufferedWriter(new FileWriter(filePath,false));
+            fileWriter.write(fileHeader) ;
+            fileWriter.newLine();
+            int cycle = 0 ;
+            LOGGER.log(Level.INFO, "{0}", report);
+            for (Object record : report)
+            {
+                line = String.valueOf(cycle) ;
+                for (String entry : (ArrayList<String>) record)
+                    line += COMMA + extractValue(property,entry) ;
+                fileWriter.write(line) ;
+                fileWriter.newLine() ;
+                cycle++ ;
             }
             fileWriter.close() ;
         }
@@ -1189,36 +1236,49 @@ public class Reporter {
      * @param report 
      * @param reportName 
      */
-    static public void writeCSV(HashMap<Object,Object> report, String reportName, String simName, String folderPath)
+    static public void writeCSV(HashMap<Object,Number[]> report, String categoryName, String[] scoreNames, String reportName, String simName, String folderPath)
     {
         String filePath = folderPath + simName + reportName + ".csv" ;
         String line ;
         Object value ;
-        boolean arrayListValue ;
         int nbProperties = 0 ;
         //Determine if report values are ArrayList<Object>
         Object firstRecord = report.values().iterator().next() ;
-        arrayListValue = (ArrayList.class.isInstance(firstRecord)) ;
-        if (arrayListValue)
-            nbProperties = ((ArrayList<Object>) firstRecord).size() ;
-        String fileHeader = "key" ;
-        for (int index = 1 ; index < nbProperties ; index++ )
-            fileHeader += "," + "object_" + String.valueOf(index) ;
+        LOGGER.log(Level.INFO, "{0}", firstRecord);
+
+        String fileHeader = categoryName.concat(COMMA) ;
+        fileHeader += String.join(COMMA, identifyProperties((String) firstRecord))  ;
+        LOGGER.info(fileHeader) ;
+        
+        try
+        {
+            nbProperties = ((Object[]) firstRecord).length ;
+            fileHeader += COMMA + reportName ;
+        }
+        catch ( Exception e )
+        {
+            nbProperties = 1 ;
+        }
+        LOGGER.log(Level.INFO, "nbProperties:{1}", new Object[] {nbProperties});
+        
+        
         try
         {
             BufferedWriter fileWriter = new BufferedWriter(new FileWriter(filePath,false));
             fileWriter.write(fileHeader) ;
+            fileWriter.newLine() ;
             for (Object key : report.keySet())
             {
                 value = report.get(key) ;
                 line = String.valueOf(key) ;
-                if (arrayListValue)
-                    for (Object item : (ArrayList<Object>) value)
-                        line += "," + String.valueOf(item) ;
+                if (nbProperties > 1)
+                    for (Object item : (Object[]) value)
+                        line += COMMA + String.valueOf(item) ;
                 else
-                    line += "," + String.valueOf(value) ;
+                    line += COMMA + String.valueOf(value) ;
                 fileWriter.write(line) ; 
                 fileWriter.newLine() ;
+                LOGGER.info(line);
             }
             fileWriter.close() ;
         }
@@ -1233,7 +1293,7 @@ public class Reporter {
      * @param record
      * @return (ArrayList) String names of properties with given values in record.
      */
-    static ArrayList<String> identifyProperties(String record)
+    static public ArrayList<String> identifyProperties(String record)
     {
         ArrayList<String> propertyArray = new ArrayList<String>() ;
         
@@ -1246,7 +1306,7 @@ public class Reporter {
         {
             nextColonIndex = record.indexOf(":",colonIndex+1) ;
             spaceIndex = record.indexOf(" ",colonIndex) ;
-            if  (spaceIndex < nextColonIndex)
+            if  (spaceIndex < nextColonIndex || nextColonIndex < 0)
             {
                 propertyArray.add(record.substring(propertyIndex, colonIndex)) ;
                 propertyIndex = spaceIndex + 1 ;
@@ -1339,7 +1399,7 @@ public class Reporter {
      * Reads value from corresponding METADATA file.
      * @return (int) the total number of cycles in the corresponding simulation.
      */
-    protected int getMaxCycles()
+    public int getMaxCycles()
     {
         return Integer.valueOf(getMetaDatum("Community.MAX_CYCLES")) ;
     }
@@ -1637,8 +1697,8 @@ public class Reporter {
             if ("screening".equals(reporterName))    // TODO: Remove need for this step
                 reporterName = "infection" ;
             fileNames = initFileNames(simName + reporterName) ;
-            cyclesPerFile = initCyclesPerFile() ;
             initMetaData() ;
+            cyclesPerFile = initCyclesPerFile() ;
         }
         
         /**
@@ -1705,7 +1765,7 @@ public class Reporter {
         {
             ArrayList<String> nameArray = new ArrayList<String>() ;
             File folder = new File(folderPath) ;
-
+        
             for (File file : folder.listFiles()) 
                 if (file.isFile()) 
                 {
@@ -1727,7 +1787,7 @@ public class Reporter {
         private int initCyclesPerFile()
         {
             if (fileNames.size() == 1)
-                return Integer.valueOf(getMetaDatum("Community.MAX_CYCLES")) ;
+                return Integer.valueOf(getMetaDatum("Community.MAX_CYCLES").trim()) ;
             String fileName1 = fileNames.get(1) ;
             int dashIndex = fileName1.indexOf("-") + 1 ; // Want following position
             int dotIndex = fileName1.indexOf("txt") - 1 ; // -1 for "."
