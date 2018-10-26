@@ -157,6 +157,42 @@ public class EncounterReporter extends Reporter {
     }
         
     /**
+     * 
+     * @param relationshipClassNames
+     * @param backYears
+     * @param backMonths
+     * @param backDays
+     * @param lastYear
+     * @return Year-by-year report of the number of Agents who have (not) always
+     * used condoms for anal intercourse, or never had it.
+     */
+    public HashMap<Object,HashMap<Object,Number[]>> 
+    prepareNumberCondomlessYears(String[] relationshipClassNames, int backYears, int backMonths, int backDays, int lastYear)
+    {
+        HashMap<Object,HashMap<Object,Number[]>> numberCondomlessYears = new HashMap<Object,HashMap<Object,Number[]>>() ;
+
+        int maxCycles = getMaxCycles() ;
+
+        int endCycle ;
+        HashMap<Object,Number[]> numberCondomlessRelationship ;
+        for (int year = 0 ; year < backYears ; year++ )
+        {
+            endCycle = maxCycles - year * DAYS_PER_YEAR ;
+            numberCondomlessRelationship = prepareNumberCondomlessReport(0, backMonths, backDays, endCycle, relationshipClassNames);
+
+            HashMap<Object,Number[]> yearlyNumberCondomlessRelationship = new HashMap<Object,Number[]>() ;
+
+            for (Object relationshipClassName : relationshipClassNames)
+                yearlyNumberCondomlessRelationship.put(relationshipClassName, numberCondomlessRelationship.get(relationshipClassName)) ;
+
+            numberCondomlessYears.put(lastYear - year, (HashMap<Object,Number[]>) yearlyNumberCondomlessRelationship.clone()) ;
+        }
+
+        return numberCondomlessYears ;
+    }
+
+
+    /**
      * The number of Agents who have always, or not always, used a condom during anal
      * sex, or never had anal sex in the given time period.
      * @param backYears
@@ -166,6 +202,22 @@ public class EncounterReporter extends Reporter {
      * @return 
      */
     public HashMap<Object,Number[]> prepareNumberCondomlessReport(int backYears, int backMonths, int backDays, String[] relationshipClazzNames)
+    {
+        return prepareNumberCondomlessReport(backYears, backMonths, backDays, getMaxCycles(), relationshipClazzNames) ;
+    }
+    
+
+    /**
+     * The number of Agents who have always, or not always, used a condom during anal
+     * sex, or never had anal sex in the given time period.
+     * @param backYears
+     * @param backMonths
+     * @param backDays
+     * @param endCycle
+     * @param relationshipClazzNames
+     * @return 
+     */
+    public HashMap<Object,Number[]> prepareNumberCondomlessReport(int backYears, int backMonths, int backDays, int endCycle, String[] relationshipClazzNames)
     {
         HashMap<Object,Number[]> numberCondomlessReport = new HashMap<Object,Number[]>() ;
         String[] condomStati = new String[] {"always","not_always","no_AI"} ;
@@ -178,11 +230,11 @@ public class EncounterReporter extends Reporter {
         
         // Prepare agentRelationshipsRecord
         RelationshipReporter relationshipReporter = new RelationshipReporter(simName,getFolderPath()) ;
-        Class[] parameterClazzes = new Class[] {String[].class,int.class,int.class,int.class} ;
-        Object[] parameters = new Object[] {relationshipClazzNames, backYears, backMonths, backDays} ;
+        Class[] parameterClazzes = new Class[] {String[].class, int.class, int.class, int.class, int.class} ;
+        Object[] parameters = new Object[] {relationshipClazzNames, backYears, backMonths, backDays, endCycle} ;
         HashMap<Object,HashMap<Object,ArrayList<Object>>> agentRelationshipsRecord 
                 = (HashMap<Object,HashMap<Object,ArrayList<Object>>>) getRecord("agentRelationships",relationshipReporter,parameterClazzes,parameters) ;
-        //relationshipReporter.prepareAgentRelationshipsRecord(relationshipClazzNames, backYears, backMonths, backDays) ;
+        //relationshipReporter.prepareAgentRelationshipsRecord(relationshipClazzNames, backYears, backMonths, backDays, endCycle) ;
         
         String relationshipClazz ;
         String condomStatus ;
@@ -247,7 +299,7 @@ public class EncounterReporter extends Reporter {
         HashMap<Object,String[]> relationshipAgentReport = (HashMap<Object,String[]>) getReport("relationshipAgent",relationshipReporter) ; //  relationshipReporter.prepareRelationshipAgentReport() ;
         LOGGER.log(Level.INFO, "relationshipAgentReport {0}", relationshipAgentReport);
         
-        int maxCycles = Integer.valueOf(getMetaDatum("Community.MAX_CYCLES")) ;
+        int maxCycles = getMaxCycles() ;
         int backCycles = getBackCycles(backYears, backMonths, backDays, maxCycles) ;
         int startCycle = maxCycles - backCycles ;
         
@@ -291,10 +343,31 @@ public class EncounterReporter extends Reporter {
      */        
     public HashMap<Object,Number> prepareNumberAgentCondomlessReport(int backYears, int backMonths, int backDays, String relationshipClazzName, String concordanceName, boolean concordant)
     {
+        int endCycle = getMaxCycles() ;
+        
+        return prepareNumberAgentCondomlessReport(backYears, backMonths, backDays, endCycle, relationshipClazzName, concordanceName, concordant) ;
+    }
+    
+    
+    /**
+     * 
+     * @param backYears
+     * @param backMonths
+     * @param backDays
+     * @param endCycle
+     * @param relationshipClazzName
+     * @param concordanceName
+     * @param concordant
+     * @return (HashMap) Number of condomless intercourse acts maps to the Number
+     * of Agents to have committed that many such acts in the last backYears years,
+     * backMonths months and backDays days.
+     */        
+    public HashMap<Object,Number> prepareNumberAgentCondomlessReport(int backYears, int backMonths, int backDays, int endCycle, String relationshipClazzName, String concordanceName, boolean concordant)
+    {
         HashMap<Object,Number> numberAgentCondomlessReport = new HashMap<Object,Number>() ;
         
         HashMap<Object,ArrayList<Object>> agentCondomlessReport 
-                = prepareAgentCondomlessReport(backYears, backMonths, backDays, relationshipClazzName, concordanceName, concordant) ;
+                = prepareAgentCondomlessReport(backYears, backMonths, backDays, endCycle, relationshipClazzName, concordanceName, concordant) ;
         
         for (ArrayList<Object> condomlessValue : agentCondomlessReport.values() ) 
         {
@@ -312,7 +385,9 @@ public class EncounterReporter extends Reporter {
      */
     private HashMap<Object,ArrayList<Object>> prepareAgentCondomlessReport(int backYears, int backMonths, int backDays, String relationshipClazzName)
     {
-        return prepareAgentCondomlessReport(backYears, backMonths, backDays, relationshipClazzName, "", true) ;
+        int endCycle = getMaxCycles() ;
+        
+        return prepareAgentCondomlessReport(backYears, backMonths, backDays, endCycle, relationshipClazzName, "", true) ;
     }
     
     /**
@@ -321,18 +396,17 @@ public class EncounterReporter extends Reporter {
      * anal intercourse in a (relationshipClazzName) Relationship con/dis-cordant 
      * according to concordanceName.
      */
-    private HashMap<Object,ArrayList<Object>> prepareAgentCondomlessReport(int backYears, int backMonths, int backDays, String relationshipClazzName, String concordanceName, boolean concordant)
+    private HashMap<Object,ArrayList<Object>> prepareAgentCondomlessReport(int backYears, int backMonths, int backDays, int endCycle, String relationshipClazzName, String concordanceName, boolean concordant)
     {
         HashMap<Object,ArrayList<Object>> agentCondomlessIntercourse = new HashMap<Object,ArrayList<Object>>() ;
         
         RelationshipReporter relationshipReporter = new RelationshipReporter(simName,getFolderPath()) ;
         HashMap<Object,String[]> relationshipAgentReport = (HashMap<Object,String[]>) getReport("relationshipAgent",relationshipReporter) ; //  relationshipReporter.prepareRelationshipAgentReport() ;
         
-        int maxCycles = Integer.valueOf(getMetaDatum("Community.MAX_CYCLES")) ;
-        int backCycles = getBackCycles(backYears, backMonths, backDays, maxCycles) ;
-        int startCycle = maxCycles - backCycles ;
+        int backCycles = getBackCycles(backYears, backMonths, backDays, endCycle) ;
+        int startCycle = endCycle - backCycles ;
         
-        ArrayList<String> encounterReport = getBackCyclesReport(0, 0, backCycles) ;
+        ArrayList<String> encounterReport = getBackCyclesReport(0, 0, backCycles, endCycle) ;
         ArrayList<String> condomlessReport = prepareFilteredReport(CONDOM,FALSE,encounterReport) ;
         ArrayList<String> concordantReport = relationshipReporter.filterByConcordance(concordanceName, concordant, condomlessReport) ;
         ArrayList<String> finalReport = relationshipReporter.filterRelationshipClazzReport(relationshipClazzName,concordantReport) ;
@@ -351,6 +425,84 @@ public class EncounterReporter extends Reporter {
         }
         
         return agentCondomlessIntercourse ;
+    }
+    
+    /**
+     * 
+     * @param relationshipClassNames
+     * @param backYears
+     * @param backMonths
+     * @param backDays
+     * @param endCycle
+     * @param concordanceName
+     * @param concordant
+     * @return Reports the percent of Agents who have been involved in each subclass of Relationship 
+     * who have partaken in condomless anal intercourse within those Relationships.
+     */
+    public HashMap<Object,Number> preparePercentAgentCondomlessReport(String[] relationshipClassNames, int backYears, int backMonths, int backDays, int endCycle, String concordanceName, boolean concordant)
+    {
+        HashMap<Object,Number> percentCondomlessRelationship = new HashMap<Object,Number>() ;
+        
+        RelationshipReporter relationshipReporter = new RelationshipReporter(simName,getFolderPath()) ;
+        HashMap<Object,Number> numberRelationshipsReport 
+                = relationshipReporter.prepareNumberRelationshipsReport(relationshipClassNames, backYears, backMonths, backDays, endCycle) ;
+        
+        for (String relationshipClazzName : relationshipClassNames)
+        {
+            double totalAgents = numberRelationshipsReport.get(relationshipClazzName).doubleValue() ;
+            if (totalAgents == 0)
+            {
+                percentCondomlessRelationship.put(relationshipClazzName,0.0) ;
+                continue ;
+            }
+            // (HashMap) Number of condomless intercourse acts maps to the Number
+            // of Agents to have committed that many such acts 
+            HashMap<Object,Number> numberAgentCondomlessReport 
+                    = prepareNumberAgentCondomlessReport(backYears, backMonths, backDays, endCycle, relationshipClazzName, concordanceName, concordant) ;
+            int activeAgents = 0 ;
+            for (Object numberKey : numberAgentCondomlessReport.keySet())
+                activeAgents += numberAgentCondomlessReport.get(numberKey).intValue() ;
+        
+            percentCondomlessRelationship.put(relationshipClazzName,activeAgents/totalAgents) ;
+        }
+        return percentCondomlessRelationship ;
+    }
+    
+    /**
+     * 
+     * @param relationshipClassNames
+     * @param backYears
+     * @param backMonths
+     * @param backDays
+     * @param lastYear
+     * @param concordanceName
+     * @param concordant
+     * @return year-by-year report
+     */
+    public HashMap<Object,Number[]> preparePercentAgentCondomlessYears(String[] relationshipClassNames, int backYears, int backMonths, int backDays, int lastYear, String concordanceName, boolean concordant)
+    {
+        HashMap<Object,Number[]> percentAgentCondomlessYears = new HashMap<Object,Number[]>() ;
+    
+        int maxCycles = getMaxCycles() ;
+            
+        int endCycle ;
+        HashMap<Object,Number> percentAgentCondomlessReport ;
+        
+        for (int year = 0 ; year < backYears ; year++ )
+        {
+            Number[] yearlyNumberAgentsEnteredRelationship = new Number[relationshipClassNames.length] ;
+               
+                endCycle = maxCycles - year * DAYS_PER_YEAR ;
+                percentAgentCondomlessReport 
+                        = preparePercentAgentCondomlessReport(relationshipClassNames, 0, backMonths, backDays, endCycle, concordanceName, concordant);
+               
+                for (int classIndex = 0 ; classIndex < relationshipClassNames.length ; classIndex++ )
+                    yearlyNumberAgentsEnteredRelationship[classIndex] = percentAgentCondomlessReport.get(relationshipClassNames[classIndex]) ;
+                
+                percentAgentCondomlessYears.put(lastYear - year, (Number[]) yearlyNumberAgentsEnteredRelationship.clone()) ;
+        }
+
+        return percentAgentCondomlessYears ;
     }
     
     /**
