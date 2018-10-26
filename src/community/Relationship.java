@@ -29,7 +29,22 @@ public class Relationship {
     static public String RELATIONSHIP_ID = "relationshipId" ;
     
     /** Random number generator. */
-    static Random RAND = new Random() ;
+    /** Generate and record Random number seed. */
+    static long RANDOM_SEED = System.nanoTime() ;
+    static Random RAND = new Random(RANDOM_SEED) ;
+    
+    static public void SET_RAND(long seed)
+    {
+        RANDOM_SEED = seed ;
+        RAND = new Random(RANDOM_SEED) ;
+    }
+    
+    /** get RANDOM_SEED.
+     * @return  */
+    static public final long GET_RANDOM_SEED()
+    {
+        return RANDOM_SEED ;
+    }
     
     /** Site name of Rectum */
     static String RECTUM = "Rectum" ;
@@ -273,14 +288,15 @@ public class Relationship {
             int infectStatus0 = site0.getInfectedStatus() ;
             int infectStatus1 = site1.getInfectedStatus() ;
             // no risk of transmission if both sites have same infectStatus
-            if (true && (infectStatus0 == infectStatus1)) 
+            // Comment this out if interested in HIV prevention and other sexual practices
+            if (infectStatus0 == infectStatus1) 
                 continue ;	
 
             
             // Update report
-            report += "contact:" + Integer.toString(contact) + " " ;
-            report += site0.getSite() + ":" + Integer.toString(infectStatus0) + " " ;
-            report += site1.getSite() + ":" + Integer.toString(infectStatus1) + " " ;
+            report += Reporter.addReportProperty("contact", contact) ;
+            report += Reporter.addReportProperty(site0.getSite(),infectStatus0) ;
+            report += Reporter.addReportProperty(site1.getSite(),infectStatus1) ;
             // compare Infection status of both sites
             /*
             Infection infection0 = site0.getInfection();
