@@ -4,6 +4,7 @@
 package agent;
 
 import community.* ;
+import reporter.* ;
 
 import reporter.Reporter ;
 import site.* ;
@@ -28,7 +29,7 @@ public abstract class Agent {
     final private String agent ;
 
     // Number in Community.population
-    final private int agentId ;
+    private int agentId ;
 
     /** Age of Agent */
     private int age ;
@@ -60,8 +61,14 @@ public abstract class Agent {
     
     // Need to generate random numbers
     /** Generate and record Random number seed. */
-    static final long RANDOM_SEED = System.nanoTime() ;
-    static final Random RAND = new Random(RANDOM_SEED) ;
+    static long RANDOM_SEED = System.nanoTime() ;
+    static Random RAND = new Random(RANDOM_SEED) ;
+    
+    static public void SET_RAND(long seed)
+    {
+        RANDOM_SEED = seed ;
+        RAND = new Random(RANDOM_SEED) ;
+    }
     
     /** get RANDOM_SEED.
      * @return  */
@@ -89,7 +96,7 @@ public abstract class Agent {
     
     /** 
      * The fraction by which infidelity is multiplied every additional year after 
-     * the age of 30. 
+ the startAge of 30. 
      */
     static double INFIDELITY_FRACTION = 0.5 ;
     
@@ -220,7 +227,122 @@ public abstract class Agent {
         return ((agent0.chooseCondom(relationshipName, agent1)) || (agent1.chooseCondom(relationshipName, agent0))) ;
     }
 
-   
+    /**
+     * Reloads Agents from a saved simulation to continue it.
+     * @param simName 
+     */
+    static public ArrayList<Agent> reloadAgents(String simName)
+    {
+        ArrayList<Agent> agents = new ArrayList<Agent>() ;
+        PopulationReporter populationReporter = new PopulationReporter(simName,"output/test/") ;
+        
+        ArrayList<String> birthReport = populationReporter.prepareBirthReport() ;
+        
+        ArrayList<ArrayList<Object>> agentDeathReport = populationReporter.prepareAgentDeathReport() ;
+        
+        ScreeningReporter screeningReporter = new ScreeningReporter(simName,"output/test/") ;
+        
+        String screeningRecord = screeningReporter.getFinalRecord() ;
+        
+        int infectionIndex ;
+        int startAge ;
+        String id ;
+                        
+        boolean symptoms ;
+        String className ;
+        Site[] sites ;
+        //int daysPerYear = 365 ;
+        Class clazz ;
+        
+        // Get ArrayList of dead Agents so we don't waste time reading their data
+        ArrayList deadAgentIds = new ArrayList<Object>() ;
+        for (ArrayList<Object> agentDeathRecord : agentDeathReport)
+            deadAgentIds.addAll(agentDeathRecord) ;
+        
+        //int maxCycles = populationReporter.getMaxCycles() ;
+        int birthIndex = 0 ;
+        for (String birthRecord : birthReport)
+        {
+            ArrayList<String> birthList = Reporter.extractArrayList(birthRecord,"agentId") ;
+            birthIndex += birthList.size() ;
+            ArrayList<String> properties = Reporter.identifyProperties(birthList.get(0)) ;
+            for (String birth : birthList)
+            {
+                // Extract Agents still living
+                id = Reporter.extractValue("agentId", birth);
+                if (deadAgentIds.contains(id))
+                    continue ;
+                
+                startAge = Integer.valueOf(Reporter.extractValue("age",birth));
+                //age += (maxCycles - birthIndex)/daysPerYear ;
+                className = Reporter.extractValue("agent",birth);
+                try
+                {
+                    clazz = Class.forName(className);
+                    MSM newAgent = (MSM) clazz.getConstructor(int.class).newInstance(startAge);
+                    reloadAgent(newAgent, birth, properties) ;
+                    
+                    infectionIndex = screeningRecord.indexOf(Reporter.AGENTID.concat(id)) ;
+                    String infectionString ;
+                    infectionString = Reporter.extractBoundedString(Reporter.AGENTID, screeningRecord, infectionIndex);
+                    
+                    sites = newAgent.getSites();
+                    for (Site site : sites)
+                    {
+                        if (infectionString.contains(site.getSite()))
+                        {
+                            site.receiveInfection(1.1) ;
+                            symptoms = Boolean.getBoolean(Reporter.extractValue(site.getSite(),infectionString));
+                            if (symptoms)
+                                site.setSymptomatic(1.1) ;
+                            else
+                                site.setSymptomatic(-0.1) ;
+                        }
+                    }
+                    agents.add(newAgent) ;
+                }
+                catch ( Exception e )
+                {
+                    LOGGER.log(Level.SEVERE, "{0} {1}", new Object[]{e.getClass().getCanonicalName(), className});
+                }
+            }
+        }
+        NB_AGENTS_CREATED = birthIndex ;
+        
+        return agents ;
+    }
+    
+    static void reloadAgent(MSM newAgent, String census, ArrayList<String> propertyArray)
+    {
+        propertyArray.remove("agent") ;
+        propertyArray.remove("age") ;
+
+        String valueString ;
+        String setterName ;
+        Class propertyClazz ;
+        Method setMethod ;
+        Method valueOfMethod ;
+        try
+        {
+            for (String property : propertyArray)
+            {
+                valueString = Reporter.extractValue(property, census) ;
+                propertyClazz = MSM.class.getDeclaredField(property).getType() ;
+                valueOfMethod = propertyClazz.getMethod("valueOf", String.class) ;
+                LOGGER.log(Level.INFO,"{0}",valueOfMethod.invoke(valueString));
+
+                setterName = "set" + property.substring(0,1).toUpperCase() 
+                        + property.substring(1) ;
+                setMethod = MSM.class.getDeclaredMethod(setterName, propertyClazz) ;
+                setMethod.invoke(newAgent, valueOfMethod.invoke(valueString)) ;
+            }
+        }
+        catch (Exception e)
+        {
+            LOGGER.severe(e.toString());
+        }
+        
+    }
     
     /**
      *  
@@ -249,17 +371,22 @@ public abstract class Agent {
             return agentId ;
     }
 
+    private void setAgentId(int id)
+    {
+        this.agentId = id ;
+    }
+    
     /**
-     * Initialises age of new Agents
-     * @param startAge = -1, choose random age from 16 to 65, for initialising community
-     *                 = 0 , choose random age from 16 to 20, new agents entering sexual maturity
-     *                 > 0 , set age to startAge
+     * Initialises startAge of new Agents
+     * @param startAge = -1, choose random startAge from 16 to 65, for initialising community
+                 = 0 , choose random startAge from 16 to 20, new agents entering sexual maturity
+                 > 0 , set startAge to startAge
      */
     private int initAge(int startAge)
     {
-        if (startAge == -1) // Choose random age from 16 to 65
+        if (startAge == -1) // Choose random startAge from 16 to 65
             age = RAND.nextInt(50) + 16 ;
-        else if (startAge == 0) // Choose random age from 16 to 25, reaching sexual maturity
+        else if (startAge == 0) // Choose random startAge from 16 to 25, reaching sexual maturity
             age = RAND.nextInt(10) + 16 ;
         else
             age = startAge ;
@@ -304,7 +431,7 @@ public abstract class Agent {
        
     /**
      * 
-     * @return (int) age of Agent.
+     * @return (int) startAge of Agent.
      */
     public int getAge() 
     {
@@ -312,7 +439,7 @@ public abstract class Agent {
     }
 
     /**
-     * Sets age of Agent to (int) age.
+     * Sets startAge of Agent to (int) startAge.
      * @param age 
      */
     public void setAge(int age) 
@@ -407,8 +534,8 @@ public abstract class Agent {
     {
         String censusReport = "" ;
         censusReport += Reporter.addReportProperty("agentId",agentId) ;
-        censusReport += Reporter.addReportProperty("class",agent) ;
-        censusReport += "age:" + String.valueOf(getAge()) + " " ;  // Reporter.addReportProperty("startAge", getAge()) ;
+        censusReport += Reporter.addReportProperty("agent",agent) ;
+        censusReport += Reporter.addReportProperty("age",getAge()) ;  // Reporter.addReportProperty("startAge", getAge()) ;
         censusReport += Reporter.addReportProperty("concurrency",concurrency) ;
         censusReport += Reporter.addReportProperty("infidelity",infidelity) ;
         censusReport += Reporter.addReportProperty("screenInterval",getScreenCycle()) ;
@@ -505,10 +632,10 @@ public abstract class Agent {
     abstract public void adjustCondomUse() ;
     
     /**
-     * Invoked every 365 cycles to age the agent by one year.
-     * In turn invokes ageEffects() to handle the effects of age.
-     * @return String description of agentId, age, and any altered quantities if any, 
-     *     empty otherwise
+     * Invoked every 365 cycles to startAge the agent by one year.
+     * In turn invokes ageEffects() to handle the effects of startAge.
+     * @return String description of agentId, startAge, and any altered quantities if any, 
+     empty otherwise
      */
     public String ageOneYear()
     {
@@ -521,13 +648,13 @@ public abstract class Agent {
             if (! report.isEmpty())
             {
                 report += Reporter.addReportProperty("agentId",agentId) ;
-                report += Reporter.addReportProperty("age",age) ;
+                report += Reporter.addReportProperty("startAge",startAge) ;
             }*/
             return report ;
     }
 
     /**
-     * Promiscuity and infidelity decrease from age == 30
+     * Promiscuity and infidelity decrease from startAge == 30
      * 
      * @return String description of any altered quantities if any, empty otherwise
      */
@@ -1089,7 +1216,7 @@ public abstract class Agent {
      * Based on data from the Australian Bureau of Statistics for Australian 
      * population (http://stat.data.abs.gov.au/).
      * @return (double) probability of dying during any cycle depending on the 
-     * properties, here age, of the Agent.
+ properties, here startAge, of the Agent.
      */
     protected double getRisk()
     {
@@ -1123,14 +1250,14 @@ public abstract class Agent {
         
     /**
      * Make agent die and clear their Relationships
-     * Default based on age, uniform probability with cutoff at maxLife
+ Default based on startAge, uniform probability with cutoff at maxLife
      * @return true if they die, false otherwise
      */
     final private String death()
     {
         String report = Reporter.addReportLabel("death") ; 
         //report += Reporter.addReportProperty("agentId",agentId) ;
-        //report += Reporter.addReportProperty("age",age) ;
+        //report += Reporter.addReportProperty("startAge",startAge) ;
         //report += "nbPartners:" + String.valueOf(currentRelationships.size()) + " ";
         clearRelationships() ;
         return report ;
@@ -1143,7 +1270,7 @@ public abstract class Agent {
     final private void clearRelationships()
     {
         Relationship relationship ;
-        int partnerId ;
+        
         int startIndex = (nbRelationships - 1) ;
         String record = "" ;
         for (int relationshipIndex = startIndex ; relationshipIndex >= 0 ; 
@@ -1174,5 +1301,5 @@ public abstract class Agent {
             siteReport += site.getSite() + ":" + site.getInfectedStatus() + " " ;
         LOGGER.log(Level.INFO, "Agent:{0} {1}", new Object[]{getInfectedStatus(),siteReport});
     }
-    
+     
 }
