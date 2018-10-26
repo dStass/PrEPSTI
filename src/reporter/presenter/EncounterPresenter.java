@@ -27,8 +27,8 @@ public class EncounterPresenter extends Presenter {
     public static void main(String[] args)
     {
         //String simName = "testPop30000Cycles500" ; // Community.NAME_ROOT ; // "introPrepCalibration48Pop40000Cycles7000" ; // args[0] ;
-        String simName = "TESTPop40000Cycles400" ;
         //String simName = "NoPrepCalibration43Pop40000Cycles5000" ; // "NoPrepCalibration86Pop40000Cycles5000" ; // "introPrepCalibration48Pop40000Cycles7000" ; // args[0] ;
+        String simName = "RelationshipCalibration6Pop40000Cycles500" ; // "NoPrepCalibration86Pop40000Cycles5000" ; // "introPrepCalibration48Pop40000Cycles7000" ; // args[0] ;
         //String chartTitle = "infections_of_PrEP_users" ; // args[1] ;
         //String chartTitle = "proportion_of_Agents_had_CLAI" ; // args[1] ;
         String chartTitle = "condom_use_in_AI" ; // args[1] ;
@@ -39,9 +39,11 @@ public class EncounterPresenter extends Presenter {
         //encounterPresenter.plotProtection() ;
         //encounterPresenter.plotNbTransmissions();
         //encounterPresenter.plotCumulativeAgentTransmissionReport() ;
-        encounterPresenter.plotNumberCondomlessReport(0, 6, 0, new String[] {"Casual","Regular","Monogomous"}) ;
+        encounterPresenter.plotNumberCondomlessYears(2, 6, 0, 2017, new String[] {"Casual","Regular","Monogomous"}) ;
+        //encounterPresenter.plotNumberCondomlessReport(0, 6, 0, new String[] {"Casual","Regular","Monogomous"}) ;
         //encounterPresenter.plotPercentAgentCondomlessReport(new String[] {"Casual","Regular","Monogomous"}, 0, 6, 0, "", false) ;
         //encounterPresenter.plotPercentAgentCondomlessReport(new String[] {"Casual","Regular","Monogomous"}, 0, 2, 0, "statusHIV", false) ; 
+        //encounterPresenter.plotPercentAgentCondomlessYears(new String[] {"Casual","Regular","Monogomous"}, 3, 6, 0, 2017, "", false) ; 
         //encounterPresenter.plotNumberAgentTransmissionReport("statusHIV") ;
         //encounterPresenter.plotFromSiteToSite(new String[] {"Rectum","Urethra","Pharynx"});
         //encounterPresenter.plotReceiveSortPrepStatusReport("true") ;
@@ -252,37 +254,23 @@ public class EncounterPresenter extends Presenter {
      * @param backYears
      * @param backMonths
      * @param backDays 
+     * @param endCycle 
+     * @param concordanceName 
+     * @param concordant 
      */
-    public void plotPercentAgentCondomlessReport(String[] relationshipClassNames, int backYears, int backMonths, int backDays, String concordanceName, boolean concordant)
+    public void plotPercentAgentCondomlessReport(String[] relationshipClassNames, int backYears, int backMonths, int backDays, int endCycle, String concordanceName, boolean concordant)
     {
-        HashMap<Object,Number> percentCondomlessRelationship = new HashMap<Object,Number>() ;
+        HashMap<Object,Number> percentAgentCondomlessReport 
+                = reporter.preparePercentAgentCondomlessReport(relationshipClassNames, backYears, backMonths, backDays, endCycle, concordanceName, concordant) ;
         
-        RelationshipReporter relationshipReporter = new RelationshipReporter(reporter.getSimName(),reporter.getFolderPath()) ;
-        HashMap<Object,Number> numberRelationshipsReport 
-                = relationshipReporter.prepareNumberRelationshipsReport(relationshipClassNames, backYears, backMonths, backDays) ;
-        
-        for (String relationshipClazzName : relationshipClassNames)
-        {
-            double totalAgents = numberRelationshipsReport.get(relationshipClazzName).doubleValue() ;
-            if (totalAgents == 0)
-            {
-                percentCondomlessRelationship.put(relationshipClazzName,0.0) ;
-                continue ;
-            }
-            // (HashMap) Number of condomless intercourse acts maps to the Number
-            // of Agents to have committed that many such acts 
-            HashMap<Object,Number> numberAgentCondomlessReport 
-                    = reporter.prepareNumberAgentCondomlessReport(backYears, backMonths, backDays, relationshipClazzName, concordanceName, concordant) ;
-            int activeAgents = 0 ;
-            for (Object numberKey : numberAgentCondomlessReport.keySet())
-                activeAgents += numberAgentCondomlessReport.get(numberKey).intValue() ;
-        
-            percentCondomlessRelationship.put(relationshipClazzName,activeAgents/totalAgents) ;
-        }
-        
-        plotHashMap("Relationship class","percentage engaged in CLAI",percentCondomlessRelationship) ;
+        plotHashMap("Relationship class","percentage engaged in CLAI",percentAgentCondomlessReport) ;
     }
     
+    public void plotPercentAgentCondomlessYears(String[] relationshipClassNames, int backYears, int backMonths, int backDays, int lastYear, String concordanceName, boolean concordant)
+    {
+        HashMap<Object,Number[]> percentAgentCondomlessYears 
+                = reporter.preparePercentAgentCondomlessYears(relationshipClassNames, backYears, backMonths, backDays, lastYear, concordanceName, concordant) ;
+    }
     /**
      * Plots the proportion of Agents who have either always or not always used a 
      * condom during anal sex, or who never had anal sex during the given time period.
@@ -297,6 +285,49 @@ public class EncounterPresenter extends Presenter {
                 = reporter.prepareNumberCondomlessReport(backYears, backMonths, backDays, relationshipClazzNames) ;
         LOGGER.log(Level.INFO, "{0}", numberCondomlessReport);
         plotHashMap("condom use",relationshipClazzNames,numberCondomlessReport) ;
+    }
+    
+    /**
+     * Year-by-year plot of proportion of Agents who have either always or not always used a 
+     * condom during anal sex, or who never had anal sex during the given time period.
+     * @param backYears
+     * @param backMonths
+     * @param backDays
+     * @param lastYear
+     * @param relationshipClazzNames 
+     */
+    public void plotNumberCondomlessYears(int backYears, int backMonths, int backDays, int lastYear, String[] relationshipClazzNames)
+    {
+        HashMap<Object,HashMap<Object,Number[]>> 
+    numberCondomlessYears = reporter.prepareNumberCondomlessYears(relationshipClazzNames, backYears, backMonths, backDays, lastYear) ;
+        
+        HashMap<Object,Number[]> yearlyReport = new HashMap<Object,Number[]>() ;
+        
+        String[] condomStati = new String[] {"always","not_always","no_AI"} ;
+        
+        String[] scoreNames = new String[3*relationshipClazzNames.length] ;
+        
+        for (Object yearKey : numberCondomlessYears.keySet())
+        {
+            Number[] scores = new Number[scoreNames.length] ;
+            for (int relationshipIndex = 0 ; relationshipIndex < relationshipClazzNames.length ; relationshipIndex++ )
+            {
+                String relationshipClazz = relationshipClazzNames[relationshipIndex] ;
+                // Copy Number[] from numberCondomlessYears.get(yearKey).get(relationshipClazz) to scores
+                System.arraycopy(numberCondomlessYears.get(yearKey).get(relationshipClazz), 0, scores, 3 * relationshipIndex, condomStati.length);
+            }
+            yearlyReport.put(yearKey, (Number[]) scores.clone()) ;    
+        }
+        
+        int index = 0 ;
+        for (String relationshipClazz : relationshipClazzNames)
+            for (String status : condomStati)
+            {
+                scoreNames[index] = relationshipClazz + GROUP + status ;
+                index++ ;
+            }
+        
+        plotHashMap("Year", scoreNames, yearlyReport) ;
     }
     
     /**
