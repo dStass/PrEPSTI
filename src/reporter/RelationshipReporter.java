@@ -108,8 +108,8 @@ public class RelationshipReporter extends Reporter {
         for (int recordNb = 0 ; recordNb < commenceReport.size() ; recordNb++ )
         {
             String record = commenceReport.get(recordNb) ;
-            //LOGGER.info(record);
-            //int startIndex = indexOfProperty(RELATIONSHIPID,record) ;
+            //LOGGER.info(relationshipId);
+            //int startIndex = indexOfProperty(RELATIONSHIPID,relationshipId) ;
             relationshipCommenceReport.add(extractAllValues(RELATIONSHIPID, record,0)) ;
         }
         return relationshipCommenceReport ;
@@ -136,11 +136,15 @@ public class RelationshipReporter extends Reporter {
             for (String relationshipClazz : relationshipClazzes)
                 filteredRecord += boundedStringByValue("relationship",relationshipClazz,RELATIONSHIPID,record) ;
             if (filteredRecord.isEmpty())
-                filteredRecord = record ;
-            //LOGGER.info(record);
-            //int startIndex = indexOfProperty(RELATIONSHIPID,record) ;
+            {
+                relationshipCommenceReport.add(new ArrayList<Object>()) ;
+                continue ;
+            }
+                //filteredRecord = relationshipId ;
+            //LOGGER.info(relationshipId);
+            //int startIndex = indexOfProperty(RELATIONSHIPID,relationshipId) ;
             relationshipCommenceReport.add(extractAllValues(RELATIONSHIPID, filteredRecord,0)) ;
-            //relationshipCommenceReport.add(extractAllValues(AGENTID1, record,0)) ;
+            //relationshipCommenceReport.add(extractAllValues(AGENTID1, relationshipId,0)) ;
         }
         return relationshipCommenceReport ;
     }
@@ -160,7 +164,7 @@ public class RelationshipReporter extends Reporter {
         {
             String report = breakupReport.get(reportNb) ;
             relationshipBreakupReport.add(extractAllValues(RELATIONSHIPID, report,0)) ;
-            //relationshipBreakupReport.add(extractAllValues(AGENTID1, record,0)) ;
+            //relationshipBreakupReport.add(extractAllValues(AGENTID1, relationshipId,0)) ;
         }
         return relationshipBreakupReport ;
     }
@@ -179,8 +183,8 @@ public class RelationshipReporter extends Reporter {
         for (int recordNb = 0 ; recordNb < commenceReport.size() ; recordNb++ )
         {
             String record = commenceReport.get(recordNb) ;
-            //LOGGER.info(record);
-            //int startIndex = indexOfProperty(RELATIONSHIPID,record) ;
+            //LOGGER.info(relationshipId);
+            //int startIndex = indexOfProperty(RELATIONSHIPID,relationshipId) ;
             ArrayList<Object> agentCommenceRecord = extractAllValues(AGENTID0,record,0) ;
             agentCommenceRecord.addAll(extractAllValues(AGENTID1,record,0)) ;
             
@@ -453,6 +457,7 @@ public class RelationshipReporter extends Reporter {
         HashMap<Object,String[]> relationshipAgentReport = new HashMap<Object,String[]>() ;
         
         ArrayList<String> commenceReport = (ArrayList<String>) getReport("commence",this) ; //  prepareCommenceReport() ;
+        LOGGER.log(Level.INFO,"{0}",commenceReport) ;
         ArrayList<String> relationshipRecords ;
         String relationshipId ;
         String[] agentIds = new String[2] ;
@@ -559,7 +564,7 @@ public class RelationshipReporter extends Reporter {
                 int sum = 0 ;
                 for (Object agentId : record.get(relationshipClassName).keySet())
                     sum += record.get(relationshipClassName).get(agentId) ;
-                meanCumulativeRelationshipClassReport.put(relationshipClassName,((double) sum)/population) ; // record.keySet().size()) ;
+                meanCumulativeRelationshipClassReport.put(relationshipClassName,((double) sum)/population) ; // relationshipId.keySet().size()) ;
             }
             meanCumulativeRelationshipReport.add((HashMap<Object,Object>) meanCumulativeRelationshipClassReport.clone()) ;
         }
@@ -680,6 +685,65 @@ public class RelationshipReporter extends Reporter {
         }
         return agentsCumulativeRelationshipReport ;
     }
+        
+    /**
+     * 
+     * @param relationshipClassNames
+     * @return (ArrayList) of Strings giving number of each RelationshipClazz in each
+     * cycle.
+     */
+    private ArrayList<Object> prepareRelationshipNumberReport(String[] relationshipClassNames)
+    {
+        ArrayList<Object> relationshipNumberReport = new ArrayList<Object>() ;
+        
+        ArrayList<String> commenceReport = (ArrayList<String>) getReport("commence",this) ; //  prepareCommenceReport() ;
+        
+        ArrayList<String> breakupReport = (ArrayList<String>) getReport("breakup",this) ; //  prepareCommenceReport() ;
+        
+        ArrayList<Object> commenceRecord ;
+        ArrayList<Object> breakupRecord ;
+        String clazzName ;
+        
+        HashMap<Object,String> relationshipClazzReport 
+                = (HashMap<Object,String>) getReport("relationshipClazz",this) ; // prepareRelationshipClazzReport() ;
+        
+        // tracks which relationshipIds from which relationshipClassName
+        HashMap<String,ArrayList<Object>> openRelationships = new HashMap<String,ArrayList<Object>>() ;
+        for (String className : relationshipClassNames)
+            openRelationships.put(className, new ArrayList<Object>()) ;
+        
+        commenceRecord = extractAllValues(commenceReport.get(0),RELATIONSHIPID) ;
+        LOGGER.log(Level.INFO, "commenceRecord:{0}", commenceRecord);
+        for (Object relationshipId : commenceRecord)
+        {
+            clazzName = relationshipClazzReport.get(relationshipId) ;
+            openRelationships.get(clazzName).add(extractValue(RELATIONSHIPID,(String) relationshipId)) ;
+        }
+        String relationshipRecord = "" ;
+        for (String className : relationshipClassNames)
+            relationshipRecord += Reporter.addReportProperty(className, openRelationships.get(className).size()) ;
+        relationshipNumberReport.add(relationshipRecord) ;
+        LOGGER.log(Level.INFO,"length:{0} record:{1}", new Object[] {relationshipNumberReport.size(),relationshipRecord}) ;
+        
+        for (int breakupIndex = 0 ; breakupIndex < (breakupReport.size() - 1) ; breakupIndex++ )
+        {
+            relationshipRecord = "" ;
+            
+            breakupRecord = extractAllValues(RELATIONSHIPID,breakupReport.get(breakupIndex)) ;
+            for (Object relationshipId : breakupRecord)
+                openRelationships.get(relationshipClazzReport.get(relationshipId)).remove(relationshipId) ;
+            
+            commenceRecord = extractAllValues(RELATIONSHIPID,commenceReport.get(breakupIndex+1)) ;
+            for (Object relationshipId : commenceRecord)
+                openRelationships.get(relationshipClazzReport.get(relationshipId)).add(relationshipId) ;
+            
+            for (String className : relationshipClassNames)
+                relationshipRecord += Reporter.addReportProperty(className, openRelationships.get(className).size()) ;
+            relationshipNumberReport.add(relationshipRecord) ;
+        
+        }
+        return relationshipNumberReport ;
+    }
     
     /**
      * 
@@ -687,31 +751,26 @@ public class RelationshipReporter extends Reporter {
      */
     public ArrayList<HashMap<Object,String>> prepareMeanNumberRelationshipsReport(String[] relationshipClassNames)
     {
-        ArrayList<HashMap<Object,String>> meanNumberRelationshipsReport = new ArrayList<HashMap<Object,String>>() ;
+        ArrayList<HashMap<Object,String>> meanNumberRelationshipsReport 
+                = new ArrayList<HashMap<Object,String>>() ;
+        
+        ArrayList<Object> relationshipNumberReport = prepareRelationshipNumberReport(relationshipClassNames) ;
         
         HashMap<Object,Object> meanRelationshipClassReport ; // = new HashMap<Object,Object>() ;
         
-        //ArrayList<Object> populationReport = (new PopulationReporter("",input)).preparePopulationReport() ;
-        
-        ArrayList<HashMap<Object,HashMap<Object,Integer>>> agentNumberRelationshipsReport
-                = prepareAgentNumberRelationshipsReport(relationshipClassNames) ;
         
         int population = Integer.valueOf(getMetaDatum("Community.POPULATION")) ; // = Integer.valueOf(extractValue("Population", (String) populationReport.get(recordIndex))) ;
 
         //for (int recordIndex = 0 ; recordIndex < agentNumberRelationshipsReport.size() ; recordIndex++ )
         //{
-        for ( HashMap<Object,HashMap<Object,Integer>> record : agentNumberRelationshipsReport) // .get(recordIndex) ;
+        for ( Object record : relationshipNumberReport) // .get(recordIndex) ;
         {
             meanRelationshipClassReport = new HashMap<Object,Object>() ;
             // Loop over Relationship classes
-            for (Object relationshipClassName : record.keySet())
+            for (String relationshipClassName : relationshipClassNames)
             {
-                int sum = 0 ;
+                int sum = Integer.valueOf(extractValue(relationshipClassName,(String) record)) ;
                 double meanNb = 0.0 ;
-                
-                // Sum over Agents
-                for (Object agentId : record.get(relationshipClassName).keySet())
-                    sum += record.get(relationshipClassName).get(agentId) ; // Integer.valueOf(String.valueOf(number)) ;
                 
                 if (sum > 0)
                     meanNb = ((double) sum)/population ;
@@ -723,6 +782,7 @@ public class RelationshipReporter extends Reporter {
         }
         return meanNumberRelationshipsReport ;
     }
+    
     
     /**
      * @param relationshipClassNames
@@ -1000,8 +1060,8 @@ public class RelationshipReporter extends Reporter {
     /**
      * First count the number of Relationships each Agent has entered up to now,
      * then subtract those which have broken up.
-     * @return Each record gives relationshipClassName maps to 
-     * (the number of current Relationships for each Agent).
+     * @return Each relationshipId gives relationshipClassName maps to 
+ (the number of current Relationships for each Agent).
      */
     public ArrayList<HashMap<Object,HashMap<Object,Integer>>> prepareAgentNumberRelationshipsReport(String[] relationshipClassNames) 
     {
@@ -1019,12 +1079,12 @@ public class RelationshipReporter extends Reporter {
                 = prepareAgentsEnteredRelationshipReport(relationshipClassNames) ;
         //for (HashMap<Object,HashMap<Object,ArrayList<Object>>> aerRecord : agentsEnteredRelationshipReport)
             //LOGGER.log(Level.INFO, "agentsEnteredRelationship{0}", aerRecord) ;
-        
+        LOGGER.log(Level.INFO, "{0}", agentsEnteredRelationshipReport);
         // relationshipId maps to relationshipClassName ;
         HashMap<Object,String> relationshipClazzReport 
                 = (HashMap<Object,String>) getReport("relationshipClazz",this) ;
         //prepareRelationshipClazzReport() ;
-        
+        LOGGER.log(Level.INFO, "{0}", relationshipClazzReport);
         
         ArrayList<String> breakupReport = (ArrayList<String>) getReport("breakup",this) ; //   prepareBreakupReport() ;
     
@@ -1042,7 +1102,7 @@ public class RelationshipReporter extends Reporter {
         for (Object relationshipClassName : relationshipClassNames)
             agentRelationshipsCount.put(relationshipClassName, new HashMap<Object,Integer>()) ;
         
-        // Find the Relationships entered into up to and including given cycle
+        LOGGER.info("Find the Relationships entered into up to and including given cycle") ;
         for (int enteredIndex = 0 ; enteredIndex < reportsSize ; enteredIndex++ )
         {
             // Formation of new Relationships
@@ -1091,7 +1151,7 @@ public class RelationshipReporter extends Reporter {
         for (String relationshipClassName : relationshipClassNames)
             agentBreakupsCount.put(relationshipClassName, new HashMap<Object,Number>()) ;
         
-        // Find the Relationships broken up from up to given cycle
+        LOGGER.info("// Find the Relationships broken up from up to given cycle") ;
         for (int breakupIndex = 0 ; breakupIndex < (reportsSize-1) ; breakupIndex++ )
         {
             // Formation of new Relationships
@@ -1102,6 +1162,8 @@ public class RelationshipReporter extends Reporter {
             {
                 // Relationship breakups
                 Object relationshipClassName = relationshipClazzReport.get(relationshipId) ; // extractValue("relationship",) ;
+                if (! Arrays.asList(relationshipClassNames).contains((String) relationshipClassName))
+                    continue ;
 
                 HashMap<Object,Number> agentBreakups = new HashMap<Object,Number>() ;
                 
@@ -1127,7 +1189,7 @@ public class RelationshipReporter extends Reporter {
             agentBreakupRelationshipsReport.add((HashMap<Object,HashMap<Object,Integer>>) breakupAgentRelationshipsCount.clone()) ;
         }
         
-        // Subtract broken-up Relationships from commenced Relationships for each Agent.
+        LOGGER.info("// Subtract broken-up Relationships from commenced Relationships for each Agent.") ;
         for (int breakupIndex = 0 ; breakupIndex < (reportsSize-1) ; breakupIndex++ )
         {
             HashMap<Object,HashMap<Object,Integer>> numberRelationshipsCount = new HashMap<Object,HashMap<Object,Integer>>() ;
@@ -1216,7 +1278,7 @@ public class RelationshipReporter extends Reporter {
     /**
      * 
      * @param relationshipClassNames
-     * @return Each record is a HashMap indicating new relationshipIds for relevant (key) Agents
+     * @return Each relationshipId is a HashMap indicating new relationshipIds for relevant (key) Agents
      */
     public ArrayList<HashMap<Object,HashMap<Object,ArrayList<Object>>>> 
         prepareAgentsEnteredRelationshipReport(String[] relationshipClassNames)
@@ -1240,8 +1302,8 @@ public class RelationshipReporter extends Reporter {
      * @param backMonths
      * @param backDays
      * @param endCycle
-     * @return Each record is a HashMap where relationshipClassName maps to a 
-     * HashMap indicating new relationshipIds for relevant (key) Agents
+     * @return Each relationshipId is a HashMap where relationshipClassName maps to a 
+ HashMap indicating new relationshipIds for relevant (key) Agents
      */
     public ArrayList<HashMap<Object,HashMap<Object,ArrayList<Object>>>> 
         prepareAgentsEnteredRelationshipReport(String[] relationshipClassNames, int backYears, int backMonths, int backDays, int endCycle)
@@ -1251,7 +1313,7 @@ public class RelationshipReporter extends Reporter {
         
         HashMap<Object,String[]> relationshipAgentReport 
                 = (HashMap<Object,String[]>) getReport("relationshipAgent",this) ; // prepareRelationshipAgentReport() ; 
-        
+        LOGGER.log(Level.INFO, "{0}", relationshipAgentReport) ;
         // How many cycles far back do we count back from endCycle?
         int backCycles = getBackCycles(backYears, backMonths, backDays, endCycle) ;
         ArrayList<String> commenceReport = (ArrayList<String>) getReport("commence",this) ; //  prepareCommenceReport() ;
@@ -1274,7 +1336,7 @@ public class RelationshipReporter extends Reporter {
                 String relationshipClassName = extractValue(RELATIONSHIP,relationshipString) ;
                 if (!commenceRelationshipRecord.containsKey(relationshipClassName)) 
                 {
-                    LOGGER.info("commenceRelationshipRecord does not contain key " + relationshipClassName) ;
+                    //LOGGER.info("commenceRelationshipRecord does not contain key " + relationshipClassName) ;
                     continue ;
                 }
                 Object[] agentIdValues = relationshipAgentReport.get(relationshipIdValue) ; 
@@ -1631,7 +1693,7 @@ public class RelationshipReporter extends Reporter {
         for (String relationshipClassName : relationshipClassNames)
             numberRecentRelationshipsReport.put(relationshipClassName, new HashMap<Object,Integer>()) ;
         
-        // Each record is a HashMap indicating new relationshipIds for relevant (key) Agents
+        // Each relationshipId is a HashMap indicating new relationshipIds for relevant (key) Agents
         ArrayList<HashMap<Object,HashMap<Object,ArrayList<Object>>>> agentsEnteredRelationshipReport 
                 = prepareAgentsEnteredRelationshipReport(relationshipClassNames,backYears,backMonths,backDays, endCycle) ;
         int newRelationships ;
@@ -1723,12 +1785,13 @@ public class RelationshipReporter extends Reporter {
                 inputString.add(inputRecord) ;
         
         record = "0," + prepareBurninRecord() ;
-        if (!record.isEmpty())
+        //LOGGER.info(record);
+        if (record.length() > 2)
         {
             record += inputString.get(0).substring(2) ; // Leave out the "0," from the report
             inputString.set(0, record) ;
         }
-        //    inputString.add(record + "clear:") ;
+        //    inputString.add(relationshipId + "clear:") ;
         
 
         for (int reportNb = 0 ; reportNb < inputString.size() ; reportNb += outputCycle )
