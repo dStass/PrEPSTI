@@ -122,7 +122,7 @@ abstract public class MSM extends Agent {
     private boolean prepStatus ;
 	
     /** Transmission probabilities per sexual contact from Urethra to Rectum */
-    static double URETHRA_TO_RECTUM = 0.08 ; 
+    static double URETHRA_TO_RECTUM = 0.07 ; 
     /** Transmission probabilities sexual contact from Urethra to Pharynx. */
     static double URETHRA_TO_PHARYNX = 0.05 ; // 0.15 ; // 0.32 ; 
     /** Transmission probabilities sexual contact from Rectum to Urethra. */ 
@@ -314,12 +314,10 @@ abstract public class MSM extends Agent {
         initPrepStatus(RAND.nextDouble() < getProbabilityPrep()) ;
         
         
-        
+        // Initialises infectedStatus at beginning of simulation, 
+        //ensuring consistency with Site.infectedStatus
         if (startAge < 0)    // MSM generated at outset, represent initial population
-        {
-            // Initialises infectedStatus, ensuring consistency with Site.infectedStatus
             initInfectedStatus() ;
-        }            
 
         // Sets whether disclosesHIV, allowing for statusHIV
         double probabilityDiscloseHIV = getProbabilityDiscloseHIV() ;
@@ -904,7 +902,7 @@ abstract public class MSM extends Agent {
             risk = RISK_15 ;
         double noRiskPower = 1.0/DAYS_PER_YEAR ;
         
-        double noRisk = Math.pow((1 - risk/1000),1/DAYS_PER_YEAR) ;
+        double noRisk = Math.pow((1 - risk/1000),1.0/DAYS_PER_YEAR) ;
         return 1 - noRisk ;
     }
     
