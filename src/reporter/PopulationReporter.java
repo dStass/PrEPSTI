@@ -237,13 +237,13 @@ public class PopulationReporter extends Reporter {
         ArrayList<ArrayList<Object>> agentBirthReport = new ArrayList<ArrayList<Object>>() ;
         
         ArrayList<String> birthReport = prepareBirthReport() ;
-        
+        int startIndex ;
         // Zeroeth record left out to stop population swamping the plot.
         for (int reportNb = 1 ; reportNb < birthReport.size() ; reportNb++ )
         {
             String report = birthReport.get(reportNb) ;
-            int startIndex = indexOfProperty("agendId",report) ;
-            agentBirthReport.add(extractAllValues("agentId", report, startIndex)) ;
+            startIndex = indexOfProperty(AGENTID,report);
+            agentBirthReport.add(extractAllValues(AGENTID, report, startIndex)) ;
         }
         return agentBirthReport ;
     }
@@ -262,8 +262,8 @@ public class PopulationReporter extends Reporter {
         for (int reportNb = 0 ; reportNb < birthReport.size() ; reportNb++ )
         {
             String report = birthReport.get(reportNb) ;
-            int startIndex = indexOfProperty("age",report) ;
-            ageBirthReport.add(extractAllValues("age", report, startIndex)) ;
+            int startIndex = indexOfProperty(AGE,report) ;
+            ageBirthReport.add(extractAllValues(AGE, report, startIndex)) ;
         }
         return ageBirthReport ;
     }
@@ -405,7 +405,6 @@ public class PopulationReporter extends Reporter {
         
         String record ;
         int deathIndex ;
-        String valueString ;
 
         boolean nextInput = true ; 
         
@@ -430,19 +429,14 @@ public class PopulationReporter extends Reporter {
         ArrayList<String> birthReport = new ArrayList<String>() ;
         
         String record ;
-        int agentIndex ;
-        String valueString ;
-
-        boolean nextInput = true ; 
         
-        while (nextInput)
+        for (boolean nextInput = true ; nextInput ; nextInput = updateReport())
         {
             for (int reportNb = 0 ; reportNb < input.size() ; reportNb += outputCycle )
             {
                 record = input.get(reportNb) ;
                 birthReport.add(record.substring(indexOfProperty("birth",record),indexOfProperty("death",record))) ;
             }
-        nextInput = updateReport() ;
         }
         return birthReport ;
     }
