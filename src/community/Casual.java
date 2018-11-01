@@ -9,7 +9,11 @@ public class Casual extends Relationship {
     /** The number of current Casual Relationships. */
     static int NB_CASUAL = 0 ;
     
-    /** Probability of breakup() in a given cycle. */
+    /** 
+     * Probability of breakup() in a given cycle.
+     * Logically should not be more than one but also helps determine ratio
+     * of Relationship classes.
+     */
     static public double BREAKUP_PROBABILITY = 1.0 ;
     
     /** Probability of sexual encounter in a given cycle. */
@@ -33,6 +37,7 @@ public class Casual extends Relationship {
 
     /**
      * The probability of any sexual contact in any cycle.
+     * @return static ENCOUNTER_PROBABILITY
      */
     @Override
     protected double getEncounterProbability()
