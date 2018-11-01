@@ -31,12 +31,9 @@ public abstract class Agent {
     // Number in Community.population
     private int agentId ;
 
-    /** Age of Agent */
+    /** Age of Agent in cycles (days)*/
     private int age ;
 
-    /** Number of days since last birthday. */
-    private int cyclesModYear ;
-    
     // Age beyond which Agents are removed from the population. */
     static int MAX_LIFE = 65 ;
     
@@ -57,7 +54,7 @@ public abstract class Agent {
     static double RISK_20 = 0.4 ;
     static double RISK_15 = 0.2 ;
 
-    final static double DAYS_PER_YEAR = 365.25 ;
+    final static int DAYS_PER_YEAR = 365 ;
     
     // Need to generate random numbers
     /** Generate and record Random number seed. */
@@ -354,7 +351,6 @@ public abstract class Agent {
             this.agentId = NB_AGENTS_CREATED ;
             NB_AGENTS_CREATED++ ;
             initAge(startAge) ;
-            cyclesModYear = RAND.nextInt(365) ;
             
             initConcurrency() ;
             initInfidelity() ;
@@ -379,17 +375,19 @@ public abstract class Agent {
     /**
      * Initialises startAge of new Agents
      * @param startAge = -1, choose random startAge from 16 to 65, for initialising community
-                 = 0 , choose random startAge from 16 to 20, new agents entering sexual maturity
+                 = 0 , choose random startAge from 16 to 25, new agents entering sexual maturity
                  > 0 , set startAge to startAge
      */
     private int initAge(int startAge)
     {
-        if (startAge == -1) // Choose random startAge from 16 to 65
-            age = RAND.nextInt(50) + 16 ;
-        else if (startAge == 0) // Choose random startAge from 16 to 25, reaching sexual maturity
-            age = RAND.nextInt(10) + 16 ;
+        int ageYears ;
+        if (startAge == -1) // Choose random starting Age from 16 to 65
+            ageYears = RAND.nextInt(50) + 16 ;
+        else if (startAge == 0) // Choose random starting Age from 16 to 25, reaching sexual maturity
+            ageYears = RAND.nextInt(10) + 16 ;
         else
-            age = startAge ;
+            ageYears = startAge ;
+        age = ageYears * DAYS_PER_YEAR + RAND.nextInt(DAYS_PER_YEAR) ;
         return age ;
     }
 
@@ -435,16 +433,16 @@ public abstract class Agent {
      */
     public int getAge() 
     {
-            return age;
+        return Math.floorDiv(age,DAYS_PER_YEAR) ;
     }
 
     /**
-     * Sets startAge of Agent to (int) startAge.
+     * Sets age of Agent to ageYears years and random (0 to 365) days.
      * @param age 
      */
-    public void setAge(int age) 
+    public void setAge(int ageYears, int ageDays) 
     {
-            this.age = age;
+            age = ageYears * DAYS_PER_YEAR + ageDays ;
     }
 
     public ArrayList<Relationship> getCurrentRelationships()
@@ -618,12 +616,7 @@ public abstract class Agent {
 
     public void ageOneDay()
     {
-        cyclesModYear++ ;
-        if (cyclesModYear > 363)
-        {
-            age++ ;
-            cyclesModYear = 0 ;
-        }
+        age++ ;
     }
     
     /**
@@ -632,36 +625,14 @@ public abstract class Agent {
     abstract public void adjustCondomUse() ;
     
     /**
-     * Invoked every 365 cycles to startAge the agent by one year.
-     * In turn invokes ageEffects() to handle the effects of startAge.
-     * @return String description of agentId, startAge, and any altered quantities if any, 
-     empty otherwise
-     */
-    public String ageOneYear()
-    {
-            String report = "" ;
-            age++ ;
-            LOGGER.info(String.valueOf(age));
-            /*report += ageEffects() ;
-
-            // Prepare report if not still empty.
-            if (! report.isEmpty())
-            {
-                report += Reporter.addReportProperty("agentId",agentId) ;
-                report += Reporter.addReportProperty("startAge",startAge) ;
-            }*/
-            return report ;
-    }
-
-    /**
-     * Promiscuity and infidelity decrease from startAge == 30
+     * Concurrency and infidelity decrease from startAge == 30
      * 
      * @return String description of any altered quantities if any, empty otherwise
      */
     protected String ageEffects()
     {
         String report = "" ;
-        if (age > 30)
+        if (getAge() > 30)
         {
             // TODO: Modify propensity to consent to Casual Relationships
             //report += Reporter.addReportProperty("consentCasual",concurrency) ;
@@ -1221,29 +1192,30 @@ public abstract class Agent {
     protected double getRisk()
     {
         double risk ;
-        if (age > 65)
+        int ageYears = getAge() ;
+        if (ageYears > 65)
             return 1.0 ;
-        else if (age > 60)
+        else if (ageYears > 60)
             risk = RISK_60 ;
-        else if (age > 55) 
+        else if (ageYears > 55) 
             risk = RISK_55 ;
-        else if (age > 50) 
+        else if (ageYears > 50) 
             risk = RISK_50 ;
-        else if (age > 45) 
+        else if (ageYears > 45) 
             risk = RISK_45 ;
-        else if (age > 40) 
+        else if (ageYears > 40) 
             risk = RISK_40 ;
-        else if (age > 35) 
+        else if (ageYears > 35) 
             risk = RISK_35 ;
-        else if (age > 30) 
+        else if (ageYears > 30) 
             risk = RISK_30 ;
-        else if (age > 25)
+        else if (ageYears > 25)
             risk = RISK_25 ;
-        else if (age > 20)
+        else if (ageYears > 20)
             risk = RISK_20 ;
         else 
             risk = RISK_15 ;
-        double noRisk = Math.pow((1 - risk/1000),1/DAYS_PER_YEAR) ;
+        double noRisk = Math.pow((1 - risk/1000),1.0/DAYS_PER_YEAR) ;
         return 1 - noRisk ;
     }
         
