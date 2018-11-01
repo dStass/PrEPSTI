@@ -238,7 +238,8 @@ public class ScreeningReporter extends Reporter {
     
     /**
      * 
-     * @return (ArrayList) indicating the total coprevalence, coprevalence of 
+     * @param siteName
+     * @return (ArrayList) indicating the total prevalence, prevalence of 
      * symptomatic infection, and proportion of symptomatic infection at site given 
      * by siteName in each report cycle.
      */
@@ -246,9 +247,9 @@ public class ScreeningReporter extends Reporter {
     {
         ArrayList<Object> sitePrevalenceReport = new ArrayList<Object>() ;
         
+        int population = Integer.valueOf(getMetaDatum("Community.POPULATION")) ;
         for (boolean nextInput = true ; nextInput ; nextInput = updateReport() )
         {
-            int population = Integer.valueOf(getMetaDatum("Community.POPULATION")) ;
             int[] nbSymptomatic ;
             String entry ;
             for (String record : input)
