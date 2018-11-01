@@ -30,23 +30,28 @@ import java.util.logging.Level;
  *******************************************************************/
 public class Community {
     static public int POPULATION = 40000 ;
-    static public int MAX_CYCLES = 10000 ;
-    //static public String NAME_ROOT = "RelationshipCalibration4" 
-    static public String NAME_ROOT = "NoPrepCalibration17" 
+    static public int MAX_CYCLES = 5000 ;
+    //static public String NAME_ROOT = "Test"
+    //static public String NAME_ROOT = "FallingCondomUse" 
+    static public String NAME_ROOT = "NoPrepCalibration16" 
+    //static public String NAME_ROOT = "AllSexualContacts"
     //        + "DecliningCondomsAlteredTesting"
             + "Pop" + String.valueOf(POPULATION) + "Cycles" + String.valueOf(MAX_CYCLES) ;
 
-    static final String COMMENT = "MAX_RELATIONSHIPS set to 4 "  // "Uses parameters from NoPrepCalibration53" ;
-    //+ "all encounters are recorded in full" ;
-            + "consentCasualProbability * 5/12 "
-    /*static final String COMMENT = "every cycle after 1000 Agents "
-            + "reduce their chances of choosing condoms. "
-            + "Every year after cycle 1000 testing rates are altered to compare with "
-            + "long-term data." ;*/
+    static String COMMENT = ""
+            // + "every cycle after 2350 Agents "
+            //+ "reduce their chances of choosing condoms. "
+            //+ "Every year after cycle 2350 testing rates are altered to compare with "
+            //+ "long-term data. " 
+            //+ "MAX_RELATIONSHIPS set to 4 "  // "Uses parameters from NoPrepCalibration53" ;
+            //+ "All encounters are recorded in full." 
+              //      + "consentCasualProbability * 5/12 "
+            + "Test of burn-in. Uses Calibration20. "
             //+ "Assumes number of Agents at least N times number of cycles minus 1000." ;*/
             + "" ;
     
     static public String FILE_PATH = "output/test/" ;
+    //static public String FILE_PATH = "/srv/scratch/z3524276/prepsti/output/test/" ;
     /** Dump reports to disk after this many cycles. */
     static final int DUMP_CYCLE = ((int) Math.pow(10, 7))/POPULATION ;
     /** Whether to dump partial reports during simulation. */
@@ -58,7 +63,7 @@ public class Community {
      * (String) Name of previous burn-in to reload.
      * Not reloaded if this is an empty string.
      */
-    static final String RELOAD_BURNIN = "" ; // "NoPrepCalibration15Pop40000Cycles1000" ;
+    static final String RELOAD_BURNIN = "" ; // "NoPrepCalibration20Pop40000Cycles10000" ;
     
     static public String getFilePath()
     {
@@ -78,7 +83,7 @@ public class Community {
     private int currentPopulation = population ;
 
     // Number of new population members and also average number of deaths per cycle
-    private double birthRate = population/(50 * 365.25) ;
+    private double birthRate = population/(50 * 365) ;
     private int birthBase = (int) Math.floor(birthRate);
     private double birthRemainder = birthRate - birthBase ;
 
@@ -124,7 +129,7 @@ public class Community {
         Community community = new Community() ;
         
         // Establish conditions for specific simulation questions
-        System.out.println(community.initialiseCommunity()) ;
+        //System.out.println(community.initialiseCommunity()) ;
 
         // For generating reports
         String relationshipRecord ;
@@ -160,7 +165,7 @@ public class Community {
             String commence ;
             String breakup ;
             
-            for (int burnin = 0 ; burnin < 2000 ; burnin++ )
+            for (int burnin = 0 ; burnin < 1000 ; burnin++ )
             {
                 commence = community.generateRelationships() ;
                 Relationship.BURNIN_COMMENCE = commence + Relationship.BURNIN_COMMENCE ;
@@ -180,7 +185,8 @@ public class Community {
         else
         {
             Relationship.BURNIN_COMMENCE = community.reloadBurnin() + " clear:";
-                Relationship.BURNIN_BREAKUP = "" ;
+            Relationship.BURNIN_BREAKUP = "" ;
+            Community.COMMENT += "Burnin reloaded from " + RELOAD_BURNIN ;
         }
         
         //outputInterval = 1 ;
@@ -198,7 +204,6 @@ public class Community {
             relationshipRecord += community.clearRelationships();
             
             // treat symptomatic agents
-            //LOGGER.info("infectionRecord") ;
             infectionRecord = cycleString + community.progressInfection(cycle) ;
             
             //deathRecord = cycleString
@@ -206,12 +211,10 @@ public class Community {
             populationRecord += community.grimReaper() ;
             // Record Relationships ended due to death
             relationshipRecord += Relationship.READ_DEATH_RECORD() ;
-            //LOGGER.info(relationshipRecord);
             
             // How many births to maintain population?
             deltaPopulation = deltaPopulation - community.agents.size() ;
 
-            //LOGGER.info("submitRecords()");
             community.submitRecords(relationshipRecord,encounterRecord,infectionRecord,populationRecord) ;  // 
 
             // Deal with effects of aging.
@@ -344,6 +347,8 @@ public class Community {
      */
     public Community() {
         // Populate community with agents
+        System.out.println(initialiseCommunity()) ;
+        /*
         initialRecord = "0," ;
         for (int id = 0 ; id < population ; id++ ) 
         {
@@ -360,11 +365,12 @@ public class Community {
             //LOGGER.info(initialRecord);
         }
         //String relationshipRecord = generateRelationships() ;
+        */
     }
     
     public Community(String simName)
     {
-        initialRecord = "0," ;
+        initialRecord = "" ;
         
         //FIXME: Must ensure that random generator is properly calibrated after 
         // generating new Agents, even after reloading seed.
@@ -378,11 +384,9 @@ public class Community {
         
         seed = Long.valueOf(reporter.getMetaDatum("Site.RANDOM_SEED")) ;
         Site.SET_RAND(seed) ;
-                
-        agents = Agent.reloadAgents(simName) ;
         
-        for (Agent agent : agents)
-            initialRecord += agent.getCensusReport() ;
+        System.out.println(initialiseCommunity()) ;
+                
     }
 
     /**
@@ -390,13 +394,24 @@ public class Community {
      */
     private String initialiseCommunity()
     {
-        
-        // Clear all initial infections
-        for (Agent agent : agents)
+        initialRecord = "" ;
+        for (int id = 0 ; id < population ; id++ ) 
         {
-            ((MSM) agent).setPrepStatus(false);
-//            agent.clearInfection();
+            //Class<?> AgentClazz = Class.forName("MSM") ; 
+            //Agent newAgent = (Agent) AgentClazz.newInstance() ;
+            //Constructor<?> agentConstructor = AgentClazz.getDeclaredConstructors()[0] ;
+
+            // Call generateAgent to get randomly chosen combination of Agent subclasses
+            MSM newAgent = generateAgent() ;  //new MSM(-1) ;
+            agents.add(newAgent) ;
+            newAgent.setPrepStatus(false) ;
+
+            // Record newAgent for later reporting
+            initialRecord += newAgent.getCensusReport() ;
+            //LOGGER.info(initialRecord);
         }
+        //String relationshipRecord = generateRelationships() ;
+        // Clear all initial infections
         
         // Infect one RiskyMSM.urethra
 //        for (Agent agent : agents) 
@@ -420,14 +435,15 @@ public class Community {
     
     /**
      * For addressing specific questions. Code will flux dramatically.
+     * TODO:Generalise to not be MSM specific.
      */
     private String interveneCommunity(int cycle)
     {
-        if (cycle < 1000)
+        if (cycle < 2350)
             return "" ;
         
-        int year = (cycle-1000)/365 ;
-        if (year * 365 == (cycle - 1000))
+        int year = (cycle-2350)/365 ;
+        if (year * 365 == (cycle - 2350))
         {
             for (Agent agent : agents)
             {
@@ -613,32 +629,13 @@ public class Community {
             agent.ageOneDay() ;
     }
 
-    private String ageOneYear()
-    {
-        String record = "" ;
-        String agentReport ;
-        int nbAgentRelationships ;
-        for (Agent agent : agents)
-        {
-            //nbAgentRelationships = agent.getCurrentRelationships().size() ;
-            agentReport = agent.ageOneYear() ;
-            //if (agentReport.contains("death"))
-              //  nbRelationships -= nbAgentRelationships ;
-            record += agentReport ;
-        }
-        return record ;
-    }
-
     /**
-     * TODO: Implement generalised getCensusData() in Agent and subtypes
+     * 
      * @return String giving each Agent and properties of interest to census
      */
     private String getCensus()
     {
         String record = "" ;
-        String agentIdString ;
-        String agentType ;
-        String age ;
         for (Agent agent : agents )
         {
             record += agent.getCensusReport() ;
