@@ -29,7 +29,7 @@ public class Regular extends Relationship {
 
     /**
      * The probability of any sexual contact in any cycle.
-     * @return 
+     * @return static ENCOUNTER_PROBABILITY
      */
     @Override
     protected double getEncounterProbability()
