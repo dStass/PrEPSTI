@@ -30,10 +30,10 @@ import java.util.logging.Level;
  *******************************************************************/
 public class Community {
     static public int POPULATION = 40000 ;
-    static public int MAX_CYCLES = 5000 ;
+    static public int MAX_CYCLES = 500 ;
     //static public String NAME_ROOT = "Test"
     //static public String NAME_ROOT = "FallingCondomUse" 
-    static public String NAME_ROOT = "NoPrepCalibration16" 
+    static public String NAME_ROOT = "NoPrepCalibration22" 
     //static public String NAME_ROOT = "AllSexualContacts"
     //        + "DecliningCondomsAlteredTesting"
             + "Pop" + String.valueOf(POPULATION) + "Cycles" + String.valueOf(MAX_CYCLES) ;
@@ -46,7 +46,7 @@ public class Community {
             //+ "MAX_RELATIONSHIPS set to 4 "  // "Uses parameters from NoPrepCalibration53" ;
             //+ "All encounters are recorded in full." 
               //      + "consentCasualProbability * 5/12 "
-            + "Test of burn-in. Uses Calibration20. "
+            + "Test of burn-in. Uses Calibration22. "
             //+ "Assumes number of Agents at least N times number of cycles minus 1000." ;*/
             + "" ;
     
@@ -165,9 +165,9 @@ public class Community {
             String commence ;
             String breakup ;
             
-            for (int burnin = 0 ; burnin < 1000 ; burnin++ )
+            for (int burnin = 0 ; burnin < 0 ; burnin++ )
             {
-                commence = community.generateRelationships() ;
+                commence = community.generateRelationships(true) ;
                 Relationship.BURNIN_COMMENCE = commence + Relationship.BURNIN_COMMENCE ;
                 
                 breakup = community.clearRelationships().substring(6) ;
@@ -176,7 +176,7 @@ public class Community {
                 //LOGGER.log(Level.INFO, "commence:{0} breakup:{1}", new Object[] {commence.length(),breakup.length()}) ;
                 // 6 = "clear:".length()
             }
-           
+            
             //for (Agent agent : community.agents)
             {
               //  LOGGER.log(Level.INFO, "agentId:{0} nbRelationships:{1}", new Object[] {agent.getAgentId(),agent.getCurrentPartnerIds().size()});
@@ -199,7 +199,7 @@ public class Community {
             
             //LOGGER.log(Level.INFO,"{0} {1}", new Object[] {Relationship.NB_RELATIONSHIPS,Relationship.NB_RELATIONSHIPS_CREATED});
             // update relationships and perform sexual encounters, report them
-            relationshipRecord = cycleString + community.generateRelationships();
+            relationshipRecord = cycleString + community.generateRelationships(false);
             encounterRecord = cycleString + community.runEncounters();
             relationshipRecord += community.clearRelationships();
             
@@ -220,13 +220,7 @@ public class Community {
             // Deal with effects of aging.
             // To include in populationRecord move this above community.submitRecords()
             community.ageOneDay();
-//            cyclesModYear++ ;
-//            if (cyclesModYear > 363)
-//            {
-//                year++ ;
-//                cyclesModYear = 0 ;
-//                populationRecord += community.ageOneYear() ;
-//            }
+
             if (PARTIAL_DUMP)
                 if ((((cycle+1)/DUMP_CYCLE) * DUMP_CYCLE) == (cycle+1) )
                 {
@@ -492,7 +486,7 @@ public class Community {
      * 
      * @return (String) report of Relationships generated
      */
-    private String generateRelationships()
+    private String generateRelationships(boolean burnin)
     {
         String report = "" ;
 
@@ -511,6 +505,9 @@ public class Community {
 
                 // Tell Agents which type of Relationship is being proposed.
                 Class<?> relationshipClazz = Relationship.chooseRelationship(agent0, agent1) ;
+                if (burnin)
+                    if (Casual.class.equals(relationshipClazz))
+                        continue ;
                 String relationshipClazzName = relationshipClazz.getSimpleName() ;
 
                 // Argument String[] for Agent.consent 
@@ -546,8 +543,9 @@ public class Community {
             LOGGER.info(ie.getLocalizedMessage()) ;
         LOGGER.info("ie");
         }
-
-        report += runGroupSex() ;
+        
+        if (!burnin)
+            report += runGroupSex() ;
 
         return report ;
     }
