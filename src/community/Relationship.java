@@ -322,14 +322,12 @@ public class Relationship {
                     report += "false " ;
             }
 
-            // call static getInfectProbability
-            report += Reporter.addReportLabel("transmission") ;
             //TODO: Generalise to other subclasses of Agent
             //Method getInfectionMethod = agentClazz.getMethod("getInfectProbability", Agent.class,
                     //	Agent.class, int.class, Site.class, Site.class ) ;
             // Method getInfectionMethod = Agent.class.getMethod("getInfectProbability", Agent.class,
                     //	Agent.class, int.class, Site.class, Site.class ) ;
-            if (infectStatus0 != 0)
+            if ((infectStatus0 != 0)) // && (infectStatus1 == 0))
             {
                 infectProbability*= MSM.getInfectProbability(agent0, agent1, infectStatus0, site0, site1) ; 
                                 //(double) getInfectionMethod.
@@ -339,7 +337,7 @@ public class Relationship {
                 //site1.receive(infectName0,transmit0) ;
                 report += Reporter.addReportProperty("transmission", Boolean.toString(agent1.receiveInfection(infectProbability,site1))) ;  
             }
-            else    // agent1 must be infected
+            else if ((infectStatus1 != 0)) // && (infectStatus0 == 0))    // agent1 must be infected
             {
                 infectProbability*= MSM.getInfectProbability(agent1, agent0, infectStatus1, site1, site0) ;
                 //infectProbability*= (double) getInfectionMethod.
