@@ -17,7 +17,7 @@ public class RiskyMSM extends MSM
     //static double probabilityRequireDiscloseHIV = 0.5 ;
     
     // The probability of positive HIV status
-    static double PROPORTION_HIV = 0.12 ;
+    static double PROPORTION_HIV = 0.085 ;
     
     // The probability of disclosing HIV status if HIV positive
     static double PROBABILITY_DISCLOSE_POSITIVE_HIV = 0.40 ;
@@ -80,7 +80,7 @@ public class RiskyMSM extends MSM
     protected boolean chooseCondom(String relationshipClazzName, Agent partner) 
     {
         String partnerDisclosure = partner.declareStatus() ;
-        Boolean partnerSeroPosition = ((MSM) partner).getSeroPosition() ;
+        //Boolean partnerSeroPosition = ((MSM) partner).getSeroPosition() ;
         
         if (getPrepStatus())
             return false ;
