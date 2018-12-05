@@ -18,7 +18,7 @@ public class Pharynx extends Site {
     static double SYMPTOMATIC_PROBABILITY = 0.0 ;
     
     /** Probability of Site being infected initially */
-    static double INITIAL = 0.039 ;
+    static double INITIAL = 0.08 ;
 
     /**
      * Duration of gonorrhoea infection in Pharynx, 12 weeks.
