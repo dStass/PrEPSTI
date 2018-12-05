@@ -153,7 +153,6 @@ abstract public class Site {
 
     /**
      * Set whether Site is symptomatic given the symptomaticProbability.
-     * Allow to specify that Site must or must not be symptomatic.
      * @param symptomaticProbability
      * @return 
      */
@@ -162,6 +161,18 @@ abstract public class Site {
         symptomatic = (RAND.nextDouble() < symptomaticProbability) ;
         return symptomatic ;
     }
+    
+    /**
+     * Setter of symptomatic
+     * @param siteSymptomatic
+     * @return 
+     */
+    public boolean setSymptomatic(boolean siteSymptomatic)
+    {
+        symptomatic = siteSymptomatic ;
+        return symptomatic ;
+    }
+    
     /**
      * 
      * @return The probability of an infection causing symptoms
@@ -212,6 +223,11 @@ abstract public class Site {
     public int getInfectionTime()
     {
         return infectionTime ;
+    }
+    
+    public void setInfectionTime(int time)
+    {
+        infectionTime = time ;
     }
     
     public int progressInfection()
