@@ -30,6 +30,7 @@ public class EncounterReporter extends Reporter {
 
     static String TRANSMISSION = "transmission" ;
     static String CONDOM = "condom" ;
+    static String PHARYNX = "Pharynx" ;
     static String RECTUM = "Rectum" ;
     static String URETHRA = "Urethra" ;
 
@@ -74,17 +75,172 @@ public class EncounterReporter extends Reporter {
     
     /**
      * 
-     * @return (ArrayList) The number of transmissions in each cycle.
+     * @param siteNames
+     * @return Records of final transmissions for specified siteNames and in total.
      */
-    public ArrayList<Object> prepareTransmissionCountReport()
+    public HashMap<Object,Number> prepareFinalTransmissionsRecord(String[] siteNames)
+    {
+        int endCycle = getMaxCycles() ;
+        
+        return prepareFinalTransmissionsRecord(siteNames, 0, endCycle) ;
+    }
+    
+    /**
+     * 
+     * @param siteNames
+     * @return Records of final transmissions for specified siteNames and in total.
+     */
+    public HashMap<Object,Number> prepareFinalTransmissionsRecord(String[] siteNames, int backYears, int endCycle)
+    {
+        HashMap<Object,Number> finalTransmissionsRecord = new HashMap<Object,Number>() ;
+        
+        int rate ;
+        
+        String finalTransmissionRecord = getBackCyclesReport(0,0,1,endCycle).get(0) ; // getFinalRecord() ;
+        String finalRecord = encounterByValue(TRANSMISSION,TRUE,finalTransmissionRecord) ;
+        
+        double population = getPopulation() ;
+        double denominator = population/DAYS_PER_YEAR ;
+        for (String siteName : siteNames)
+        {
+            // Count infected siteName
+            rate = countValueIncidence(siteName,"0",finalRecord,0)[1];
+            finalTransmissionsRecord.put(siteName,rate/denominator) ;
+        }
+        
+        rate = countValueIncidence(RELATIONSHIPID,"",finalRecord,0)[1];
+        finalTransmissionsRecord.put("all",rate/denominator) ;
+        
+        return finalTransmissionsRecord ;
+    }
+ 
+    /**
+     * 
+     * @param siteNames
+     * @param backYears
+     * @param lastYear
+     * @return Year-by-year report for backYears years OF INCIDENTS on last day
+     * of each year ending lastYear.
+     */
+    public HashMap<Object,Number[]> 
+        prepareYearsIncidenceRecord(String[] siteNames, int backYears, int lastYear) 
+        {
+            HashMap<Object,Number[]> incidenceRecordYears = new HashMap<Object,Number[]>() ;
+            Set reportKeys ;
+            
+            int maxCycles = getMaxCycles() ;
+            
+            HashMap<Object,Number> incidenceRecord ;
+            for (int year = 0 ; year < backYears ; year++ )
+            {
+                Number[] yearlyIncidenceRecord = new Number[siteNames.length + 1] ;
+               
+                //endCycle = maxCycles - year * DAYS_PER_YEAR ;
+                incidenceRecord = prepareFinalIncidenceRecord(siteNames, year, 0, DAYS_PER_YEAR, maxCycles);
+                reportKeys = incidenceRecord.keySet() ;
+                for (int siteIndex = 0 ; siteIndex < siteNames.length ; siteIndex++ )
+                    yearlyIncidenceRecord[siteIndex] = incidenceRecord.get(siteNames[siteIndex]) ;
+                yearlyIncidenceRecord[siteNames.length] = incidenceRecord.get("all") ;
+                incidenceRecordYears.put(lastYear - year, (Number[]) yearlyIncidenceRecord.clone()) ;
+            }
+            
+            return incidenceRecordYears ;
+        }
+    
+    
+    /**
+     * 
+     * @param siteNames
+     * @return Records of final incidence for specified siteNames and in total.
+     */
+    public HashMap<Object,Number> prepareFinalIncidenceRecord(String[] siteNames, int backMonths, int backDays)
+    {
+        int endCycle = getMaxCycles() ;
+        
+        return prepareFinalIncidenceRecord(siteNames, 0, backMonths, backDays, endCycle) ;
+    }
+    
+    /**
+     * 
+     * @param siteNames
+     * @param backYears
+     * @param endCycle
+     * @return Records of final incidence for specified siteNames and in total.
+     */
+    public HashMap<Object,Number> prepareFinalIncidenceRecord(String[] siteNames, int backYears, int backMonths, int backDays, int endCycle)
+    {
+        HashMap<Object,Number> finalIncidence = new HashMap<Object,Number>() ;
+        
+        endCycle = endCycle - (backYears * DAYS_PER_YEAR) ;
+        
+        int incidents ;
+        String record ;
+        
+        //String finalIncidenceRecord ; // getFinalRecord() ;
+        ArrayList<String> finalIncidentsReport = getBackCyclesReport(0, backMonths, backDays, endCycle) ;
+        
+        double population = Double.valueOf(getPopulation()) ; 
+        // Adjust incidence rate for sampling time and days per year
+        //* 100 because units  per 100 person years
+        double denominator = population * getBackCycles(0,backMonths,backDays)/(100 * DAYS_PER_YEAR) ;
+        for (String siteName : siteNames)
+        {
+            incidents = 0 ;
+            for (String finalIncidentsRecord : finalIncidentsReport)
+            {
+                // Count siteName being infected
+                record = encounterByValue(siteName,"0",finalIncidentsRecord) ;
+                
+                //record = encounterByValue(TRANSMISSION,TRUE,record) ;
+                
+                incidents += countValueIncidence(TRANSMISSION,TRUE,record,0)[0] ;
+                
+            }
+            finalIncidence.put(siteName,incidents/denominator) ;
+        }
+        incidents = 0 ;
+        for (String finalIncidentsRecord : finalIncidentsReport)
+        {
+            // Select encounters where TRANSMISSION occurred
+            record = encounterByValue(TRANSMISSION,TRUE,finalIncidentsRecord) ;
+            
+            //record = record.substring(record.lastIndexOf(RELATIONSHIPID)) ;
+            //if (countValueIncidence(RELATIONSHIPID,"",record,0)[1] > 1)
+              //  LOGGER.info(record);
+            // Count them
+            incidents += countValueIncidence(RELATIONSHIPID,"",record,0)[1] ;
+        }
+        finalIncidence.put("all",incidents/denominator) ;
+        LOGGER.log(Level.INFO, "{0}", finalIncidence);
+        
+        return finalIncidence ;
+    }
+ 
+    /**
+     * 
+     * @return (ArrayList) The number of transmissions in each cycle per 
+     * population in Site siteName, or in general if site.isEmpty() .
+     */
+    public ArrayList<Object> prepareTransmissionCountReport(String siteName)
     {
         ArrayList<Object> nbTransmissions = new ArrayList<Object>() ;
+        
+        double incidence ;
+        String transmissionString ;
+        int transmissions ;
+        int population = getPopulation() ;
         
         for (boolean nextInput = true ; nextInput ; nextInput = updateReport() )
             for (String record : input)
             {
-                int[] incidence = countValueIncidence("transmission", TRUE, record, 0) ;
-                nbTransmissions.add("transmission:" + String.valueOf(incidence[0])) ;
+                //LOGGER.info(record);
+                if (!siteName.isEmpty())
+                    record = boundedStringByValue(siteName,"0",RELATIONSHIPID,record) ;
+                transmissions = countValueIncidence(TRANSMISSION, TRUE, record, 0)[1];
+                incidence = ((double) transmissions)/population;
+                transmissionString = Reporter.addReportProperty(TRANSMISSION, transmissions) ;
+                transmissionString += Reporter.addReportProperty("rate",incidence) ;
+                nbTransmissions.add(transmissionString) ;
             }
             
         return nbTransmissions ;
@@ -230,11 +386,11 @@ public class EncounterReporter extends Reporter {
         
         // Prepare agentRelationshipsRecord
         RelationshipReporter relationshipReporter = new RelationshipReporter(simName,getFolderPath()) ;
-        Class[] parameterClazzes = new Class[] {String[].class, int.class, int.class, int.class, int.class} ;
-        Object[] parameters = new Object[] {relationshipClazzNames, backYears, backMonths, backDays, endCycle} ;
+        //Class[] parameterClazzes = new Class[] {String[].class, int.class, int.class, int.class, int.class} ;
+        //Object[] parameters = new Object[] {relationshipClazzNames, backYears, backMonths, backDays, endCycle} ;
         HashMap<Object,HashMap<Object,ArrayList<Object>>> agentRelationshipsRecord 
-                = (HashMap<Object,HashMap<Object,ArrayList<Object>>>) getRecord("agentRelationships",relationshipReporter,parameterClazzes,parameters) ;
-        //relationshipReporter.prepareAgentRelationshipsRecord(relationshipClazzNames, backYears, backMonths, backDays, endCycle) ;
+          //      = (HashMap<Object,HashMap<Object,ArrayList<Object>>>) getRecord("agentRelationships",relationshipReporter,parameterClazzes,parameters) ;
+            = relationshipReporter.prepareAgentRelationshipsRecord(relationshipClazzNames, backYears, backMonths, backDays, endCycle) ;
         
         String relationshipClazz ;
         String condomStatus ;
@@ -297,24 +453,25 @@ public class EncounterReporter extends Reporter {
         
         RelationshipReporter relationshipReporter = new RelationshipReporter(simName,getFolderPath()) ;
         HashMap<Object,String[]> relationshipAgentReport = (HashMap<Object,String[]>) getReport("relationshipAgent",relationshipReporter) ; //  relationshipReporter.prepareRelationshipAgentReport() ;
-        LOGGER.log(Level.INFO, "relationshipAgentReport {0}", relationshipAgentReport);
+        //LOGGER.log(Level.INFO, "relationshipAgentReport {0}", relationshipAgentReport);
         
         int maxCycles = getMaxCycles() ;
         int backCycles = getBackCycles(backYears, backMonths, backDays, maxCycles) ;
         int startCycle = maxCycles - backCycles ;
         
         ArrayList<String> encounterReport = this.getBackCyclesReport(0, 0, backCycles) ;
-        LOGGER.log(Level.INFO, "encounterReport {0}", encounterReport);
+        //LOGGER.log(Level.INFO, "encounterReport {0}", encounterReport);
         ArrayList<String> relationshipClassReport = relationshipReporter.filterRelationshipClazzReport(relationshipClazzName,encounterReport) ;
-        LOGGER.log(Level.INFO, "relationshipClassReport {0}", relationshipClassReport);
+        //LOGGER.log(Level.INFO, "relationshipClassReport {0}", relationshipClassReport);
         ArrayList<String> intercourseReport = prepareFilteredReport(CONDOM,"",relationshipClassReport) ;
-        LOGGER.log(Level.INFO, "intercourseReport {0}", intercourseReport);
+        //LOGGER.log(Level.INFO, "intercourseReport {0}", intercourseReport);
         for (String condom : new String[] {TRUE,FALSE})
         {
             agentAnalIntercourseReport.put(condom, new HashMap<Object,ArrayList<Object>>()) ;
             
             // Filter by condom use
             ArrayList<String> condomReport = prepareFilteredReport(CONDOM,condom,intercourseReport) ;
+            //LOGGER.log(Level.INFO,"condomReport:{0}",condomReport) ;
 
             for (int recordNb = 0 ; recordNb < backCycles ; recordNb++ ) 
             {
@@ -324,7 +481,7 @@ public class EncounterReporter extends Reporter {
                 {
                     Object[] agentIds = relationshipAgentReport.get(extractValue(RELATIONSHIPID,encounter)) ;
                     for (Object agentId : agentIds)
-                        agentAnalIntercourseReport.put(CONDOM, updateHashMap(agentId,(startCycle + recordNb),agentAnalIntercourseReport.get(CONDOM))) ;
+                        agentAnalIntercourseReport.put(condom, updateHashMap(agentId,(startCycle + recordNb),agentAnalIntercourseReport.get(condom))) ;
                 }
             }
         
@@ -581,7 +738,7 @@ public class EncounterReporter extends Reporter {
         int condomSeroPosition ;
         int unprotected ;
         int total ;
-        boolean finished = false ;
+        boolean finished ;
         
         ArrayList<String> encounters ;
         ArrayList<String> contacts ;
@@ -946,7 +1103,7 @@ public class EncounterReporter extends Reporter {
         String key ;
         // values of site0, site1
         String value0 ;
-        String value1 ;
+        
         // report String
         String report ;
         
