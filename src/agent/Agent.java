@@ -16,8 +16,14 @@ import java.lang.reflect.*;
 
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import static reporter.Reporter.AGENTID;
+import static reporter.Reporter.extractArrayList;
+import static reporter.Reporter.extractValue;
+import static reporter.Reporter.identifyProperties;
 //import java.util.List;
 
 /**
@@ -99,7 +105,8 @@ public abstract class Agent {
     
     // Standard String null response 
     static String NONE = "none" ;
-
+    
+    
     // The maximum number of relationships an agent may be willing to sustain
     //static int MAX_RELATIONSHIPS = 15;
 
@@ -228,7 +235,7 @@ public abstract class Agent {
      * Reloads Agents from a saved simulation to continue it.
      * @param simName 
      */
-    static public ArrayList<Agent> reloadAgents(String simName)
+    static public ArrayList<Agent> REBOOT_AGENTS(String simName)
     {
         ArrayList<Agent> agents = new ArrayList<Agent>() ;
         PopulationReporter populationReporter = new PopulationReporter(simName,"output/test/") ;
@@ -245,9 +252,9 @@ public abstract class Agent {
         int startAge ;
         String id ;
                         
-        boolean symptoms ;
         String className ;
         Site[] sites ;
+        String infectionString ;
         //int daysPerYear = 365 ;
         Class clazz ;
         
@@ -260,13 +267,16 @@ public abstract class Agent {
         int birthIndex = 0 ;
         for (String birthRecord : birthReport)
         {
-            ArrayList<String> birthList = Reporter.extractArrayList(birthRecord,"agentId") ;
+            ArrayList<String> birthList = Reporter.extractArrayList(birthRecord,AGENTID) ;
+            if (birthList.isEmpty()) 
+                continue ;
             birthIndex += birthList.size() ;
             ArrayList<String> properties = Reporter.identifyProperties(birthList.get(0)) ;
+            
             for (String birth : birthList)
             {
                 // Extract Agents still living
-                id = Reporter.extractValue("agentId", birth);
+                id = Reporter.extractValue(AGENTID, birth);
                 if (deadAgentIds.contains(id))
                     continue ;
                 
@@ -275,28 +285,43 @@ public abstract class Agent {
                 className = Reporter.extractValue("agent",birth);
                 try
                 {
-                    clazz = Class.forName(className);
+                    //clazz = Class.forName(className);
+                    if (className.equals("SafeMSM"))
+                        clazz = SafeMSM.class ;
+                    else 
+                        clazz = RiskyMSM.class ;
                     MSM newAgent = (MSM) clazz.getConstructor(int.class).newInstance(startAge);
-                    reloadAgent(newAgent, birth, properties) ;
+                    REBOOT_AGENT(newAgent, birth, properties) ;
+                    newAgent.clearInfection();
+                    agents.add(newAgent) ;
                     
-                    infectionIndex = screeningRecord.indexOf(Reporter.AGENTID.concat(id)) ;
-                    String infectionString ;
+                    // Reload infections
+                    infectionIndex = screeningRecord.indexOf(Reporter.AGENTID.concat(":").concat(id).concat(" ")) ;
+                    if (infectionIndex < 0)
+                        continue ;
+                    
                     infectionString = Reporter.extractBoundedString(Reporter.AGENTID, screeningRecord, infectionIndex);
-                    
+                    //LOGGER.info(infectionString);
                     sites = newAgent.getSites();
+                    
                     for (Site site : sites)
                     {
                         if (infectionString.contains(site.getSite()))
                         {
-                            site.receiveInfection(1.1) ;
-                            symptoms = Boolean.getBoolean(Reporter.extractValue(site.getSite(),infectionString));
+                            Boolean symptoms = Boolean.valueOf(Reporter.extractValue(site.getSite(),infectionString));
+                            newAgent.reinitInfectedStatus(symptoms, site) ;
+                            //site.receiveInfection(1.1) ;
+                            /*
                             if (symptoms)
                                 site.setSymptomatic(1.1) ;
                             else
                                 site.setSymptomatic(-0.1) ;
+                            newAgent.setSymptomatic(site) ;*/
+                        //uninfected = false ;
                         }
                     }
-                    agents.add(newAgent) ;
+                    //if (uninfected)
+                      //  LOGGER.info(infectionString) ; // (String.valueOf(newAgent.getInfectedStatus()));
                 }
                 catch ( Exception e )
                 {
@@ -309,34 +334,75 @@ public abstract class Agent {
         return agents ;
     }
     
-    static void reloadAgent(MSM newAgent, String census, ArrayList<String> propertyArray)
+    /**
+     * Restores individual Agents' properties from saved census data from previous simulation.
+     * @param newAgent
+     * @param census
+     * @param propertyArray 
+     */
+    static void REBOOT_AGENT(Agent newAgent, String census, ArrayList<String> propertyArray)
     {
         propertyArray.remove("agent") ;
         propertyArray.remove("age") ;
+        
+        Field[] agentDeclaredFields = Agent.class.getDeclaredFields() ;
+        
+        HashMap<Class,Field[]> clazzFields = new HashMap<Class,Field[]>() ;  
+        clazzFields.put(Agent.class , Agent.class.getDeclaredFields()) ;
+        //for (Field field : agentDeclaredFields)
+          //  agentFieldNames.add(field.getName()) ;
+        
+        for (Class agentClazz = newAgent.getClass() ; !Agent.class.equals(agentClazz) ; agentClazz = agentClazz.getSuperclass())
+            clazzFields.put(agentClazz , agentClazz.getDeclaredFields()) ;
+        
+        //Class agentClazz = newAgent.getClass().getSuperclass() ;
+        //LOGGER.log(Level.INFO,"clazzFields:{0}",clazzFields);
 
-        String valueString ;
+        String valueString = "";
         String setterName ;
-        Class propertyClazz ;
+        Class propertyClazz = Object.class ;
+        Class valueOfClazz = propertyClazz ;
+        Class methodClazz = Agent.class ;
         Method setMethod ;
         Method valueOfMethod ;
+            String testProperty = "" ;
         try
         {
             for (String property : propertyArray)
             {
+                testProperty = property ;
                 valueString = Reporter.extractValue(property, census) ;
-                propertyClazz = MSM.class.getDeclaredField(property).getType() ;
-                valueOfMethod = propertyClazz.getMethod("valueOf", String.class) ;
-                LOGGER.log(Level.INFO,"{0}",valueOfMethod.invoke(valueString));
+                if (property.equals("screenInterval"))
+                    property = "screenCycle" ;
+                for (Class agentClazz : clazzFields.keySet())
+                    for (Field field : clazzFields.get(agentClazz))
+                        if (field.getName().equals(property))
+                        {
+                            propertyClazz = agentClazz.getDeclaredField(property).getType() ;
+                            methodClazz = agentClazz ;
+                            if (propertyClazz.equals(int.class))
+                                valueOfClazz = Integer.class ;
+                            else if (propertyClazz.equals(double.class))
+                                valueOfClazz = Double.class ;
+                            else if (propertyClazz.equals(boolean.class))
+                                valueOfClazz = Boolean.class ;
+                            else
+                                valueOfClazz = propertyClazz ;
+                            valueOfMethod = valueOfClazz.getMethod("valueOf", String.class) ;
+                            //LOGGER.log(Level.INFO,"{1} {0}", new Object[] {valueOfMethod.invoke(null,valueString),property});
 
-                setterName = "set" + property.substring(0,1).toUpperCase() 
-                        + property.substring(1) ;
-                setMethod = MSM.class.getDeclaredMethod(setterName, propertyClazz) ;
-                setMethod.invoke(newAgent, valueOfMethod.invoke(valueString)) ;
+                            setterName = "set" + property.substring(0,1).toUpperCase() 
+                                    + property.substring(1) ;
+                            setMethod = methodClazz.getDeclaredMethod(setterName, propertyClazz) ;
+                            setMethod.invoke(newAgent, valueOfMethod.invoke(null,valueString)) ;
+                            break ;
+                        }
             }
         }
         catch (Exception e)
         {
             LOGGER.severe(e.toString());
+            LOGGER.log(Level.SEVERE, "{0} {1} {2}", new Object[] {propertyClazz, testProperty, valueString}) ;
         }
         
     }
@@ -427,6 +493,15 @@ public abstract class Agent {
         setInfectedStatus(infected) ;
     }
        
+    final protected void reinitInfectedStatus(boolean symptomaticSite, Site site)
+    {
+        site.receiveInfection(1.1) ;
+        // TODO: Read actual remaining infectionTime from file.
+        site.setInfectionTime(RAND.nextInt(site.getInfectionTime())) ;
+        symptomatic = symptomatic || site.getSymptomatic() ;
+        infectedStatus = infectedStatus || (site.getInfectedStatus() > 0) ;
+    }
+    
     /**
      * 
      * @return (int) startAge of Agent.
@@ -473,9 +548,22 @@ public abstract class Agent {
             return concurrency ;
     }
 
+    /**
+     * 
+     * @return concurrency
+     */
     public int getConcurrency()
     {
             return concurrency ;
+    }
+    
+    /**
+     * concurrency setter
+     * @param newConcurrency 
+     */
+    public void setConcurrency(int newConcurrency)
+    {
+        concurrency = newConcurrency ;
     }
     
     	
@@ -522,6 +610,16 @@ public abstract class Agent {
         int maximum = getMaxRelationships() ;
         infidelity = 0.1 * RAND.nextInt(maximum)/maximum ;
     }
+    
+    /**
+     * Setter for infidelity, probability of cheating on a Monogomous partner.
+     * @param newInfidelity 
+     */
+    public void setInfidelity(double newInfidelity)
+    {
+        assert((newInfidelity >= 0) && (newInfidelity <= 1)) : "Error: infidelity should be between 0 and 1" ;
+        infidelity = newInfidelity ;
+    }
 
     public double getInfidelity()
     {
@@ -536,7 +634,7 @@ public abstract class Agent {
         censusReport += Reporter.addReportProperty("age",getAge()) ;  // Reporter.addReportProperty("startAge", getAge()) ;
         censusReport += Reporter.addReportProperty("concurrency",concurrency) ;
         censusReport += Reporter.addReportProperty("infidelity",infidelity) ;
-        censusReport += Reporter.addReportProperty("screenInterval",getScreenCycle()) ;
+        censusReport += Reporter.addReportProperty("screenCycle",getScreenCycle()) ;
         
         /*Class fieldClazz ;
         Class agentClazz ;
@@ -1225,14 +1323,14 @@ public abstract class Agent {
  Default based on startAge, uniform probability with cutoff at maxLife
      * @return true if they die, false otherwise
      */
-    final private String death()
+    final private void death()
     {
-        String report = Reporter.addReportLabel("death") ; 
+        //String report = Reporter.addReportLabel("death") ; 
         //report += Reporter.addReportProperty("agentId",agentId) ;
         //report += Reporter.addReportProperty("startAge",startAge) ;
         //report += "nbPartners:" + String.valueOf(currentRelationships.size()) + " ";
         clearRelationships() ;
-        return report ;
+        // report ;
     }
 
     /**
