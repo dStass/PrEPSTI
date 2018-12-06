@@ -178,7 +178,7 @@ public class SortReporter extends Reporter {
         HashMap<Object,Number[]> sortIncidenceReport = new HashMap<Object,Number[]>() ;
         String label ;
         // Initialisation
-        int finalRecordNb = Integer.valueOf(sortingReporter.getMetaDatum("Community.MAX_CYCLES")) - 1 ;
+        int finalRecordNb = getMaxCycles() - 1 ;
         int recordIndex = finalRecordNb ;    // TODO: Generalize to arbitrary recordIndex.
         
         // Digits in number of partners for ordering bin labels
