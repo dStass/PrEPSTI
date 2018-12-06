@@ -457,7 +457,7 @@ public class RelationshipReporter extends Reporter {
         HashMap<Object,String[]> relationshipAgentReport = new HashMap<Object,String[]>() ;
         
         ArrayList<String> commenceReport = prepareCommenceReport() ; // (ArrayList<String>) getReport("commence",this) ; //  
-        LOGGER.log(Level.INFO,"{0}",commenceReport) ;
+        
         ArrayList<String> relationshipRecords ;
         String relationshipId ;
         String[] agentIds = new String[2] ;
@@ -551,7 +551,7 @@ public class RelationshipReporter extends Reporter {
         
         HashMap<Object,Object> meanCumulativeRelationshipClassReport ;
         
-        int population = Integer.valueOf(getMetaDatum("Community.POPULATION")) ;
+        int population = getPopulation() ; // Integer.valueOf(getMetaDatum("Community.POPULATION")) ;
         
         ArrayList<HashMap<Object,HashMap<Object,Integer>>> agentsCumulativeRelationshipReport 
                 = prepareAgentsCumulativeRelationshipReport(relationshipClassNames, backYears, backMonths, backDays, endCycle) ;
@@ -814,7 +814,7 @@ public class RelationshipReporter extends Reporter {
         HashMap<Object,HashMap<Object,Integer>> agentRelationshipsCount 
             = prepareAgentRelationshipsCount(relationshipClassNames, backYears, backMonths, backDays, endCycle) ;
         
-        double population = Double.valueOf(getMetaDatum("Community.POPULATION")) ;
+        double population = getPopulation() ; 
         
         HashMap<Object,Integer> relationshipClazzCount ;
         int total ;
@@ -883,7 +883,7 @@ public class RelationshipReporter extends Reporter {
     public HashMap<Object,HashMap<Object,Integer>> 
         prepareAgentRelationshipsCount(String[] relationshipClassNames, int backYears, int backMonths, int backDays) 
         {
-            int endCycle = Integer.valueOf(getMetaDatum("Community.MAX_CYCLES")) ;
+            int endCycle = getMaxCycles() ;
             return prepareAgentRelationshipsCount(relationshipClassNames, backYears, backMonths, backDays, endCycle) ;
         }
     
@@ -941,7 +941,7 @@ public class RelationshipReporter extends Reporter {
     public HashMap<Object,HashMap<Object,ArrayList<Object>>> 
         prepareAgentRelationshipsRecord(String[] relationshipClassNames, int backYears, int backMonths, int backDays) 
         {
-            int endCycle = Integer.valueOf(getMetaDatum("Community.MAX_CYCLES")) ;
+            int endCycle = getMaxCycles() ;
             return prepareAgentRelationshipsRecord(relationshipClassNames, backYears, backMonths, backDays, endCycle) ;
         }
     
@@ -980,6 +980,7 @@ public class RelationshipReporter extends Reporter {
                             updateHashMap(agentId,relationshipId,agentRelationshipsRecord.get(relationshipClassName),false)) ;
                 }
             }
+        
         // Remove relationshipIds which have broken up.
         ArrayList<String> breakupReport = (ArrayList<String>) getReport("breakup",this) ; //   prepareBreakupReport() ;
         // relationshipId maps to relationshipClassName
@@ -1001,7 +1002,7 @@ public class RelationshipReporter extends Reporter {
                 // Get relationshipId relationshipClass
                 relationshipClassName = relationshipClazzReport.get(relationshipId) ;
                 //LOGGER.log(Level.INFO,"enteredIndex:{0} {1}", new Object[] {enteredIndex,agentRelationshipsRecord.get(relationshipClassName)}) ;
-                if (agentRelationshipsRecord.get(relationshipClassName)!= null) ;
+                if (agentRelationshipsRecord.containsKey(relationshipClassName) && agentRelationshipsRecord.get(relationshipClassName)!= null) ;
                     for (String agentId : relationshipAgentReport.get(relationshipId))
                         agentRelationshipsRecord.get((Object) relationshipClassName).get(agentId).remove(relationshipId) ;
             }
@@ -1300,7 +1301,7 @@ public class RelationshipReporter extends Reporter {
      * @param backMonths
      * @param backDays
      * @param endCycle
-     * @return Each relationshipId is a HashMap where relationshipClassName maps to a 
+     * @return Each relationshipClazzName is a HashMap where relationshipClassName maps to a 
  HashMap indicating new relationshipIds for relevant (key) Agents
      */
     public ArrayList<HashMap<Object,HashMap<Object,ArrayList<Object>>>> 
@@ -1311,7 +1312,7 @@ public class RelationshipReporter extends Reporter {
         
         HashMap<Object,String[]> relationshipAgentReport 
                 = prepareRelationshipAgentReport() ; // (HashMap<Object,String[]>) getReport("relationshipAgent",this) ; // 
-        LOGGER.log(Level.INFO, "{0}", relationshipAgentReport) ;
+        //LOGGER.log(Level.INFO, "{0}", relationshipAgentReport) ;
         // How many cycles far back do we count back from endCycle?
         int backCycles = getBackCycles(backYears, backMonths, backDays, endCycle) ;
         ArrayList<String> commenceReport = (ArrayList<String>) getReport("commence",this) ; //  prepareCommenceReport() ;
@@ -1365,7 +1366,7 @@ public class RelationshipReporter extends Reporter {
     public HashMap<Object,Number> 
         prepareNumberAgentsEnteredRelationshipReport(String[] relationshipClassNames, int backYears, int backMonths, int backDays)
         {
-            int endCycle = Integer.valueOf(getMetaDatum("Community.MAX_CYCLES")) ;
+            int endCycle = getMaxCycles() ;
             
             return prepareNumberAgentsEnteredRelationshipReport(relationshipClassNames, backYears, backMonths, backDays, endCycle) ;
         }
@@ -1493,6 +1494,7 @@ public class RelationshipReporter extends Reporter {
             {
                 String relationshipId = extractValue(RELATIONSHIPID,relationshipEntry) ;
                 String concordanceString = relationshipConcordanceReport.get(relationshipId) ;
+                //LOGGER.log(Level.INFO, "{0} {1} {2}", new Object[] {Level.INFO, TRUE, NONE});
                 if (compareValue(propertyName,String.valueOf(concordant),concordanceString))
                     filteredRecord += relationshipEntry ;
             }
@@ -1671,7 +1673,7 @@ public class RelationshipReporter extends Reporter {
     private HashMap<Object,HashMap<Object,Integer>> 
         prepareNumberRecentRelationshipsReport(String[] relationshipClassNames, int backYears, int backMonths, int backDays)
         {
-            int endCycle = Integer.valueOf(getMetaDatum("Community.MAX_CYCLES")) ;
+            int endCycle = getMaxCycles() ;
             
             return prepareNumberRecentRelationshipsReport(relationshipClassNames, backYears, backMonths, backDays, endCycle) ;
         }
