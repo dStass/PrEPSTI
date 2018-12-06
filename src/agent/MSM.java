@@ -3,13 +3,18 @@
  */
 package agent;
 
+//import static agent.Agent.LOGGER;
 import reporter.Reporter ;
 
 import java.util.logging.Level;
 import site.* ;
 
 import java.lang.reflect.*;
+import java.util.ArrayList;
 import org.apache.commons.math3.distribution.* ;
+import reporter.PopulationReporter;
+import static reporter.Reporter.AGENTID;
+import reporter.ScreeningReporter;
         
 /**
  * @author Michael Walker
@@ -122,23 +127,23 @@ abstract public class MSM extends Agent {
     private boolean prepStatus ;
 	
     /** Transmission probabilities per sexual contact from Urethra to Rectum */
-    static double URETHRA_TO_RECTUM = 0.07 ; 
+    static double URETHRA_TO_RECTUM = 0.005 ; // 0.01 ;
     /** Transmission probabilities sexual contact from Urethra to Pharynx. */
-    static double URETHRA_TO_PHARYNX = 0.05 ; // 0.15 ; // 0.32 ; 
+    static double URETHRA_TO_PHARYNX = 0.005 ; // 0.01 ; 
     /** Transmission probabilities sexual contact from Rectum to Urethra. */ 
-    static double RECTUM_TO_URETHRA = 0.005 ; // 0.06 ; // 0.12 ;
+    static double RECTUM_TO_URETHRA = 0.001 ; // 0.01 ; 
     /** Transmission probabilities sexual contact from Rectum to Pharynx. */
-    static double RECTUM_TO_PHARYNX = 0.03 ; // 0.025 ; // 0.05 ;
+    static double RECTUM_TO_PHARYNX = 0.04 ; // 0.04 ; 
     /** Transmission probabilities sexual contact in Pharynx to Urethra intercourse. */
-    static double PHARYNX_TO_URETHRA = 0.01 ; // 0.022 ; // 0.043 ; 
+    static double PHARYNX_TO_URETHRA = 0.001 ; // 0.01 ; 
     /** Transmission probabilities sexual contact in Pharynx to Rectum intercourse. */
-    static double PHARYNX_TO_RECTUM = 0.03 ; // 0.05 ; // 0.1 ; // 
+    static double PHARYNX_TO_RECTUM = 0.04 ; // 0.04 ; 
     /** Transmission probabilities sexual contact in Pharynx to Pharynx intercourse (kissing). */
-    static double PHARYNX_TO_PHARYNX = 0.04 ;
+    static double PHARYNX_TO_PHARYNX = 0.045 ; // 0.045 ; 
     /** Transmission probabilities sexual contact in Urethra to Urethra intercourse (docking). */
-    static double URETHRA_TO_URETHRA = 0.001 ; // 0.002 ; // 0.004 ;
+    static double URETHRA_TO_URETHRA = 0.001 ; // 0.005 ; 
     /** Transmission probabilities sexual contact in Rectum to Rectum intercourse. */
-    static double RECTUM_TO_RECTUM = 0.003 ; // 0.007 ; // .013 ; 
+    static double RECTUM_TO_RECTUM = 0.003 ; // 0.003 ; 
     
     /** The probability of screening in a given cycle with statusHIV true. */
     static double SCREEN_PROBABILITY_HIV_POSITIVE = 0.0029 ;
@@ -285,7 +290,6 @@ abstract public class MSM extends Agent {
         return new SafeMSM(-1) ;
     }
    
-
     /**
      * 
      * Specifies Agent subclass Men having Sex with Men. Necessary to call super.constructor()
@@ -558,6 +562,11 @@ abstract public class MSM extends Agent {
             setAntiViralStatus(false) ;
     }
 
+    /**
+     * Getter of seroSort variables, specific to Class of Relationship.
+     * @param relationshipClazzName
+     * @return 
+     */
     public boolean getSeroSort(String relationshipClazzName)    //, Boolean status)
     {
         Boolean serosort  = false ;
@@ -581,6 +590,33 @@ abstract public class MSM extends Agent {
     {
         discloseStatusHIV = (discloseStatusHIV || sort) ;
         seroSort = sort ;
+    }
+
+    /**
+     * Setter of seroSortRegular
+     * @param sort 
+     */
+    public void setSeroSortRegular(boolean sort)
+    {
+        seroSortRegular = sort ;
+    }
+
+    /**
+     * Setter of seroSortCasual
+     * @param sort 
+     */
+    public void setSeroSortCasual(boolean sort)
+    {
+        seroSortCasual = sort ;
+    }
+
+    /**
+     * Setter of seroSort
+     * @param sort 
+     */
+    public void setSeroSortMonogomous(boolean sort)
+    {
+        seroSortMonogomous = sort ;
     }
 
     public boolean getSeroPosition()
@@ -645,8 +681,6 @@ abstract public class MSM extends Agent {
     private void initPrepStatus(boolean prep)
     {
         setPrepStatus(prep) ;
-        initScreenCycle() ;
-        
     }
     
     /**
@@ -672,15 +706,21 @@ abstract public class MSM extends Agent {
         setScreenTime(RAND.nextInt(getScreenCycle())) ;
     }
     
-    
+    /**
+     * Adjusts per year the screening frequency.
+     * @param year
+     * @throws Exception 
+     */
     public void reinitScreenCycle(int year) throws Exception
     {
         // Screening frequency compared to 2016 figure. per 1000 in last year.
-        double testBase = 499 ;
+        double testBase = 382 ;
         // Frequencies, given by per 1000 per year, from 2007-2016
-        double[] testRates = new double[] {333,340,398,382,383,382,391,419,445,499} ;
-        double ratio = testBase/testRates[year] ;
-        int newScreenCycle = (int) ratio*getScreenCycle() ;
+        //double[] testRates = new double[] {333,340,398,382,383,382,391,419,445,499} ;
+        // Go from 2011
+        double[] testRates = new double[] {382,383,382,391,419,445,499} ;
+        double ratio = testRates[year]/testBase ;
+        int newScreenCycle = (int) ratio * getScreenCycle() ;
         
         setScreenCycle(newScreenCycle) ;
     }
@@ -696,12 +736,13 @@ abstract public class MSM extends Agent {
     }
     
     /**
-     * Setter of prepStatus. Used for unit testing
+     * Setter of prepStatus.
      * @param prep 
      */
     public void setPrepStatus(boolean prep)
     {
         prepStatus = prep && (!statusHIV) ;
+        initScreenCycle() ;
     }
     
     /**
