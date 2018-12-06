@@ -30,23 +30,30 @@ import java.util.logging.Level;
  *******************************************************************/
 public class Community {
     static public int POPULATION = 40000 ;
-    static public int MAX_CYCLES = 500 ;
+    static public int MAX_CYCLES = 4000 ;
     //static public String NAME_ROOT = "Test"
-    //static public String NAME_ROOT = "FallingCondomUse" 
-    static public String NAME_ROOT = "NoPrepCalibration22" 
+    //static public String NAME_ROOT = "max3Relationships80" 
+    //static public String NAME_ROOT = "RiskyPrep74"        
+    //static public String NAME_ROOT = "IntroPrepCalibration74acycle6000" 
+    //static public String NAME_ROOT = "FallingCondomUseCalibration74c" 
+    static public String NAME_ROOT = "NoPrepCalibration76" 
     //static public String NAME_ROOT = "AllSexualContacts"
     //        + "DecliningCondomsAlteredTesting"
             + "Pop" + String.valueOf(POPULATION) + "Cycles" + String.valueOf(MAX_CYCLES) ;
 
     static String COMMENT = ""
-            // + "every cycle after 2350 Agents "
-            //+ "reduce their chances of choosing condoms. "
-            //+ "Every year after cycle 2350 testing rates are altered to compare with "
-            //+ "long-term data. " 
+            // + "every cycle from 3000 "
+            //+ "Agents reduce their chances of choosing condoms. "
+            //+ "Every year from cycle 2000 "
+            //+ "five RiskyMSM go on PrEP "
+            //+ "Testing rates are altered to compare with long-term data " 
+            //+ "and their condom usage rates are multiplied by random fraction between 0 and 1."
             //+ "MAX_RELATIONSHIPS set to 4 "  // "Uses parameters from NoPrepCalibration53" ;
             //+ "All encounters are recorded in full." 
               //      + "consentCasualProbability * 5/12 "
-            + "Test of burn-in. Uses Calibration22. "
+            //+ "Test of loading burn-in. Uses Calibration24. "
+             + "Test of Relationship.reloadRelationships(). "
+            //+ "Test or reload METADATA to rerun simlation exactly with no burn-in. "
             //+ "Assumes number of Agents at least N times number of cycles minus 1000." ;*/
             + "" ;
     
@@ -63,7 +70,13 @@ public class Community {
      * (String) Name of previous burn-in to reload.
      * Not reloaded if this is an empty string.
      */
-    static final String RELOAD_BURNIN = "" ; // "NoPrepCalibration20Pop40000Cycles10000" ;
+    static final String RELOAD_BURNIN = "" ; // "NoPrepCalibration24Pop40000Cycles8000" ;
+    
+    /**
+     * (String) Name of previous simulation to reload.
+     * Not reloaded if this is an empty string.
+     */
+    static final String RELOAD_SIMULATION = "" ; // "NoPrepCalibration74Pop40000Cycles200" ; // "NoPrepCalibration24Pop40000Cycles8000" ;
     
     static public String getFilePath()
     {
@@ -79,8 +92,8 @@ public class Community {
     
     /** Total number of agents. */
     private int population = POPULATION ;
-    /** Current number of sexually live agents */
-    private int currentPopulation = population ;
+    ///** Current number of sexually live agents */
+    //private int currentPopulation = population ;
 
     // Number of new population members and also average number of deaths per cycle
     private double birthRate = population/(50 * 365) ;
@@ -122,11 +135,13 @@ public class Community {
         
         // Record starting time to measure running time
         long startTime = System.nanoTime() ;
-        LOGGER.log(Level.INFO, "Seed:{0}", String.valueOf(System.currentTimeMillis()));
+        LOGGER.log(Level.INFO, "Seed:{0}", System.currentTimeMillis());
     
         // Establish Community of Agents for simulation
         LOGGER.info(Community.NAME_ROOT);
-        Community community = new Community() ;
+        
+        Community community = new Community(RELOAD_SIMULATION,200) ;
+        
         
         // Establish conditions for specific simulation questions
         //System.out.println(community.initialiseCommunity()) ;
@@ -143,12 +158,6 @@ public class Community {
         // To record cycle number in every record
         String cycleString ;
         
-
-        // simulation of maxCycles cycles
-        
-        cycleString = "0," ;
-        populationRecord = cycleString + Reporter.addReportLabel("birth") + community.initialRecord ;
-        //LOGGER.info(community.initialRecord);
         System.out.println("population: " + POPULATION + ", Cycles: " + MAX_CYCLES );
         int outputInterval ;
         
@@ -159,27 +168,40 @@ public class Community {
         if (outputInterval < 100)
             outputInterval = 100 ;
         
-        if (RELOAD_BURNIN.isEmpty())
+        if (!RELOAD_SIMULATION.isEmpty())
+        {
+            // Do nothing here but avoid the alternatives.
+        }
+        else if (RELOAD_BURNIN.isEmpty())
         {
             // Generate relationships for simulation
-            String commence ;
-            String breakup ;
+            String commenceString ;
+            String breakupString ;
+            ArrayList<String> commenceList = new ArrayList<String>() ;
+            ArrayList<String> breakupList ;
             
-            for (int burnin = 0 ; burnin < 0 ; burnin++ )
+            for (int burnin = 0 ; burnin < 5000 ; burnin++ )
             {
-                commence = community.generateRelationships(true) ;
-                Relationship.BURNIN_COMMENCE = commence + Relationship.BURNIN_COMMENCE ;
+                commenceString = community.generateRelationships(true) ;
+                commenceList.addAll(Reporter.extractArrayList(commenceString, Reporter.RELATIONSHIPID)) ;
                 
-                breakup = community.clearRelationships().substring(6) ;
-                Relationship.BURNIN_BREAKUP += breakup ;
-                //needMore = needMore || ((breakup.length() * burnin) >= Relationship.BURNIN_BREAKUP.length());
-                //LOGGER.log(Level.INFO, "commence:{0} breakup:{1}", new Object[] {commence.length(),breakup.length()}) ;
-                // 6 = "clear:".length()
+                breakupString = community.clearRelationships().substring(6) ;
+                breakupList = Reporter.extractArrayList(breakupString, Reporter.RELATIONSHIPID) ;
+                for (String breakup : breakupList)
+                {
+                    for (String commence : commenceList)
+                        if (commence.startsWith(breakup))
+                        {
+                            commenceList.remove(commence) ;
+                            break ;
+                        }
+                    //Relationship.BURNIN_BREAKUP += breakup ;
+                }
             }
             
-            //for (Agent agent : community.agents)
+            for (String commence : commenceList)
             {
-              //  LOGGER.log(Level.INFO, "agentId:{0} nbRelationships:{1}", new Object[] {agent.getAgentId(),agent.getCurrentPartnerIds().size()});
+                Relationship.BURNIN_COMMENCE += commence ;
             }
         }
         else
@@ -189,27 +211,42 @@ public class Community {
             Community.COMMENT += "Burnin reloaded from " + RELOAD_BURNIN ;
         }
         
+        // simulation of maxCycles cycles
+        
+        cycleString = "0," ;
+        populationRecord = cycleString + Reporter.addReportLabel("birth") + community.initialRecord ;
+        
         //outputInterval = 1 ;
         for (int cycle = 0; cycle < MAX_CYCLES; cycle++)
         {	
             if (cycle == ((cycle/outputInterval) * outputInterval))
-                LOGGER.log(Level.INFO, "Cycle no. {0}", cycleString);
+            LOGGER.log(Level.INFO, "Cycle no. {0}", cycleString);
 
             //community.interveneCommunity(cycle) ;
             
             //LOGGER.log(Level.INFO,"{0} {1}", new Object[] {Relationship.NB_RELATIONSHIPS,Relationship.NB_RELATIONSHIPS_CREATED});
             // update relationships and perform sexual encounters, report them
+            //LOGGER.info("generate") ;
             relationshipRecord = cycleString + community.generateRelationships(false);
+            
+            //LOGGER.info("encounter");
             encounterRecord = cycleString + community.runEncounters();
+            
+            //LOGGER.info("clear");
             relationshipRecord += community.clearRelationships();
             
             // treat symptomatic agents
+            
+            //LOGGER.info("progress");
             infectionRecord = cycleString + community.progressInfection(cycle) ;
             
             //deathRecord = cycleString
             int deltaPopulation = community.agents.size() ;  // Current poulation
+            
+            //LOGGER.info("death");
             populationRecord += community.grimReaper() ;
             // Record Relationships ended due to death
+            
             relationshipRecord += Relationship.READ_DEATH_RECORD() ;
             
             // How many births to maintain population?
@@ -264,7 +301,7 @@ public class Community {
         //ScreeningPresenter screeningPresenter2 
           //      = new ScreeningPresenter("prevalence",Community.NAME_ROOT,screeningReporter) ;
         //screeningPresenter2.plotPrevalence();
-        //screeningPresenter2.plotIncidencePerCycle();
+        //screeningPresenter2.plotNotificationsPerCycle();
         ScreeningPresenter screeningPresenter3 
                 = new ScreeningPresenter(NAME_ROOT,"multi prevalence",screeningReporter) ;
         screeningPresenter3.multiPlotScreening(new Object[] {"prevalence","prevalence",new String[] {"Pharynx","Rectum","Urethra"},"coprevalence",new String[] {"Pharynx","Rectum"}});  // ,"coprevalence",new String[] {"Pharynx","Rectum"},new String[] {"Urethra","Rectum"}
@@ -365,22 +402,42 @@ public class Community {
     public Community(String simName)
     {
         initialRecord = "" ;
-        
-        //FIXME: Must ensure that random generator is properly calibrated after 
-        // generating new Agents, even after reloading seed.
-        Reporter reporter = new Reporter(simName,"output/test/") ;
-        long seed = Long.valueOf(reporter.getMetaDatum("Community.RANDOM_SEED")) ;
-        RANDOM_SEED = seed ;
-        RAND = new Random(seed) ;
-        
-        seed = Long.valueOf(reporter.getMetaDatum("Agent.RANDOM_SEED")) ;
-        Agent.SET_RAND(seed) ;
-        
-        seed = Long.valueOf(reporter.getMetaDatum("Site.RANDOM_SEED")) ;
-        Site.SET_RAND(seed) ;
-        
+
+        if (!simName.isEmpty())
+        {
+            //FIXME: Must ensure that random generator is properly calibrated after 
+            // generating new Agents, even after reloading seed.
+            Reporter reporter = new Reporter(simName,"output/test/") ;
+            long seed = Long.valueOf(reporter.getMetaDatum("Community.RANDOM_SEED")) ;
+            RANDOM_SEED = seed ;
+            RAND = new Random(seed) ;
+
+            seed = Long.valueOf(reporter.getMetaDatum("Agent.RANDOM_SEED")) ;
+            Agent.SET_RAND(seed) ;
+
+            seed = Long.valueOf(reporter.getMetaDatum("Site.RANDOM_SEED")) ;
+            Site.SET_RAND(seed) ;
+
+            seed = Long.valueOf(reporter.getMetaDatum("Relationship.RANDOM_SEED")) ;
+            Relationship.SET_RAND(seed) ;
+        }
         System.out.println(initialiseCommunity()) ;
                 
+    }
+    
+    public Community(String simName, int fromCycle)
+    {
+        if (simName.isEmpty())
+            System.out.println(initialiseCommunity()) ;
+        else
+        {
+            //this.agents = MSM.REBOOT_AGENTS(simName) ;
+            this.agents = Agent.REBOOT_AGENTS(simName) ;
+            this.initialRecord = "" ; 
+            for (Agent agent : agents)
+                initialRecord += agent.getCensusReport() ;
+            nbRelationships = Relationship.RELOAD_RELATIONSHIPS(simName, agents) ;
+        }
     }
 
     /**
@@ -388,17 +445,21 @@ public class Community {
      */
     private String initialiseCommunity()
     {
+        String report = "" ;
+        
         initialRecord = "" ;
-        for (int id = 0 ; id < population ; id++ ) 
+        for (int id = 0 ; id <  population ; id++ ) 
         {
             //Class<?> AgentClazz = Class.forName("MSM") ; 
             //Agent newAgent = (Agent) AgentClazz.newInstance() ;
             //Constructor<?> agentConstructor = AgentClazz.getDeclaredConstructors()[0] ;
 
             // Call generateAgent to get randomly chosen combination of Agent subclasses
-            MSM newAgent = generateAgent() ;  //new MSM(-1) ;
-            agents.add(newAgent) ;
+            //and to impose initial conditions, such as prepStatus=false
+            MSM newAgent = generateAgent(-1) ;  //new MSM(-1) ;
             newAgent.setPrepStatus(false) ;
+            //newAgent.setPrepStatus(newAgent.getAgent().equals("RiskyMSM"));
+            agents.add(newAgent) ;
 
             // Record newAgent for later reporting
             initialRecord += newAgent.getCensusReport() ;
@@ -424,47 +485,66 @@ public class Community {
 //            break ;
 //        }
 //        return "Population clear except for one RiskyMSM with asymptomatic Urethral infection." ;
-        return "Currently no Agents on PrEP";
+        report = "Currently no Agents on PrEP" ;
+        return report ;
     }
     
     /**
      * For addressing specific questions. Code will flux dramatically.
-     * TODO:Generalise to not be MSM specific.
+     * TODO: Generalise to not be MSM specific.
      */
     private String interveneCommunity(int cycle)
     {
-        if (cycle < 2350)
+        int startCycle = 6000 ;
+        if (cycle < startCycle)
             return "" ;
         
-        int year = (cycle-2350)/365 ;
-        if (year * 365 == (cycle - 2350))
+        String report = "" ;
+        
+        int year = (cycle - startCycle)/365 ;
+        if (year * 365 == (cycle - startCycle))
         {
             for (Agent agent : agents)
-            {
+            {/*
+                if ("SafeMSM".equals(agent.getAgent())) 
+                    continue ; 
+                ((MSM) agent).reinitPrepStatus(true) ;
+            }
+        */
                 try
                 {
                     ((MSM) agent).reinitScreenCycle(year);
+                    agent.adjustCondomUse() ;
                 }
                 catch( Exception e ) // cycle extends beyond trend data
                 {
                     break ;
                 }
             }
+            report = "condom use reduced with increased testing" ;  // PrEP introduced" ; // gradually" ;
         }
+        
 
+        /*
         int agentId = 5*(cycle-1000) ;
-        for (int index = 0 ; index < 5 ; index++ )
-            agents.get(agentId + index).adjustCondomUse();
-        /*for (Agent agent : agents)
+        //for (int index = 0 ; index < 5 ; index++ )
+          //  agents.get(agentId + index).adjustCondomUse() ;
+        int newPrep = 5 ;
+        for (Agent agent : agents)
         {
-            if (false && !((MSM) agent).getPrepStatus())
+            if ("RiskyMSM".equals(agent.getAgent()) && !((MSM) agent).getPrepStatus())
             {
                 //double prepProbability = ((MSM) agent).getProbabilityPrep() ;
                 ((MSM) agent).reinitPrepStatus(true) ; // RAND.nextDouble() < prepProbability) ;
-                break ;
+                agent.adjustCondomUse();
+                newPrep-- ;
+                if (newPrep == 0)
+                    break ;
             }
-        }*/
-        return "condom use halved for " ;  // PrEP introduced" ; // gradually" ;
+        }
+        //report = "condom use reduced with increased testing" ;  // PrEP introduced" ; // gradually" ;
+        */
+        return report ;
     }
     
     /**
@@ -472,10 +552,14 @@ public class Community {
      * TODO: Generalise to more general types of Agent
      * @return MSM subclass newAgent 
      */
-    private MSM generateAgent()
+    private MSM generateAgent(int startAge)
     {
         // if Agent.subclass == MSM
-        MSM newAgent = MSM.birthMSM(-1);
+        MSM newAgent = MSM.birthMSM(startAge);
+        
+        // Impose initial condition here
+        newAgent.setPrepStatus(false) ;
+            
         return newAgent ;
     }
 
@@ -662,14 +746,14 @@ public class Community {
         String record = "birth:" ;
         for (int birth = 0 ; birth < nbBirths ; birth++ )
         {
-            MSM newAgent = MSM.birthMSM(0) ;
+            MSM newAgent = generateAgent(0) ; // MSM.birthMSM(0) ;
             agents.add(newAgent) ;
             record += newAgent.getCensusReport() ;
             //record += Reporter.addReportProperty("agentId",newAgent.getAgentId()) ;
             //record += Reporter.addReportProperty("age",newAgent.getAge()) ; 
-            currentPopulation++ ;
+            //currentPopulation++ ;
         }
-        record += Reporter.addReportProperty("currentPopulation",currentPopulation) ;
+        //record += Reporter.addReportProperty("currentPopulation",currentPopulation) ;
 
 
         return record ;
@@ -702,7 +786,7 @@ public class Community {
                 agents.remove(agent) ;
                 record += Reporter.addReportProperty("agentId", agent.getAgentId()) ;
                 //record += Reporter.addReportProperty("age", agent.getAge()) ;
-                currentPopulation-- ;
+                //currentPopulation-- ;
             }
         }
         //prepare record
@@ -720,7 +804,7 @@ public class Community {
     private String runEncounters()
     {
         String record = "" ;
-        ArrayList<Relationship> currentRelationships ;
+        //ArrayList<Relationship> currentRelationships ;
         
         // LOGGER.info("nb relationships: " + relationships.size());
         for (Agent agent : agents)
@@ -846,9 +930,9 @@ public class Community {
                     agent.treat() ;
                     record += Reporter.addReportLabel("treated") ;
                 }
-                continue ;  // Move to next Agent
+                record += " " ;
             }
-            if (infected)
+            else if (infected)
             {
                 //LOGGER.log(Level.INFO, "infected:{0}", agent.getAgentId());
                 record += Reporter.addReportProperty("agentId",agent.getAgentId()) ;
@@ -864,6 +948,7 @@ public class Community {
                 if (agent.progressInfection())
                 {
                     record += Reporter.addReportLabel("cleared") ;
+                    record += " " ;
                     //LOGGER.info("cleared");
                 }
                 else if (agent.getSymptomatic())
@@ -871,6 +956,7 @@ public class Community {
                     {
                         record += Reporter.addReportLabel("tested") ;
                         record += Reporter.addReportLabel("treated") ;
+                        record += " " ;
                         //LOGGER.info("treated");
                     }
             }
@@ -931,7 +1017,7 @@ public class Community {
         metaData.add(Community.POPULATION) ;
         metaLabels.add("Community.MAX_CYCLES") ;
         metaData.add(Community.MAX_CYCLES) ;
-        metaLabels.add("community.RANDOM_SEED") ;
+        metaLabels.add("Community.RANDOM_SEED") ;
         metaData.add(RANDOM_SEED) ;
         
         metaLabels.add("Agent.SITE_NAMES") ;
