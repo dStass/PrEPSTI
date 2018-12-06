@@ -70,6 +70,8 @@ public class Reporter {
     
     /** Number of days in a year. */
     static final int DAYS_PER_YEAR = 365 ;
+    /** Number of days in a month. */
+    static final int DAYS_PER_MONTH = 31 ;
 
     
     /** Logger of Reporter Class. */
@@ -306,11 +308,12 @@ public class Reporter {
         for (int indexStart = indexOfProperty(bound,string) ; indexStart >= 0 ; indexStart = indexOfProperty(bound,indexStart+1,string))
         {
             boundedString = extractBoundedString(bound, string, indexStart) ;
-            
             // This if statement moved to compareValue()
             //if (indexOfProperty(propertyName,boundedString) >= 0)
-                if (compareValue(propertyName,value,boundedString)) 
-                    boundedOutput += boundedString ;
+            
+            // TODO: Label Sites site0, site1 in generation of encounterString so that boolean || is not necessary
+            if (compareValue(propertyName,value,boundedString) || compareValue(propertyName,value,boundedString,boundedString.lastIndexOf(propertyName))) 
+                boundedOutput += boundedString ;
         }
         return boundedOutput ;
     }
@@ -1080,15 +1083,24 @@ public class Reporter {
         
         // Don't go further back than records allow.
         if ((backYears * daysPerYear) > maxCycles)
+        {
             backYears = maxCycles/daysPerYear ;
+            LOGGER.warning("Tried to go back more years than records allow.") ;
+        }
         backCycles = backYears * daysPerYear ;
         
         if ((backMonths * daysPerMonth + backCycles) > maxCycles)
+        {
             backMonths = ((maxCycles - backCycles)/daysPerMonth) ;
+            LOGGER.warning("Tried to go back more months than records allow.") ;
+        }
         backCycles += backMonths * daysPerMonth + backDays ;
         
         if (backCycles > maxCycles)
+        {
             backCycles = maxCycles ;
+            LOGGER.warning("Tried to go back more days than records allow.") ;
+        }
         
         return backCycles ;
     }
@@ -1127,6 +1139,44 @@ public class Reporter {
                     agentIdValues = updateHashMap(index,agentId,agentIdValues) ;
         }
         return agentIdValues ;
+    }
+    
+    /**
+     * 
+     * @param propertyName
+     * @param reportList
+     * @return (ArrayList) report with (ArrayList) subreports where the values 
+     * in the subreports are averaged over the innermost ArrayList.
+     */
+    static public ArrayList<ArrayList<Object>> 
+        prepareMeanReport(String propertyName, ArrayList<ArrayList<ArrayList<Object>>> reportList)
+    {
+        // Find mean of reports
+        ArrayList<ArrayList<Object>> meanReport = new ArrayList<ArrayList<Object>>() ;
+        
+        
+        ArrayList<ArrayList<Object>> firstReport = reportList.get(0) ;
+        int nbReports = reportList.size() ;
+        int nbCycles = firstReport.size() ;
+        int nbSubReports = firstReport.get(0).size() ;
+        for (int cycle = 0 ; cycle < nbCycles ; cycle++)
+        {
+            String itemString ;
+            ArrayList<Object> meanRecord = new ArrayList<Object>() ;
+            for (int itemIndex = 0 ; itemIndex < nbSubReports ; itemIndex++ )
+            {
+                double itemValue = 0.0 ;
+                for (ArrayList<ArrayList<Object>> report : reportList)
+                {
+                    ArrayList<Object> record = report.get(cycle) ;
+                    itemValue += Double.valueOf(Reporter.extractValue(propertyName,String.valueOf(record.get(itemIndex)))) ;
+                }
+                itemString = Reporter.addReportProperty(propertyName, itemValue/nbReports) ;
+                meanRecord.add(itemString) ;
+            }
+            meanReport.add((ArrayList<Object>) meanRecord.clone()) ;
+        }
+        return meanReport ;
     }
 
     /**
@@ -1173,6 +1223,7 @@ public class Reporter {
             int cycle = 0 ;
             for (Object record : report)
             {
+                LOGGER.info(String.valueOf(record)) ;
                 line = String.valueOf(cycle) ;
                 for (String property : properties)
                     line += COMMA + extractValue(property,(String) record) ;
@@ -1212,16 +1263,17 @@ public class Reporter {
             BufferedWriter fileWriter = new BufferedWriter(new FileWriter(filePath,false));
             fileWriter.write(fileHeader) ;
             fileWriter.newLine();
-            int cycle = 0 ;
-            LOGGER.log(Level.INFO, "{0}", report);
+            for (int cycle = 0; cycle < 4000 ; cycle++)
+            {
+            line = String.valueOf(cycle) ;
             for (Object record : report)
             {
-                line = String.valueOf(cycle) ;
-                for (String entry : (ArrayList<String>) record)
-                    line += COMMA + extractValue(property,entry) ;
+                //for (String entry : (ArrayList<String>) record)
+                String entry = ((ArrayList<String>) record).get(cycle) ;
+                line += COMMA + extractValue(property,entry) ;
+            }
                 fileWriter.write(line) ;
                 fileWriter.newLine() ;
-                cycle++ ;
             }
             fileWriter.close() ;
         }
@@ -1317,6 +1369,82 @@ public class Reporter {
         }
         return propertyArray ;
     }
+    
+    /**
+     * Averages value of propertyName over (ArrayList) reports
+     * @param reports
+     * @param propertyName
+     * @return (ArrayList) averagedReport
+     */
+    static public ArrayList<Object> averagedReport(ArrayList<ArrayList<Object>> reports, String propertyName)
+    {
+        ArrayList<Object> averagedReport = new ArrayList<Object>() ;
+        
+        String record ;
+        String meanRecord ;
+        double meanValue ;
+        double value ;
+        int nbRecords = reports.get(0).size() ;
+        int nbReports = reports.size() ;
+        
+        ArrayList<String> meanProperties ;
+        if (propertyName.isEmpty())
+            meanProperties = identifyProperties((String) reports.get(0).get(0)) ;
+        else
+        {
+            meanProperties = new ArrayList<String>() ;
+            meanProperties.add(propertyName) ;
+        }
+        
+        for (int cycle = 0 ; cycle < nbRecords ; cycle++ )
+        {
+            meanRecord = "" ;
+            for (String property : meanProperties)
+            {
+                meanValue = 0.0 ;
+                for (ArrayList<Object> report : reports)
+                {
+                    record = (String) report.get(cycle) ;
+                    meanValue += Double.valueOf(extractValue(property,record)) ;
+                }
+                meanValue = meanValue/nbReports ;
+                meanRecord += addReportProperty(property,meanValue) ;
+            }
+            averagedReport.add(meanRecord) ;
+        }
+        return averagedReport ;
+    }
+
+    /**
+     * Averages over (Number[]) entries in (ArrayList) reports
+     * @param (ArrayList(HashMap)) reports
+     * @return (HashMap) averagedReport
+     */
+    static public HashMap<Object,Number[]> averagedHashMapReport(ArrayList<HashMap<Object,Number[]>> reports)
+    {
+        HashMap<Object,Number[]> averagedReport = new HashMap<Object,Number[]>() ;
+        
+        double nbReports = reports.size() ;
+        double meanValue ;
+        int nbEntries = 0 ;
+        
+        HashMap<Object,Number[]> sampleReport = reports.get(0) ;
+        nbEntries = sampleReport.values().iterator().next().length ;
+        
+        for (Object key : sampleReport.keySet())
+        {
+            Number[] meanRecord = new Number[nbEntries] ;
+            for (int entry = 0 ; entry < nbEntries ; entry++ )
+            {
+                meanValue = 0.0 ;
+                for (HashMap<Object,Number[]> report : reports)
+                    meanValue += report.get(key)[entry].doubleValue() ;
+                meanRecord[entry] = meanValue/nbReports ;
+            }
+            averagedReport.put(key,(Number[]) meanRecord.clone()) ;
+        }
+        return averagedReport ;
+    }
 
     
     public Reporter()
@@ -1404,6 +1532,35 @@ public class Reporter {
         return Integer.valueOf(getMetaDatum("Community.MAX_CYCLES")) ;
     }
     
+    /**
+     * Reads value from corresponding METADATA file.
+     * @return (int) the total number of cycles in the corresponding simulation.
+     */
+    public int getPopulation()
+    {
+        return Integer.valueOf(getMetaDatum("Community.POPULATION")) ;
+    }
+    
+    /**
+     * Reads String from METADATA file, strips square brackets, and splits into
+     * String[] at "," .
+     * @return (String[]) names of Sites included in simulation.
+     */
+    protected String[] getSiteNames()
+    {
+        //Read (String) line in METADATA file
+        String nameString = getMetaDatum("Agent.SITE_NAMES") ;
+        int leftIndex = nameString.indexOf("[") ;
+        int rightIndex = nameString.indexOf("]") ;
+        
+        // Convert to String[] and remove whitespace
+        String[] nameArray = nameString.substring(leftIndex, rightIndex).split(COMMA) ;
+        for (int nameIndex = 0 ; nameIndex < nameArray.length ; nameIndex++ )
+            nameArray[nameIndex] = nameArray[nameIndex].trim() ;
+            
+        return nameArray ;
+    }
+    
     protected ArrayList<String> getBackCyclesReport(int backYears, int backMonths, int backDays)
     {
         int backCycles = getBackCycles(backYears, backMonths, backDays) ;
@@ -1419,7 +1576,7 @@ public class Reporter {
     
     protected int getBackCycles(int backYears, int backMonths, int backDays)
     {
-        int maxCycles = Integer.valueOf(getMetaDatum("Community.MAX_CYCLES")) ;
+        int maxCycles = getMaxCycles() ; 
         
         return getBackCycles(backYears, backMonths, backDays, maxCycles) ;
     }
@@ -1536,7 +1693,7 @@ public class Reporter {
     {
         if (reportList.containsKey(reportName))
         {
-            //LOGGER.info("recall " + reportName) ;
+            LOGGER.info("recall " + reportName) ;
             return reportList.get(reportName) ;
         }
         
@@ -1561,7 +1718,7 @@ public class Reporter {
         Object report = new Object() ;
         
         Class reporterClazz = reporter.getClass().asSubclass(Reporter.class) ;
-        
+        LOGGER.info("prepare " + reportName) ;
         try
         {
             // Call prepareReport()
@@ -1594,7 +1751,7 @@ public class Reporter {
     {
         if (reportList.containsKey(recordName))
         {
-            //LOGGER.info("recall " + recordName) ;
+            LOGGER.info("recall " + recordName) ;
             return reportList.get(recordName) ;
         }
         
@@ -1787,7 +1944,7 @@ public class Reporter {
         private int initCyclesPerFile()
         {
             if (fileNames.size() == 1)
-                return Integer.valueOf(getMetaDatum("Community.MAX_CYCLES").trim()) ;
+                return Integer.valueOf(getMetaDatum("Community.MAX_CYCLES").trim()) ; // Cannot use getMaxCycles()
             String fileName1 = fileNames.get(1) ;
             int dashIndex = fileName1.indexOf("-") + 1 ; // Want following position
             int dotIndex = fileName1.indexOf("txt") - 1 ; // -1 for "."
@@ -1863,10 +2020,13 @@ public class Reporter {
             try
             {
                 int startCycle = endCycle - backCycles ;
+                
+                // Open file
                 getSpecificFile(startCycle) ;
                 BufferedReader fileReader = new BufferedReader(new FileReader(folderPath + fileNames.get(fileIndex))) ;
-                boolean firstLoop = true ;
+                boolean newFile = false ;
 
+                // Move to starting line in file
                 int startLine = startCycle % cyclesPerFile ;
                 int endLine = startLine + backCycles ;
                 int pauseLine ;
@@ -1878,15 +2038,12 @@ public class Reporter {
                     fileReader.readLine() ;
                 while (readLines < backCycles)
                 {
-                    // File already read if this is first time in readLines loop
-                    if (!firstLoop)
+                    // Open new file if reached end of previous one
+                    if (newFile)
                     {
                         fileReader = new BufferedReader(new FileReader(folderPath + fileNames.get(fileIndex))) ;
-                        firstLoop = false ;
+                        newFile = false ;
                     }
-
-                    outputString = fileReader.readLine();
-                    readLines++ ; 
 
                     // End loop at end of file if not before
                     pauseLine = endLine;
@@ -1895,17 +2052,18 @@ public class Reporter {
 
                     for (int lineNb = startLine ; lineNb < pauseLine ; lineNb++ )
                     {
+                        outputString = fileReader.readLine() ;
                         if (outputString == null)
                             break ;
                         outputList.add(outputString) ;
-                        outputString = fileReader.readLine() ;
                         readLines++ ;
                     }
 
                     // Prepare for next file
                     startLine = 0 ;
-                    endLine -= readLines ;
+                    endLine -= cyclesPerFile ;
                     fileIndex++ ;
+                    newFile = true ;
                 }
             }
             catch( Exception e )
