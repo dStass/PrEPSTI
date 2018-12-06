@@ -22,27 +22,39 @@ import java.util.logging.Level;
 
 public class EncounterPresenter extends Presenter {
     
+    static private String[] simNames 
+            = new String[] {"NoPrepCalibration74aPop40000Cycles5000"} ; //,"NoPrepCalibration74bPop40000Cycles5000","NoPrepCalibration74cPop40000Cycles5000"} ;
+    
     private EncounterReporter reporter ;
     
     public static void main(String[] args)
     {
-        //String simName = "testPop30000Cycles500" ; // Community.NAME_ROOT ; // "introPrepCalibration48Pop40000Cycles7000" ; // args[0] ;
-        //String simName = "NoPrepCalibration43Pop40000Cycles5000" ; // "NoPrepCalibration86Pop40000Cycles5000" ; // "introPrepCalibration48Pop40000Cycles7000" ; // args[0] ;
-        String simName = "RelationshipCalibration6Pop40000Cycles500" ; // "NoPrepCalibration86Pop40000Cycles5000" ; // "introPrepCalibration48Pop40000Cycles7000" ; // args[0] ;
+        String simName = "TestPop40000Cycles100" ; // Community.NAME_ROOT ; // "introPrepCalibration48Pop40000Cycles7000" ; // args[0] ;
+        //String simName = "NoPrepCalibration74aPop40000Cycles5000" ; // "NoPrepCalibration86Pop40000Cycles5000" ; // "introPrepCalibration48Pop40000Cycles7000" ; // args[0] ;
+        //String simName = "neutral_calibration2Pop40000Cycles4000" ;
+        //String simName = "RelationshipCalibrationPop40000Cycles200" ; // "NoPrepCalibration86Pop40000Cycles5000" ; // "introPrepCalibration48Pop40000Cycles7000" ; // args[0] ;
+        //String simName = "AllSexualContactsPop40000Cycles1200" ;
         //String chartTitle = "infections_of_PrEP_users" ; // args[1] ;
         //String chartTitle = "proportion_of_Agents_had_CLAI" ; // args[1] ;
-        String chartTitle = "condom_use_in_AI" ; // args[1] ;
+        String chartTitle = "transmissions" ;
+        //String chartTitle = "incidence_rate" ;
+        //String chartTitle = "condom_use_in_AI" ; // args[1] ;
         String reportFileName = "output/test/" ; // args[2] ;
         LOGGER.info(chartTitle) ;
+        String[] siteNames  = new String[] {"Pharynx","Rectum","Urethra"} ;
+        
+
         EncounterPresenter encounterPresenter = new EncounterPresenter(simName,chartTitle,reportFileName) ;
         //encounterPresenter.plotCondomUse();
         //encounterPresenter.plotProtection() ;
-        //encounterPresenter.plotNbTransmissions();
+        //encounterPresenter.plotTransmissionsPerCycle(siteNames);
         //encounterPresenter.plotCumulativeAgentTransmissionReport() ;
-        encounterPresenter.plotNumberCondomlessYears(2, 6, 0, 2017, new String[] {"Casual","Regular","Monogomous"}) ;
+        encounterPresenter.plotTransmissionsPerCycle(siteNames);
+        //encounterPresenter.plotIncidenceYears(siteNames, 7, 2017) ;
+        //encounterPresenter.plotNumberCondomlessYears(3, 0, 0, 2017, new String[] {"Casual","Regular","Monogomous"}) ;
         //encounterPresenter.plotNumberCondomlessReport(0, 6, 0, new String[] {"Casual","Regular","Monogomous"}) ;
         //encounterPresenter.plotPercentAgentCondomlessReport(new String[] {"Casual","Regular","Monogomous"}, 0, 6, 0, "", false) ;
-        //encounterPresenter.plotPercentAgentCondomlessReport(new String[] {"Casual","Regular","Monogomous"}, 0, 2, 0, "statusHIV", false) ; 
+        //encounterPresenter.plotPercentAgentCondomlessReport(new String[] {"Casual","Regular","Monogomous"}, 0, 6, 0, "statusHIV", true) ; 
         //encounterPresenter.plotPercentAgentCondomlessYears(new String[] {"Casual","Regular","Monogomous"}, 3, 6, 0, 2017, "", false) ; 
         //encounterPresenter.plotNumberAgentTransmissionReport("statusHIV") ;
         //encounterPresenter.plotFromSiteToSite(new String[] {"Rectum","Urethra","Pharynx"});
@@ -180,13 +192,104 @@ public class EncounterPresenter extends Presenter {
     }
     
     /**
+     * Plots bar chart showing incidence at each Site for each of the last backYears
+     * years counting back from lastYear.
+     * @param siteNames
+     * @param backYears
+     * @param lastYear 
+     */
+    public void plotIncidenceYears(String[] siteNames, int backYears, int lastYear)
+    {
+        HashMap<Object,Number[]> incidenceRecordYears = new HashMap<Object,Number[]>() ;
+        //reporter.prepareYearsIncidenceRecord(siteNames, backYears, lastYear) ;
+        ArrayList<HashMap<Object,Number[]>> reports = new ArrayList<HashMap<Object,Number[]>>() ;
+        
+        for (String simulation : simNames)
+        {
+            EncounterReporter encounterReporter = new EncounterReporter(simulation,reporter.getFolderPath()) ;
+            HashMap<Object,Number[]> report 
+                    = encounterReporter.prepareYearsIncidenceRecord(siteNames, backYears, lastYear) ;
+            reports.add((HashMap<Object,Number[]>) report.clone()) ;
+        }
+        incidenceRecordYears = Reporter.averagedHashMapReport(reports) ;
+        
+        String[] scoreNames = new String[siteNames.length + 1] ;
+        for (int siteIndex = 0 ; siteIndex < siteNames.length ; siteIndex++ )
+            scoreNames[siteIndex] = siteNames[siteIndex] ;
+        scoreNames[siteNames.length] = "all__" ;
+        
+        plotHashMap("Year", scoreNames, incidenceRecordYears) ;
+    }
+    
+    
+    /**
+     * Plots bar chart showing prevalence of all siteNames and total prevalence.
+     * TODO: Read (String[]) siteNames from metadata.
+     * @param siteNames 
+     */
+    public void plotFinalTransmissions()
+    {
+        //String siteNames = reporter.getMetaDatum("Community.SITE_NAMES") ;
+        //ArrayList<String> sitesList = Arrays(siteNames) ;
+        
+        plotFinalTransmissions(new String[] {"Pharynx","Rectum","Urethra"}) ;
+    }
+    
+    /**
+     * Plots bar chart showing prevalence of requested siteNames and total prevalence.
+     * @param siteNames 
+     */
+    public void plotFinalTransmissions(String[] siteNames)
+    {
+        HashMap<Object,Number> finalTransmissionsRecord = reporter.prepareFinalTransmissionsRecord(siteNames) ;
+        
+        
+        plotHashMap("Sites","prevalence",finalTransmissionsRecord) ;        
+    }
+    
+    
+    
+    /**
      * Plots the number of transmissions in a given cycle.
      */
-    public void plotNbTransmissions()
+    public void plotTransmissionsPerCycle(String siteName)
     {
-        ArrayList<Object> nbTransmissionReport = reporter.prepareTransmissionCountReport() ;
+        ArrayList<Object> nbTransmissionReport = new ArrayList<Object>() ;
+        //reporter.prepareTransmissionCountReport(siteName) ;
+        
+        ArrayList<ArrayList<Object>> reports = new ArrayList<ArrayList<Object>>() ;
+        for (String simulation : simNames)
+        {
+            EncounterReporter encounterReporter = new EncounterReporter(simulation,reporter.getFolderPath()) ;
+            ArrayList<Object> transmissionReport = encounterReporter.prepareTransmissionCountReport(siteName) ;
+            
+            reports.add((ArrayList<Object>) transmissionReport.clone()) ;
+        }
+        nbTransmissionReport = Reporter.averagedReport(reports,"transmission") ;
         
         plotCycleValue("transmission", nbTransmissionReport) ;
+    }
+    
+    /**
+     * Plots the number of transmissions in a given cycle for each siteName.
+     */
+    public void plotTransmissionsPerCycle(String[] siteNames)
+    {
+        ArrayList<ArrayList<Object>> nbTransmissionsReports = new ArrayList<ArrayList<Object>>() ;
+        
+        for (String siteName : siteNames)
+        {
+            ArrayList<ArrayList<Object>> reports = new ArrayList<ArrayList<Object>>() ;
+            for (String simulation : simNames)
+            {
+                EncounterReporter encounterReporter = new EncounterReporter(simulation,reporter.getFolderPath()) ;
+                reports.add(encounterReporter.prepareTransmissionCountReport(siteName)) ;
+            }
+            nbTransmissionsReports.add(Reporter.averagedReport(reports,"transmission")) ;
+        }
+        
+        multiPlotCycleValue("transmission",nbTransmissionsReports,siteNames) ;
+        
     }
 
     /**
@@ -254,6 +357,24 @@ public class EncounterPresenter extends Presenter {
      * @param backYears
      * @param backMonths
      * @param backDays 
+     * @param concordanceName 
+     * @param concordant 
+     */
+    public void plotPercentAgentCondomlessReport(String[] relationshipClassNames, int backYears, int backMonths, int backDays, String concordanceName, boolean concordant)
+    {
+        int endCycle = reporter.getMaxCycles() ;
+        
+        plotPercentAgentCondomlessReport(relationshipClassNames, backYears, backMonths, backDays, endCycle, concordanceName, concordant) ;
+    }
+    
+    /**
+     * Plots the percent of Agents who have been involved in each subclass of Relationship 
+     * who have partaken in condomless anal intercourse within those Relationships.
+     * 
+     * @param relationshipClassNames
+     * @param backYears
+     * @param backMonths
+     * @param backDays 
      * @param endCycle 
      * @param concordanceName 
      * @param concordant 
@@ -263,6 +384,8 @@ public class EncounterPresenter extends Presenter {
         HashMap<Object,Number> percentAgentCondomlessReport 
                 = reporter.preparePercentAgentCondomlessReport(relationshipClassNames, backYears, backMonths, backDays, endCycle, concordanceName, concordant) ;
         
+        if (!concordanceName.isEmpty())
+            chartTitle += "_" + concordanceName + "_" + String.valueOf(concordant) ;
         plotHashMap("Relationship class","percentage engaged in CLAI",percentAgentCondomlessReport) ;
     }
     
@@ -270,6 +393,8 @@ public class EncounterPresenter extends Presenter {
     {
         HashMap<Object,Number[]> percentAgentCondomlessYears 
                 = reporter.preparePercentAgentCondomlessYears(relationshipClassNames, backYears, backMonths, backDays, lastYear, concordanceName, concordant) ;
+        
+        plotHashMap("Year", relationshipClassNames, percentAgentCondomlessYears) ;
     }
     /**
      * Plots the proportion of Agents who have either always or not always used a 
@@ -283,7 +408,6 @@ public class EncounterPresenter extends Presenter {
     {
         HashMap<Object,Number[]> numberCondomlessReport 
                 = reporter.prepareNumberCondomlessReport(backYears, backMonths, backDays, relationshipClazzNames) ;
-        LOGGER.log(Level.INFO, "{0}", numberCondomlessReport);
         plotHashMap("condom use",relationshipClazzNames,numberCondomlessReport) ;
     }
     
