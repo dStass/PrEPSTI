@@ -8,6 +8,7 @@ import reporter.* ;
 import community.Community ;
 import java.awt.Color;
 import java.awt.Font ;
+import java.awt.font.TextAttribute;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 
@@ -15,9 +16,11 @@ import org.jfree.chart.* ;
 import org.jfree.chart.ui.ApplicationFrame ;
 import org.jfree.chart.plot.* ;
 import org.jfree.chart.axis.* ;
-import org.jfree.chart.ui.RectangleAnchor;
+import org.jfree.chart.ui.RectangleAnchor ;
+import org.jfree.chart.ui.RectangleEdge ;
 //import org.jfree.chart.ui.RefineryUtilities;
 import org.jfree.chart.ui.TextAnchor;
+import org.jfree.chart.title.LegendTitle ;
 
 import org.jfree.chart.plot.PlotOrientation ;
 import org.jfree.chart.plot.CategoryPlot;
@@ -45,6 +48,7 @@ import java.util.logging.Level;
 
 import org.apache.commons.math3.analysis.interpolation.SplineInterpolator ;
 import org.apache.commons.math3.analysis.polynomials.PolynomialSplineFunction ;
+import org.jfree.chart.ui.RectangleEdge;
 
 //import statec.Extrapolate.Value;
 
@@ -65,7 +69,7 @@ public class Presenter {
     static protected String BASE = "base" ;
     static protected String INTERVAL = "interval" ;
     static protected String PROPORTION = "proportion" ;
-    static protected String GROUP = "GROUP" ;
+    static protected String GROUP = "__" ;
     static final String CSV = ".csv" ;
     static final String COMMA = Reporter.COMMA ;
     private BarChart_AWT chart_awt ;
@@ -98,13 +102,13 @@ public class Presenter {
     static private String getYLabel(String[] scoreNames)
     {
         String scoreName = "" ;
-        boolean grouped = scoreNames[0].contains(GROUP) ;
         String name2 ;
         for (String name : scoreNames)
         {
-            name2 = name ;
-            if (grouped)
+            if (name.contains(GROUP))
                 name2 = name.substring(0, name.indexOf(GROUP)) ;
+            else
+                name2 = name ;
             if (!scoreName.contains(name2))
                 scoreName += "/" + name2 ;
         }
@@ -112,13 +116,180 @@ public class Presenter {
         return scoreName.substring(1) ;
     }
     
+    /**
+     * Adds data from given report to the given dataset
+     * @param dataset
+     * @param report
+     * @param readScores - (String[]) valueTypes given in new report
+     * @return (DefaultCategoryDataset) dataset with new data from report
+     */
+    static public DefaultCategoryDataset expandDataset(DefaultCategoryDataset dataset, HashMap<Object,Number[]> report, String[] readScores )
+    {
+        Number[] scoreValueArray ;
+        
+        for (Object key : report.keySet())
+        {
+            scoreValueArray = report.get(key) ;
+            for (int scoreIndex = 0 ; scoreIndex < scoreValueArray.length ; scoreIndex++ )
+            {
+                Number scoreValue = scoreValueArray[scoreIndex] ;
+                String scoreName = readScores[scoreIndex] ;
+                dataset.addValue( scoreValue, scoreName, String.valueOf(key)) ;
+            }
+        }
+
+        return dataset ;
+    }
+    
+    /**
+     * Reads .csv file so that its data may be plotted.
+     * @param fileName
+     * @return (HashMap) Report (Object) key maps to (Number) value
+     */
+    static HashMap<Object,Number> readHashMapNumberCSV(String fileName)
+    {
+        HashMap<Object,Number> hashMapNumber = new HashMap<Object,Number>() ;
+        
+        String folder = "data_files/" ;
+        String fileHeader ;
+        String[] arrayHeader  = new String[] {} ;
+        
+        // Plotting Integer or Double?
+        Object key ;
+        String[] recordArray ;
+        String scoreName = "" ;
+        Number[] valueArray ;
+        int recordLength = 0 ;
+        
+        try
+        {
+            BufferedReader fileReader 
+                    = new BufferedReader(new FileReader(folder + fileName + CSV)) ;
+            fileHeader = fileReader.readLine() ;
+            
+            arrayHeader = fileHeader.split(COMMA) ;
+            recordLength = arrayHeader.length ;
+            
+            // Find last line
+            String record = fileReader.readLine() ;  
+            recordArray = record.split(COMMA) ;
+            
+            valueArray = new Number[recordLength - 1] ;
+            while ((record != null) && (!record.isEmpty()))
+            {
+                recordArray = record.split(COMMA) ;
+                try
+                {
+                    key = Integer.valueOf(recordArray[0]) ;
+                }
+                catch ( Exception e )
+                {
+                    key = recordArray[0] ;
+                }
+
+                for (int index = 1 ; index < recordLength ; index++ )
+                {
+                    try
+                    {
+                        valueArray[index - 1] = (Number) Integer.valueOf(recordArray[index]) ;
+                    }
+                    catch ( Exception e )
+                    {
+                        valueArray[index - 1] = (Number) Double.valueOf(recordArray[index]) ;
+                    }
+                }
+                hashMapNumber.put(key, valueArray[0]) ;
+                record = fileReader.readLine() ;
+            }
+        }
+        catch ( Exception e )
+        {
+            LOGGER.info(e.toString());
+        }
+        
+        return hashMapNumber ;
+    }
+    
+    /**
+     * Reads .csv file so that its data may be plotted.
+     * @param fileName
+     * @return (HashMap) Report (Object) key maps to (Number) value
+     */
+    static HashMap<Object,Number[]> readHashMapNumberArrayCSV(String fileName)
+    {
+        HashMap<Object,Number[]> hashMapNumberArray = new HashMap<Object,Number[]>() ;
+        
+        String folder = "data_files/" ;
+        String fileHeader ;
+        String[] arrayHeader  = new String[] {} ;
+        
+        // Plotting Integer or Double?
+        Object key ;
+        String[] recordArray ;
+        Number[] valueArray ;
+        int recordLength = 0 ;
+        
+        try
+        {
+            BufferedReader fileReader 
+                    = new BufferedReader(new FileReader(folder + fileName + CSV)) ;
+            fileHeader = fileReader.readLine() ;
+            
+            arrayHeader = fileHeader.split(COMMA) ;
+            recordLength = arrayHeader.length ;
+            
+            // Find last line
+            String record = fileReader.readLine() ;  
+            recordArray = record.split(COMMA) ;
+            
+            while ((record != null) && (!record.isEmpty()))
+            {
+                valueArray = new Number[recordLength - 1] ;
+                LOGGER.info(record);
+                recordArray = record.split(COMMA) ;
+                try
+                {
+                    key = Integer.valueOf(recordArray[0]) ;
+                }
+                catch ( Exception e )
+                {
+                    key = recordArray[0] ;
+                }
+
+                for (int index = 1 ; index < recordLength ; index++ )
+                {
+                    try
+                    {
+                        valueArray[index - 1] = (Number) Integer.valueOf(recordArray[index]) ;
+                    }
+                    catch ( Exception e )
+                    {
+                        valueArray[index - 1] = (Number) Double.valueOf(recordArray[index]) ;
+                    }
+                    //LOGGER.log(Level.INFO, "{0} ")
+                }
+                hashMapNumberArray.put(key, (Number[]) valueArray.clone()) ;
+                record = fileReader.readLine() ;
+            }
+        }
+        catch ( Exception e )
+        {
+            LOGGER.info(e.toString());
+        }
+        
+        return hashMapNumberArray ;
+    }
+    
     public static void main(String[] args)
     {
-        String simName = "RelationshipCalibration5Pop40000Cycles500" ;
         //String simName = "NoPrepCalibration12Pop40000Cycles2000" ;
-        String folder = "output/test/" ;
+        String simName = "RelationshipCalibrationPop40000Cycles200" ; // "testPlotCondomUsePop4000Cycles500" ; // args[0] ;
+        //String folder = "output/test/" ;
+        String folder = "data_files/" ;
+        String fileName = "incidence" ;
         //String chartTitle = "Pharynx" ;
-        String chartTitle = "meanNb" ;
+        //String chartTitle = "meanNb" ;
+        String chartTitle = "incidence" ;
         LOGGER.info(chartTitle) ;
         String[] relationshipClassNames = new String[] {"Casual","Regular","Monogomous"} ; // "Casual","Regular","Monogomous"
         /*
@@ -130,12 +301,13 @@ public class Presenter {
         Reporter.writeCSV(pharynxPrevalenceReport, "Pharynx", simName, folder);
         */
         
-        RelationshipReporter relationshipReporter = 
+        /*RelationshipReporter relationshipReporter = 
                 new RelationshipReporter(simName,folder) ;
         // (ArrayList) records of mean number of each Relationship class per Agent
         LOGGER.info("prepareMeanNumberRelationshipsReport");
         ArrayList<HashMap<Object,String>> meanNumberRelationshipsReport 
                 = relationshipReporter.prepareMeanNumberRelationshipsReport(relationshipClassNames) ;
+        LOGGER.log(Level.INFO, "{0}", meanNumberRelationshipsReport);
         
         ArrayList<ArrayList<Object>> plotReport = new ArrayList<ArrayList<Object>>() ;
         for (HashMap<Object,String> report : meanNumberRelationshipsReport)
@@ -146,10 +318,13 @@ public class Presenter {
             plotReport.add((ArrayList<Object>) record.clone()) ;
         }
         Reporter.writeCSV(plotReport, relationshipClassNames, chartTitle, simName, folder);
-        
         Presenter presenter = new Presenter(simName, chartTitle) ;
+        */
         
-        presenter.readCSV(simName, chartTitle, folder);
+        //presenter.readCSV(simName, chartTitle, folder);
+        HashMap<Object,Number[]> hashMapNumber = readHashMapNumberArrayCSV(fileName);
+        //HashMap<Object,Number> hashMapNumber = readHashMapNumberCSV(fileName);
+        LOGGER.log(Level.INFO, "{0}", hashMapNumber );
     }
     
     public Presenter()
@@ -193,7 +368,8 @@ public class Presenter {
      * @param reportName
      * @param folderName 
      */
-    private void readCSV(String simName, String reportName, String folderPath)
+    //private void readCSV(String simName, String reportName, String folderPath)
+    private void readCSV(String fileName, String folderPath)
     {
         String fileHeader ;
         String[] arrayHeader  = new String[] {} ;
@@ -212,7 +388,7 @@ public class Presenter {
         try
         {
             BufferedReader fileReader 
-                    = new BufferedReader(new FileReader(folderPath + simName + reportName + CSV)) ;
+                    = new BufferedReader(new FileReader(folderPath + fileName + CSV)) ;
             fileHeader = fileReader.readLine() ;
             
             arrayHeader = fileHeader.split(COMMA) ;
@@ -269,7 +445,10 @@ public class Presenter {
             plotSpline(arrayHeader[0],scoreName,hashMapArray,(String[]) Arrays.copyOfRange(arrayHeader, 1, recordLength)) ;
         }
         else
+        {
+            LOGGER.log(Level.INFO, "{0}", hashMapNumber) ;
             plotHashMap(arrayHeader[0],arrayHeader[1],hashMapNumber) ;
+        }
     }
     
     /**
@@ -320,7 +499,7 @@ public class Presenter {
         // Find keys in order
         ArrayList<Object> categoryEntry = new ArrayList<Object>() ;
         double scoreValue ;
-        String categoryValue = "" ;
+        String categoryValue ;
         
         // Put keys in order
         for (Object key : unbinned.keySet())
@@ -560,7 +739,6 @@ public class Presenter {
         ArrayList<Object> reportArray = getReportArray(reportName) ;
         
         callPlotChart(scoreName, reportArray) ;
-        return ;
     }
     
     /**
@@ -679,15 +857,11 @@ public class Presenter {
     protected void callMultiPlotChart(String scoreName, ArrayList<ArrayList<Object>> reportArrays, String[] legend)
     {
         //LOGGER.info("callPlotChart()") ;
-        LOGGER.log(Level.INFO, "{0}", reportArrays);
         // Extract data from reportArray
         parseReportArrays(scoreName, reportArrays) ;
         
-        LOGGER.log(Level.INFO, "{0}", scoreData);
-        
         // Send data to be processed and presented
         chart_awt.callPlotChart(chartTitle,scoreData,scoreName,legend) ;
-        return ;
     }
     
     /**
@@ -710,7 +884,6 @@ public class Presenter {
         // Send data to be processed and presented
         LOGGER.info(chartTitle) ;
         chart_awt.callPlotChart(chartTitle,scoreData,scoreName,legend) ;
-        return ;
     }
     
     /**
@@ -737,7 +910,6 @@ public class Presenter {
         }
         // Send data to be processed and presented
         chart_awt.callPlotChart(chartTitle,scoreData,scoreName,legend) ;
-        return ;
     }
     
     /**
@@ -1082,7 +1254,6 @@ public class Presenter {
         for (ArrayList<Object> report : reports)
         {
             plotArray = new ArrayList<Object>() ;
-            LOGGER.log(Level.INFO, "{0}", report);
             for (Object record : report)
             {
                 String value = Reporter.extractValue(scoreName,String.valueOf(record)) ;
@@ -1208,7 +1379,7 @@ public class Presenter {
          */
         private void callPlotChart(String chartTitle, ArrayList<ArrayList<Object>> dataArray, String yLabel, String[] legend)
         {
-            callPlotChart(chartTitle, dataArray, yLabel, "cycle", legend) ;
+            callPlotChart(chartTitle, dataArray, yLabel, "day", legend) ;
         }
         
         /**
@@ -1284,11 +1455,29 @@ public class Presenter {
             //LOGGER.info("callPlotChartInteger()") ;
             boolean bin = false ;    // Comparable.class.isInstance(categoryList.get(0)) ;
             
-            CategoryDataset dataset = createDataset(scoreNames, categoryList, scoreLists,bin) ;
+            /*
+                for (int index = 0 ; index < scoreNames.length ; index++ )
+                    scoreNames[index] += GROUP + "sim" ;*/
+            DefaultCategoryDataset dataset = createDataset(scoreNames, categoryList, scoreLists,bin) ;
+            //String[] finalNames = scoreNames ;
+            
+            String[] finalNames = new String[scoreNames.length + 2] ;
+            for (int scoreIndex = 0 ; scoreIndex < scoreNames.length ; scoreIndex++ )
+                finalNames[scoreIndex] = scoreNames[scoreIndex] ;
+            
+            
+            // Data from file
+            HashMap<Object,Number[]> dataReport = readHashMapNumberArrayCSV("incidence_kirby2018") ;
+            String[] dataScore = new String[] {"hiv_negative","hiv_positive"} ;
+            dataset = expandDataset(dataset,dataReport,dataScore) ;
+            
+            for (int dataIndex = 0 ; dataIndex < dataScore.length ; dataIndex++ )
+                finalNames[scoreNames.length + dataIndex] = dataScore[dataIndex].concat(GROUP).concat("DATA") ;
             /*if (bin)
                 for (int scoreIndex = 0 ; scoreIndex < scoreNames.length ; scoreIndex++ )
                     scoreNames[scoreIndex] = "Log() ".concat(scoreNames[scoreIndex]) ;*/
-            plotStackedBarChart(chartTitle, dataset, scoreNames, xLabel) ;
+            
+            plotStackedBarChart(chartTitle, dataset, finalNames, xLabel) ;
         }
         
         /**
@@ -1338,6 +1527,7 @@ public class Presenter {
             JFreeChart barChart = ChartFactory.createBarChart(chartTitle,xLabel,
                 yLabel,dataset,PlotOrientation.VERTICAL,true, true, false);
             
+            barChart.getPlot().setBackgroundPaint(Color.WHITE) ;
             //barChart.getXYPlot().getDomainAxis().set.setTickUnit(new NumberTickUnit(dataset.getColumnCount()/20)) ;
             saveChart(barChart) ;
             displayChart(barChart) ;
@@ -1356,30 +1546,60 @@ public class Presenter {
         private void plotStackedBarChart(String chartTitle, CategoryDataset dataset, String[] scoreNames , String xLabel)
         {
             LOGGER.info("plotBarChart()");
-            String scoreName = getYLabel(scoreNames) ;
-            String group = "G1" ;
-        
-            JFreeChart barChart = ChartFactory.createStackedBarChart(chartTitle,xLabel,
-                scoreName,dataset,PlotOrientation.VERTICAL,true, true, false);
+            //if (grouped)
+            String[] nameList ;
             
+            String group = "G1" ;
             GroupedStackedBarRenderer renderer = new GroupedStackedBarRenderer();
             KeyToGroupMap map = new KeyToGroupMap(group);
-            boolean grouped = scoreNames[0].contains(GROUP) ;
             for (String name : scoreNames)
             {
-                if (grouped)
-                    group = name.substring(0, name.indexOf(GROUP)) ;
-                map.mapKeyToGroup(name, group);
+                if (name.contains("__"))
+                {
+                    nameList = name.split("__") ;
+                    if (nameList.length == 1)
+                        group = name ;
+                    else
+                    {
+                        name = nameList[0] ;
+                        group = nameList[1] ;
+                    }
+                    LOGGER.log(Level.INFO, "{0} {1}", new Object[] {name,group});
+                    map.mapKeyToGroup(name, group);
+                }
+                else
+                {
+                    map.mapKeyToGroup(name, "G1") ;
+                } // map.mapKeyToGroup(name, group);
             }
             renderer.setSeriesToGroupMap(map);
             
-            CategoryPlot plot = (CategoryPlot) barChart.getPlot();
-            plot.setRenderer(renderer);
-            //plot.setFixedLegendItems(createLegendItems());
+
+            String scoreName = "" ; // "infections per 100,000 person-years" ; // getYLabel(scoreNames) ;
+            JFreeChart barChart = ChartFactory.createStackedBarChart(chartTitle,xLabel,
+                scoreName,dataset,PlotOrientation.VERTICAL,true, true, false);
             
-            CategoryAxis domainAxis = plot.getDomainAxis();  
-            domainAxis.setCategoryLabelPositions(CategoryLabelPositions.UP_45);
-        
+            CategoryPlot plot = (CategoryPlot) barChart.getPlot();
+            
+            plot.setRenderer(renderer);
+            //LOGGER.info(plot.getDomainAxis().getLabelFont().) ;
+
+            Font font3 = new Font("Dialog", Font.PLAIN, 25); 
+            plot.getDomainAxis().setLabelFont(font3);
+            plot.getRangeAxis().setLabelFont(font3);
+
+            //plot.getDomainAxis().getLabelFont().getAttributes().put(TextAttribute.SIZE, TextAttribute.WIDTH_EXTENDED) ;
+
+            plot.setBackgroundPaint(Color.WHITE) ;
+            //LegendTitle legend = barChart.getLegend() ;
+            //legend.setPosition(RectangleEdge.TOP) ;
+            //plot.setFixedLegendItems(createLegendItems());
+            if (String.valueOf(dataset.getColumnKeys().get(0)).length() > 4)
+            {
+                CategoryAxis domainAxis = plot.getDomainAxis();  
+                domainAxis.setCategoryLabelPositions(CategoryLabelPositions.UP_45);
+            }
+            
             saveChart(barChart) ;
             displayChart(barChart) ;
             
@@ -1392,6 +1612,7 @@ public class Presenter {
             
             NumberAxis rangeAxis = (NumberAxis) scatterPlot.getXYPlot().getRangeAxis() ;
             rangeAxis.setTickUnit(new NumberTickUnit(1)) ;
+            scatterPlot.setBackgroundPaint(Color.WHITE) ;
             saveChart(scatterPlot) ;
             displayChart(scatterPlot) ;
             
@@ -1418,12 +1639,19 @@ public class Presenter {
             //domainAxis.setTickUnit(new NumberTickUnit(dataset.getItemCount(0)/20)) ;
             
             // Set unit tick distance if range is integer.
-            //LOGGER.info(String.valueOf(dataset.getX(0,0)));
-            if (int.class.isInstance(dataset.getX(0,0)))
+            LOGGER.log(Level.INFO,"{0} {1}", new Object[] {(dataset.getX(0,0)).getClass(),dataset.getX(0, 0)});
+            if (int.class.isInstance(dataset.getX(0,0)) || Integer.class.isInstance(dataset.getX(0, 0)))
             {
                 NumberAxis rangeAxis = (NumberAxis) lineChart.getXYPlot().getRangeAxis() ;
                 rangeAxis.setTickUnit(new NumberTickUnit(1)) ;
             }
+            lineChart.getPlot().setBackgroundPaint(Color.WHITE) ;
+            if (!legend[0].isEmpty())
+            {
+                LegendTitle plotLegend = lineChart.getLegend() ;
+                plotLegend.setPosition(RectangleEdge.RIGHT);
+            }
+            
             saveChart(lineChart) ;
             displayChart(lineChart) ;
         }
@@ -1467,14 +1695,14 @@ public class Presenter {
                 areaChart.getXYPlot().addDomainMarker(categoryMarker);*/
                 xPos += 5 ;
             }
-            
+            areaChart.getPlot().setBackgroundPaint(Color.WHITE) ;
             saveChart(areaChart) ;
             displayChart(areaChart) ;
         }
         
         private void displayChart(JFreeChart barChart)
         {
-            ChartPanel chartPanel = new ChartPanel( barChart );        
+            ChartPanel chartPanel = new ChartPanel( barChart );   
             //chartPanel.setPreferredSize(new java.awt.Dimension( 2240 , 734 ) );        
             chartPanel.setPreferredSize(new java.awt.Dimension( 1120 , 367 ) );        
             //chartPanel.setPreferredSize(new java.awt.Dimension( 560 , 367 ) );        
@@ -1610,7 +1838,7 @@ public class Presenter {
          * @param scoreData
          * @return 
          */
-        private CategoryDataset createDataset(String[] scoreNames, ArrayList<Object> categoryData, ArrayList<ArrayList<Number>> scoreData, boolean cluster)
+        private DefaultCategoryDataset createDataset(String[] scoreNames, ArrayList<Object> categoryData, ArrayList<ArrayList<Number>> scoreData, boolean cluster)
         {
             if (cluster)
                 return createDataset(scoreNames, categoryData, scoreData) ;
@@ -1618,7 +1846,7 @@ public class Presenter {
             DefaultCategoryDataset categoryDataset = new DefaultCategoryDataset() ;
             // ArrayList<String> categoryData = data.get(0) ;
             // ArrayList<String> scoreData = data.get(1) ;
-            
+
             String categoryValue ;
             ArrayList<Number> scoreValueArray ;
             //Number scoreValue ;
@@ -1631,6 +1859,8 @@ public class Presenter {
                 {
                     Number scoreValue = scoreValueArray.get(scoreIndex) ;
                     String scoreName = scoreNames[scoreIndex] ;
+                    //if (grouped)
+                      //  scoreName = scoreName.concat(GROUP).concat("sim") ;
                     categoryDataset.addValue( scoreValue, scoreName, categoryValue ) ;
                 }
             }
@@ -1645,7 +1875,7 @@ public class Presenter {
          * @param scoreData
          * @return 
          */
-        private CategoryDataset createDataset(String[] scoreNames, ArrayList<Object> categoryData, ArrayList<ArrayList<Number>> scoreData)
+        private DefaultCategoryDataset createDataset(String[] scoreNames, ArrayList<Object> categoryData, ArrayList<ArrayList<Number>> scoreData)
         {
             DefaultCategoryDataset categoryDataset = new DefaultCategoryDataset() ;
             // ArrayList<String> categoryData = data.get(0) ;
