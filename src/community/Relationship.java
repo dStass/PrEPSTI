@@ -8,7 +8,11 @@ import reporter.Reporter ;
 import java.util.Random ;
 //import java.util.logging.Logger;
 import java.lang.reflect.*;
+import java.util.ArrayList;
+import java.util.HashMap ;
 import java.util.logging.Level;
+
+import reporter.RelationshipReporter ;
 
 /*********************************************************************
  * Defines class Relationship with two Agent objects and probabilities
@@ -123,6 +127,63 @@ public class Relationship {
     	if (choice < (monogomousOdds + regularOdds))
     		return Regular.class ;
     	return Casual.class ;
+    }
+    
+    /**
+     * Restores from saved simulation the Relationships among all Agents.
+     * @param simName
+     * @param agents
+     * @return 
+     */
+    static public int RELOAD_RELATIONSHIPS(String simName, ArrayList<Agent> agents)
+    {
+        int nbRelationships = 0 ;
+        
+        RelationshipReporter relationshipReporter = new RelationshipReporter(simName,"output/test/") ;
+        
+        HashMap<Object,String[]> relationshipAgentReport 
+                = relationshipReporter.prepareRelationshipAgentReport() ;
+        
+        String[] relationshipClassNames = new String[] {"Regular","Monogomous"} ; // "Casual",
+        HashMap<Object,HashMap<Object,ArrayList<Object>>> relationshipsRecord 
+                = relationshipReporter.prepareAgentRelationshipsRecord(relationshipClassNames, 0, 0, 1) ;
+        
+        ArrayList<Object> currentRelationshipIds = new ArrayList<Object>() ;
+        String[] agentIds = new String[2] ;
+        
+        int agentIndex0 = 0 ;
+        int agentIndex1 = 0 ;
+        try
+        {
+            for (String relationshipName : relationshipClassNames)
+            {
+                Class relationshipClazz = Class.forName("community.".concat(relationshipName)) ;
+                for (Object relationshipId : relationshipsRecord.get(relationshipName).values())
+                {
+                    if (currentRelationshipIds.contains(relationshipId))
+                        continue ;
+                    currentRelationshipIds.add(relationshipId) ;
+                    agentIds = relationshipAgentReport.get(relationshipId) ;
+                    for (int agentIndex = 0 ; agentIndex < agents.size() ; agentIndex++ )
+                    {
+                        if (agents.get(agentIndex).getAgentId() == Integer.valueOf(agentIds[0]))
+                            agentIndex0 = agentIndex ;
+                        else if (agents.get(agentIndex).getAgentId() == Integer.valueOf(agentIds[1]))
+                            agentIndex1 = agentIndex ;
+                    }
+                    Relationship relationship = (Relationship) relationshipClazz.newInstance();
+                    relationship.addAgents(agents.get(agentIndex0), agents.get(agentIndex1)) ;
+                    nbRelationships++ ;
+                }
+
+            }
+            LOGGER.info("nbRelationships:".concat(String.valueOf(nbRelationships)));
+        }
+        catch ( Exception e )
+        {
+            LOGGER.severe(e.toString()) ;
+        }
+        return nbRelationships ;
     }
     
     /**
