@@ -58,7 +58,7 @@ public class PopulationReporter extends Reporter {
         
         int reportSize = agentBirthReport.size() ;
         
-        Integer maxBirthId = Community.POPULATION - 1 ;    //TODO: Read from METADATA
+        Integer maxBirthId = getPopulation() - 1 ;    //TODO: Read from METADATA
         countBirthReport.add(maxBirthId + 1) ;    //TODO: Read from METADATA
             
         for (int recordIndex = 0 ; recordIndex < reportSize; recordIndex++ )
@@ -508,7 +508,7 @@ public class PopulationReporter extends Reporter {
         {
             status0 = censusPropertyReport.get(pair[0]);
             status1 = censusPropertyReport.get(pair[1]);
-            concordants.put(pair,status0 == status1) ;
+            concordants.put(pair,status0.equals(status1)) ;
         }
         
         return concordants ;
