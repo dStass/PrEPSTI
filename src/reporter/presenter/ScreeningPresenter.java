@@ -68,17 +68,17 @@ public class ScreeningPresenter extends Presenter {
 
     public static void main(String[] args)
     {
-        String simName = "TestPop40000Cycles100" ; // Community.NAME_ROOT ; // "introPrepCalibration48Pop40000Cycles7000" ; // args[0] ;
+        //String simName = "TestPop40000Cycles100" ; // Community.NAME_ROOT ; // "introPrepCalibration48Pop40000Cycles7000" ; // args[0] ;
         //String simName = "IntroPrepCalibration74acycle6000Pop40000Cycles12000" ; // "NoPrepCalibration51bPop40000Cycles4000" ; // "DecliningCondoms3Pop40000Cycles5000" ; 
         //String simName = "RiskyPrep74Pop40000Cycles4000" ;
-        //String simName = "FallingCondomUseCalibration66aPop40000Cycles4000" ;
-        //String simName = "NoPrepCalibration74aPop40000Cycles5000" ; // "DecliningCondoms3Pop40000Cycles5000" ; 
+        //String simName = "FallingCondomUseCalibration76cPop40000Cycles2655" ;
+        String simName = "NoPrepCalibration76cPop40000Cycles4000" ; // "DecliningCondoms3Pop40000Cycles5000" ; 
         //String simName = "NoPrepCalibration74Pop40000Cycles200" ;
         //String simName = "IntroPrepCalibration51testPop40000Cycles1000" ;
         //String chartTitle = "mean_prevalence" ; //  args[1] ;
-        //String chartTitle = "multi-site prevalence" ; //  args[1] ;
+        String chartTitle = "multi-site prevalence" ; //  args[1] ;
         //String chartTitle = "yearly_notifications" ; //
-        String chartTitle = "proportion_symptomatic" ;
+        //String chartTitle = "proportion_symptomatic" ;
         //String chartTitle = "site-specific symptomatic" ; // args[1] ;
         //String chartTitle = "testing_6_months" ; // args[1] ;
         //String chartTitle = "infections_past_2years_PrEP" ; // args[1] ;
@@ -101,7 +101,7 @@ public class ScreeningPresenter extends Presenter {
 
         //screeningPresenter.plotNotificationsPerCycle(siteNames);
         //screeningPresenter.multiPlotScreening(new Object[] {SYMPTOMATIC,new String[] {"Pharynx","Rectum","Urethra"}});
-        //screeningPresenter.multiPlotScreening(new Object[] {"prevalence","coprevalence",new String[] {"Pharynx","Rectum"},new String[] {"Urethra","Rectum"},"prevalence",new String[] {"Pharynx","Rectum","Urethra"}});
+        screeningPresenter.multiPlotScreening(new Object[] {"prevalence","coprevalence",new String[] {"Pharynx","Rectum"},new String[] {"Urethra","Rectum"},"prevalence",new String[] {"Pharynx","Rectum","Urethra"}});
         //screeningPresenter.multiPlotScreening(new Object[] {"prevalence","prevalence",new String[] {"Pharynx","Rectum","Urethra"}});
         //screeningPresenter.plotNotificationsPerCycle(siteNames) ;
         //screeningPresenter.plotSitePrevalence(siteNames) ;
@@ -111,7 +111,7 @@ public class ScreeningPresenter extends Presenter {
         //screeningPresenter.plotFinalNotifications(new String[] {"Pharynx","Rectum","Urethra"}, 6, 0) ;
         //screeningPresenter.plotNotificationsYears(new String[] {"Pharynx","Rectum","Urethra"},5,2017) ;
         //screeningPresenter.plotNotificationPerCycle() ;    
-        screeningPresenter.plotSiteProportionSymptomatic(siteNames) ;
+        //screeningPresenter.plotSiteProportionSymptomatic(siteNames) ;
 
 
         //String methodName = args[3] ;
@@ -137,8 +137,6 @@ public class ScreeningPresenter extends Presenter {
     
     /**
      * Plots bar chart showing notifications of all siteNames and total incidence.
-     * TODO: Read (String[]) siteNames from metadata.
-     * @param siteNames 
      */
     public void plotFinalNotifications()
     {
@@ -175,8 +173,6 @@ public class ScreeningPresenter extends Presenter {
     
     /**
      * Plots bar chart showing prevalence of all siteNames and total prevalence.
-     * TODO: Read (String[]) siteNames from metadata.
-     * @param siteNames 
      */
     public void plotFinalPrevalences()
     {
@@ -200,8 +196,6 @@ public class ScreeningPresenter extends Presenter {
     
     /**
      * Plots bar chart showing prevalence of all siteNames and total prevalence.
-     * TODO: Read (String[]) siteNames from metadata.
-     * @param siteNames 
      */
     public void plotFinalSymptomatic()
     {
@@ -355,7 +349,7 @@ public class ScreeningPresenter extends Presenter {
     
     /**
      * Plots site-specific STI incidence pere head of population over time.
-     * @param siteName 
+     * @param siteNames 
      */
     public void plotNotificationsPerCycle(String[] siteNames)
     {
@@ -579,7 +573,7 @@ public class ScreeningPresenter extends Presenter {
                 String cycleString ;
                 for (ArrayList<Object> siteReport : siteReports)
                     cycleValue += Double.valueOf(Reporter.extractValue(PREVALENCE,String.valueOf(siteReport.get(cycle)))) ;
-                cycleString = Reporter.addReportProperty(PREVALENCE, cycleValue/nbReports) ;
+                cycleString = Reporter.ADD_REPORT_PROPERTY(PREVALENCE, cycleValue/nbReports) ;
                 meanPrevalenceReport.add(cycleString) ;
             }
             prevalenceReports.add((ArrayList<Object>) meanPrevalenceReport.clone()) ;
@@ -601,7 +595,7 @@ public class ScreeningPresenter extends Presenter {
             String cycleString ;
             for (ArrayList<Object> siteReport : siteReports)
                 cycleValue += Double.valueOf(Reporter.extractValue(PREVALENCE,String.valueOf(siteReport.get(cycle)))) ;
-            cycleString = Reporter.addReportProperty(PREVALENCE, cycleValue/nbReports) ;
+            cycleString = Reporter.ADD_REPORT_PROPERTY(PREVALENCE, cycleValue/nbReports) ;
             meanPrevalenceReport.add(cycleString) ;
         }
         prevalenceReports.add(0,(ArrayList<Object>) meanPrevalenceReport.clone()) ;
@@ -648,7 +642,7 @@ public class ScreeningPresenter extends Presenter {
             String cycleString ;
             for (ArrayList<Object> prevalenceReport : prevalenceReportList)
                 cycleValue += Double.valueOf(Reporter.extractValue(PREVALENCE,String.valueOf(prevalenceReport.get(cycle)))) ;
-            cycleString = Reporter.addReportProperty(PREVALENCE, cycleValue/nbReports) ;
+            cycleString = Reporter.ADD_REPORT_PROPERTY(PREVALENCE, cycleValue/nbReports) ;
             meanPrevalenceReport.add(cycleString) ;
         }
         prevalenceReportList.set(0,meanPrevalenceReport) ;
