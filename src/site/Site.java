@@ -23,7 +23,10 @@ abstract public class Site {
     static long RANDOM_SEED = System.nanoTime() ;
     static Random RAND = new Random(RANDOM_SEED) ;
     
-    /** get RANDOM_SEED. */
+    /** 
+     * getter for RANDOM_SEED.
+     * @return  
+     */
     static public final long GET_RANDOM_SEED()
     {
         return RANDOM_SEED ;
