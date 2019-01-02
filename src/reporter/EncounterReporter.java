@@ -20,7 +20,8 @@ import java.util.Set ;
 //import java.util.Comparator;
 import java.util.HashMap ;
 import java.util.logging.Level;
-import static reporter.Reporter.extractArrayList;
+import static reporter.Reporter.EXTRACT_ARRAYLIST;
+import static reporter.Reporter.EXTRACT_ARRAYLIST;
 
 
 public class EncounterReporter extends Reporter {
@@ -235,11 +236,11 @@ public class EncounterReporter extends Reporter {
             {
                 //LOGGER.info(record);
                 if (!siteName.isEmpty())
-                    record = boundedStringByValue(siteName,"0",RELATIONSHIPID,record) ;
+                    record = BOUNDED_STRING_BY_VALUE(siteName,"0",RELATIONSHIPID,record) ;
                 transmissions = countValueIncidence(TRANSMISSION, TRUE, record, 0)[1];
                 incidence = ((double) transmissions)/population;
-                transmissionString = Reporter.addReportProperty(TRANSMISSION, transmissions) ;
-                transmissionString += Reporter.addReportProperty("rate",incidence) ;
+                transmissionString = Reporter.ADD_REPORT_PROPERTY(TRANSMISSION, transmissions) ;
+                transmissionString += Reporter.ADD_REPORT_PROPERTY("rate",incidence) ;
                 nbTransmissions.add(transmissionString) ;
             }
             
@@ -309,7 +310,7 @@ public class EncounterReporter extends Reporter {
         
         LOGGER.info("sortReport()");
         //String[] values = new String[] {TRUE, FALSE} ;
-        return Reporter.sortReport(transmissionReport, sortingReport, values) ;
+        return Reporter.SORT_REPORT(transmissionReport, sortingReport, values) ;
     }
         
     /**
@@ -476,7 +477,7 @@ public class EncounterReporter extends Reporter {
             for (int recordNb = 0 ; recordNb < backCycles ; recordNb++ ) 
             {
                 String record = condomReport.get(recordNb) ;
-                ArrayList<String> encounters = extractArrayList(record,RELATIONSHIPID) ; 
+                ArrayList<String> encounters = EXTRACT_ARRAYLIST(record,RELATIONSHIPID) ; 
                 for (String encounter : encounters)
                 {
                     Object[] agentIds = relationshipAgentReport.get(extractValue(RELATIONSHIPID,encounter)) ;
@@ -572,7 +573,7 @@ public class EncounterReporter extends Reporter {
         for (int recordNb = 0 ; recordNb < reportSize ; recordNb++ ) 
         {
             String record = finalReport.get(recordNb) ;
-            ArrayList<String> encounters = extractArrayList(record,RELATIONSHIPID) ; 
+            ArrayList<String> encounters = EXTRACT_ARRAYLIST(record,RELATIONSHIPID) ; 
             for (String encounter : encounters)
             {
                 String[] agentIds = relationshipAgentReport.get(extractValue(RELATIONSHIPID,encounter)) ;
@@ -708,9 +709,9 @@ public class EncounterReporter extends Reporter {
                 usages = condomData[0] ;
                 opportunities = condomData[1] ;
                 proportion = ((double) usages)/opportunities ;
-                reportOutput = Reporter.addReportProperty("usages", usages) ;
-                reportOutput += Reporter.addReportProperty("opportunities", opportunities) ;
-                reportOutput += Reporter.addReportProperty("proportion", proportion) ;
+                reportOutput = Reporter.ADD_REPORT_PROPERTY("usages", usages) ;
+                reportOutput += Reporter.ADD_REPORT_PROPERTY("opportunities", opportunities) ;
+                reportOutput += Reporter.ADD_REPORT_PROPERTY("proportion", proportion) ;
                 condomUseReport.add(reportOutput) ;
             }
         
@@ -757,7 +758,7 @@ public class EncounterReporter extends Reporter {
             int agentIndex = 0 ;
             while (agentIndex >= 0)
             {
-                agentValue = extractBoundedString(AGENTID,record,agentIndex) ;
+                agentValue = EXTRACT_BOUNDED_STRING(AGENTID,record,agentIndex) ;
                 agentKey = extractValue(AGENTID,agentValue) ;
                 agentProperties.put(agentKey, agentValue) ;
                 agentIndex = record.indexOf(AGENTID,agentIndex + 1) ;
@@ -779,7 +780,7 @@ public class EncounterReporter extends Reporter {
                 total = 0 ;
 
                 // get Agent properties for each encounter 
-                encounters = extractArrayList(record,RELATIONSHIPID) ;
+                encounters = EXTRACT_ARRAYLIST(record,RELATIONSHIPID) ;
                 for (String encounter : encounters)
                 {
                     seroPosition = false ;
@@ -804,7 +805,7 @@ public class EncounterReporter extends Reporter {
                     }
 
                     // Get condom use for each Urethral contact and combine outcomes.
-                    contacts = extractArrayList(encounter,CONTACT) ;
+                    contacts = EXTRACT_ARRAYLIST(encounter,CONTACT) ;
                     for (String contact : contacts)
                     {
                         if (contact.indexOf(CONDOM) < 0)
@@ -833,12 +834,12 @@ public class EncounterReporter extends Reporter {
                 }  // encounters
                 //if (finished) 
                   //  break ;
-                protectionRecord = Reporter.addReportProperty("condomOnly",((double) condomOnly)/total) ;   
-                protectionRecord += Reporter.addReportProperty("onlySeroPosition",((double) onlySeroPosition)/total) ;
-                protectionRecord += Reporter.addReportProperty("onlySeroSort",((double) onlySeroSort)/total) ;
-                protectionRecord += Reporter.addReportProperty("condomSeroPosition",((double) condomSeroPosition)/total) ;
-                protectionRecord += Reporter.addReportProperty("condomSeroSort",((double) condomSeroSort)/total) ;
-                protectionRecord += Reporter.addReportProperty("unprotected",((double) unprotected)/total) ;
+                protectionRecord = Reporter.ADD_REPORT_PROPERTY("condomOnly",((double) condomOnly)/total) ;   
+                protectionRecord += Reporter.ADD_REPORT_PROPERTY("onlySeroPosition",((double) onlySeroPosition)/total) ;
+                protectionRecord += Reporter.ADD_REPORT_PROPERTY("onlySeroSort",((double) onlySeroSort)/total) ;
+                protectionRecord += Reporter.ADD_REPORT_PROPERTY("condomSeroPosition",((double) condomSeroPosition)/total) ;
+                protectionRecord += Reporter.ADD_REPORT_PROPERTY("condomSeroSort",((double) condomSeroSort)/total) ;
+                protectionRecord += Reporter.ADD_REPORT_PROPERTY("unprotected",((double) unprotected)/total) ;
                 protectionReport.add(protectionRecord) ;
             }    // report
         }
@@ -1027,7 +1028,7 @@ public class EncounterReporter extends Reporter {
         HashMap<Object,Object> sortingReport = sortingReporter.sortedAgentIds(sortingProperty) ;
         LOGGER.log(Level.INFO, "{0}", sortingReport);
         HashMap<Object,HashMap<Object,Integer>> sortedAgentTransmissionCountReport 
-                = sortReport(agentTransmissionCountReport, sortingReport) ;
+                = SORT_REPORT(agentTransmissionCountReport, sortingReport) ;
         
         // Find highest value to count down from amongst all sorting variables
         ArrayList<Integer> agentTransmissionCountList = new ArrayList<Integer>() ;
@@ -1118,9 +1119,9 @@ public class EncounterReporter extends Reporter {
             // Cycle through contact: substrings, noting fromSite, toSite where 
             // transmission occurs
             //LOGGER.info(report);
-            for (contactIndex = 0 ; contactIndex >= 0 ; contactIndex = indexOfProperty(CONTACT,contactIndex+1,report) )
+            for (contactIndex = 0 ; contactIndex >= 0 ; contactIndex = INDEX_OF_PROPERTY(CONTACT,contactIndex+1,report) )
             {
-                contactString = extractBoundedString(CONTACT,report,contactIndex) ;
+                contactString = EXTRACT_BOUNDED_STRING(CONTACT,report,contactIndex) ;
                 
                 // This reset is needed here
                 fromName = "" ;
@@ -1132,13 +1133,13 @@ public class EncounterReporter extends Reporter {
                     // ! site name in contactString
                     if (! contactString.contains(name0))
                         continue ;
-                    //nameIndex = Reporter.indexOfProperty(name0,contactString) ;
+                    //nameIndex = Reporter.INDEX_OF_PROPERTY(name0,contactString) ;
                     value0 = extractValue(name0,contactString) ;
                     
                     for (String name1 : siteNames)
                     {
                         // nameIndex+1 because both Sites might have the same name
-                        //nameIndex = Reporter.indexOfProperty(name0,nameIndex+1,contactString) ;
+                        //nameIndex = Reporter.INDEX_OF_PROPERTY(name0,nameIndex+1,contactString) ;
                         if (! contactString.contains(name1) || name1.equals(name0))
                             continue ;
                         // Assign toName and fromName
@@ -1207,13 +1208,13 @@ public class EncounterReporter extends Reporter {
         String methodOutput = "" ;
         String encounterString ;
         String contactString ;
-        for (int indexStart = 0 ; indexStart >= 0 ; indexStart = indexOfProperty(RELATIONSHIPID,indexStart+1, record) )
+        for (int indexStart = 0 ; indexStart >= 0 ; indexStart = INDEX_OF_PROPERTY(RELATIONSHIPID,indexStart+1, record) )
         {
             // Encounter to study
             encounterString = extractEncounter(record, indexStart) ;
 
             // Skip to next loop if no contact
-            indexContact = indexOfProperty(CONTACT,encounterString) ;
+            indexContact = INDEX_OF_PROPERTY(CONTACT,encounterString) ;
             if (indexContact < 0)
                 continue ;
             
@@ -1221,7 +1222,7 @@ public class EncounterReporter extends Reporter {
             String encounterOutput = "" ;
 
             // check contacts for desired value of propertyName
-            contactString = boundedStringByValue(propertyName,value,CONTACT,encounterString) ; 
+            contactString = BOUNDED_STRING_BY_VALUE(propertyName,value,CONTACT,encounterString) ; 
             encounterOutput += contactString ;
                 
             // Only include encounter in reportOutput if any of its contacts are included 
@@ -1250,18 +1251,18 @@ public class EncounterReporter extends Reporter {
         String methodOutput = "" ;
         String encounterString ;
         String contactString ;
-        for (int indexStart = 0 ; indexStart >= 0 ; indexStart = indexOfProperty(RELATIONSHIPID,indexStart+1, report) )
+        for (int indexStart = 0 ; indexStart >= 0 ; indexStart = INDEX_OF_PROPERTY(RELATIONSHIPID,indexStart+1, report) )
         {
             // Encounter to study
             encounterString = extractEncounter(report, indexStart) ;
 
             // Initialise reportOutput for encounter
-            indexContact = indexOfProperty(CONTACT,encounterString) ;
+            indexContact = INDEX_OF_PROPERTY(CONTACT,encounterString) ;
             String encounterOpening = encounterString.substring(0, indexContact ) ;
             String encounterOutput = "" ;
 
             // check contacts for desired propertyName
-            contactString = boundedStringByContents(propertyName,CONTACT,encounterString) ; 
+            contactString = BOUNDED_STRING_BY_CONTENTS(propertyName,CONTACT,encounterString) ; 
             encounterOutput += contactString ;
             // Only include encounter in reportOutput if any of its contacts are included 
             if (encounterOutput.length() > 0)
@@ -1281,7 +1282,7 @@ public class EncounterReporter extends Reporter {
      */
     private String extractContact(String encounter, int indexStart)
     {
-        return extractBoundedString(CONTACT, encounter, indexStart) ;
+        return EXTRACT_BOUNDED_STRING(CONTACT, encounter, indexStart) ;
     }
 
     /**
@@ -1291,7 +1292,7 @@ public class EncounterReporter extends Reporter {
      */
     private String extractEncounter(String string, int indexStart)
     {
-        return extractBoundedString(RELATIONSHIPID, string, indexStart) ;
+        return EXTRACT_BOUNDED_STRING(RELATIONSHIPID, string, indexStart) ;
     }
 
     
