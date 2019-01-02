@@ -21,11 +21,10 @@ import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import static reporter.Reporter.AGENTID;
-import static reporter.Reporter.extractArrayList;
 import static reporter.Reporter.extractValue;
 import static reporter.Reporter.identifyProperties;
-//import java.util.List;
-
+import static reporter.Reporter.EXTRACT_ARRAYLIST;
+import static reporter.Reporter.EXTRACT_ARRAYLIST;
 /**
  * @author <a href = "mailto:mlwalker@kirby.unsw.edu.au">Michael Walker</a>
  *
@@ -267,7 +266,7 @@ public abstract class Agent {
         int birthIndex = 0 ;
         for (String birthRecord : birthReport)
         {
-            ArrayList<String> birthList = Reporter.extractArrayList(birthRecord,AGENTID) ;
+            ArrayList<String> birthList = Reporter.EXTRACT_ARRAYLIST(birthRecord,AGENTID) ;
             if (birthList.isEmpty()) 
                 continue ;
             birthIndex += birthList.size() ;
@@ -300,7 +299,7 @@ public abstract class Agent {
                     if (infectionIndex < 0)
                         continue ;
                     
-                    infectionString = Reporter.extractBoundedString(Reporter.AGENTID, screeningRecord, infectionIndex);
+                    infectionString = Reporter.EXTRACT_BOUNDED_STRING(Reporter.AGENTID, screeningRecord, infectionIndex);
                     //LOGGER.info(infectionString);
                     sites = newAgent.getSites();
                     
@@ -513,7 +512,8 @@ public abstract class Agent {
 
     /**
      * Sets age of Agent to ageYears years and random (0 to 365) days.
-     * @param age 
+     * @param ageYears
+     * @param ageDays 
      */
     public void setAge(int ageYears, int ageDays) 
     {
@@ -629,12 +629,12 @@ public abstract class Agent {
     public String getCensusReport()
     {
         String censusReport = "" ;
-        censusReport += Reporter.addReportProperty("agentId",agentId) ;
-        censusReport += Reporter.addReportProperty("agent",agent) ;
-        censusReport += Reporter.addReportProperty("age",getAge()) ;  // Reporter.addReportProperty("startAge", getAge()) ;
-        censusReport += Reporter.addReportProperty("concurrency",concurrency) ;
-        censusReport += Reporter.addReportProperty("infidelity",infidelity) ;
-        censusReport += Reporter.addReportProperty("screenCycle",getScreenCycle()) ;
+        censusReport += Reporter.ADD_REPORT_PROPERTY("agentId",agentId) ;
+        censusReport += Reporter.ADD_REPORT_PROPERTY("agent",agent) ;
+        censusReport += Reporter.ADD_REPORT_PROPERTY("age",getAge()) ;  // Reporter.ADD_REPORT_PROPERTY("startAge", getAge()) ;
+        censusReport += Reporter.ADD_REPORT_PROPERTY("concurrency",concurrency) ;
+        censusReport += Reporter.ADD_REPORT_PROPERTY("infidelity",infidelity) ;
+        censusReport += Reporter.ADD_REPORT_PROPERTY("screenCycle",getScreenCycle()) ;
         
         /*Class fieldClazz ;
         Class agentClazz ;
@@ -642,7 +642,7 @@ public abstract class Agent {
         Method getMethod ;
         for (String fieldName : getCensusFieldNames() )
         {
-            censusReport += Reporter.addReportProperty(fieldName,Agent.class.getField(fieldName).get)  ;
+            censusReport += Reporter.ADD_REPORT_PROPERTY(fieldName,Agent.class.getField(fieldName).get)  ;
             try
             {
                 //fieldClazz = this.getClass().getField(fieldName).getClass() ;
@@ -650,7 +650,7 @@ public abstract class Agent {
                 getterName = "get" + fieldName.substring(0,1).toUpperCase() 
                         + fieldName.substring(1) ;
                 getMethod = agentClazz.getMethod(getterName, (Class[]) null) ;
-                censusReport += Reporter.addReportProperty(fieldName,getMethod.invoke(this)) ;
+                censusReport += Reporter.ADD_REPORT_PROPERTY(fieldName,getMethod.invoke(this)) ;
             }
             catch ( NoSuchMethodException nsme)
             {
@@ -733,11 +733,11 @@ public abstract class Agent {
         if (getAge() > 30)
         {
             // TODO: Modify propensity to consent to Casual Relationships
-            //report += Reporter.addReportProperty("consentCasual",concurrency) ;
+            //report += Reporter.ADD_REPORT_PROPERTY("consentCasual",concurrency) ;
             if (infidelity > 0.0)
             {
                 infidelity *= INFIDELITY_FRACTION ;
-                report += Reporter.addReportProperty("infidelity",infidelity) ;
+                report += Reporter.ADD_REPORT_PROPERTY("infidelity",infidelity) ;
             }
         }
         return report ;
@@ -793,19 +793,26 @@ public abstract class Agent {
         screenTime = time ;
     }
 
-    /** screenTime getter(). */
+    /** screenTime getter().
+     * @return  
+     */
     public int getScreenTime()
     {
         return screenTime ;
     }
 
-    /** screenCycle setter(). */
+    /** 
+     * screenCycle setter().
+     * @param screen 
+     */
     public void setScreenCycle(int screen)
     {
         screenCycle = screen ;
     }
 
-    /** screenCycle getter(). */
+    /** screenCycle getter().
+     * @return screenCycle 
+     */
     public int getScreenCycle()
     {
         return screenCycle ;
@@ -994,9 +1001,9 @@ public abstract class Agent {
      */
     public String enterRelationship(Relationship relationship)
     {
-        //String record = Reporter.addReportProperty(Reporter.AGENTID0, agentId) ;
+        //String record = Reporter.ADD_REPORT_PROPERTY(Reporter.AGENTID0, agentId) ;
         int partnerId = relationship.getPartnerId(agentId) ;
-        //record += Reporter.addReportProperty(Reporter.AGENTID1,partnerId) ;
+        //record += Reporter.ADD_REPORT_PROPERTY(Reporter.AGENTID1,partnerId) ;
         //record += relationship.getRelationship() + " " ;
 
         currentRelationships.add(relationship) ;
@@ -1099,8 +1106,8 @@ public abstract class Agent {
     final private String endRelationship(Relationship relationship)
     { 
         String record = "" ;
-        //record = Reporter.addReportLabel("death");
-        record += Reporter.addReportProperty(Relationship.RELATIONSHIP_ID, relationship.getRelationshipId()) ;
+        //record = Reporter.ADD_REPORT_LABEL("death");
+        record += Reporter.ADD_REPORT_PROPERTY(Relationship.RELATIONSHIP_ID, relationship.getRelationshipId()) ;
         
         relationship.getPartner(this).leaveRelationship(relationship) ;
         leaveRelationship(relationship) ;
@@ -1325,9 +1332,9 @@ public abstract class Agent {
      */
     final private void death()
     {
-        //String report = Reporter.addReportLabel("death") ; 
-        //report += Reporter.addReportProperty("agentId",agentId) ;
-        //report += Reporter.addReportProperty("startAge",startAge) ;
+        //String report = Reporter.ADD_REPORT_LABEL("death") ; 
+        //report += Reporter.ADD_REPORT_PROPERTY("agentId",agentId) ;
+        //report += Reporter.ADD_REPORT_PROPERTY("startAge",startAge) ;
         //report += "nbPartners:" + String.valueOf(currentRelationships.size()) + " ";
         clearRelationships() ;
         // report ;
