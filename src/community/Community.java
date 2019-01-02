@@ -30,13 +30,13 @@ import java.util.logging.Level;
  *******************************************************************/
 public class Community {
     static public int POPULATION = 40000 ;
-    static public int MAX_CYCLES = 4000 ;
+    static public int MAX_CYCLES = 2655 ;
     //static public String NAME_ROOT = "Test"
     //static public String NAME_ROOT = "max3Relationships80" 
     //static public String NAME_ROOT = "RiskyPrep74"        
     //static public String NAME_ROOT = "IntroPrepCalibration74acycle6000" 
-    //static public String NAME_ROOT = "FallingCondomUseCalibration74c" 
-    static public String NAME_ROOT = "NoPrepCalibration76" 
+    static public String NAME_ROOT = "FallingCondomUseCalibration76c" 
+    //static public String NAME_ROOT = "NoPrepCalibration76" 
     //static public String NAME_ROOT = "AllSexualContacts"
     //        + "DecliningCondomsAlteredTesting"
             + "Pop" + String.valueOf(POPULATION) + "Cycles" + String.valueOf(MAX_CYCLES) ;
@@ -46,13 +46,13 @@ public class Community {
             //+ "Agents reduce their chances of choosing condoms. "
             //+ "Every year from cycle 2000 "
             //+ "five RiskyMSM go on PrEP "
-            //+ "Testing rates are altered to compare with long-term data " 
-            //+ "and their condom usage rates are multiplied by random fraction between 0 and 1."
+            + "Testing rates are altered to compare with long-term data " 
+            + "and their condom usage rates are multiplied by random fraction between 0 and 1."
             //+ "MAX_RELATIONSHIPS set to 4 "  // "Uses parameters from NoPrepCalibration53" ;
             //+ "All encounters are recorded in full." 
               //      + "consentCasualProbability * 5/12 "
             //+ "Test of loading burn-in. Uses Calibration24. "
-             + "Test of Relationship.reloadRelationships(). "
+             + "Begins by reloading NoPrepCalibration76c"
             //+ "Test or reload METADATA to rerun simlation exactly with no burn-in. "
             //+ "Assumes number of Agents at least N times number of cycles minus 1000." ;*/
             + "" ;
@@ -76,7 +76,7 @@ public class Community {
      * (String) Name of previous simulation to reload.
      * Not reloaded if this is an empty string.
      */
-    static final String RELOAD_SIMULATION = "" ; // "NoPrepCalibration74Pop40000Cycles200" ; // "NoPrepCalibration24Pop40000Cycles8000" ;
+    static final String RELOAD_SIMULATION = "NoPrepCalibration76cPop40000Cycles4000" ; // "NoPrepCalibration24Pop40000Cycles8000" ;
     
     static public String getFilePath()
     {
@@ -183,10 +183,10 @@ public class Community {
             for (int burnin = 0 ; burnin < 5000 ; burnin++ )
             {
                 commenceString = community.generateRelationships(true) ;
-                commenceList.addAll(Reporter.extractArrayList(commenceString, Reporter.RELATIONSHIPID)) ;
+                commenceList.addAll(Reporter.EXTRACT_ARRAYLIST(commenceString, Reporter.RELATIONSHIPID)) ;
                 
                 breakupString = community.clearRelationships().substring(6) ;
-                breakupList = Reporter.extractArrayList(breakupString, Reporter.RELATIONSHIPID) ;
+                breakupList = Reporter.EXTRACT_ARRAYLIST(breakupString, Reporter.RELATIONSHIPID) ;
                 for (String breakup : breakupList)
                 {
                     for (String commence : commenceList)
@@ -214,7 +214,7 @@ public class Community {
         // simulation of maxCycles cycles
         
         cycleString = "0," ;
-        populationRecord = cycleString + Reporter.addReportLabel("birth") + community.initialRecord ;
+        populationRecord = cycleString + Reporter.ADD_REPORT_LABEL("birth") + community.initialRecord ;
         
         //outputInterval = 1 ;
         for (int cycle = 0; cycle < MAX_CYCLES; cycle++)
@@ -222,7 +222,7 @@ public class Community {
             if (cycle == ((cycle/outputInterval) * outputInterval))
             LOGGER.log(Level.INFO, "Cycle no. {0}", cycleString);
 
-            //community.interveneCommunity(cycle) ;
+            community.interveneCommunity(cycle) ;
             
             //LOGGER.log(Level.INFO,"{0} {1}", new Object[] {Relationship.NB_RELATIONSHIPS,Relationship.NB_RELATIONSHIPS_CREATED});
             // update relationships and perform sexual encounters, report them
@@ -495,7 +495,7 @@ public class Community {
      */
     private String interveneCommunity(int cycle)
     {
-        int startCycle = 6000 ;
+        int startCycle = 100 ;
         if (cycle < startCycle)
             return "" ;
         
@@ -675,7 +675,7 @@ public class Community {
             if (gseAgentEnd > gseAgents.size() - 3)
                 gseAgentEnd = nbGseAgents ;
 
-            record += Reporter.addReportProperty("groupSex", gseNumber) ;
+            record += Reporter.ADD_REPORT_PROPERTY("groupSex", gseNumber) ;
             // Every Agent in a given orgy has a Casual Relationship with
             //evey other Agent at that orgy
             //FIXME: Sexual contacts between pairs are clustered
@@ -683,7 +683,7 @@ public class Community {
             for (int gseIndex0 = gseAgentStart ; gseIndex0 < gseAgentEnd ; gseIndex0++ )
             {
                 Agent agent0 = gseAgents.get(gseIndex0) ;
-                //record += Reporter.addReportProperty(Reporter.AGENTID,agent0.getAgentId()) ;
+                //record += Reporter.ADD_REPORT_PROPERTY(Reporter.AGENTID,agent0.getAgentId()) ;
                 for (int orgyIndex1 = gseAgentStart ; orgyIndex1 < gseAgentEnd ; orgyIndex1++ )
                 {
                     Agent agent1 = gseAgents.get(orgyIndex1) ;
@@ -749,11 +749,11 @@ public class Community {
             MSM newAgent = generateAgent(0) ; // MSM.birthMSM(0) ;
             agents.add(newAgent) ;
             record += newAgent.getCensusReport() ;
-            //record += Reporter.addReportProperty("agentId",newAgent.getAgentId()) ;
-            //record += Reporter.addReportProperty("age",newAgent.getAge()) ; 
+            //record += Reporter.ADD_REPORT_PROPERTY("agentId",newAgent.getAgentId()) ;
+            //record += Reporter.ADD_REPORT_PROPERTY("age",newAgent.getAge()) ; 
             //currentPopulation++ ;
         }
-        //record += Reporter.addReportProperty("currentPopulation",currentPopulation) ;
+        //record += Reporter.ADD_REPORT_PROPERTY("currentPopulation",currentPopulation) ;
 
 
         return record ;
@@ -784,8 +784,8 @@ public class Community {
             {
                 nbRelationships-= agent.getCurrentRelationships().size() ;
                 agents.remove(agent) ;
-                record += Reporter.addReportProperty("agentId", agent.getAgentId()) ;
-                //record += Reporter.addReportProperty("age", agent.getAge()) ;
+                record += Reporter.ADD_REPORT_PROPERTY("agentId", agent.getAgentId()) ;
+                //record += Reporter.ADD_REPORT_PROPERTY("age", agent.getAge()) ;
                 //currentPopulation-- ;
             }
         }
@@ -824,7 +824,7 @@ public class Community {
                 try
                 {
                     if (RAND.nextDouble() < relationship.getEncounterProbability())
-                        record += Reporter.addReportProperty(Reporter.RELATIONSHIPID, relationship.getRelationshipId()) 
+                        record += Reporter.ADD_REPORT_PROPERTY(Reporter.RELATIONSHIPID, relationship.getRelationshipId()) 
                                 + relationship.encounter() ;
                     //System.out.println(record);
                 }
@@ -855,7 +855,7 @@ public class Community {
      */
     private String clearRelationships() 
     {
-        String record = Reporter.addReportLabel("clear") ;
+        String record = Reporter.ADD_REPORT_LABEL("clear") ;
         ArrayList<Relationship> currentRelationships ;
         Relationship relationship ;
 
@@ -908,15 +908,15 @@ public class Community {
         for (Agent agent : agents)
         {
             //LOGGER.log(Level.INFO,"infected:{0}",agent.getAgentId());
-            //record += Reporter.addReportProperty("agentId",agent.getAgentId()) ;
+            //record += Reporter.ADD_REPORT_PROPERTY("agentId",agent.getAgentId()) ;
             infected = agent.getInfectedStatus();
-            //record += Reporter.addReportProperty("infected", infected) ;
+            //record += Reporter.ADD_REPORT_PROPERTY("infected", infected) ;
             
             // Due for an STI screen?
             if (RAND.nextDouble() < agent.getScreenProbability(new String[] {Integer.toString(cycle)})) 
             {
-                record += Reporter.addReportProperty("agentId",agent.getAgentId()) ;
-                record += Reporter.addReportLabel("tested") ;
+                record += Reporter.ADD_REPORT_PROPERTY("agentId",agent.getAgentId()) ;
+                record += Reporter.ADD_REPORT_LABEL("tested") ;
                 if (infected)
                 {
                     //LOGGER.info("screening agentId:"+String.valueOf(agent.getAgentId())) ;
@@ -925,21 +925,21 @@ public class Community {
                     {
                         if (site.getInfectedStatus() == 0)
                             continue ;
-                        record += Reporter.addReportProperty(site.getSite(), site.getSymptomatic()) ;
+                        record += Reporter.ADD_REPORT_PROPERTY(site.getSite(), site.getSymptomatic()) ;
                     }
                     agent.treat() ;
-                    record += Reporter.addReportLabel("treated") ;
+                    record += Reporter.ADD_REPORT_LABEL("treated") ;
                 }
                 record += " " ;
             }
             else if (infected)
             {
                 //LOGGER.log(Level.INFO, "infected:{0}", agent.getAgentId());
-                record += Reporter.addReportProperty("agentId",agent.getAgentId()) ;
+                record += Reporter.ADD_REPORT_PROPERTY("agentId",agent.getAgentId()) ;
                 for (Site site : agent.getSites())
                 {
                     if (site.getInfectedStatus() != 0)
-                        record += Reporter.addReportProperty(site.getSite(), site.getSymptomatic()) ;
+                        record += Reporter.ADD_REPORT_PROPERTY(site.getSite(), site.getSymptomatic()) ;
                     //LOGGER.info(site.getSite()) ;
                 }
                 
@@ -947,15 +947,15 @@ public class Community {
                 // and returns boolean when agent is cleared (!stillInfected)
                 if (agent.progressInfection())
                 {
-                    record += Reporter.addReportLabel("cleared") ;
+                    record += Reporter.ADD_REPORT_LABEL("cleared") ;
                     record += " " ;
                     //LOGGER.info("cleared");
                 }
                 else if (agent.getSymptomatic())
                     if (agent.treatSymptomatic())  
                     {
-                        record += Reporter.addReportLabel("tested") ;
-                        record += Reporter.addReportLabel("treated") ;
+                        record += Reporter.ADD_REPORT_LABEL("tested") ;
+                        record += Reporter.ADD_REPORT_LABEL("treated") ;
                         record += " " ;
                         //LOGGER.info("treated");
                     }
@@ -1059,7 +1059,7 @@ public class Community {
         int agentId1 ;
         for (int commenceIndex = 0 ; commenceIndex >= 0 ; commenceIndex = commenceString.indexOf(Relationship.RELATIONSHIP_ID,commenceIndex+1)) 
         {
-            boundedString = Reporter.extractBoundedString(Relationship.RELATIONSHIP_ID, commenceString, commenceIndex);
+            boundedString = Reporter.EXTRACT_BOUNDED_STRING(Relationship.RELATIONSHIP_ID, commenceString, commenceIndex);
             relationshipId = Reporter.extractValue(Relationship.RELATIONSHIP_ID, boundedString) ;
             if (!breakupList.contains(relationshipId)) 
             {
@@ -1246,7 +1246,7 @@ public class Community {
             try
             {
                 for (int dataLine = 0 ; dataLine < metadata.size() ; dataLine++ )
-                    writeRecord(fileWriter, Reporter.addReportProperty(labels.get(dataLine), metadata.get(dataLine))) ;
+                    writeRecord(fileWriter, Reporter.ADD_REPORT_PROPERTY(labels.get(dataLine), metadata.get(dataLine))) ;
             }
             catch ( Exception e )
             {
