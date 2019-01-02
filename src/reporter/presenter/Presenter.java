@@ -126,16 +126,16 @@ public class Presenter {
     static public DefaultCategoryDataset expandDataset(DefaultCategoryDataset dataset, HashMap<Object,Number[]> report, String[] readScores )
     {
         Number[] scoreValueArray ;
-        
         for (Object key : report.keySet())
         {
             scoreValueArray = report.get(key) ;
-            for (int scoreIndex = 0 ; scoreIndex < scoreValueArray.length ; scoreIndex++ )
-            {
-                Number scoreValue = scoreValueArray[scoreIndex] ;
-                String scoreName = readScores[scoreIndex] ;
-                dataset.addValue( scoreValue, scoreName, String.valueOf(key)) ;
-            }
+            if (dataset.getColumnKeys().contains(String.valueOf(key))) 
+                for (int scoreIndex = 0 ; scoreIndex < scoreValueArray.length ; scoreIndex++ )
+                {
+                    Number scoreValue = scoreValueArray[scoreIndex] ;
+                    String scoreName = readScores[scoreIndex] ;
+                    dataset.addValue( scoreValue, scoreName, String.valueOf(key)) ;
+                }
         }
 
         return dataset ;
@@ -1217,7 +1217,7 @@ public class Presenter {
     {        
         for (int plotIndex = 0 ; plotIndex < categoryNames.length ; plotIndex++ )
         {
-            int categoryIndex = Reporter.indexOfProperty(categoryNames[plotIndex],report) ;
+            int categoryIndex = Reporter.INDEX_OF_PROPERTY(categoryNames[plotIndex],report) ;
 
             categoryData.add(Reporter.extractAllValues(categoryNames[plotIndex], report, categoryIndex)) ;
             scoreData.add(Reporter.extractAllValues(scoreName, report, categoryIndex)) ;
@@ -1455,15 +1455,7 @@ public class Presenter {
             //LOGGER.info("callPlotChartInteger()") ;
             boolean bin = false ;    // Comparable.class.isInstance(categoryList.get(0)) ;
             
-            /*
-                for (int index = 0 ; index < scoreNames.length ; index++ )
-                    scoreNames[index] += GROUP + "sim" ;*/
             DefaultCategoryDataset dataset = createDataset(scoreNames, categoryList, scoreLists,bin) ;
-            //String[] finalNames = scoreNames ;
-            
-            String[] finalNames = new String[scoreNames.length + 2] ;
-            for (int scoreIndex = 0 ; scoreIndex < scoreNames.length ; scoreIndex++ )
-                finalNames[scoreIndex] = scoreNames[scoreIndex] ;
             
             
             // Data from file
@@ -1471,11 +1463,16 @@ public class Presenter {
             String[] dataScore = new String[] {"hiv_negative","hiv_positive"} ;
             dataset = expandDataset(dataset,dataReport,dataScore) ;
             
+            String[] finalNames = new String[scoreNames.length + dataScore.length] ;
+            for (int scoreIndex = 0 ; scoreIndex < scoreNames.length ; scoreIndex++ )
+                finalNames[scoreIndex] = scoreNames[scoreIndex] ;
+            
             for (int dataIndex = 0 ; dataIndex < dataScore.length ; dataIndex++ )
                 finalNames[scoreNames.length + dataIndex] = dataScore[dataIndex].concat(GROUP).concat("DATA") ;
             /*if (bin)
                 for (int scoreIndex = 0 ; scoreIndex < scoreNames.length ; scoreIndex++ )
                     scoreNames[scoreIndex] = "Log() ".concat(scoreNames[scoreIndex]) ;*/
+            //LOGGER.log(Level.INFO, "{0}", finalNames);
             
             plotStackedBarChart(chartTitle, dataset, finalNames, xLabel) ;
         }
@@ -1554,17 +1551,20 @@ public class Presenter {
             KeyToGroupMap map = new KeyToGroupMap(group);
             for (String name : scoreNames)
             {
-                if (name.contains("__"))
+                if (name.contains(GROUP))
                 {
-                    nameList = name.split("__") ;
+                    nameList = name.split(GROUP) ;
                     if (nameList.length == 1)
+                    {
+                        name = name.substring(0, name.indexOf(GROUP)) ;
                         group = name ;
+                    }
                     else
                     {
                         name = nameList[0] ;
                         group = nameList[1] ;
                     }
-                    LOGGER.log(Level.INFO, "{0} {1}", new Object[] {name,group});
+                    //LOGGER.log(Level.INFO, "{0} {1}", new Object[] {name,group});
                     map.mapKeyToGroup(name, group);
                 }
                 else
@@ -1584,9 +1584,12 @@ public class Presenter {
             plot.setRenderer(renderer);
             //LOGGER.info(plot.getDomainAxis().getLabelFont().) ;
 
+            Font font2 = new Font("Dialog", Font.PLAIN, 20); 
             Font font3 = new Font("Dialog", Font.PLAIN, 25); 
             plot.getDomainAxis().setLabelFont(font3);
             plot.getRangeAxis().setLabelFont(font3);
+            plot.getDomainAxis().setTickLabelFont(font2);
+            plot.getRangeAxis().setTickLabelFont(font2);
 
             //plot.getDomainAxis().getLabelFont().getAttributes().put(TextAttribute.SIZE, TextAttribute.WIDTH_EXTENDED) ;
 
@@ -1855,12 +1858,12 @@ public class Presenter {
             {
                 categoryValue = String.valueOf(categoryData.get(index)) ;
                 scoreValueArray = scoreData.get(index) ;
-                for (int scoreIndex = 0 ; scoreIndex < scoreValueArray.size() ; scoreIndex++ )
+                for (int scoreIndex = 0 ; scoreIndex < scoreNames.length ; scoreIndex++ ) // scoreValueArray.size() 
                 {
                     Number scoreValue = scoreValueArray.get(scoreIndex) ;
                     String scoreName = scoreNames[scoreIndex] ;
-                    //if (grouped)
-                      //  scoreName = scoreName.concat(GROUP).concat("sim") ;
+                    if (scoreName.contains(GROUP))
+                        scoreName = scoreName.substring(0, scoreName.indexOf(GROUP)) ;
                     categoryDataset.addValue( scoreValue, scoreName, categoryValue ) ;
                 }
             }
