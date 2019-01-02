@@ -16,7 +16,8 @@ import reporter.PopulationReporter ;
 import java.util.ArrayList ;
 import java.util.HashMap ;
 import java.util.logging.Level;
-import static reporter.Reporter.extractArrayList;
+import static reporter.Reporter.EXTRACT_ARRAYLIST;
+import static reporter.Reporter.EXTRACT_ARRAYLIST;
 
 /**
  *
@@ -98,7 +99,7 @@ public class SortReporter extends Reporter {
         
         //String[] values = new String[] {TRUE, FALSE} ;
         
-        return Reporter.sortRecord(transmissionRecord, sortingReport, values) ;
+        return Reporter.SORT_RECORD(transmissionRecord, sortingReport, values) ;
     }
     
     /**
@@ -297,7 +298,7 @@ public class SortReporter extends Reporter {
         ArrayList<String> birthReport = ((PopulationReporter) sortingReporter).prepareBirthReport() ;
         for (String record : birthReport)
         {
-            ArrayList<String> agentList = extractArrayList(record,AGENTID) ;
+            ArrayList<String> agentList = EXTRACT_ARRAYLIST(record,AGENTID) ;
             for (String agentRecord : agentList)
             {
                 Object agentId = extractValue(AGENTID,agentRecord) ;
@@ -391,7 +392,7 @@ public class SortReporter extends Reporter {
         // FIXME: Only considers prevalences in final cycle.
         int recordIndex = finalRecordNb ;
         String record = unsortedReporter.getFinalRecord() ;
-        ArrayList<String> infections = extractArrayList(record,AGENTID) ;
+        ArrayList<String> infections = EXTRACT_ARRAYLIST(record,AGENTID) ;
                 
         // Nb new Relationships maps to agentIds
         ArrayList<ArrayList<Object>> screenSortAgentNewPartnersReport 
@@ -431,19 +432,19 @@ public class SortReporter extends Reporter {
             //population = Community.POPULATION ;
             if (population > 0)
             {
-                entry = addReportProperty("prevalence",((double) nbInfected)/population) ;
-                entry += addReportProperty("symptomatic",((double) nbSymptomatic)/population) ;
+                entry = ADD_REPORT_PROPERTY("prevalence",((double) nbInfected)/population) ;
+                entry += ADD_REPORT_PROPERTY("symptomatic",((double) nbSymptomatic)/population) ;
             }
             else
             {
-                entry = addReportProperty("prevalence",0.0) ;
-                entry += addReportProperty("symptomatic",0.0) ;
+                entry = ADD_REPORT_PROPERTY("prevalence",0.0) ;
+                entry += ADD_REPORT_PROPERTY("symptomatic",0.0) ;
             }
             if (nbInfected > 0)
-                entry += addReportProperty("proportion",((double) nbSymptomatic)/nbInfected) ;
+                entry += ADD_REPORT_PROPERTY("proportion",((double) nbSymptomatic)/nbInfected) ;
             else 
-                entry += addReportProperty("proportion",0.0) ;
-            entry += addReportProperty("population",population) ;
+                entry += ADD_REPORT_PROPERTY("proportion",0.0) ;
+            entry += ADD_REPORT_PROPERTY("population",population) ;
             
             prevalenceReport.add(entry) ;
         }
