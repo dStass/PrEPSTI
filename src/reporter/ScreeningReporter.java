@@ -112,7 +112,7 @@ public class ScreeningReporter extends Reporter {
             for (String finalIncidenceRecord : finalNotificationsReport)
             {
                 // Count infected siteName
-                record = boundedStringByContents(siteName,AGENTID,finalIncidenceRecord) ;
+                record = BOUNDED_STRING_BY_CONTENTS(siteName,AGENTID,finalIncidenceRecord) ;
                 
                 //* 100 because units  per 100 person years
                 notifications += countValueIncidence("treated","",record,0)[1] ;
@@ -198,7 +198,7 @@ public class ScreeningReporter extends Reporter {
         }
         
         // Count Agents with any Site infected
-        ArrayList<String> agentRecords = extractArrayList(finalPrevalenceRecord,AGENTID) ;
+        ArrayList<String> agentRecords = EXTRACT_ARRAYLIST(finalPrevalenceRecord,AGENTID) ;
         prevalence = 0 ;
         for (String record : agentRecords)
             for (String siteName : siteNames)
@@ -234,7 +234,7 @@ public class ScreeningReporter extends Reporter {
         }
         
         // Count Agents with any Site symptomatic 
-        ArrayList<String> agentRecords = extractArrayList(finalSymptomaticRecord,AGENTID) ;
+        ArrayList<String> agentRecords = EXTRACT_ARRAYLIST(finalSymptomaticRecord,AGENTID) ;
         symptomatic = 0 ;
         for (String record : agentRecords)
             for (String siteName : siteNames)
@@ -304,7 +304,7 @@ public class ScreeningReporter extends Reporter {
         {
             record = inputReport.get(cycle) ;
             
-            ArrayList<String> agentReport = extractArrayList(record,AGENTID,TESTED) ;
+            ArrayList<String> agentReport = EXTRACT_ARRAYLIST(record,AGENTID,TESTED) ;
             for (String agentRecord : agentReport)
             {
                 agentId = extractValue(AGENTID,agentRecord) ;
@@ -484,7 +484,7 @@ public class ScreeningReporter extends Reporter {
         {
             record = inputReport.get(cycle) ;
             
-            ArrayList<String> agentReport = extractArrayList(record,AGENTID,TREATED) ;
+            ArrayList<String> agentReport = EXTRACT_ARRAYLIST(record,AGENTID,TREATED) ;
             for (String agentRecord : agentReport)
             {
                 agentId = extractValue(AGENTID,agentRecord) ;
@@ -522,7 +522,7 @@ public class ScreeningReporter extends Reporter {
             for (String record : input)
             {
                 nbSymptomatic = 0 ;
-                ArrayList<String> infections = extractArrayList(record,AGENTID) ;
+                ArrayList<String> infections = EXTRACT_ARRAYLIST(record,AGENTID) ;
                 nbInfected = infections.size() ;
                 for (String infection : infections)
                     for (String siteName : MSM.SITE_NAMES)
@@ -533,9 +533,9 @@ public class ScreeningReporter extends Reporter {
                         }
 
                 //LOGGER.info(record) ;
-                entry = addReportProperty("prevalence",((double) nbInfected)/population) ;
-                entry += addReportProperty("symptomatic",((double) nbSymptomatic)/population) ;
-                entry += addReportProperty("proportion",((double) nbSymptomatic)/nbInfected) ;
+                entry = ADD_REPORT_PROPERTY("prevalence",((double) nbInfected)/population) ;
+                entry += ADD_REPORT_PROPERTY("symptomatic",((double) nbSymptomatic)/population) ;
+                entry += ADD_REPORT_PROPERTY("proportion",((double) nbSymptomatic)/nbInfected) ;
 
                 prevalenceReport.add(entry) ;
             }
@@ -568,9 +568,9 @@ public class ScreeningReporter extends Reporter {
     //                LOGGER.info(record);
 
 
-                entry = addReportProperty("prevalence",((double) nbSymptomatic[1])/population) ;
-                entry += addReportProperty("symptomatic",((double) nbSymptomatic[0])/population) ;
-                entry += addReportProperty("proportion",((double) nbSymptomatic[0])/nbSymptomatic[1]) ;
+                entry = ADD_REPORT_PROPERTY("prevalence",((double) nbSymptomatic[1])/population) ;
+                entry += ADD_REPORT_PROPERTY("symptomatic",((double) nbSymptomatic[0])/population) ;
+                entry += ADD_REPORT_PROPERTY("proportion",((double) nbSymptomatic[0])/nbSymptomatic[1]) ;
                 sitePrevalenceReport.add(entry) ;
             }
             
@@ -598,7 +598,7 @@ public class ScreeningReporter extends Reporter {
                 entry = record ;
                 for (String siteName : siteNames)
                 {
-                    entry = boundedStringByContents(siteName,AGENTID,entry) ;
+                    entry = BOUNDED_STRING_BY_CONTENTS(siteName,AGENTID,entry) ;
                 }
                 if (entry.isEmpty())
                     coprevalence = 0.0 ;
@@ -635,13 +635,13 @@ public class ScreeningReporter extends Reporter {
             for (String record : input)
             {
                 if (!siteName.isEmpty())
-                    record = boundedStringByContents(siteName,AGENTID,record) ;
+                    record = BOUNDED_STRING_BY_CONTENTS(siteName,AGENTID,record) ;
                 
                 notifications = countValueIncidence("treated","",record,0)[1];
                 rate = ((double) notifications)/population;
 
-                output = Reporter.addReportProperty("notification", notifications) ;
-                output += Reporter.addReportProperty("rate", rate) ;
+                output = Reporter.ADD_REPORT_PROPERTY("notification", notifications) ;
+                output += Reporter.ADD_REPORT_PROPERTY("rate", rate) ;
 
                 notificationsReport.add(output) ;
             }
