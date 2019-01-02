@@ -77,20 +77,20 @@ public class Reporter {
     /** Logger of Reporter Class. */
     static final java.util.logging.Logger LOGGER = java.util.logging.Logger.getLogger("reporter") ;
 
-    public static final String addReportLabel(String label)
+    public static final String ADD_REPORT_LABEL(String label)
     {
         return label + ":" ;
     }
     
-    public static final String addReportProperty(String label, String value)
+    public static final String ADD_REPORT_PROPERTY(String label, String value)
     {
-        String report = addReportLabel(label) ;
+        String report = ADD_REPORT_LABEL(label) ;
         return report + value + " " ;
     }
         
-    public static final String addReportProperty(String label, Object value)
+    public static final String ADD_REPORT_PROPERTY(String label, Object value)
     {
-        String report = addReportLabel(label) ;
+        String report = ADD_REPORT_LABEL(label) ;
         return report + String.valueOf(value) + " " ;
     }
      
@@ -101,9 +101,9 @@ public class Reporter {
      * @param record
      * @return indexOf(property + ":")
      */
-    public static final int indexOfProperty(String property, String record)
+    public static final int INDEX_OF_PROPERTY(String property, String record)
     {
-        return indexOfProperty(property,0,record) ;
+        return INDEX_OF_PROPERTY(property,0,record) ;
     }
     
     /**
@@ -113,7 +113,7 @@ public class Reporter {
      * @param report
      * @return indexOf(property + ":")
      */
-    public static final int indexOfProperty(String property, int startIndex, String report)
+    public static final int INDEX_OF_PROPERTY(String property, int startIndex, String report)
     {
         property += ":" ;
         return report.indexOf(property,startIndex) ;
@@ -125,13 +125,13 @@ public class Reporter {
      * @param elementNb
      * @return (String) representation of mapList.get(elementNb)
      */
-    protected static String presentElement(Object mapList, Object elementNb)
+    protected static String PRESENT_ELEMENT(Object mapList, Object elementNb)
     {
         if (mapList instanceof HashMap)
         {
-            return getElement((HashMap<?,?>) mapList, elementNb).toString() ;
+            return GET_ELEMENT((HashMap<?,?>) mapList, elementNb).toString() ;
         }
-    return getElement((ArrayList<?>) mapList, (Integer) elementNb).toString() ;
+    return GET_ELEMENT((ArrayList<?>) mapList, (Integer) elementNb).toString() ;
     }
 
     /**
@@ -140,7 +140,7 @@ public class Reporter {
      * @param elementNb
      * @return (Object) hashmap.get(elementNb) or (Object) "None" if elementKey not a key 
      */
-    private static Object getElement(HashMap<?,?> hashmap, Object elementKey)
+    private static Object GET_ELEMENT(HashMap<?,?> hashmap, Object elementKey)
     {
             if (hashmap.containsKey(elementKey))
             {
@@ -156,7 +156,7 @@ public class Reporter {
      * @param elementNb
      * @return (Object) arrayList[elementNb] or (Object) "None" if not available
      */
-    private static Object getElement(ArrayList<?> arrayList, int elementNb)
+    private static Object GET_ELEMENT(ArrayList<?> arrayList, int elementNb)
     {
             if (arrayList.size() > elementNb)
             {
@@ -174,7 +174,7 @@ public class Reporter {
      * @param fullReport
      * @return 
      */
-    protected static ArrayList<String> filterReport(String propertyName, String value, String bound, ArrayList<String> fullReport)
+    protected static ArrayList<String> FILTER_REPORT(String propertyName, String value, String bound, ArrayList<String> fullReport)
     {
         ArrayList<String> filteredReport = new ArrayList<String>() ;
         
@@ -182,7 +182,7 @@ public class Reporter {
         
         for (String record : fullReport)
         {
-            filteredRecord = boundedStringByValue(propertyName,value,bound,record);
+            filteredRecord = BOUNDED_STRING_BY_VALUE(propertyName,value,bound,record);
             filteredReport.add(filteredRecord) ;
         }
         
@@ -196,7 +196,7 @@ public class Reporter {
      * @param sortingReport
      * @return 
      */
-    protected static HashMap<Object,HashMap<Object,Integer>> sortReport(HashMap<Object,Integer> unsortedReport, 
+    protected static HashMap<Object,HashMap<Object,Integer>> SORT_REPORT(HashMap<Object,Integer> unsortedReport, 
             HashMap<Object,Object> sortingReport)
     {
         HashMap<Object,HashMap<Object,Integer>> outputHashMap = new HashMap<Object,HashMap<Object,Integer>>() ;
@@ -231,7 +231,7 @@ public class Reporter {
      * @return 
      */
     protected static HashMap<Object,HashMap<Object,ArrayList<Object>>> 
-        sortRecord(HashMap<Object,ArrayList<Object>> unsortedReport, 
+        SORT_RECORD(HashMap<Object,ArrayList<Object>> unsortedReport, 
             HashMap<Object, ArrayList<Object>> sortingReport, Object[] values)
     {
         HashMap<Object,HashMap<Object,ArrayList<Object>>> sortedReport 
@@ -262,7 +262,7 @@ public class Reporter {
      * @return 
      */
     protected static HashMap<Object,HashMap<Object,HashMap<Object,ArrayList<Object>>>> 
-        sortReport(HashMap<Object,HashMap<Object,ArrayList<Object>>> unsortedReport, 
+        SORT_REPORT(HashMap<Object,HashMap<Object,ArrayList<Object>>> unsortedReport, 
             HashMap<Object, ArrayList<Object>> sortingReport, Object[] values) 
     {
         HashMap<Object,HashMap<Object,HashMap<Object,ArrayList<Object>>>> sortedReport 
@@ -301,15 +301,15 @@ public class Reporter {
      * @param string
      * @return String boundedOutput
      */
-    protected static String boundedStringByValue(String propertyName, String value, String bound, String string)
+    protected static String BOUNDED_STRING_BY_VALUE(String propertyName, String value, String bound, String string)
     {
         String boundedOutput = "" ;
         String boundedString ;
-        for (int indexStart = indexOfProperty(bound,string) ; indexStart >= 0 ; indexStart = indexOfProperty(bound,indexStart+1,string))
+        for (int indexStart = Reporter.INDEX_OF_PROPERTY(bound,string) ; indexStart >= 0 ; indexStart = INDEX_OF_PROPERTY(bound,indexStart+1,string))
         {
-            boundedString = extractBoundedString(bound, string, indexStart) ;
+            boundedString = EXTRACT_BOUNDED_STRING(bound, string, indexStart) ;
             // This if statement moved to compareValue()
-            //if (indexOfProperty(propertyName,boundedString) >= 0)
+            //if (INDEX_OF_PROPERTY(propertyName,boundedString) >= 0)
             
             // TODO: Label Sites site0, site1 in generation of encounterString so that boolean || is not necessary
             if (compareValue(propertyName,value,boundedString) || compareValue(propertyName,value,boundedString,boundedString.lastIndexOf(propertyName))) 
@@ -326,7 +326,7 @@ public class Reporter {
      * @param report
      * @return HashMap key:values, entries: ArrayList of values of bound
      */
-    protected static HashMap<Object,ArrayList<Object>> sortBoundedStringArray(String propertyName, String[] values, String bound, ArrayList<String> report)
+    protected static HashMap<Object,ArrayList<Object>> SORT_BOUNDED_STRING_ARRAY(String propertyName, String[] values, String bound, ArrayList<String> report)
     {
         HashMap<Object,ArrayList<Object>> sortedHashMap = new HashMap<Object,ArrayList<Object>>() ;
         int indexStart ;
@@ -342,20 +342,20 @@ public class Reporter {
         for (String record : report)
         {
             key = "" ;
-            String checkRecord = boundedStringByContents(propertyName,bound,record) ;
+            String checkRecord = BOUNDED_STRING_BY_CONTENTS(propertyName,bound,record) ;
             if (checkRecord.isEmpty())
             {
                 LOGGER.info(propertyName + " " + bound + " checkRecord is empty " + record);
                 continue ;
             }
-            indexStart = indexOfProperty(bound,checkRecord);
+            indexStart = Reporter.INDEX_OF_PROPERTY(bound,checkRecord);
             while (indexStart >= 0)
             {
-                boundedString = extractBoundedString(bound, checkRecord, indexStart) ;
+                boundedString = EXTRACT_BOUNDED_STRING(bound, checkRecord, indexStart) ;
                 key = (Object) extractValue(propertyName,boundedString) ;
                 boundValue = extractValue(bound,boundedString) ;
                 sortedHashMap = updateHashMap(key,boundValue,sortedHashMap) ;
-                indexStart = indexOfProperty(bound,indexStart+1,checkRecord);
+                indexStart = INDEX_OF_PROPERTY(bound,indexStart+1,checkRecord);
             }
             //LOGGER.log(Level.INFO, "key:{0}", new Object[]{key});
             //LOGGER.log(Level.INFO, "{0}", sortedHashMap);
@@ -370,13 +370,13 @@ public class Reporter {
      * @param string
      * @return String boundedOutput
      */
-    protected static String boundedStringByContents(String propertyName, String bound, String string)
+    protected static String BOUNDED_STRING_BY_CONTENTS(String propertyName, String bound, String string)
     {
         String boundedOutput = "" ;
         String boundedString ;
-        for (int indexStart = indexOfProperty(bound,string) ; indexStart >= 0 ; indexStart = indexOfProperty(bound,indexStart+1,string) )
+        for (int indexStart = Reporter.INDEX_OF_PROPERTY(bound,string) ; indexStart >= 0 ; indexStart = INDEX_OF_PROPERTY(bound,indexStart+1,string) )
         {
-            boundedString = extractBoundedString(bound, string, indexStart) ;
+            boundedString = EXTRACT_BOUNDED_STRING(bound, string, indexStart) ;
             if (boundedString.contains(propertyName))   //(compareValue(propertyName,value,boundedString)) 
                 boundedOutput += boundedString ;
         }
@@ -389,9 +389,9 @@ public class Reporter {
      * @param bound
      * @return (ArrayList(String)) of bounded substrings of string.
      */
-    public static ArrayList<String> extractArrayList(String string, String bound)
+    public static ArrayList<String> EXTRACT_ARRAYLIST(String string, String bound)
     {
-        return extractArrayList(string, bound, "") ;
+        return EXTRACT_ARRAYLIST(string, bound, "") ;
     }
     
         /**
@@ -402,19 +402,19 @@ public class Reporter {
      * @return (ArrayList(String)) of bounded substrings of string containing 
      * flag as a substring.
      */
-    protected static ArrayList<String> extractArrayList(String string, String bound, String flag)
+    protected static ArrayList<String> EXTRACT_ARRAYLIST(String string, String bound, String flag)
     {
         ArrayList<String> outputArray = new ArrayList<String>() ;
         String extractedString ;
         
         // Require bounded strings contain flag.
         if (!flag.isEmpty())
-            string = boundedStringByContents(flag,bound,string) ;
+            string = BOUNDED_STRING_BY_CONTENTS(flag,bound,string) ;
         
         // Extract individual bounded strings.
-        for (int indexStart = indexOfProperty(bound, string) ; indexStart >= 0 ;  indexStart = indexOfProperty(bound, indexStart+1, string))
+        for (int indexStart = Reporter.INDEX_OF_PROPERTY(bound, string) ; indexStart >= 0 ;  indexStart = INDEX_OF_PROPERTY(bound, indexStart+1, string))
         {
-            extractedString = extractBoundedString(bound, string, indexStart);
+            extractedString = EXTRACT_BOUNDED_STRING(bound, string, indexStart);
             if (!extractedString.isEmpty()) 
                 outputArray.add(extractedString) ;
         }
@@ -428,12 +428,12 @@ public class Reporter {
      * @param indexStart - index in string of first bound
      * @return subString of string bounded by bound
      */
-    public static String extractBoundedString(String bound, String string, int indexStart)
+    public static String EXTRACT_BOUNDED_STRING(String bound, String string, int indexStart)
     {
-        int index0 = indexOfProperty(bound, indexStart, string) ;
+        int index0 = INDEX_OF_PROPERTY(bound, indexStart, string) ;
         if (index0 == -1)
             return "" ;
-        int index1 = indexOfProperty(bound,index0+1,string) ;
+        int index1 = INDEX_OF_PROPERTY(bound,index0+1,string) ;
         if (index1 == -1) index1 = string.length() ;
         return string.substring(index0, index1) ;
 
@@ -471,12 +471,12 @@ public class Reporter {
     public static ArrayList<Object> extractAllValues(String propertyName, String string, int startIndex)
     {
         ArrayList<Object> values = new ArrayList<Object>() ;
-        int index = indexOfProperty(propertyName,startIndex,string) ; 
+        int index = INDEX_OF_PROPERTY(propertyName,startIndex,string) ; 
         
         while ( index >= 0 )
         {
             values.add(extractValue(propertyName, string, index)) ;
-            index = indexOfProperty(propertyName, index+1, string) ;
+            index = INDEX_OF_PROPERTY(propertyName, index+1, string) ;
         }
         return values ;
     }
@@ -492,7 +492,7 @@ public class Reporter {
     public static String extractValue(String propertyName, String string, int startIndex)
     {
         // Find value of valueName in string
-        startIndex = indexOfProperty(propertyName, startIndex, string) ;
+        startIndex = INDEX_OF_PROPERTY(propertyName, startIndex, string) ;
         if (startIndex < 0)
             return "" ;
         startIndex += propertyName.length() + 1 ;    // +1 is for ":" following propertyName
@@ -538,7 +538,7 @@ public class Reporter {
     {
             String agentId0 = extractValue("agentId0", record, startIndex) ;
 
-            startIndex = indexOfProperty("agentId1", startIndex, record) ;
+            startIndex = INDEX_OF_PROPERTY("agentId1", startIndex, record) ;
             String agentId1 = extractValue("agentId1", record, startIndex) ;
             return new String[] {agentId0,agentId1} ;
     }
@@ -553,7 +553,7 @@ public class Reporter {
     protected static int isPropertyNameNext(String propertyName, String string, int startIndex)
     {
         int colonIndex = string.indexOf(":",startIndex) ;
-        int propertyIndex = indexOfProperty(propertyName, startIndex, string) ;
+        int propertyIndex = INDEX_OF_PROPERTY(propertyName, startIndex, string) ;
         
         // If propertyName names the first property after position startIndex
         if ((propertyIndex < colonIndex) && (propertyIndex > 1))
@@ -571,7 +571,7 @@ public class Reporter {
      */
     protected static boolean compareValue(String propertyName, String value, String string, int startIndex)
     {
-        if (indexOfProperty(propertyName,startIndex,string) >= 0)
+        if (INDEX_OF_PROPERTY(propertyName,startIndex,string) >= 0)
             return extractValue(propertyName, string, startIndex).equals(value) ;
         return false ;
     }
@@ -589,8 +589,8 @@ public class Reporter {
     {
         int count = 0 ;
         int total = 0 ;
-        for (int index = indexOfProperty(propertyName, startIndex, string) ; index >= 0 ; 
-            index = indexOfProperty(propertyName, index+1, string))
+        for (int index = INDEX_OF_PROPERTY(propertyName, startIndex, string) ; index >= 0 ; 
+            index = INDEX_OF_PROPERTY(propertyName, index+1, string))
         {
             total++ ;
             if (compareValue(propertyName, value, string, index))
@@ -610,7 +610,7 @@ public class Reporter {
      */
     protected static boolean compareValue(String propertyName, String value, String string)
     {
-        return compareValue(propertyName, value, string, indexOfProperty(propertyName,string)) ;
+        return compareValue(propertyName, value, string, Reporter.INDEX_OF_PROPERTY(propertyName,string)) ;
     }
     
     
@@ -985,7 +985,7 @@ public class Reporter {
     }
     
     /**
-     * Sorts hashMap entries according to sortBoundedStringArray, only including values in
+     * Sorts hashMap entries according to SORT_BOUNDED_STRING_ARRAY, only including values in
  (Object[]) values.
      * @param hashMap
      * @param sortedHashMap
@@ -1171,7 +1171,7 @@ public class Reporter {
                     ArrayList<Object> record = report.get(cycle) ;
                     itemValue += Double.valueOf(Reporter.extractValue(propertyName,String.valueOf(record.get(itemIndex)))) ;
                 }
-                itemString = Reporter.addReportProperty(propertyName, itemValue/nbReports) ;
+                itemString = Reporter.ADD_REPORT_PROPERTY(propertyName, itemValue/nbReports) ;
                 meanRecord.add(itemString) ;
             }
             meanReport.add((ArrayList<Object>) meanRecord.clone()) ;
@@ -1195,7 +1195,7 @@ public class Reporter {
     /**
      * Stores an ArrayList (String) report as a csv file for other packages to read.
      * @param report 
-     * @param reportName 
+     * @param scoreNames 
      * @param simName 
      * @param folderPath 
      */
@@ -1243,7 +1243,8 @@ public class Reporter {
     /**
      * Stores an ArrayList (String) report as a csv file for other packages to read.
      * @param report 
-     * @param reportName 
+     * @param scoreNames 
+     * @param property 
      * @param simName 
      * @param folderPath 
      */
@@ -1408,7 +1409,7 @@ public class Reporter {
                     meanValue += Double.valueOf(extractValue(property,record)) ;
                 }
                 meanValue = meanValue/nbReports ;
-                meanRecord += addReportProperty(property,meanValue) ;
+                meanRecord += ADD_REPORT_PROPERTY(property,meanValue) ;
             }
             averagedReport.add(meanRecord) ;
         }
@@ -1417,7 +1418,7 @@ public class Reporter {
 
     /**
      * Averages over (Number[]) entries in (ArrayList) reports
-     * @param (ArrayList(HashMap)) reports
+     * @param reports 
      * @return (HashMap) averagedReport
      */
     static public HashMap<Object,Number[]> averagedHashMapReport(ArrayList<HashMap<Object,Number[]>> reports)
@@ -1793,10 +1794,10 @@ public class Reporter {
             String filterValue = filterPropertyValues.get(filterIndex) ;
             if (filterValue.isEmpty())    // Require contents only
                 for (String record : rawReport)
-                    filteredReport.add(boundedStringByContents(filterName,bound,record)) ;
+                    filteredReport.add(BOUNDED_STRING_BY_CONTENTS(filterName,bound,record)) ;
             else    // Property filterName required to have filterValue
                 for (String record : rawReport)
-                    filteredReport.add(boundedStringByValue(filterName, filterValue, bound, record)); // Filter record
+                    filteredReport.add(BOUNDED_STRING_BY_VALUE(filterName, filterValue, bound, record)); // Filter record // Filter record
         }
         return filteredReport ;
     }
