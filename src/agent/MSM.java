@@ -139,7 +139,7 @@ abstract public class MSM extends Agent {
     /** Transmission probabilities sexual contact in Pharynx to Rectum intercourse. */
     static double PHARYNX_TO_RECTUM = 0.04 ; // 0.04 ; 
     /** Transmission probabilities sexual contact in Pharynx to Pharynx intercourse (kissing). */
-    static double PHARYNX_TO_PHARYNX = 0.045 ; // 0.045 ; 
+    static double PHARYNX_TO_PHARYNX = 0.04 ; // 0.045 ; 
     /** Transmission probabilities sexual contact in Urethra to Urethra intercourse (docking). */
     static double URETHRA_TO_URETHRA = 0.001 ; // 0.005 ; 
     /** Transmission probabilities sexual contact in Rectum to Rectum intercourse. */
@@ -380,12 +380,12 @@ abstract public class MSM extends Agent {
     public String getCensusReport()
     {
         String censusReport = super.getCensusReport() ;
-        censusReport += Reporter.addReportProperty("prepStatus", prepStatus) ;
-        censusReport += Reporter.addReportProperty("statusHIV", statusHIV) ;
-        censusReport += Reporter.addReportProperty("seroSortCasual", seroSortCasual) ;
-        censusReport += Reporter.addReportProperty("seroSortRegular", seroSortRegular) ;
-        censusReport += Reporter.addReportProperty("seroSortMonogomous", seroSortMonogomous) ;
-        censusReport += Reporter.addReportProperty("seroPosition", seroPosition) ;
+        censusReport += Reporter.ADD_REPORT_PROPERTY("prepStatus", prepStatus) ;
+        censusReport += Reporter.ADD_REPORT_PROPERTY("statusHIV", statusHIV) ;
+        censusReport += Reporter.ADD_REPORT_PROPERTY("seroSortCasual", seroSortCasual) ;
+        censusReport += Reporter.ADD_REPORT_PROPERTY("seroSortRegular", seroSortRegular) ;
+        censusReport += Reporter.ADD_REPORT_PROPERTY("seroSortMonogomous", seroSortMonogomous) ;
+        censusReport += Reporter.ADD_REPORT_PROPERTY("seroPosition", seroPosition) ;
         return censusReport ;
     }
     /**
@@ -469,6 +469,7 @@ abstract public class MSM extends Agent {
     /**
      * Used when choosing Site other than Rectum for sexual encounter when Site
      * other than Rectum has already been chosen.
+     * @param site
      * @return random choice of rectum, urethra or pharynx
      */
     protected Site chooseNotRectumSite(Site site) 
@@ -713,12 +714,15 @@ abstract public class MSM extends Agent {
      */
     public void reinitScreenCycle(int year) throws Exception
     {
-        // Screening frequency compared to 2016 figure. per 1000 in last year.
-        double testBase = 382 ;
-        // Frequencies, given by per 1000 per year, from 2007-2016
-        //double[] testRates = new double[] {333,340,398,382,383,382,391,419,445,499} ;
         // Go from 2011
         double[] testRates = new double[] {382,383,382,391,419,445,499} ;
+        double testBase ;
+        if (year == 0)
+            testBase = 382 ;
+        else
+            testBase = testRates[year - 1] ;
+        // Frequencies, given by per 1000 per year, from 2007-2016
+        //double[] testRates = new double[] {333,340,398,382,383,382,391,419,445,499} ;
         double ratio = testRates[year]/testBase ;
         int newScreenCycle = (int) ratio * getScreenCycle() ;
         
@@ -959,7 +963,7 @@ abstract public class MSM extends Agent {
     }
         /*String report = "" ;
         consentCasualProbability *= PROMISCUITY_FRACTION ;
-        report += Reporter.addReportProperty("consentCasualProbability", consentCasualProbability) ;
+        report += Reporter.ADD_REPORT_PROPERTY("consentCasualProbability", consentCasualProbability) ;
         return super.ageEffects() + report ;
     }*/
 }
