@@ -147,7 +147,6 @@ public class Relationship {
         String[] relationshipClassNames = new String[] {"Regular","Monogomous"} ; // "Casual",
         HashMap<Object,HashMap<Object,ArrayList<Object>>> relationshipsRecord 
                 = relationshipReporter.prepareAgentRelationshipsRecord(relationshipClassNames, 0, 0, 1) ;
-        
         ArrayList<Object> currentRelationshipIds = new ArrayList<Object>() ;
         String[] agentIds = new String[2] ;
         
@@ -158,22 +157,25 @@ public class Relationship {
             for (String relationshipName : relationshipClassNames)
             {
                 Class relationshipClazz = Class.forName("community.".concat(relationshipName)) ;
-                for (Object relationshipId : relationshipsRecord.get(relationshipName).values())
+                for (ArrayList<Object> relationshipIdList : relationshipsRecord.get(relationshipName).values())
                 {
-                    if (currentRelationshipIds.contains(relationshipId))
-                        continue ;
-                    currentRelationshipIds.add(relationshipId) ;
-                    agentIds = relationshipAgentReport.get(relationshipId) ;
-                    for (int agentIndex = 0 ; agentIndex < agents.size() ; agentIndex++ )
+                    for (Object relationshipId : relationshipIdList)
                     {
-                        if (agents.get(agentIndex).getAgentId() == Integer.valueOf(agentIds[0]))
-                            agentIndex0 = agentIndex ;
-                        else if (agents.get(agentIndex).getAgentId() == Integer.valueOf(agentIds[1]))
-                            agentIndex1 = agentIndex ;
+                        if (currentRelationshipIds.contains(relationshipId))
+                            continue ;
+                        currentRelationshipIds.add(relationshipId) ;
+                        agentIds = relationshipAgentReport.get(relationshipId) ;
+                        for (int agentIndex = 0 ; agentIndex < agents.size() ; agentIndex++ )
+                        {
+                            if (agents.get(agentIndex).getAgentId() == Integer.valueOf(agentIds[0]))
+                                agentIndex0 = agentIndex ;
+                            else if (agents.get(agentIndex).getAgentId() == Integer.valueOf(agentIds[1]))
+                                agentIndex1 = agentIndex ;
+                        }
+                        Relationship relationship = (Relationship) relationshipClazz.newInstance();
+                        relationship.addAgents(agents.get(agentIndex0), agents.get(agentIndex1)) ;
+                        nbRelationships++ ;
                     }
-                    Relationship relationship = (Relationship) relationshipClazz.newInstance();
-                    relationship.addAgents(agents.get(agentIndex0), agents.get(agentIndex1)) ;
-                    nbRelationships++ ;
                 }
 
             }
@@ -355,9 +357,9 @@ public class Relationship {
 
             
             // Update report
-            report += Reporter.addReportProperty("contact", contact) ;
-            report += Reporter.addReportProperty(site0.getSite(),infectStatus0) ;
-            report += Reporter.addReportProperty(site1.getSite(),infectStatus1) ;
+            report += Reporter.ADD_REPORT_PROPERTY("contact", contact) ;
+            report += Reporter.ADD_REPORT_PROPERTY(site0.getSite(),infectStatus0) ;
+            report += Reporter.ADD_REPORT_PROPERTY(site1.getSite(),infectStatus1) ;
             // compare Infection status of both sites
             /*
             Infection infection0 = site0.getInfection();
@@ -396,7 +398,7 @@ public class Relationship {
 
                 // Probabilistically transmit infection to site1
                 //site1.receive(infectName0,transmit0) ;
-                report += Reporter.addReportProperty("transmission", Boolean.toString(agent1.receiveInfection(infectProbability,site1))) ;  
+                report += Reporter.ADD_REPORT_PROPERTY("transmission", Boolean.toString(agent1.receiveInfection(infectProbability,site1))) ;  
             }
             else if ((infectStatus1 != 0)) // && (infectStatus0 == 0))    // agent1 must be infected
             {
@@ -406,7 +408,7 @@ public class Relationship {
 
                 // Probabilistically transmit infection to site0
                 //site0.receive(infectName0,transmit0) ;
-                report += Reporter.addReportProperty("transmission", Boolean.toString(agent0.receiveInfection(infectProbability,site0))) ; 
+                report += Reporter.ADD_REPORT_PROPERTY("transmission", Boolean.toString(agent0.receiveInfection(infectProbability,site0))) ; 
             }
     	}
         return report ;   	
@@ -452,16 +454,16 @@ public class Relationship {
     
     public String getRecord()
     {
-    	String record = Reporter.addReportProperty(RELATIONSHIP_ID,relationshipId) ; 
-        record += Reporter.addReportProperty("relationship",getRelationship()) ;
-    	record += Reporter.addReportProperty(Reporter.AGENTID0,agent0.getAgentId());
-    	record += Reporter.addReportProperty(Reporter.AGENTID1,agent1.getAgentId()) ;
+    	String record = Reporter.ADD_REPORT_PROPERTY(RELATIONSHIP_ID,relationshipId) ; 
+        record += Reporter.ADD_REPORT_PROPERTY("relationship",getRelationship()) ;
+    	record += Reporter.ADD_REPORT_PROPERTY(Reporter.AGENTID0,agent0.getAgentId());
+    	record += Reporter.ADD_REPORT_PROPERTY(Reporter.AGENTID1,agent1.getAgentId()) ;
     	return record ;
     }
     
     public String endRelationship()
     {
-        return Reporter.addReportProperty(RELATIONSHIP_ID,relationshipId) ; 
+        return Reporter.ADD_REPORT_PROPERTY(RELATIONSHIP_ID,relationshipId) ; 
     }
 
     /**
