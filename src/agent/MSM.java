@@ -708,7 +708,7 @@ abstract public class MSM extends Agent {
     }
     
     /**
-     * Adjusts per year the screening frequency.
+     * Adjusts per year the screening period.
      * @param year
      * @throws Exception 
      */
@@ -723,9 +723,8 @@ abstract public class MSM extends Agent {
             testBase = testRates[year - 1] ;
         // Frequencies, given by per 1000 per year, from 2007-2016
         //double[] testRates = new double[] {333,340,398,382,383,382,391,419,445,499} ;
-        double ratio = testRates[year]/testBase ;
-        int newScreenCycle = (int) ratio * getScreenCycle() ;
-        
+        double ratio = testBase/testRates[year] ;
+        int newScreenCycle = (int) Math.ceil(ratio * getScreenCycle()) ;
         setScreenCycle(newScreenCycle) ;
     }
     
