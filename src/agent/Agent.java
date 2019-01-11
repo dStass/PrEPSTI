@@ -496,10 +496,10 @@ public abstract class Agent {
     {
         site.receiveInfection(1.1) ;
         // TODO: Read actual remaining infectionTime from file.
-        site.setInfectionDuration() ;
-        //site.setInfectionTime(RAND.nextInt(site.getInfectionDuration()-1)+1) ;
-        symptomatic = symptomatic || site.getSymptomatic() ;
-        infectedStatus = infectedStatus || (site.getInfectedStatus() > 0) ;
+        //site.setInfectionDuration() ;
+        site.setInfectionTime(RAND.nextInt(site.setInfectionDuration()-1)+1) ;
+        symptomatic = symptomatic || site.setSymptomatic(symptomaticSite) ;
+        infectedStatus = true ; // infectedStatus || (site.getInfectedStatus() > 0) ;
     }
     
     /**
