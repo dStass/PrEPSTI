@@ -151,6 +151,33 @@ public class RelationshipReporter extends Reporter {
     
     /**
      * 
+     * @param backYears
+     * @param backMonths
+     * @param backDays
+     * @return (ArrayList) of every Relationship to have ever broken up until backYears, backMonths, backDays
+     * before cycle endCycle
+     */
+    public ArrayList<Object> prepareRelationshipBreakupRecord()
+    {
+        ArrayList<Object> relationshipBreakupRecord = new ArrayList<Object>() ;
+        
+        String record ;
+        
+        // Loop through records in saved files
+        for (boolean nextInput = true ; nextInput ; nextInput = updateReport() )
+            for (int recordNb = 0 ; recordNb < input.size() ; recordNb += outputCycle )
+            {
+                record = input.get(recordNb) ;
+                record = record.substring(record.indexOf("clear:")) ;
+                //LOGGER.log(Level.INFO, "{0} {1}", new Object[] {recordNb,record});
+
+                relationshipBreakupRecord.addAll(EXTRACT_ARRAYLIST(record,RELATIONSHIPID)) ;
+            }
+        return relationshipBreakupRecord ;
+    }
+    
+    /**
+     * 
      * @return ArrayList of ArrayLists of (String) RelationshipIds of relationships
      * that break up in each cycle
      */
@@ -455,13 +482,39 @@ public class RelationshipReporter extends Reporter {
     {
         HashMap<Object,String[]> relationshipAgentReport = new HashMap<Object,String[]>() ;
         
-        ArrayList<String> commenceReport = prepareCommenceReport() ; // (ArrayList<String>) getReport("commence",this) ; //  
+        //ArrayList<String> commenceReport = prepareCommenceReport() ; // (ArrayList<String>) getReport("commence",this) ; //  
         
         ArrayList<String> relationshipRecords ;
         String relationshipId ;
         String[] agentIds ; // = new String[2] ;
         
-        for (String record : commenceReport)
+        String record ;
+        
+        record = prepareBurninRecord() ;    // "0," + 
+        for (boolean nextInput = true ; nextInput ; nextInput = updateReport() )
+            for (String inputRecord : input)
+            {
+                //inputString.add(inputRecord) ;
+                //record = inputString.get(reportNb) ;
+                int relationshipIdIndex = INDEX_OF_PROPERTY(RELATIONSHIPID,inputRecord) ;
+                int clearIndex = INDEX_OF_PROPERTY("clear",inputRecord) ;
+                if (relationshipIdIndex >= 0 && (relationshipIdIndex < clearIndex)) 
+                    record += inputRecord.substring(relationshipIdIndex,clearIndex) ;
+                else
+                    record += "" ;
+                
+                relationshipRecords = EXTRACT_ARRAYLIST(record,RELATIONSHIPID) ;
+                for (String relationshipRecord : relationshipRecords)
+                {
+                    relationshipId = extractValue(RELATIONSHIPID,relationshipRecord) ;
+                    agentIds = extractAgentIds(relationshipRecord,0) ;
+                    relationshipAgentReport.put(relationshipId, agentIds) ;
+                }
+                
+                record = "" ;
+        }
+        
+        /*for (String record : commenceReport)
         {
             relationshipRecords = EXTRACT_ARRAYLIST(record,RELATIONSHIPID) ;
             for (String relationshipRecord : relationshipRecords)
@@ -470,7 +523,7 @@ public class RelationshipReporter extends Reporter {
                 agentIds = extractAgentIds(relationshipRecord,0) ;
                 relationshipAgentReport.put(relationshipId, agentIds) ;
             }
-        }
+        }*/
         return relationshipAgentReport ;
     }
     
@@ -1774,11 +1827,11 @@ public class RelationshipReporter extends Reporter {
     {
         ArrayList<String> commenceReport = new ArrayList<String>() ;
         
-        String record ;
-        
         //Include burn-in Relationships
         //ArrayList<String> inputString = new ArrayList<String>() ;
         //LOGGER.info(Relationship.BURNIN_COMMENCE) ;
+        
+        String record ;
         
         record = prepareBurninRecord() ;    // "0," + 
         /*if (record.length() > 2)
