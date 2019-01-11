@@ -140,6 +140,7 @@ public class Relationship {
         int nbRelationships = 0 ;
         
         RelationshipReporter relationshipReporter = new RelationshipReporter(simName,"output/test/") ;
+        //RelationshipReporter relationshipReporter = new RelationshipReporter(simName,"/srv/scratch/z3524276/prepsti/output/test/") ;
         
         HashMap<Object,String[]> relationshipAgentReport 
                 = relationshipReporter.prepareRelationshipAgentReport() ;
