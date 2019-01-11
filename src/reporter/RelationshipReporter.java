@@ -207,7 +207,6 @@ public class RelationshipReporter extends Reporter {
         String transmission = "transmission" ;
         ArrayList<String> encounterArray ; 
         ArrayList<Object> transmissionArray ; 
-        String[] agentIds ;
         String[] encounterAgentIds ;  // For Agents in encounter
         
         HashMap<Object,String[]> relationshipAgentReport 
@@ -439,8 +438,8 @@ public class RelationshipReporter extends Reporter {
             ArrayList<String> relationshipRecords = EXTRACT_ARRAYLIST(RELATIONSHIPID,record) ;
             for (String relationship : relationshipRecords)
             {
-                relationshipId = extractValue(RELATIONSHIPID,record);
-                agentIds = extractAgentIds(record,0);
+                relationshipId = extractValue(RELATIONSHIPID,relationship);
+                agentIds = relationshipAgentIds.get(relationshipId);
                 agentBreakupRecord.addAll(Arrays.asList(agentIds));
             }
             agentBreakupReport.add((ArrayList<String>) agentBreakupRecord.clone()) ;
@@ -460,7 +459,7 @@ public class RelationshipReporter extends Reporter {
         
         ArrayList<String> relationshipRecords ;
         String relationshipId ;
-        String[] agentIds = new String[2] ;
+        String[] agentIds ; // = new String[2] ;
         
         for (String record : commenceReport)
         {
@@ -1778,32 +1777,34 @@ public class RelationshipReporter extends Reporter {
         String record ;
         
         //Include burn-in Relationships
-        ArrayList<String> inputString = new ArrayList<String>() ;
+        //ArrayList<String> inputString = new ArrayList<String>() ;
         //LOGGER.info(Relationship.BURNIN_COMMENCE) ;
         
-        // Read in Relationship commencements from simulation.
-        for (boolean nextInput = true ; nextInput ; nextInput = updateReport() )
-            for (String inputRecord : input)
-                inputString.add(inputRecord) ;
-        
-        record = "0," + prepareBurninRecord() ;
-        if (record.length() > 2)
+        record = prepareBurninRecord() ;    // "0," + 
+        /*if (record.length() > 2)
         {
             record += inputString.get(0).substring(2) ; // Leave out the "0," from the report
-            inputString.set(0, record) ;
-        }
+            commenceReport.add(record) ;
+            //inputString.set(0, record) ;
+        }*/
         //    inputString.add(relationshipId + "clear:") ;
         
 
-        for (int reportNb = 0 ; reportNb < inputString.size() ; reportNb += outputCycle )
-        {
-            record = inputString.get(reportNb) ;
-            int relationshipIdIndex = INDEX_OF_PROPERTY(RELATIONSHIPID,record) ;
-            int clearIndex = INDEX_OF_PROPERTY("clear",record) ;
-            if (relationshipIdIndex >= 0 && (relationshipIdIndex < clearIndex)) 
-                commenceReport.add(record.substring(relationshipIdIndex,clearIndex)) ;
-            else
-                commenceReport.add("") ;
+        //for (int reportNb = 0 ; reportNb < inputString.size() ; reportNb += outputCycle )
+        // Read in Relationship commencements from simulation.
+        for (boolean nextInput = true ; nextInput ; nextInput = updateReport() )
+            for (String inputRecord : input)
+            {
+                //inputString.add(inputRecord) ;
+                //record = inputString.get(reportNb) ;
+                int relationshipIdIndex = INDEX_OF_PROPERTY(RELATIONSHIPID,inputRecord) ;
+                int clearIndex = INDEX_OF_PROPERTY("clear",inputRecord) ;
+                if (relationshipIdIndex >= 0 && (relationshipIdIndex < clearIndex)) 
+                    record += inputRecord.substring(relationshipIdIndex,clearIndex) ;
+                else
+                    record += "" ;
+                commenceReport.add(record) ;
+                record = "" ;
         }
         return commenceReport ;
     }
