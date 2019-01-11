@@ -31,11 +31,11 @@ import java.util.logging.Level;
 public class Community {
     static public int POPULATION = 40000 ;
     static public int MAX_CYCLES = 2655 ;
-    //static public String NAME_ROOT = "Test76a"
+    static public String NAME_ROOT = "TestScreening76a"
     //static public String NAME_ROOT = "max3Relationships80" 
     //static public String NAME_ROOT = "RiskyPrep74"        
     //static public String NAME_ROOT = "IntroPrepCalibration74acycle6000" 
-    static public String NAME_ROOT = "FallingCondomUseCalibration76b" 
+    //static public String NAME_ROOT = "FallingCondomUseCalibration76b" 
     //static public String NAME_ROOT = "NoPrepCalibration76" 
     //static public String NAME_ROOT = "AllSexualContacts"
     //        + "DecliningCondomsAlteredTesting"
@@ -46,13 +46,13 @@ public class Community {
             //+ "Agents reduce their chances of choosing condoms. "
             //+ "Every year from cycle 2000 "
             //+ "five RiskyMSM go on PrEP "
-            //+ "Testing rates are altered to compare with long-term data " 
+            + "Testing rates are altered to compare with long-term data " 
             //+ "and their condom usage rates are multiplied by random fraction between 0 and 1."
             //+ "MAX_RELATIONSHIPS set to 4 "  // "Uses parameters from NoPrepCalibration53" ;
             //+ "All encounters are recorded in full." 
               //      + "consentCasualProbability * 5/12 "
             //+ "Test of loading burn-in. Uses Calibration24. "
-             + "Begins by reloading NoPrepCalibration76b"
+             + "Begins by reloading NoPrepCalibration76a"
             + "with 100 cycle grace period."
             //+ "Test or reload METADATA to rerun simlation exactly with no burn-in. "
             //+ "Assumes number of Agents at least N times number of cycles minus 1000." ;*/
@@ -77,7 +77,7 @@ public class Community {
      * (String) Name of previous simulation to reload.
      * Not reloaded if this is an empty string.
      */
-    static final String RELOAD_SIMULATION = "NoPrepCalibration76bPop40000Cycles4000" ; // "NoPrepCalibration24Pop40000Cycles8000" ;
+    static final String RELOAD_SIMULATION = "NoPrepCalibration76aPop40000Cycles4000" ; // "NoPrepCalibration24Pop40000Cycles8000" ;
     
     static public String getFilePath()
     {
@@ -438,7 +438,6 @@ public class Community {
             System.out.println(initialiseCommunity()) ;
         else
         {
-            //this.agents = MSM.REBOOT_AGENTS(simName) ;
             this.agents = Agent.REBOOT_AGENTS(simName) ;
             this.initialRecord = "" ; 
             for (Agent agent : agents)
@@ -520,7 +519,7 @@ public class Community {
         */
                 try
                 {
-                    ((MSM) agent).reinitScreenCycle(year);
+                    //((MSM) agent).reinitScreenCycle(year);
                     agent.adjustCondomUse() ;
                 }
                 catch( Exception e ) // cycle extends beyond trend data
