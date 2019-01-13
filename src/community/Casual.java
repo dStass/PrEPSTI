@@ -1,7 +1,7 @@
 package community;
 
 import agent.* ;
-import java.util.logging.Level;
+//import java.util.logging.Level;
 
 
 public class Casual extends Relationship {
