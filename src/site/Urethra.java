@@ -3,7 +3,6 @@
  */
 package site;
 
-import com.sun.media.jfxmedia.logging.Logger;
 
 /**
  * @author MichaelWalker
@@ -43,7 +42,6 @@ public class Urethra extends Site {
     public Urethra() 
     {
         super() ;
-        Logger.logMsg(0, this.getSite());
     }
     
     /**
