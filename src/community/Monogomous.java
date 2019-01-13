@@ -5,8 +5,6 @@ package community;
 
 import agent.* ;
 
-import com.sun.media.jfxmedia.logging.Logger;
-import java.util.logging.Level;
 
 /**
  * @author MichaelWalker
