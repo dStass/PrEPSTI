@@ -10,8 +10,8 @@ import community.Community ;
 
 import java.util.ArrayList ;
 import java.util.HashMap;
-import java.lang.reflect.*;
-import java.util.Arrays;
+//import java.lang.reflect.*;
+//import java.util.Arrays;
 import java.util.logging.Level;
 
 /**
@@ -29,15 +29,15 @@ public class EncounterPresenter extends Presenter {
     
     public static void main(String[] args)
     {
-        String simName = "TestPop40000Cycles100" ; // Community.NAME_ROOT ; // "introPrepCalibration48Pop40000Cycles7000" ; // args[0] ;
-        //String simName = "NoPrepCalibration74aPop40000Cycles5000" ; // "NoPrepCalibration86Pop40000Cycles5000" ; // "introPrepCalibration48Pop40000Cycles7000" ; // args[0] ;
+        //String simName = "TestPop40000Cycles100" ; // Community.NAME_ROOT ; // "introPrepCalibration48Pop40000Cycles7000" ; // args[0] ;
+        String simName = "NoPrepCalibration74aPop40000Cycles5000" ; // "NoPrepCalibration86Pop40000Cycles5000" ; // "introPrepCalibration48Pop40000Cycles7000" ; // args[0] ;
         //String simName = "neutral_calibration2Pop40000Cycles4000" ;
         //String simName = "RelationshipCalibrationPop40000Cycles200" ; // "NoPrepCalibration86Pop40000Cycles5000" ; // "introPrepCalibration48Pop40000Cycles7000" ; // args[0] ;
         //String simName = "AllSexualContactsPop40000Cycles1200" ;
         //String chartTitle = "infections_of_PrEP_users" ; // args[1] ;
         //String chartTitle = "proportion_of_Agents_had_CLAI" ; // args[1] ;
-        String chartTitle = "transmissions" ;
-        //String chartTitle = "incidence_rate" ;
+        //String chartTitle = "transmissions" ;
+        String chartTitle = "incidence_rate" ;
         //String chartTitle = "condom_use_in_AI" ; // args[1] ;
         String reportFileName = "output/test/" ; // args[2] ;
         LOGGER.info(chartTitle) ;
@@ -49,8 +49,8 @@ public class EncounterPresenter extends Presenter {
         //encounterPresenter.plotProtection() ;
         //encounterPresenter.plotTransmissionsPerCycle(siteNames);
         //encounterPresenter.plotCumulativeAgentTransmissionReport() ;
-        encounterPresenter.plotTransmissionsPerCycle(siteNames);
-        //encounterPresenter.plotIncidenceYears(siteNames, 7, 2017) ;
+        //encounterPresenter.plotTransmissionsPerCycle(siteNames);
+        encounterPresenter.plotIncidenceYears(siteNames, 5, 2017) ;
         //encounterPresenter.plotNumberCondomlessYears(3, 0, 0, 2017, new String[] {"Casual","Regular","Monogomous"}) ;
         //encounterPresenter.plotNumberCondomlessReport(0, 6, 0, new String[] {"Casual","Regular","Monogomous"}) ;
         //encounterPresenter.plotPercentAgentCondomlessReport(new String[] {"Casual","Regular","Monogomous"}, 0, 6, 0, "", false) ;
@@ -218,14 +218,12 @@ public class EncounterPresenter extends Presenter {
             scoreNames[siteIndex] = siteNames[siteIndex] ;
         scoreNames[siteNames.length] = "all__" ;
         
-        plotHashMap("Year", scoreNames, incidenceRecordYears) ;
+        plotHashMap("Year", siteNames, incidenceRecordYears) ;
     }
     
     
     /**
      * Plots bar chart showing prevalence of all siteNames and total prevalence.
-     * TODO: Read (String[]) siteNames from metadata.
-     * @param siteNames 
      */
     public void plotFinalTransmissions()
     {
@@ -251,6 +249,7 @@ public class EncounterPresenter extends Presenter {
     
     /**
      * Plots the number of transmissions in a given cycle.
+     * @param siteName
      */
     public void plotTransmissionsPerCycle(String siteName)
     {
@@ -272,6 +271,7 @@ public class EncounterPresenter extends Presenter {
     
     /**
      * Plots the number of transmissions in a given cycle for each siteName.
+     * @param siteNames
      */
     public void plotTransmissionsPerCycle(String[] siteNames)
     {
