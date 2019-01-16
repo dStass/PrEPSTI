@@ -36,24 +36,24 @@ abstract public class MSM extends Agent {
     static public String[] SITE_NAMES = new String[] {"rectum","urethra","pharynx"} ;
     
     /** The maximum number of Regular Relationships an agent may be willing to sustain. */
-    static int MAX_RELATIONSHIPS = 4 ;
+    static int MAX_RELATIONSHIPS = 3 ;
     
     /** The probability of disclosing HIV status if HIV positive */
-    static double PROBABILITY_DISCLOSE_POSITIVE_HIV = 0.40 ;
+    static double PROBABILITY_DISCLOSE_POSITIVE_HIV = 0.2 ;
     /** The probability of disclosing HIV status if HIV negative */
-    static double PROBABILITY_DISCLOSE_NEGATIVE_HIV = 0.35 ;
-    /** Probability of serosorting if HIV positive (2016) */
-    static double PROBABILITY_POSITIVE_SERO_SORT = 0.461 ;
-    /** Probability of serosorting if HIV negative (2016) */
-    static double PROBABILITY_NEGATIVE_SERO_SORT = 0.518 ;
+    static double PROBABILITY_DISCLOSE_NEGATIVE_HIV = 0.18 ;
+    /** Probability of serosorting if HIV positive (2017) */
+    static double PROBABILITY_POSITIVE_SERO_SORT = 0.59 ;
+    /** Probability of serosorting if HIV negative (2017) */
+    static double PROBABILITY_NEGATIVE_SERO_SORT = 0.45 ;
     /** Probability of serosorting in Casual Relationship if HIV positive */
-    static double PROBABILITY_POSITIVE_CASUAL_SERO_SORT = 0.431 ;
+    static double PROBABILITY_POSITIVE_CASUAL_SERO_SORT = 0.40 ; // 0.431 ;
     /** Probability of serosorting in Casual Relationship if HIV negative */
-    static double PROBABILITY_NEGATIVE_CASUAL_SERO_SORT = 0.485 ;
+    static double PROBABILITY_NEGATIVE_CASUAL_SERO_SORT = 0.5 ; // 0.485 ;
     /** Probability of serosorting in Regular Relationship if HIV positive */
-    static double PROBABILITY_POSITIVE_REGULAR_SERO_SORT = 0.274 ;
+    static double PROBABILITY_POSITIVE_REGULAR_SERO_SORT = 0.5 ; // 0.274 ;
     /** Probability of serosorting in Regular Relationship if HIV negative */
-    static double PROBABILITY_NEGATIVE_REGULAR_SERO_SORT = 0.712 ;
+    static double PROBABILITY_NEGATIVE_REGULAR_SERO_SORT = 0.5 ; // 0.712 ;
     /** Probability of serosorting in Regular Relationship if HIV positive */
     static double PROBABILITY_POSITIVE_MONOGOMOUS_SERO_SORT 
             = PROBABILITY_POSITIVE_REGULAR_SERO_SORT ;
@@ -61,13 +61,13 @@ abstract public class MSM extends Agent {
     static double PROBABILITY_NEGATIVE_MONOGOMOUS_SERO_SORT 
             = PROBABILITY_NEGATIVE_REGULAR_SERO_SORT ;
     /** Probability of sero-positioning if HIV positive */
-    static double PROBABILITY_POSITIVE_SERO_POSITION = 0.237 ;
+    static double PROBABILITY_POSITIVE_SERO_POSITION = 0.25 ;
     /** Probability of sero-positioning if HIV negative */
-    static double PROBABILITY_NEGATIVE_SERO_POSITION = 0.217 ;
+    static double PROBABILITY_NEGATIVE_SERO_POSITION = 0.154 ;
     /** The probability of being on antivirals, given positive HIV status */
-    static double PROBABILITY_ANTIVIRAL = 0.85 ;
+    static double PROBABILITY_ANTIVIRAL = 0.57 ;
     /** The probability of being on PrEP, given negative HIV status */
-    static double PROBABILITY_PREP = 0.14 ;
+    static double PROBABILITY_PREP = 0.0 ; // 0.14 ;
     /** Probability of accepting seropositive partner on antiVirals, given 
      * seroSort or seroPosition if HIV positive */
     static double PROBABILITY_POSITIVE_ACCEPT_ANTIVIRAL = 0.5 ;
@@ -127,21 +127,21 @@ abstract public class MSM extends Agent {
     private boolean prepStatus ;
 	
     /** Transmission probabilities per sexual contact from Urethra to Rectum */
-    static double URETHRA_TO_RECTUM = 0.005 ; // 0.01 ;
+    static double URETHRA_TO_RECTUM = 0.03 ; // 0.01 ;
     /** Transmission probabilities sexual contact from Urethra to Pharynx. */
-    static double URETHRA_TO_PHARYNX = 0.005 ; // 0.01 ; 
+    static double URETHRA_TO_PHARYNX = 0.03 ; 
     /** Transmission probabilities sexual contact from Rectum to Urethra. */ 
-    static double RECTUM_TO_URETHRA = 0.001 ; // 0.01 ; 
+    static double RECTUM_TO_URETHRA = 0.03 ; 
     /** Transmission probabilities sexual contact from Rectum to Pharynx. */
-    static double RECTUM_TO_PHARYNX = 0.04 ; // 0.04 ; 
+    static double RECTUM_TO_PHARYNX = 0.03 ; 
     /** Transmission probabilities sexual contact in Pharynx to Urethra intercourse. */
-    static double PHARYNX_TO_URETHRA = 0.001 ; // 0.01 ; 
+    static double PHARYNX_TO_URETHRA = 0.03 ;
     /** Transmission probabilities sexual contact in Pharynx to Rectum intercourse. */
-    static double PHARYNX_TO_RECTUM = 0.04 ; // 0.04 ; 
+    static double PHARYNX_TO_RECTUM = 0.03 ; 
     /** Transmission probabilities sexual contact in Pharynx to Pharynx intercourse (kissing). */
-    static double PHARYNX_TO_PHARYNX = 0.04 ; // 0.045 ; 
+    static double PHARYNX_TO_PHARYNX = 0.03 ; 
     /** Transmission probabilities sexual contact in Urethra to Urethra intercourse (docking). */
-    static double URETHRA_TO_URETHRA = 0.001 ; // 0.005 ; 
+    static double URETHRA_TO_URETHRA = 0.03 ; 
     /** Transmission probabilities sexual contact in Rectum to Rectum intercourse. */
     static double RECTUM_TO_RECTUM = 0.003 ; // 0.003 ; 
     
@@ -260,9 +260,9 @@ abstract public class MSM extends Agent {
     
     	
     // Odds of an MSM being safeMSM
-    static int SAFE_ODDS = 68 ;
+    static int SAFE_ODDS = 64 ;
     // Odds of an MSM being riskyMSM
-    static int RISKY_ODDS = 32 ;
+    static int RISKY_ODDS = 36 ;
     // Sum of safeOdds and riskyOdds
     static int TOTAL_ODDS = RISKY_ODDS + SAFE_ODDS ;
     	
@@ -695,13 +695,13 @@ abstract public class MSM extends Agent {
             setScreenCycle(((int) new GammaDistribution(31,1).sample()) + 61) ;
         else
         {
-            int firstScreenCycle = (int) (new GammaDistribution(7,55).sample() * 499.0/333.0) ; // factor correcting for different year
-            setScreenCycle(firstScreenCycle) ;  // 49.9% screen within a year 2016
-            /*if (statusHIV)
-                setScreenCycle(((int) new GammaDistribution(6,55).sample())) ;  // 65% screen within a year
+            //int firstScreenCycle = (int) new GammaDistribution(7,55).sample() ; 
+            //setScreenCycle(firstScreenCycle) ;  // 49.9% screen within a year 2016
+            if (statusHIV)
+                setScreenCycle(((int) new GammaDistribution(7,60).sample())) ;  // 41% screen within a year
             else
-                setScreenCycle(((int) new GammaDistribution(8,55).sample())) ;  // 35% screen within a year
-            */
+                setScreenCycle(((int) new GammaDistribution(8,61).sample())) ;  // 26% screen within a year
+            
         }
         // Randomly set timer for first STI screen 
         setScreenTime(RAND.nextInt(getScreenCycle())) ;
