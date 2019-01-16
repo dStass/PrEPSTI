@@ -85,12 +85,15 @@ public class Relationship {
     /** Probability of sexual encounter within Relationship in any cycle */
     static double ENCOUNTER_PROBABILITY = 0.5 ;
     
-    /** The maximum number of contacts allowed in a sexual encounter. */
-    static int MAXIMUM_CONTACTS = 5 ;
+    /** 
+     * The maximum number of contacts allowed in a sexual encounter.
+     * Adjusted down from 5 16/1/19 to reduce coprevalence.
+     */
+    static int MAXIMUM_CONTACTS = 3 ;
     
     // TODO: Move condom variables to STI
     // Probability of using a condom for couplings with a Site.Urethra
-    static double CONDOM_USE = 0.5;
+    //static double CONDOM_USE = 0.5;
     
     // Protective effect of condom
     static final double CONDOM_EFFECT = 0.60 ;
