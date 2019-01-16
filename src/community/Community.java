@@ -30,13 +30,13 @@ import java.util.logging.Level;
  *******************************************************************/
 public class Community {
     static public int POPULATION = 40000 ;
-    static public int MAX_CYCLES = 2655 ;
-    static public String NAME_ROOT = "TestScreening76a"
+    static public int MAX_CYCLES = 2000 ;
+    //static public String NAME_ROOT = "Test"
     //static public String NAME_ROOT = "max3Relationships80" 
     //static public String NAME_ROOT = "RiskyPrep74"        
     //static public String NAME_ROOT = "IntroPrepCalibration74acycle6000" 
     //static public String NAME_ROOT = "FallingCondomUseCalibration76b" 
-    //static public String NAME_ROOT = "NoPrepCalibration76" 
+    static public String NAME_ROOT = "NoPrepCalibration3a" 
     //static public String NAME_ROOT = "AllSexualContacts"
     //        + "DecliningCondomsAlteredTesting"
             + "Pop" + String.valueOf(POPULATION) + "Cycles" + String.valueOf(MAX_CYCLES) ;
@@ -46,14 +46,14 @@ public class Community {
             //+ "Agents reduce their chances of choosing condoms. "
             //+ "Every year from cycle 2000 "
             //+ "five RiskyMSM go on PrEP "
-            + "Testing rates are altered to compare with long-term data " 
+            //+ "Testing rates are altered to compare with long-term data " 
             //+ "and their condom usage rates are multiplied by random fraction between 0 and 1."
             //+ "MAX_RELATIONSHIPS set to 4 "  // "Uses parameters from NoPrepCalibration53" ;
             //+ "All encounters are recorded in full." 
               //      + "consentCasualProbability * 5/12 "
             //+ "Test of loading burn-in. Uses Calibration24. "
-             + "Begins by reloading NoPrepCalibration76a"
-            + "with 100 cycle grace period."
+            // + "Begins by reloading NoPrepCalibration76a"
+            //+ "with 100 cycle grace period."
             //+ "Test or reload METADATA to rerun simlation exactly with no burn-in. "
             //+ "Assumes number of Agents at least N times number of cycles minus 1000." ;*/
             + "" ;
@@ -67,6 +67,9 @@ public class Community {
     /** How many digits represent cycles in DUMP filename. */
     static final int DUMP_DIGITS = (int) Math.floor(Math.log10(MAX_CYCLES-1)) + 1 ;
     
+    /** Whether parameters change throughout simulation. */
+    static boolean DYNAMIC = false ;
+    
     /**
      * (String) Name of previous burn-in to reload.
      * Not reloaded if this is an empty string.
@@ -77,7 +80,7 @@ public class Community {
      * (String) Name of previous simulation to reload.
      * Not reloaded if this is an empty string.
      */
-    static final String RELOAD_SIMULATION = "NoPrepCalibration76aPop40000Cycles4000" ; // "NoPrepCalibration24Pop40000Cycles8000" ;
+    static final String RELOAD_SIMULATION = "" ; // "NoPrepCalibration76aPop40000Cycles4000" ; // "NoPrepCalibration24Pop40000Cycles8000" ;
     
     static public String getFilePath()
     {
@@ -223,7 +226,8 @@ public class Community {
             if (cycle == ((cycle/outputInterval) * outputInterval))
                 LOGGER.log(Level.INFO, "Cycle no. {0}", cycleString);
 
-            community.interveneCommunity(cycle) ;
+            if (DYNAMIC)
+                community.interveneCommunity(cycle) ;
             
             //LOGGER.log(Level.INFO,"{0} {1}", new Object[] {Relationship.NB_RELATIONSHIPS,Relationship.NB_RELATIONSHIPS_CREATED});
             // update relationships and perform sexual encounters, report them
