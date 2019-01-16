@@ -17,7 +17,7 @@ public class RiskyMSM extends MSM
     //static double probabilityRequireDiscloseHIV = 0.5 ;
     
     // The probability of positive HIV status
-    static double PROPORTION_HIV = 0.085 ;
+    static double PROPORTION_HIV = 0.092 ;
     
     // The probability of disclosing HIV status if HIV positive
     static double PROBABILITY_DISCLOSE_POSITIVE_HIV = 0.40 ;
