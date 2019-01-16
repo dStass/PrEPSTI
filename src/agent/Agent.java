@@ -238,7 +238,7 @@ public abstract class Agent {
     {
         ArrayList<Agent> agents = new ArrayList<Agent>() ;
         PopulationReporter populationReporter = new PopulationReporter(simName,"output/test/") ;
-        //PopulationReporter populationReporter = new PopulationReporter(simName,"/srv/scratch/3524276/prepsti/output/test/") ;
+        //PopulationReporter populationReporter = new PopulationReporter(simName,"/srv/scratch/z3524276/prepsti/output/test/") ;
         
         ArrayList<String> birthReport = populationReporter.prepareBirthReport() ;
         
