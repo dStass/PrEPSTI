@@ -157,9 +157,9 @@ public class RelationshipReporter extends Reporter {
      * @return (ArrayList) of every Relationship to have ever broken up until backYears, backMonths, backDays
      * before cycle endCycle
      */
-    public ArrayList<Object> prepareRelationshipBreakupRecord()
+    public ArrayList<String> prepareRelationshipBreakupRecord()
     {
-        ArrayList<Object> relationshipBreakupRecord = new ArrayList<Object>() ;
+        ArrayList<String> relationshipBreakupRecord = new ArrayList<String>() ;
         
         String record ;
         
@@ -480,6 +480,15 @@ public class RelationshipReporter extends Reporter {
      */
     public HashMap<Object,String[]> prepareRelationshipAgentReport()
     {
+        return prepareRelationshipAgentReport(false) ;
+    }
+    
+    /**
+     * 
+     * @return (HashMap) relationshipId maps to [agentIds]
+     */
+    public HashMap<Object,String[]> prepareRelationshipAgentReport(boolean noBreakups)
+    {
         HashMap<Object,String[]> relationshipAgentReport = new HashMap<Object,String[]>() ;
         
         //ArrayList<String> commenceReport = prepareCommenceReport() ; // (ArrayList<String>) getReport("commence",this) ; //  
@@ -489,6 +498,10 @@ public class RelationshipReporter extends Reporter {
         String[] agentIds ; // = new String[2] ;
         
         String record ;
+        
+        ArrayList<String> blacklist = new ArrayList<String>() ;
+        if (noBreakups)
+            blacklist = prepareRelationshipBreakupRecord() ;
         
         record = prepareBurninRecord() ;    // "0," + 
         for (boolean nextInput = true ; nextInput ; nextInput = updateReport() )
@@ -507,6 +520,9 @@ public class RelationshipReporter extends Reporter {
                 for (String relationshipRecord : relationshipRecords)
                 {
                     relationshipId = extractValue(RELATIONSHIPID,relationshipRecord) ;
+                    if (noBreakups)
+                        if (blacklist.contains(relationshipId))
+                            continue ;
                     agentIds = extractAgentIds(relationshipRecord,0) ;
                     relationshipAgentReport.put(relationshipId, agentIds) ;
                 }
