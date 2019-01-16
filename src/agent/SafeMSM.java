@@ -18,7 +18,7 @@ public class SafeMSM extends MSM{
     //static double probabilityRequireDiscloseHIV = 0.5 ;
     
     /** Fraction of SafeMSM with positive HIV status. */
-    static double PROBABILITY_HIV = 0.085 ; // 0.02 ;
+    static double PROBABILITY_HIV = 0.092 ; // 
     
     /** Fraction of SafeMSM who disclose HIV status if HIV positive. */
     static double PROBABILITY_DISCLOSE_POSITIVE_HIV = 0.40 ;
