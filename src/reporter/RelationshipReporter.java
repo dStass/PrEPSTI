@@ -513,8 +513,8 @@ public class RelationshipReporter extends Reporter {
                 int clearIndex = INDEX_OF_PROPERTY("clear",inputRecord) ;
                 if (relationshipIdIndex >= 0 && (relationshipIdIndex < clearIndex)) 
                     record += inputRecord.substring(relationshipIdIndex,clearIndex) ;
-                else
-                    record += "" ;
+                else if (record.isEmpty())    // true unless contains burninRecord
+                    continue ;
                 
                 relationshipRecords = EXTRACT_ARRAYLIST(record,RELATIONSHIPID) ;
                 for (String relationshipRecord : relationshipRecords)
