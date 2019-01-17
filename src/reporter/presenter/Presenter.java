@@ -882,7 +882,6 @@ public class Presenter {
             if (scoreName.indexOf(name) >= 0)
                 scoreName += "/" + name ;
         // Send data to be processed and presented
-        LOGGER.info(chartTitle) ;
         chart_awt.callPlotChart(chartTitle,scoreData,scoreName,legend) ;
     }
     
@@ -906,7 +905,7 @@ public class Presenter {
             name = scoreNames.get(scoreIndex) ;
             scoreName += "/" + name ;
             legend[scoreIndex] = name ;
-            LOGGER.info(name);
+            //LOGGER.info(name);
         }
         // Send data to be processed and presented
         chart_awt.callPlotChart(chartTitle,scoreData,scoreName,legend) ;
@@ -1005,7 +1004,6 @@ public class Presenter {
     
     protected void plotHashMapArea(String categoryName, String scoreName, HashMap<Object,Number[]> hashMapReport )
     {
-        LOGGER.info("plotHashMapArea()") ;
         Double xTrack ;    // Tracks where the x-coordinate of the variable-width bars
         double gap = 0.02 ;    // Gap between bars in barChart
         //ArrayList<String> categoryInteger = new ArrayList<String>() ;
@@ -1642,7 +1640,6 @@ public class Presenter {
             //domainAxis.setTickUnit(new NumberTickUnit(dataset.getItemCount(0)/20)) ;
             
             // Set unit tick distance if range is integer.
-            LOGGER.log(Level.INFO,"{0} {1}", new Object[] {(dataset.getX(0,0)).getClass(),dataset.getX(0, 0)});
             if (int.class.isInstance(dataset.getX(0,0)) || Integer.class.isInstance(dataset.getX(0, 0)))
             {
                 NumberAxis rangeAxis = (NumberAxis) lineChart.getXYPlot().getRangeAxis() ;
