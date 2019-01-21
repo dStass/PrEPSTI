@@ -45,6 +45,39 @@ public class ScreeningReporter extends Reporter {
      * @param siteNames
      * @param backYears
      * @param lastYear
+     * @return Year-by-year report for backYears years on positivity on last day
+     * of each year ending lastYear.
+     */
+    public HashMap<Object,Number[]> 
+        prepareYearsPositivityRecord(String[] siteNames, int backYears, int lastYear) 
+        {
+            HashMap<Object,Number[]> positivityRecordYears = new HashMap<Object,Number[]>() ;
+            
+            int maxCycles = getMaxCycles() ;
+            
+            HashMap<Object,Number[]> positivityRecord ;
+            for (int year = 0 ; year < backYears ; year++ )
+            {
+                Number[] yearlyPositivityRecord = new Number[siteNames.length] ;
+               
+                //endCycle = maxCycles - year * DAYS_PER_YEAR ;
+                positivityRecord = prepareFinalNotificationsRecord(siteNames, year, 0, DAYS_PER_YEAR, maxCycles);
+               
+                // [1] for positivity
+                for (int siteIndex = 0 ; siteIndex < siteNames.length ; siteIndex++ )
+                    yearlyPositivityRecord[siteIndex] = positivityRecord.get(siteNames[siteIndex])[1] ;
+                
+                positivityRecordYears.put(lastYear - year, (Number[]) yearlyPositivityRecord.clone()) ;
+            }
+            
+            return positivityRecordYears ;
+        }
+    
+    /**
+     * 
+     * @param siteNames
+     * @param backYears
+     * @param lastYear
      * @return Year-by-year report for backYears years on notification on last day
      * of each year ending lastYear.
      */
@@ -55,7 +88,7 @@ public class ScreeningReporter extends Reporter {
             
             int maxCycles = getMaxCycles() ;
             
-            HashMap<Object,Number> notificationsRecord ;
+            HashMap<Object,Number[]> notificationsRecord ;
             for (int year = 0 ; year < backYears ; year++ )
             {
                 Number[] yearlyNotificationsRecord = new Number[siteNames.length] ;
@@ -63,8 +96,9 @@ public class ScreeningReporter extends Reporter {
                 //endCycle = maxCycles - year * DAYS_PER_YEAR ;
                 notificationsRecord = prepareFinalNotificationsRecord(siteNames, year, 0, DAYS_PER_YEAR, maxCycles);
                
+                // [0] for positivity
                 for (int siteIndex = 0 ; siteIndex < siteNames.length ; siteIndex++ )
-                    yearlyNotificationsRecord[siteIndex] = notificationsRecord.get(siteNames[siteIndex]) ;
+                    yearlyNotificationsRecord[siteIndex] = notificationsRecord.get(siteNames[siteIndex])[0] ;
                 
                 notificationRecordYears.put(lastYear - year, (Number[]) yearlyNotificationsRecord.clone()) ;
             }
@@ -77,7 +111,7 @@ public class ScreeningReporter extends Reporter {
      * @param siteNames
      * @return Records of final incidence for specified siteNames and in total.
      */
-    public HashMap<Object,Number> prepareFinalNotificationsRecord(String[] siteNames, int backMonths, int backDays)
+    public HashMap<Object,Number[]> prepareFinalNotificationsRecord(String[] siteNames, int backMonths, int backDays)
     {
         int endCycle = getMaxCycles() ;
         
@@ -91,21 +125,22 @@ public class ScreeningReporter extends Reporter {
      * @param endCycle
      * @return Records of final notifications for specified siteNames and in total.
      */
-    public HashMap<Object,Number> prepareFinalNotificationsRecord(String[] siteNames, int backYears, int backMonths, int backDays, int endCycle)
+    public HashMap<Object,Number[]> prepareFinalNotificationsRecord(String[] siteNames, int backYears, int backMonths, int backDays, int endCycle)
     {
-        HashMap<Object,Number> finalNotifications = new HashMap<Object,Number>() ;
+        HashMap<Object,Number[]> finalNotifications = new HashMap<Object,Number[]>() ;
         
         endCycle -= backYears * DAYS_PER_YEAR ;
         
         int notifications ;
+        int nbTests ;
         String record ;
         
         //String finalIncidenceRecord ; // getFinalRecord() ;
         ArrayList<String> finalNotificationsReport = getBackCyclesReport(0, backMonths, backDays, endCycle) ;
         
-        double population = getPopulation() ; // Double.valueOf(getMetaDatum("Community.POPULATION")) ;
-        // Adjust for portion of year sampled and units of 100000 person-years
-        double denominator = population * getBackCycles(0,backMonths,backDays)/(DAYS_PER_YEAR * 100000) ;
+        //double population = getPopulation() ; // Double.valueOf(getMetaDatum("Community.POPULATION")) ;
+        // Adjust for portion of year sampled //! and units of 100,000 person-years
+        double denominator = getBackCycles(0,backMonths,backDays)/DAYS_PER_YEAR ; // *population/100000
         for (String siteName : siteNames)
         {
             notifications = 0 ;
@@ -115,22 +150,34 @@ public class ScreeningReporter extends Reporter {
                 record = BOUNDED_STRING_BY_CONTENTS(siteName,AGENTID,finalIncidenceRecord) ;
                 
                 //* 100 because units  per 100 person years
-                notifications += countValueIncidence("treated","",record,0)[1] ;
+                notifications += COUNT_VALUE_INCIDENCE("treated","",record,0)[1] ;
                 
             }
-            finalNotifications.put(siteName,notifications/denominator) ;
+            Number[] entry = new Number[] {notifications/denominator,notifications} ;
+            finalNotifications.put(siteName,entry) ;
         }
         notifications = 0 ;
+        nbTests = 0 ;
         for (String finalNotificationsRecord : finalNotificationsReport)
         {
-            notifications += countValueIncidence("treated","",finalNotificationsRecord,0)[1] ;
-                
+            notifications += COUNT_VALUE_INCIDENCE("treated","",finalNotificationsRecord,0)[1] ;
+            nbTests += COUNT_VALUE_INCIDENCE(AGENTID,"",finalNotificationsRecord,0)[1] ;
         }
-        finalNotifications.put("all",notifications/denominator) ;
+        Number[] entry = new Number[] {notifications/denominator,notifications/nbTests} ;
+        finalNotifications.put("all",entry) ;
+        
+        // Correct siteName entries by nbTests
+        for (String siteName : siteNames)
+        {
+            entry = finalNotifications.get(siteName) ;
+            notifications = entry[1].intValue() ;
+            entry[1] = notifications/nbTests ;
+            finalNotifications.put(siteName,entry) ;
+        }
         
         return finalNotifications ;
     }
- 
+    
     /**
      * 
      * @param siteNames
@@ -193,7 +240,7 @@ public class ScreeningReporter extends Reporter {
         for (String siteName : siteNames)
         {
             // Count infected siteName
-            prevalence = countValueIncidence(siteName,TRUE,finalPrevalenceRecord,0)[1];
+            prevalence = COUNT_VALUE_INCIDENCE(siteName,TRUE,finalPrevalenceRecord,0)[1];
             finalPrevalencesRecord.put(siteName,prevalence/population) ;
         }
         
@@ -229,7 +276,7 @@ public class ScreeningReporter extends Reporter {
         for (String siteName : siteNames)
         {
             // Count infected siteName
-            symptomatic = countValueIncidence(siteName,TRUE,finalSymptomaticRecord,0)[0];
+            symptomatic = COUNT_VALUE_INCIDENCE(siteName,TRUE,finalSymptomaticRecord,0)[0];
             finalSymptomaticRecords.put(siteName,symptomatic/population) ;
         }
         
@@ -562,7 +609,7 @@ public class ScreeningReporter extends Reporter {
             String entry ;
             for (String record : input)
             {
-                nbSymptomatic = countValueIncidence(siteName,TRUE,record,0) ;
+                nbSymptomatic = COUNT_VALUE_INCIDENCE(siteName,TRUE,record,0) ;
 
     //            if (nbSymptomatic[0] == nbSymptomatic[1])
     //                LOGGER.info(record);
@@ -603,7 +650,7 @@ public class ScreeningReporter extends Reporter {
                 if (entry.isEmpty())
                     coprevalence = 0.0 ;
                 else 
-                    coprevalence = (Double.valueOf(countValueIncidence(AGENTID,"",entry,0)[1]))/population ;
+                    coprevalence = (Double.valueOf(COUNT_VALUE_INCIDENCE(AGENTID,"",entry,0)[1]))/population ;
                 siteCoPrevalenceReport.add("coprevalence:" + String.valueOf(coprevalence) + " ") ;
                 //LOGGER.info("coprevalence:" + String.valueOf(coprevalence) + " ");
             }
@@ -637,7 +684,7 @@ public class ScreeningReporter extends Reporter {
                 if (!siteName.isEmpty())
                     record = BOUNDED_STRING_BY_CONTENTS(siteName,AGENTID,record) ;
                 
-                notifications = countValueIncidence("treated","",record,0)[1];
+                notifications = COUNT_VALUE_INCIDENCE("treated","",record,0)[1];
                 rate = ((double) notifications)/population;
 
                 output = Reporter.ADD_REPORT_PROPERTY("notification", notifications) ;
