@@ -308,11 +308,11 @@ public class Reporter {
         for (int indexStart = Reporter.INDEX_OF_PROPERTY(bound,string) ; indexStart >= 0 ; indexStart = INDEX_OF_PROPERTY(bound,indexStart+1,string))
         {
             boundedString = EXTRACT_BOUNDED_STRING(bound, string, indexStart) ;
-            // This if statement moved to compareValue()
+            // This if statement moved to COMPARE_VALUE()
             //if (INDEX_OF_PROPERTY(propertyName,boundedString) >= 0)
             
             // TODO: Label Sites site0, site1 in generation of encounterString so that boolean || is not necessary
-            if (compareValue(propertyName,value,boundedString) || compareValue(propertyName,value,boundedString,boundedString.lastIndexOf(propertyName))) 
+            if (compareValue(propertyName,value,boundedString) || COMPARE_VALUE(propertyName,value,boundedString,boundedString.lastIndexOf(propertyName))) 
                 boundedOutput += boundedString ;
         }
         return boundedOutput ;
@@ -377,7 +377,7 @@ public class Reporter {
         for (int indexStart = Reporter.INDEX_OF_PROPERTY(bound,string) ; indexStart >= 0 ; indexStart = INDEX_OF_PROPERTY(bound,indexStart+1,string) )
         {
             boundedString = EXTRACT_BOUNDED_STRING(bound, string, indexStart) ;
-            if (boundedString.contains(propertyName))   //(compareValue(propertyName,value,boundedString)) 
+            if (boundedString.contains(propertyName))   //(COMPARE_VALUE(propertyName,value,boundedString)) 
                 boundedOutput += boundedString ;
         }
         return boundedOutput ;
@@ -569,7 +569,7 @@ public class Reporter {
      * @param startIndex
      * @return true if the String representation of the value of propertyName equals (String) value
      */
-    protected static boolean compareValue(String propertyName, String value, String string, int startIndex)
+    protected static boolean COMPARE_VALUE(String propertyName, String value, String string, int startIndex)
     {
         if (INDEX_OF_PROPERTY(propertyName,startIndex,string) >= 0)
             return extractValue(propertyName, string, startIndex).equals(value) ;
@@ -585,7 +585,7 @@ public class Reporter {
      * @param startIndex
      * @return (int[2]) The number of value incidents, number of propertyName incidents.
      */
-    protected static int[] countValueIncidence(String propertyName, String value, String string, int startIndex)
+    protected static int[] COUNT_VALUE_INCIDENCE(String propertyName, String value, String string, int startIndex)
     {
         int count = 0 ;
         int total = 0 ;
@@ -593,7 +593,7 @@ public class Reporter {
             index = INDEX_OF_PROPERTY(propertyName, index+1, string))
         {
             total++ ;
-            if (compareValue(propertyName, value, string, index))
+            if (COMPARE_VALUE(propertyName, value, string, index))
                 count++ ;
         }
         if (total == 0)
@@ -610,7 +610,7 @@ public class Reporter {
      */
     protected static boolean compareValue(String propertyName, String value, String string)
     {
-        return compareValue(propertyName, value, string, Reporter.INDEX_OF_PROPERTY(propertyName,string)) ;
+        return COMPARE_VALUE(propertyName, value, string, Reporter.INDEX_OF_PROPERTY(propertyName,string)) ;
     }
     
     
@@ -2005,7 +2005,11 @@ public class Reporter {
          */
         private void getSpecificFile(int cycle)
         {
-            fileIndex = cycle/cyclesPerFile - 1 ;
+            int divCycle = cycle/cyclesPerFile ;
+            if (cyclesPerFile * divCycle == cycle)
+                fileIndex = divCycle - 1 ;
+            else
+                fileIndex = divCycle ;
         }
         
         /**
@@ -2025,12 +2029,14 @@ public class Reporter {
                 // Open file
                 getSpecificFile(startCycle) ;
                 BufferedReader fileReader = new BufferedReader(new FileReader(folderPath + fileNames.get(fileIndex))) ;
+                        
                 boolean newFile = false ;
 
                 // Move to starting line in file
                 int startLine = startCycle % cyclesPerFile ;
                 int endLine = startLine + backCycles ;
                 int pauseLine ;
+                
                 String outputString ;
 
                 int readLines = 0 ;
