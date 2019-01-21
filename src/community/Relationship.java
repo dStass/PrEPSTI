@@ -144,6 +144,7 @@ public class Relationship {
         
         RelationshipReporter relationshipReporter = new RelationshipReporter(simName,"output/test/") ;
         //RelationshipReporter relationshipReporter = new RelationshipReporter(simName,"/srv/scratch/z3524276/prepsti/output/test/") ;
+        //RelationshipReporter relationshipReporter = new RelationshipReporter(simName,"/short/is14/mw7704/prepsti/output/year2007/") ;
         
         HashMap<Object,String[]> relationshipAgentReport 
                 = relationshipReporter.prepareRelationshipAgentReport() ;
