@@ -1455,13 +1455,15 @@ public class Presenter {
             
             DefaultCategoryDataset dataset = createDataset(scoreNames, categoryList, scoreLists,bin) ;
             
-            
+            String[] finalNames = new String[2] ;
+            if (0 > 1)
+            {
             // Data from file
             HashMap<Object,Number[]> dataReport = readHashMapNumberArrayCSV("incidence_kirby2018") ;
             String[] dataScore = new String[] {"hiv_negative","hiv_positive"} ;
             dataset = expandDataset(dataset,dataReport,dataScore) ;
             
-            String[] finalNames = new String[scoreNames.length + dataScore.length] ;
+            finalNames = new String[scoreNames.length + dataScore.length] ;
             for (int scoreIndex = 0 ; scoreIndex < scoreNames.length ; scoreIndex++ )
                 finalNames[scoreIndex] = scoreNames[scoreIndex] ;
             
@@ -1471,7 +1473,9 @@ public class Presenter {
                 for (int scoreIndex = 0 ; scoreIndex < scoreNames.length ; scoreIndex++ )
                     scoreNames[scoreIndex] = "Log() ".concat(scoreNames[scoreIndex]) ;*/
             //LOGGER.log(Level.INFO, "{0}", finalNames);
-            
+            }
+            else 
+                finalNames = scoreNames ;
             plotStackedBarChart(chartTitle, dataset, finalNames, xLabel) ;
         }
         
