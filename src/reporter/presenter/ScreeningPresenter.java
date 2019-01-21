@@ -9,8 +9,8 @@ package reporter.presenter;
 import java.util.ArrayList ;
 import java.util.HashMap;
 
-import community.Community ;
-import java.util.Arrays;
+//import community.Community ;
+//import java.util.Arrays;
 import java.util.logging.Level;
 import reporter.Reporter ;
 import reporter.ScreeningReporter ;
@@ -68,21 +68,21 @@ public class ScreeningPresenter extends Presenter {
 
     public static void main(String[] args)
     {
-        //String simName = "TestPop40000Cycles100" ; // Community.NAME_ROOT ; // "introPrepCalibration48Pop40000Cycles7000" ; // args[0] ;
+        //String simName = "TestCycle585AlteredTestingPop40000Cycles2000" ; // Community.NAME_ROOT ; // "introPrepCalibration48Pop40000Cycles7000" ; // args[0] ;
         //String simName = "IntroPrepCalibration74acycle6000Pop40000Cycles12000" ; // "NoPrepCalibration51bPop40000Cycles4000" ; // "DecliningCondoms3Pop40000Cycles5000" ; 
         //String simName = "RiskyPrep74Pop40000Cycles4000" ;
-        //String simName = "FallingCondomUseCalibration76cPop40000Cycles2655" ;
-        String simName = "NoPrepCalibration76cPop40000Cycles4000" ; // "DecliningCondoms3Pop40000Cycles5000" ; 
-        //String simName = "NoPrepCalibration74Pop40000Cycles200" ;
+        //String simName = "FallingCondomUseAlteredTestingPop40000Cycles2000" ;
+        String simName = "NoPrepCalibration6aPop40000Cycles2000" ; // "DecliningCondoms3Pop40000Cycles5000" ; 
+        //String simName = "TestNoScreeningPop40000Cycles2000" ;
         //String simName = "IntroPrepCalibration51testPop40000Cycles1000" ;
         //String chartTitle = "mean_prevalence" ; //  args[1] ;
-        String chartTitle = "multi-site prevalence" ; //  args[1] ;
-        //String chartTitle = "yearly_notifications" ; //
+        //String chartTitle = "multi-site prevalence" ; //  args[1] ;
+        String chartTitle = "yearly_notifications" ; //
         //String chartTitle = "proportion_symptomatic" ;
         //String chartTitle = "site-specific symptomatic" ; // args[1] ;
         //String chartTitle = "testing_6_months" ; // args[1] ;
         //String chartTitle = "infections_past_2years_PrEP" ; // args[1] ;
-        String reportFileName = "output/test/" ; // args[2] ;
+        String reportFileName = "output/year2007/" ; // args[2] ;
 
         LOGGER.info(chartTitle) ;
         
@@ -99,9 +99,8 @@ public class ScreeningPresenter extends Presenter {
         //screeningPresenter.plotNumberAgentTestingReport(0, 6, 0) ;
         //screeningPresenter.plotNumberAgentTreatedReport(2, 0, 0,"prepStatus",5) ;
 
-        //screeningPresenter.plotNotificationsPerCycle(siteNames);
         //screeningPresenter.multiPlotScreening(new Object[] {SYMPTOMATIC,new String[] {"Pharynx","Rectum","Urethra"}});
-        screeningPresenter.multiPlotScreening(new Object[] {"prevalence","coprevalence",new String[] {"Pharynx","Rectum"},new String[] {"Urethra","Rectum"},"prevalence",new String[] {"Pharynx","Rectum","Urethra"}});
+        //screeningPresenter.multiPlotScreening(new Object[] {"prevalence","coprevalence",new String[] {"Pharynx","Rectum"},new String[] {"Urethra","Rectum"},"prevalence",new String[] {"Pharynx","Rectum","Urethra"}});
         //screeningPresenter.multiPlotScreening(new Object[] {"prevalence","prevalence",new String[] {"Pharynx","Rectum","Urethra"}});
         //screeningPresenter.plotNotificationsPerCycle(siteNames) ;
         //screeningPresenter.plotSitePrevalence(siteNames) ;
@@ -109,7 +108,7 @@ public class ScreeningPresenter extends Presenter {
         //screeningPresenter.plotFinalSymptomatic(new String[] {"Pharynx","Rectum","Urethra"}) ;
         //screeningPresenter.plotFinalPrevalences(new String[] {"Pharynx","Rectum","Urethra"}) ;
         //screeningPresenter.plotFinalNotifications(new String[] {"Pharynx","Rectum","Urethra"}, 6, 0) ;
-        //screeningPresenter.plotNotificationsYears(new String[] {"Pharynx","Rectum","Urethra"},5,2017) ;
+        screeningPresenter.plotNotificationsYears(new String[] {"Pharynx","Rectum","Urethra"},5,2017) ;
         //screeningPresenter.plotNotificationPerCycle() ;    
         //screeningPresenter.plotSiteProportionSymptomatic(siteNames) ;
 
@@ -137,24 +136,35 @@ public class ScreeningPresenter extends Presenter {
     
     /**
      * Plots bar chart showing notifications of all siteNames and total incidence.
+     * @param outcome
      */
-    public void plotFinalNotifications()
+    public void plotFinalNotifications(int outcome)
     {
-        //String siteNames = reporter.getMetaDatum("Community.SITE_NAMES") ;
         //ArrayList<String> sitesList = Arrays(siteNames) ;
         
-        plotFinalNotifications(new String[] {"Pharynx","Rectum","Urethra"}, 6, 0) ;
+        plotFinalNotifications(new String[] {"Pharynx","Rectum","Urethra"}, 6, 0, outcome) ;
     }
     
     /**
-     * Plots bar chart showing incidence of requested siteNames and total incidence.
+     * Plots bar chart showing incidence of requested siteNames and total 
+     * outcome == 0 : incidence,
+     * outcome == 1 : positivity
      * @param siteNames 
+     * @param backMonths 
+     * @param backDays 
+     * @param outcome 
      */
-    public void plotFinalNotifications(String[] siteNames, int backMonths, int backDays)
+    public void plotFinalNotifications(String[] siteNames, int backMonths, int backDays, int outcome)
     {
-        HashMap<Object,Number> finalNotificationsRecord = reporter.prepareFinalNotificationsRecord(siteNames, backMonths, backDays) ;
-        
-        plotHashMap("Sites","incidence",finalNotificationsRecord) ;        
+        // [0] for positivity
+        HashMap<Object,Number> finalNotificationsRecord = new HashMap<Object,Number>() ;
+        HashMap<Object,Number[]> notificationsRecord = reporter.prepareFinalNotificationsRecord(siteNames, backMonths, backDays) ;
+        for (Object key : notificationsRecord.keySet())
+        {
+            finalNotificationsRecord.put(key, notificationsRecord.get(key)[outcome]) ;
+        }
+        String[] yLabels = new String[] {"incidence","positivity"} ;
+        plotHashMap("Sites",yLabels[outcome],finalNotificationsRecord) ;        
     }
     
     /**
