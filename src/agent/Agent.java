@@ -239,6 +239,7 @@ public abstract class Agent {
         ArrayList<Agent> agents = new ArrayList<Agent>() ;
         PopulationReporter populationReporter = new PopulationReporter(simName,"output/test/") ;
         //PopulationReporter populationReporter = new PopulationReporter(simName,"/srv/scratch/z3524276/prepsti/output/test/") ;
+        //PopulationReporter populationReporter = new PopulationReporter(simName,"/short/is14/mw7704/prepsti/output/year2007/") ;
         
         ArrayList<String> birthReport = populationReporter.prepareBirthReport() ;
         
@@ -246,6 +247,7 @@ public abstract class Agent {
         
         ScreeningReporter screeningReporter = new ScreeningReporter(simName,"output/test/") ;
         //ScreeningReporter screeningReporter = new ScreeningReporter(simName,"/srv/scratch/z3524276/prepsti/output/test/") ;
+        //ScreeningReporter screeningReporter = new ScreeningReporter(simName,"/short/is14/mw7704/prepsti/output/year2007/") ;
         
         String screeningRecord = screeningReporter.getFinalRecord() ;
         
