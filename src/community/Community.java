@@ -31,24 +31,25 @@ import java.util.logging.Level;
 public class Community {
     static public int POPULATION = 40000 ;
     static public int MAX_CYCLES = 2000 ;
-    //static public String NAME_ROOT = "Test"
+    //static public String NAME_ROOT = "TestNoScreenAsympUrethra"
     //static public String NAME_ROOT = "max3Relationships80" 
-    //static public String NAME_ROOT = "RiskyPrep74"        
+    static public String NAME_ROOT = "Year2007Calibration7a"        
     //static public String NAME_ROOT = "IntroPrepCalibration74acycle6000" 
     //static public String NAME_ROOT = "FallingCondomUseCalibration76b" 
-    static public String NAME_ROOT = "NoPrepCalibration3a" 
+    //static public String NAME_ROOT = "NoPrepCalibration6a" 
     //static public String NAME_ROOT = "AllSexualContacts"
     //        + "DecliningCondomsAlteredTesting"
             + "Pop" + String.valueOf(POPULATION) + "Cycles" + String.valueOf(MAX_CYCLES) ;
 
     static String COMMENT = ""
+            + "Calibrate to 2007 data notifications. "
             // + "every cycle from 3000 "
             //+ "Agents reduce their chances of choosing condoms. "
             //+ "Every year from cycle 2000 "
             //+ "five RiskyMSM go on PrEP "
             //+ "Testing rates are altered to compare with long-term data " 
             //+ "and their condom usage rates are multiplied by random fraction between 0 and 1."
-            //+ "MAX_RELATIONSHIPS set to 4 "  // "Uses parameters from NoPrepCalibration53" ;
+            //+ "MAX_RELATIONSHIPS set to 3 "  // "Uses parameters from NoPrepCalibration53" ;
             //+ "All encounters are recorded in full." 
               //      + "consentCasualProbability * 5/12 "
             //+ "Test of loading burn-in. Uses Calibration24. "
@@ -58,17 +59,19 @@ public class Community {
             //+ "Assumes number of Agents at least N times number of cycles minus 1000." ;*/
             + "" ;
     
-    static public String FILE_PATH = "output/test/" ;
+    static boolean TO_PLOT = true ;
+    static public String FILE_PATH = "output/year2007/" ;
     //static public String FILE_PATH = "/srv/scratch/z3524276/prepsti/output/test/" ;
+    //static public String FILE_PATH = "/sort/is14/mw7704/prepsti/output/year2007/" ;
     /** Dump reports to disk after this many cycles. */
+    /** Whether parameters change throughout simulation. */
+    static boolean DYNAMIC = false ;
+    
     static final int DUMP_CYCLE = ((int) Math.pow(10, 7))/POPULATION ;
     /** Whether to dump partial reports during simulation. */
     static final boolean PARTIAL_DUMP = (DUMP_CYCLE > 0) ;
     /** How many digits represent cycles in DUMP filename. */
     static final int DUMP_DIGITS = (int) Math.floor(Math.log10(MAX_CYCLES-1)) + 1 ;
-    
-    /** Whether parameters change throughout simulation. */
-    static boolean DYNAMIC = false ;
     
     /**
      * (String) Name of previous burn-in to reload.
@@ -287,6 +290,8 @@ public class Community {
         System.out.println("Elapsed running time: " + seconds + "seconds") ;
         System.out.println("Elapsed running time: " + minutes + "minutes") ;
         
+        if (TO_PLOT)
+        {
         String[] relationshipClassNames = new String[] {"Casual","Regular","Monogomous"} ; // "Casual","Regular","Monogomous"
         
         //RelationshipReporter relationshipReporter = new RelationshipReporter(Community.NAME_ROOT,Community.FILE_PATH) ;
@@ -373,7 +378,7 @@ public class Community {
         //RelationshipPresenter relationshipPresenter2 
           //      = new RelationshipPresenter("Mean number of Relationships",Community.NAME_ROOT,relationshipReporter) ;
         //relationshipPresenter2.plotMeanNumberRelationshipsReport();
-        
+        }
     }
 
     /**
@@ -965,6 +970,7 @@ public class Community {
                     if (agent.treatSymptomatic())  
                     {
                         record += Reporter.ADD_REPORT_LABEL("tested") ;
+                        // Currently assuming that treatment is always successful
                         record += Reporter.ADD_REPORT_LABEL("treated") ;
                         record += " " ;
                         //LOGGER.info("treated");
