@@ -105,11 +105,11 @@ public class EncounterReporter extends Reporter {
         for (String siteName : siteNames)
         {
             // Count infected siteName
-            rate = countValueIncidence(siteName,"0",finalRecord,0)[1];
+            rate = COUNT_VALUE_INCIDENCE(siteName,"0",finalRecord,0)[1];
             finalTransmissionsRecord.put(siteName,rate/denominator) ;
         }
         
-        rate = countValueIncidence(RELATIONSHIPID,"",finalRecord,0)[1];
+        rate = COUNT_VALUE_INCIDENCE(RELATIONSHIPID,"",finalRecord,0)[1];
         finalTransmissionsRecord.put("all",rate/denominator) ;
         
         return finalTransmissionsRecord ;
@@ -194,7 +194,7 @@ public class EncounterReporter extends Reporter {
                 
                 //record = encounterByValue(TRANSMISSION,TRUE,record) ;
                 
-                incidents += countValueIncidence(TRANSMISSION,TRUE,record,0)[0] ;
+                incidents += COUNT_VALUE_INCIDENCE(TRANSMISSION,TRUE,record,0)[0] ;
                 
             }
             finalIncidence.put(siteName,incidents/denominator) ;
@@ -206,10 +206,10 @@ public class EncounterReporter extends Reporter {
             record = encounterByValue(TRANSMISSION,TRUE,finalIncidentsRecord) ;
             
             //record = record.substring(record.lastIndexOf(RELATIONSHIPID)) ;
-            //if (countValueIncidence(RELATIONSHIPID,"",record,0)[1] > 1)
+            //if (COUNT_VALUE_INCIDENCE(RELATIONSHIPID,"",record,0)[1] > 1)
               //  LOGGER.info(record);
             // Count them
-            incidents += countValueIncidence(RELATIONSHIPID,"",record,0)[1] ;
+            incidents += COUNT_VALUE_INCIDENCE(RELATIONSHIPID,"",record,0)[1] ;
         }
         finalIncidence.put("all",incidents/denominator) ;
         LOGGER.log(Level.INFO, "{0}", finalIncidence);
@@ -237,7 +237,7 @@ public class EncounterReporter extends Reporter {
                 //LOGGER.info(record);
                 if (!siteName.isEmpty())
                     record = BOUNDED_STRING_BY_VALUE(siteName,"0",RELATIONSHIPID,record) ;
-                transmissions = countValueIncidence(TRANSMISSION, TRUE, record, 0)[1];
+                transmissions = COUNT_VALUE_INCIDENCE(TRANSMISSION, TRUE, record, 0)[1];
                 incidence = ((double) transmissions)/population;
                 transmissionString = Reporter.ADD_REPORT_PROPERTY(TRANSMISSION, transmissions) ;
                 transmissionString += Reporter.ADD_REPORT_PROPERTY("rate",incidence) ;
@@ -705,7 +705,7 @@ public class EncounterReporter extends Reporter {
         for (boolean nextInput = true ; nextInput ; nextInput = updateReport() )
             for (String record : input)
             {
-                condomData = countValueIncidence(CONDOM,TRUE,record,0) ;
+                condomData = COUNT_VALUE_INCIDENCE(CONDOM,TRUE,record,0) ;
                 usages = condomData[0] ;
                 opportunities = condomData[1] ;
                 proportion = ((double) usages)/opportunities ;
