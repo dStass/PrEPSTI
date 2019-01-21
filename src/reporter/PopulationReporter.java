@@ -173,7 +173,7 @@ public class PopulationReporter extends Reporter {
             {
                 String agentId = extractValue(agentString,propertyEntry) ;
                 String agentValue = extractValue(propertyName,censusPropertyReport.get(agentId)) ;
-                if (compareValue(propertyName,propertyValue,agentValue,0)) ;
+                if (COMPARE_VALUE(propertyName,propertyValue,agentValue,0)) ;
                     filteredRecord += propertyEntry ;
             }
             filteredReport.add(filteredRecord) ;
