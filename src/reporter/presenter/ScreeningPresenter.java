@@ -72,12 +72,13 @@ public class ScreeningPresenter extends Presenter {
         //String simName = "IntroPrepCalibration74acycle6000Pop40000Cycles12000" ; // "NoPrepCalibration51bPop40000Cycles4000" ; // "DecliningCondoms3Pop40000Cycles5000" ; 
         //String simName = "RiskyPrep74Pop40000Cycles4000" ;
         //String simName = "FallingCondomUseAlteredTestingPop40000Cycles2000" ;
-        String simName = "NoPrepCalibration6aPop40000Cycles2000" ; // "DecliningCondoms3Pop40000Cycles5000" ; 
-        //String simName = "TestNoScreeningPop40000Cycles2000" ;
+        //String simName = "NoPrepCalibration73aPop40000Cycles3500" ; // "DecliningCondoms3Pop40000Cycles5000" ; 
+        String simName = "Year2007Calibration12dPop40000Cycles3000" ;
         //String simName = "IntroPrepCalibration51testPop40000Cycles1000" ;
         //String chartTitle = "mean_prevalence" ; //  args[1] ;
         //String chartTitle = "multi-site prevalence" ; //  args[1] ;
-        String chartTitle = "yearly_notifications" ; //
+        String chartTitle = "notifications" ; //
+        //String chartTitle = "positivity" ; //
         //String chartTitle = "proportion_symptomatic" ;
         //String chartTitle = "site-specific symptomatic" ; // args[1] ;
         //String chartTitle = "testing_6_months" ; // args[1] ;
@@ -107,8 +108,9 @@ public class ScreeningPresenter extends Presenter {
         //screeningPresenter.plotSiteMeanPrevalence(siteNames, simNames) ;
         //screeningPresenter.plotFinalSymptomatic(new String[] {"Pharynx","Rectum","Urethra"}) ;
         //screeningPresenter.plotFinalPrevalences(new String[] {"Pharynx","Rectum","Urethra"}) ;
-        //screeningPresenter.plotFinalNotifications(new String[] {"Pharynx","Rectum","Urethra"}, 6, 0) ;
-        screeningPresenter.plotNotificationsYears(new String[] {"Pharynx","Rectum","Urethra"},5,2017) ;
+        screeningPresenter.plotFinalNotifications(new String[] {"Pharynx","Rectum","Urethra"}, 0, Reporter.DAYS_PER_YEAR, 0) ;
+        //screeningPresenter.plotNotificationsYears(new String[] {"Pharynx","Rectum","Urethra"},5,2007) ;
+        //screeningPresenter.plotPositivityYears(new String[] {"Pharynx","Rectum","Urethra"},5,2007) ;
         //screeningPresenter.plotNotificationPerCycle() ;    
         //screeningPresenter.plotSiteProportionSymptomatic(siteNames) ;
 
@@ -132,6 +134,20 @@ public class ScreeningPresenter extends Presenter {
         HashMap<Object,Number[]> notificationsRecordYears = reporter.prepareYearsNotificationsRecord(siteNames, backYears, lastYear) ;
         
         plotHashMap("Year", siteNames, notificationsRecordYears) ;
+    }
+    
+    /**
+     * Plots bar chart showing incidence at each Site for each of the last backYears
+     * years counting back from lastYear.
+     * @param siteNames
+     * @param backYears
+     * @param lastYear 
+     */
+    public void plotPositivityYears(String[] siteNames, int backYears, int lastYear)
+    {
+        HashMap<Object,Number[]> positivityRecordYears = reporter.prepareYearsPositivityRecord(siteNames, backYears, lastYear) ;
+        
+        plotHashMap("Year", siteNames, positivityRecordYears) ;
     }
     
     /**
@@ -163,6 +179,7 @@ public class ScreeningPresenter extends Presenter {
         {
             finalNotificationsRecord.put(key, notificationsRecord.get(key)[outcome]) ;
         }
+        LOGGER.log(Level.INFO, "{0}", finalNotificationsRecord);
         String[] yLabels = new String[] {"incidence","positivity"} ;
         plotHashMap("Sites",yLabels[outcome],finalNotificationsRecord) ;        
     }
