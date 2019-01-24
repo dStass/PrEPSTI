@@ -132,7 +132,7 @@ public class ScreeningReporter extends Reporter {
         endCycle -= backYears * DAYS_PER_YEAR ;
         
         int notifications ;
-        int nbTests ;
+        //double nbTests ;
         String record ;
         
         //String finalIncidenceRecord ; // getFinalRecord() ;
@@ -140,10 +140,11 @@ public class ScreeningReporter extends Reporter {
         
         //double population = getPopulation() ; // Double.valueOf(getMetaDatum("Community.POPULATION")) ;
         // Adjust for portion of year sampled //! and units of 100,000 person-years
-        double denominator = getBackCycles(0,backMonths,backDays)/DAYS_PER_YEAR ; // *population/100000
+        double denominator = ((double) getBackCycles(0,backMonths,backDays))/DAYS_PER_YEAR ; // *population/100000
         for (String siteName : siteNames)
         {
             notifications = 0 ;
+            ArrayList<Object> positiveAgents = new ArrayList<Object>() ;
             for (String finalIncidenceRecord : finalNotificationsReport)
             {
                 // Count infected siteName
@@ -152,18 +153,38 @@ public class ScreeningReporter extends Reporter {
                 //* 100 because units  per 100 person years
                 notifications += COUNT_VALUE_INCIDENCE("treated","",record,0)[1] ;
                 
+                ArrayList<Object> positiveList = extractAllValues(AGENTID,record) ;
+                // Avoid double counting
+                positiveList.removeAll(positiveAgents) ;
+                positiveAgents.addAll(positiveList) ;
             }
-            Number[] entry = new Number[] {notifications/denominator,notifications} ;
+            Number[] entry = new Number[] {notifications/denominator,positiveAgents.size()} ;
             finalNotifications.put(siteName,entry) ;
         }
         notifications = 0 ;
-        nbTests = 0 ;
+        //nbTests = 0 ;
+        ArrayList<Object> testedAgents = new ArrayList<Object>() ;
+        ArrayList<Object> positiveAgents = new ArrayList<Object>() ;
         for (String finalNotificationsRecord : finalNotificationsReport)
         {
             notifications += COUNT_VALUE_INCIDENCE("treated","",finalNotificationsRecord,0)[1] ;
-            nbTests += COUNT_VALUE_INCIDENCE(AGENTID,"",finalNotificationsRecord,0)[1] ;
+            
+            ArrayList<Object> testedList = extractAllValues(AGENTID,finalNotificationsRecord) ;
+            // Avoid double counting Agents
+            testedList.removeAll(testedAgents) ;
+            testedAgents.addAll(testedList) ;
+            
+            // Positive Agents
+            record = BOUNDED_STRING_BY_CONTENTS("treated",AGENTID,finalNotificationsRecord) ;
+            ArrayList<Object> positiveList = extractAllValues(AGENTID,record) ;
+            // Avoid double counting
+            positiveList.removeAll(positiveAgents) ;
+            positiveAgents.addAll(positiveList) ;
+                
         }
-        Number[] entry = new Number[] {notifications/denominator,notifications/nbTests} ;
+        double nbTested = (double) testedAgents.size() ;
+        double nbTreated = (double) positiveAgents.size() ;
+        Number[] entry = new Number[] {notifications/denominator,nbTreated/nbTested} ;
         finalNotifications.put("all",entry) ;
         
         // Correct siteName entries by nbTests
@@ -171,7 +192,7 @@ public class ScreeningReporter extends Reporter {
         {
             entry = finalNotifications.get(siteName) ;
             notifications = entry[1].intValue() ;
-            entry[1] = notifications/nbTests ;
+            entry[1] = notifications/nbTested ;
             finalNotifications.put(siteName,entry) ;
         }
         
