@@ -89,7 +89,7 @@ public class Relationship {
      * The maximum number of contacts allowed in a sexual encounter.
      * Adjusted down from 5 16/1/19 to reduce coprevalence.
      */
-    static int MAXIMUM_CONTACTS = 3 ;
+    static int MAXIMUM_CONTACTS = 5 ;
     
     // TODO: Move condom variables to STI
     // Probability of using a condom for couplings with a Site.Urethra
@@ -391,13 +391,13 @@ public class Relationship {
             }
 
             //TODO: Generalise to other subclasses of Agent
-            //Method getInfectionMethod = agentClazz.getMethod("getInfectProbability", Agent.class,
+            //Method getInfectionMethod = agentClazz.getMethod("GET_INFECT_PROBABILITY", Agent.class,
                     //	Agent.class, int.class, Site.class, Site.class ) ;
-            // Method getInfectionMethod = Agent.class.getMethod("getInfectProbability", Agent.class,
+            // Method getInfectionMethod = Agent.class.getMethod("GET_INFECT_PROBABILITY", Agent.class,
                     //	Agent.class, int.class, Site.class, Site.class ) ;
             if ((infectStatus0 != 0)) // && (infectStatus1 == 0))
             {
-                infectProbability*= MSM.getInfectProbability(agent0, agent1, infectStatus0, site0, site1) ; 
+                infectProbability*= MSM.GET_INFECT_PROBABILITY(agent0, agent1, infectStatus0, site0, site1) ; 
                                 //(double) getInfectionMethod.
                                 //invoke(agent0,agent1,infectStatus0,site0,site1) ;
 
@@ -407,7 +407,7 @@ public class Relationship {
             }
             else if ((infectStatus1 != 0)) // && (infectStatus0 == 0))    // agent1 must be infected
             {
-                infectProbability*= MSM.getInfectProbability(agent1, agent0, infectStatus1, site1, site0) ;
+                infectProbability*= MSM.GET_INFECT_PROBABILITY(agent1, agent0, infectStatus1, site1, site0) ;
                 //infectProbability*= (double) getInfectionMethod.
                         //	invoke(agent1,agent0,infectStatus1,site1,site0) ;
 
