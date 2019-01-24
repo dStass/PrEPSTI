@@ -20,9 +20,9 @@ public class RiskyMSM extends MSM
     static double PROPORTION_HIV = 0.092 ;
     
     // The probability of disclosing HIV status if HIV positive
-    static double PROBABILITY_DISCLOSE_POSITIVE_HIV = 0.40 ;
+    static double PROBABILITY_DISCLOSE_POSITIVE_HIV = 0.20 ; // 0.40 ;
     // The probability of disclosing HIV status if HIV negative
-    static double PROBABILITY_DISCLOSE_NEGATIVE_HIV = 0.35 ;
+    static double PROBABILITY_DISCLOSE_NEGATIVE_HIV = 0.18 ; // 0.35 ;
     
     /** 
      * Probability of joining an orgy if invited.
@@ -82,14 +82,21 @@ public class RiskyMSM extends MSM
         String partnerDisclosure = partner.declareStatus() ;
         //Boolean partnerSeroPosition = ((MSM) partner).getSeroPosition() ;
         
+        // Not if on PrEP
         if (getPrepStatus())
             return false ;
+        
         if (getSeroSort(relationshipClazzName))    // might use condom when serodiscordance or nondisclosure
         {
             if (!(getStatusHIV() == Boolean.getBoolean(partnerDisclosure))) 
-                return (RAND.nextDouble() < probabilityUseCondom ) ;
-            else if (!((MSM)partner).getPrepStatus()) // !getPrepStatus() || 
-                return (RAND.nextDouble() < probabilityUseCondom ) ;
+            {
+                if (RAND.nextDouble() < probabilityUseCondom ) 
+                    return true;
+                if (getStatusHIV() && !((MSM)partner).getPrepStatus()) // !getPrepStatus() || 
+                    return (RAND.nextDouble() < probabilityUseCondom ) ;
+                else if (!getStatusHIV() && ((MSM)partner).getPrepStatus())
+                    return (RAND.nextDouble() < probabilityUseCondom ) ;
+            }
         }
         if (getSeroPosition())
             if (NONE.equals(partnerDisclosure))  // maybe if partner does not disclose
