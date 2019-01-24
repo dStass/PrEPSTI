@@ -65,7 +65,7 @@ abstract public class MSM extends Agent {
     /** Probability of sero-positioning if HIV negative */
     static double PROBABILITY_NEGATIVE_SERO_POSITION = 0.154 ;
     /** The probability of being on antivirals, given positive HIV status */
-    static double PROBABILITY_ANTIVIRAL = 0.57 ;
+    static double PROBABILITY_ANTIVIRAL = 0.53 ;
     /** The probability of being on PrEP, given negative HIV status */
     static double PROBABILITY_PREP = 0.0 ; // 0.14 ;
     /** Probability of accepting seropositive partner on antiVirals, given 
@@ -127,21 +127,21 @@ abstract public class MSM extends Agent {
     private boolean prepStatus ;
 	
     /** Transmission probabilities per sexual contact from Urethra to Rectum */
-    static double URETHRA_TO_RECTUM = 0.047 ; 
+    static double URETHRA_TO_RECTUM = 0.030 ; 
     /** Transmission probabilities sexual contact from Urethra to Pharynx. */
-    static double URETHRA_TO_PHARYNX = 0.047 ; 
+    static double URETHRA_TO_PHARYNX = 0.030 ; 
     /** Transmission probabilities sexual contact from Rectum to Urethra. */ 
-    static double RECTUM_TO_URETHRA = 0.047 ; 
+    static double RECTUM_TO_URETHRA = 0.030 ; 
     /** Transmission probabilities sexual contact from Rectum to Pharynx. */
-    static double RECTUM_TO_PHARYNX = 0.046 ; 
+    static double RECTUM_TO_PHARYNX = 0.030 ; 
     /** Transmission probabilities sexual contact in Pharynx to Urethra intercourse. */
-    static double PHARYNX_TO_URETHRA = 0.047 ;
+    static double PHARYNX_TO_URETHRA = 0.030 ;
     /** Transmission probabilities sexual contact in Pharynx to Rectum intercourse. */
-    static double PHARYNX_TO_RECTUM = 0.046 ; 
+    static double PHARYNX_TO_RECTUM = 0.030 ; 
     /** Transmission probabilities sexual contact in Pharynx to Pharynx intercourse (kissing). */
-    static double PHARYNX_TO_PHARYNX = 0.046 ; 
+    static double PHARYNX_TO_PHARYNX = 0.030 ; 
     /** Transmission probabilities sexual contact in Urethra to Urethra intercourse (docking). */
-    static double URETHRA_TO_URETHRA = 0.047 ; 
+    static double URETHRA_TO_URETHRA = 0.030 ; 
     /** Transmission probabilities sexual contact in Rectum to Rectum intercourse. */
     static double RECTUM_TO_RECTUM = 0.003 ; // 0.003 ; 
     
@@ -176,7 +176,7 @@ abstract public class MSM extends Agent {
      * @param clearSite
      * @return infectProbability (double) the probability of infection of clearSite
      */
-    public static double getInfectProbability(Agent infectedAgent, Agent clearAgent, int infectionStatus,
+    public static double GET_INFECT_PROBABILITY(Agent infectedAgent, Agent clearAgent, int infectionStatus,
     		Site infectedSite, Site clearSite)
     {
     	double infectProbability = -1.0 ;
@@ -203,9 +203,9 @@ abstract public class MSM extends Agent {
      * @param relationshipClazzName
      * @return (Site[]) Sites of sexual contact for agent0, agent1, respectively.
      */
-    public static Site[] chooseSites(Agent agent0, Agent agent1, String relationshipClazzName)
+    public static Site[] CHOOSE_SITES(Agent agent0, Agent agent1, String relationshipClazzName)
     {
-        return chooseSites((MSM) agent0, (MSM) agent1, relationshipClazzName) ;
+        return CHOOSE_SITES((MSM) agent0, (MSM) agent1, relationshipClazzName) ;
     }
     
     /**
@@ -217,9 +217,9 @@ abstract public class MSM extends Agent {
      * @param msm1
      * @return (Site[]) Sites of sexual contact for msm0, msm1, respectively.
      */
-    public static Site[] chooseSites(MSM msm0, MSM msm1)
+    public static Site[] CHOOSE_SITES(MSM msm0, MSM msm1)
     {
-        return chooseSites(msm0, msm1, "") ;
+        return CHOOSE_SITES(msm0, msm1, "") ;
     }
     
     /**
@@ -232,7 +232,7 @@ abstract public class MSM extends Agent {
      * @param relationshipClazzName
      * @return (Site[]) Sites of sexual contact for msm0, msm1, respectively.
      */
-    public static Site[] chooseSites(MSM msm0, MSM msm1, String relationshipClazzName)
+    public static Site[] CHOOSE_SITES(MSM msm0, MSM msm1, String relationshipClazzName)
     {
         if (msm0.seroPosition || msm1.seroPosition)
         {
@@ -271,7 +271,7 @@ abstract public class MSM extends Agent {
      * @param startAge - age of MSM at sexual 'birth'.
      * @return - one of subclass RiskyMSM or SafeMSM
      */
-    public static MSM birthMSM(int startAge)
+    public static MSM BIRTH_MSM(int startAge)
     {
         Class clazz ;
         int choice = RAND.nextInt(TOTAL_ODDS) ;
@@ -722,6 +722,7 @@ abstract public class MSM extends Agent {
         else
             testBase = testRates[year - 1] ;
         // Frequencies, given by per 1000 per year, from 2007-2016
+        // Table 17 ARTB 2016
         //double[] testRates = new double[] {333,340,398,382,383,382,391,419,445,499} ;
         double ratio = testBase/testRates[year] ;
         int newScreenCycle = (int) Math.ceil(ratio * getScreenCycle()) ;
