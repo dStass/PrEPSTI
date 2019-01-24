@@ -30,10 +30,10 @@ import java.util.logging.Level;
  *******************************************************************/
 public class Community {
     static public int POPULATION = 40000 ;
-    static public int MAX_CYCLES = 2000 ;
+    static public int MAX_CYCLES = 3000 ;
     //static public String NAME_ROOT = "TestNoScreenAsympUrethra"
     //static public String NAME_ROOT = "max3Relationships80" 
-    static public String NAME_ROOT = "Year2007Calibration7a"        
+    static public String NAME_ROOT = "Year2007Calibration12d"        
     //static public String NAME_ROOT = "IntroPrepCalibration74acycle6000" 
     //static public String NAME_ROOT = "FallingCondomUseCalibration76b" 
     //static public String NAME_ROOT = "NoPrepCalibration6a" 
@@ -62,7 +62,7 @@ public class Community {
     static boolean TO_PLOT = true ;
     static public String FILE_PATH = "output/year2007/" ;
     //static public String FILE_PATH = "/srv/scratch/z3524276/prepsti/output/test/" ;
-    //static public String FILE_PATH = "/sort/is14/mw7704/prepsti/output/year2007/" ;
+    //static public String FILE_PATH = "/short/is14/mw7704/prepsti/output/year2007/" ;
     /** Dump reports to disk after this many cycles. */
     /** Whether parameters change throughout simulation. */
     static boolean DYNAMIC = false ;
@@ -564,14 +564,14 @@ public class Community {
     }
     
     /**
-     * Calls birthMSM() to generate either RiskyMSM and SafeMSM.
+     * Calls BIRTH_MSM() to generate either RiskyMSM and SafeMSM.
      * TODO: Generalise to more general types of Agent
      * @return MSM subclass newAgent 
      */
     private MSM generateAgent(int startAge)
     {
         // if Agent.subclass == MSM
-        MSM newAgent = MSM.birthMSM(startAge);
+        MSM newAgent = MSM.BIRTH_MSM(startAge);
         
         // Impose initial condition here
         newAgent.setPrepStatus(false) ;
@@ -762,7 +762,7 @@ public class Community {
         String record = "birth:" ;
         for (int birth = 0 ; birth < nbBirths ; birth++ )
         {
-            MSM newAgent = generateAgent(0) ; // MSM.birthMSM(0) ;
+            MSM newAgent = generateAgent(0) ; // MSM.BIRTH_MSM(0) ;
             agents.add(newAgent) ;
             record += newAgent.getCensusReport() ;
             //record += Reporter.ADD_REPORT_PROPERTY("agentId",newAgent.getAgentId()) ;
