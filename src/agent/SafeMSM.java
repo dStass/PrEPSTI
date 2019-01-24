@@ -21,9 +21,9 @@ public class SafeMSM extends MSM{
     static double PROBABILITY_HIV = 0.092 ; // 
     
     /** Fraction of SafeMSM who disclose HIV status if HIV positive. */
-    static double PROBABILITY_DISCLOSE_POSITIVE_HIV = 0.40 ;
+    static double PROBABILITY_DISCLOSE_POSITIVE_HIV = 0.20 ; // 0.40 ;
     /** Fraction of SafeMSM who disclose HIV status if HIV negative. */
-    static double PROBABILITY_DISCLOSE_NEGATIVE_HIV = 0.35 ;
+    static double PROBABILITY_DISCLOSE_NEGATIVE_HIV = 0.18 ; // 0.35 ;
     
     /** probability of using condom even when apparently safe (PrEP, TasP, etc) */
     private double probabilityUseCondom = RAND.nextDouble() ;
@@ -80,9 +80,9 @@ public class SafeMSM extends MSM{
                 return true ;
         else if (!getPrepStatus())
         {
-            if (!((MSM) partner).getDiscloseStatusHIV())
-                return true ;
-            if (((MSM) partner).getStatusHIV())
+            if (!((MSM) partner).getDiscloseStatusHIV()) // Partner doesn't disclose
+                return true ; 
+            if (((MSM) partner).getStatusHIV() && !((MSM) partner).getAntiViralStatus()) // Partner HIV +ve without antivirals
                 return true ;
         }
         return (RAND.nextDouble() < probabilityUseCondom ) ;  //TODO: Should there be subset who always use?
