@@ -69,7 +69,7 @@ public class Reporter {
     static public String RELATIONSHIPID = "relationshipId" ;
     
     /** Number of days in a year. */
-    static final int DAYS_PER_YEAR = 365 ;
+    static public int DAYS_PER_YEAR = 365 ;
     /** Number of days in a month. */
     static final int DAYS_PER_MONTH = 31 ;
 
