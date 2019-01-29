@@ -127,21 +127,21 @@ abstract public class MSM extends Agent {
     private boolean prepStatus ;
 	
     /** Transmission probabilities per sexual contact from Urethra to Rectum */
-    static double URETHRA_TO_RECTUM = 0.030 ; 
+    static double URETHRA_TO_RECTUM = 0.029 ; 
     /** Transmission probabilities sexual contact from Urethra to Pharynx. */
-    static double URETHRA_TO_PHARYNX = 0.030 ; 
+    static double URETHRA_TO_PHARYNX = 0.029 ; 
     /** Transmission probabilities sexual contact from Rectum to Urethra. */ 
-    static double RECTUM_TO_URETHRA = 0.030 ; 
+    static double RECTUM_TO_URETHRA = 0.029 ; 
     /** Transmission probabilities sexual contact from Rectum to Pharynx. */
-    static double RECTUM_TO_PHARYNX = 0.030 ; 
+    static double RECTUM_TO_PHARYNX = 0.029 ; 
     /** Transmission probabilities sexual contact in Pharynx to Urethra intercourse. */
-    static double PHARYNX_TO_URETHRA = 0.030 ;
+    static double PHARYNX_TO_URETHRA = 0.029 ;
     /** Transmission probabilities sexual contact in Pharynx to Rectum intercourse. */
-    static double PHARYNX_TO_RECTUM = 0.030 ; 
+    static double PHARYNX_TO_RECTUM = 0.029 ; 
     /** Transmission probabilities sexual contact in Pharynx to Pharynx intercourse (kissing). */
-    static double PHARYNX_TO_PHARYNX = 0.030 ; 
+    static double PHARYNX_TO_PHARYNX = 0.029 ; 
     /** Transmission probabilities sexual contact in Urethra to Urethra intercourse (docking). */
-    static double URETHRA_TO_URETHRA = 0.030 ; 
+    static double URETHRA_TO_URETHRA = 0.029 ; 
     /** Transmission probabilities sexual contact in Rectum to Rectum intercourse. */
     static double RECTUM_TO_RECTUM = 0.003 ; // 0.003 ; 
     
@@ -325,8 +325,18 @@ abstract public class MSM extends Agent {
 
         // Sets whether disclosesHIV, allowing for statusHIV
         double probabilityDiscloseHIV = getProbabilityDiscloseHIV() ;
-        discloseStatusHIV = (RAND.nextDouble() < probabilityDiscloseHIV) ;
+        initSeroStatus(probabilityDiscloseHIV) ;
+        
+    }
 
+    /**
+     * Chooses discloseStatusHIV according to probabilityDiscloseHIV and then 
+     * chooses sero- Sort/Position parameters accordingly.
+     * @param probabilityDiscloseHIV 
+     */
+    final void initSeroStatus(double probabilityDiscloseHIV)
+    {
+        discloseStatusHIV = (RAND.nextDouble() < probabilityDiscloseHIV) ;
         if (discloseStatusHIV)
         {
             seroSortCasual = ((RAND.nextDouble() < getProbabilitySeroSortCasual(statusHIV)/probabilityDiscloseHIV) && discloseStatusHIV) ;
@@ -342,7 +352,7 @@ abstract public class MSM extends Agent {
             seroPosition = false ;
         }
     }
-
+    
     /**
      * Initialises MSM infectedStatus while ensuring consistency with 
      * Site.infectedStatus .
@@ -737,6 +747,32 @@ abstract public class MSM extends Agent {
     public void reinitPrepStatus(boolean prep)
     {
         initPrepStatus(prep) ;
+    }
+    
+    /**
+     * Resets the probability of adjusting discloseStatusHIV according to changing 
+     * disclose probabilities each year.
+     * Probabilities taken from Table 9 of ARTB 2017.
+     * @param year
+     * @throws Exception 
+     */
+    public void reinitProbablityDiscloseHIV(int year) throws Exception
+    {
+        // Go from 2007
+        double[] discloseProbability ;
+        if (statusHIV)
+            discloseProbability = new double[] {0.201,0.296,0.327,0.286,0.312,0.384,0.349,0.398,0.430,0.395} ;
+        else
+            discloseProbability = new double[] {0.175,0.205,0.218,0.239,0.229,0.249,0.236,0.295,0.286,0.352} ;
+        
+        double newDiscloseProbability = discloseProbability[year] ;
+        initSeroStatus(newDiscloseProbability) ;
+    }
+    
+    public void reinitProbabilityAntiViral(int year) 
+    {
+        double[] probabilityAntiViral = new double[] {0.532, 0.706, 0.735, 0.689, 0.706, 0.802, 0.766, 0.830, 0.818, 0.854} ;
+        setAntiViralStatus(RAND.nextDouble() < probabilityAntiViral[year]) ;
     }
     
     /**
