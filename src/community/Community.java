@@ -30,10 +30,11 @@ import java.util.logging.Level;
  *******************************************************************/
 public class Community {
     static public int POPULATION = 40000 ;
-    static public int MAX_CYCLES = 3000 ;
+    static public int MAX_CYCLES = 2690 ;
     //static public String NAME_ROOT = "TestNoScreenAsympUrethra"
-    //static public String NAME_ROOT = "max3Relationships80" 
-    static public String NAME_ROOT = "Year2007Calibration12d"        
+    static public String NAME_ROOT = "From2007To2012b" 
+    //static public String NAME_ROOT = "Year2007Commence4a"        
+    //static public String NAME_ROOT = "Year2007Calibration12d"        
     //static public String NAME_ROOT = "IntroPrepCalibration74acycle6000" 
     //static public String NAME_ROOT = "FallingCondomUseCalibration76b" 
     //static public String NAME_ROOT = "NoPrepCalibration6a" 
@@ -42,10 +43,11 @@ public class Community {
             + "Pop" + String.valueOf(POPULATION) + "Cycles" + String.valueOf(MAX_CYCLES) ;
 
     static String COMMENT = ""
-            + "Calibrate to 2007 data notifications. "
+            //+ "Calibrate to 2007 data notifications. "
             // + "every cycle from 3000 "
             //+ "Agents reduce their chances of choosing condoms. "
-            //+ "Every year from cycle 2000 "
+            + "Every year from cycle 500 "
+            + "parameters are adjusted according to ARTB data on a yearly basis"
             //+ "five RiskyMSM go on PrEP "
             //+ "Testing rates are altered to compare with long-term data " 
             //+ "and their condom usage rates are multiplied by random fraction between 0 and 1."
@@ -60,12 +62,12 @@ public class Community {
             + "" ;
     
     static boolean TO_PLOT = true ;
-    static public String FILE_PATH = "output/year2007/" ;
+    static public String FILE_PATH = "output/prePrEP/" ;
     //static public String FILE_PATH = "/srv/scratch/z3524276/prepsti/output/test/" ;
     //static public String FILE_PATH = "/short/is14/mw7704/prepsti/output/year2007/" ;
     /** Dump reports to disk after this many cycles. */
     /** Whether parameters change throughout simulation. */
-    static boolean DYNAMIC = false ;
+    static boolean DYNAMIC = true ;
     
     static final int DUMP_CYCLE = ((int) Math.pow(10, 7))/POPULATION ;
     /** Whether to dump partial reports during simulation. */
@@ -510,7 +512,7 @@ public class Community {
      */
     private String interveneCommunity(int cycle)
     {
-        int startCycle = 100 ;
+        int startCycle = 500 ;
         if (cycle < startCycle)
             return "" ;
         
@@ -528,8 +530,10 @@ public class Community {
         */
                 try
                 {
-                    //((MSM) agent).reinitScreenCycle(year);
-                    agent.adjustCondomUse() ;
+                    ((MSM) agent).reinitScreenCycle(year);
+                    ((MSM) agent).reinitProbabilityAntiViral(year) ;
+                    ((MSM) agent).reinitProbablityDiscloseHIV(year);
+                    //agent.adjustCondomUse() ;
                 }
                 catch( Exception e ) // cycle extends beyond trend data
                 {
@@ -537,7 +541,7 @@ public class Community {
                     break ;
                 }
             }
-            report = "condom use reduced with increased testing" ;  // PrEP introduced" ; // gradually" ;
+            report = "parameters adjusted according to ARTB" ;  // PrEP introduced" ; // gradually" ;
         }
         
 
