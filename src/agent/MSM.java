@@ -299,6 +299,7 @@ abstract public class MSM extends Agent {
     {
         super(startAge) ;
         initStatus(startAge) ;
+        initConsentCasualProbability() ;
     }
 
     /**
@@ -351,6 +352,61 @@ abstract public class MSM extends Agent {
             seroSortMonogomous = false ;
             seroPosition = false ;
         }
+    }
+    
+    /**
+     * Initialises consentCasualProbability using data from EPIC.
+     * Specifically the variable 'mensex' indicating the number of
+     * male partners in the past 3 months at Baseline. The proportions for 
+     * each range are
+     *   0        1        2-5      6-10    11-20    21-50    51-100     100+ 
+     * 0.00311  0.02715  0.31857  0.30353  0.22172  0.10170  0.019716  0.00450
+     * 
+     * We taken the weighted mean of the first two columns, and use a Poisson 
+     * distribution to choose in the 100+ range. Otherwise find the daily probability 
+     * associated with the extrema of each range and choose with a Uniform distribution.
+     */
+    final void initConsentCasualProbability()
+    {
+        double consentProbability = 0 ;
+        int[] lowerBounds = new int[] {0,1,2,6,11,21,51,100} ;
+        double[] proportions = new double[] {0.00311, 0.02715, 0.31857, 0.30353, 0.22172, 0.10170, 0.01972, 0.00450} ;
+        double[] cumulative = new double[] {0.00311, 0.00311, 0.00311, 0.00311, 0.00311, 0.00311, 0.00311, 0.00311} ;
+        for (int cumulIndex = 1 ; cumulIndex < cumulative.length ; cumulIndex++ )
+            for (int propIndex = 1 ; propIndex <= cumulIndex ; propIndex++ )
+                cumulative[cumulIndex] += proportions[propIndex] ;
+        
+        // Choose range
+        double rangeChoice = RAND.nextDouble() ;
+        int rangeIndex = 0 ;
+        for (int cumulIndex = 1 ; cumulIndex < cumulative.length ; cumulIndex++ )
+        {
+            if (rangeChoice < cumulative[cumulIndex])
+            {
+                rangeIndex = cumulIndex ;
+                break ;
+            }
+        }
+        
+        if (rangeIndex < 2) // 
+        {
+            consentProbability = Math.max(0.0,RAND.nextDouble() * proportions[1] 
+                    - RAND.nextDouble() * proportions[0])/92.0 ;
+        }
+        else if (rangeIndex == (proportions.length - 1)) // 100+ partners
+        {
+            // Poisson distribution
+            int nbPartners = 100 + ((int) new PoissonDistribution(10.0).sample()) ;
+            consentProbability = nbPartners/92.0 ;
+        }
+        else
+        {
+            // Choose in range, take 92 days in 3 months
+            double lowerProb = lowerBounds[rangeIndex]/92.0 ;
+            double upperProb = (lowerBounds[rangeIndex+1] - 1)/92.0 ;
+            consentProbability = RAND.doubles(lowerProb, upperProb).iterator().nextDouble() ;
+        }
+        consentCasualProbability = Math.sqrt(consentProbability) ;
     }
     
     /**
@@ -798,7 +854,14 @@ abstract public class MSM extends Agent {
      * Adjusts probabilityUseCondom to reflect behavioural trends
      */
     abstract public void adjustProbabilityUseCondom() ;
-
+    
+    /**
+     *
+     * @param useCondom
+     */
+    @Override
+    abstract public void setProbabilityUseCondom(double useCondom);
+    
     /**
      * Whether to enter a proposed relationship of class relationshipClazz .
      * Currently according to whether in a monogomous relationship and 
