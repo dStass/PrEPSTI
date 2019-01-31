@@ -107,6 +107,16 @@ public class SafeMSM extends MSM{
         probabilityUseCondom *= RAND.nextDouble() ;
     }
     
+    /**
+     * Setter for probabilityUseCondom.
+     * @param useCondom 
+     */
+    @Override
+    public void setProbabilityUseCondom(double useCondom)
+    {
+        probabilityUseCondom = useCondom ;
+    }
+    
     /*
     @Override
     public void adjustCondomUse()
