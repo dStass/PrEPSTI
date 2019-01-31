@@ -28,7 +28,7 @@ public class RiskyMSM extends MSM
      * Probability of joining an orgy if invited.
      * Assumed one third of RiskyMSM average once every six months.
      */
-    static double JOIN_ORGY_PROBABILITY = 1.0/(3 * 184) ;
+    static double JOIN_GSE_PROBABILITY = 1.0/(3 * 184) ;
     
     /** 
      * Probability of using condom regardless of what other strategies are available.
@@ -111,7 +111,7 @@ public class RiskyMSM extends MSM
     @Override
     public double getJoinGroupSexEventProbability()
     {
-        return JOIN_ORGY_PROBABILITY ;
+        return JOIN_GSE_PROBABILITY ;
     }
     
     /**
@@ -123,6 +123,15 @@ public class RiskyMSM extends MSM
         probabilityUseCondom *= RAND.nextDouble() ;
     }
     
+    /**
+     * Setter for probabilityUseCondom.
+     * @param useCondom 
+     */
+    @Override
+    public void setProbabilityUseCondom(double useCondom)
+    {
+        probabilityUseCondom = useCondom ;
+    }
     
     /**
      * Called to adjust the changing condom use over time.
