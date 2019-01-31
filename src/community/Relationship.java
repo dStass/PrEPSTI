@@ -1,6 +1,9 @@
 package community;
 
 import agent.* ;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
 import site.* ;
 import reporter.Reporter ;
 
@@ -31,6 +34,7 @@ public class Relationship {
     private String relationship ;
     
     static public String RELATIONSHIP_ID = "relationshipId" ;
+    static String FOLDER_PATH =  "output/prePrEP/" ;
     
     /** Random number generator. */
     /** Generate and record Random number seed. */
@@ -142,7 +146,7 @@ public class Relationship {
     {
         int nbRelationships = 0 ;
         
-        RelationshipReporter relationshipReporter = new RelationshipReporter(simName,"output/test/") ;
+        RelationshipReporter relationshipReporter = new RelationshipReporter(simName,"output/prePrEP/") ;
         //RelationshipReporter relationshipReporter = new RelationshipReporter(simName,"/srv/scratch/z3524276/prepsti/output/test/") ;
         //RelationshipReporter relationshipReporter = new RelationshipReporter(simName,"/short/is14/mw7704/prepsti/output/year2007/") ;
         
@@ -183,6 +187,95 @@ public class Relationship {
                     }
                 }
 
+            }
+            LOGGER.info("nbRelationships:".concat(String.valueOf(nbRelationships)));
+        }
+        catch ( Exception e )
+        {
+            LOGGER.severe(e.toString()) ;
+        }
+        return nbRelationships ;
+    }
+    
+    /**
+     * Restores from saved simulation the Relationships among all Agents.
+     * @param simName
+     * @param agents
+     * @return 
+     */
+    static public int REBOOT_RELATIONSHIPS(String simName, ArrayList<Agent> agents)
+    {
+        int nbRelationships = 0 ;
+        String folderPath = FOLDER_PATH ;
+        
+        String relationshipRecord  = "" ;
+        String relationshipId ;
+        ArrayList<Object> currentRelationshipIds = new ArrayList<Object>() ;
+        
+        String rebootFileName = simName.concat("-REBOOT.txt") ;
+        //ArrayList<String> nameArray = new ArrayList<String>() ;
+        try
+        {
+            BufferedReader fileReader = new BufferedReader(new FileReader(folderPath + rebootFileName)) ;
+            // Find Relationship line
+            for (String record = "" ;  record != null ; record = fileReader.readLine() )
+            {
+                int relationshipIndex = record.indexOf(Reporter.RELATIONSHIPID) ;
+                if (relationshipIndex > 0)
+                {
+                    relationshipRecord = record.substring(relationshipIndex) ;
+                    break ;
+                }
+            }
+            String agentId0 ;
+            String agentId1 ;
+            int agentIndex0 = 0 ;
+            int agentIndex1 = 0 ;
+            int agentsFound ;
+            int agentIndex ;
+            String relationshipClazzName ;
+
+            ArrayList<String> relationshipIdList = Reporter.EXTRACT_ARRAYLIST(relationshipRecord, Reporter.RELATIONSHIPID) ;
+       
+            for (String relationshipString : relationshipIdList)
+            {
+                relationshipId = Reporter.extractValue(Reporter.RELATIONSHIPID, relationshipString) ;
+                if (currentRelationshipIds.contains(relationshipId))
+                {
+                    LOGGER.severe(String.valueOf(relationshipId) + " found again!");
+                    continue ;
+                }
+                currentRelationshipIds.add(relationshipId) ;
+
+                agentId0 = Reporter.extractValue(Reporter.AGENTID0, relationshipString) ;
+                agentId1 = Reporter.extractValue(Reporter.AGENTID1, relationshipString) ;
+
+                // Add Agents of correct agentId
+                agentsFound = 0 ;
+                agentIndex = 0 ;
+                //for (int agentIndex = 0 ; agentIndex < agents.size() ; agentIndex++ )
+                while (agentsFound < 2)
+                {
+                    if (agents.get(agentIndex).getAgentId() == Integer.valueOf(agentId0))
+                    {
+                        agentIndex0 = agentIndex ;
+                        agentsFound++ ;
+                    }
+                    else if (agents.get(agentIndex).getAgentId() == Integer.valueOf(agentId1))
+                    {
+                        agentIndex1 = agentIndex ;
+                        agentsFound++ ;
+                    }
+                    agentIndex++ ;
+                }
+
+                // Find Relationship Class and create Relationship
+                relationshipClazzName = Reporter.extractValue("Relationship", relationshipString) ;
+                Class relationshipClazz = Class.forName("community.".concat(relationshipClazzName)) ;
+
+                Relationship relationship = (Relationship) relationshipClazz.newInstance();
+                relationship.addAgents(agents.get(agentIndex0), agents.get(agentIndex1)) ;
+                nbRelationships++ ;
             }
             LOGGER.info("nbRelationships:".concat(String.valueOf(nbRelationships)));
         }
