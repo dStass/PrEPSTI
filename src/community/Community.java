@@ -30,11 +30,11 @@ import java.util.logging.Level;
  *******************************************************************/
 public class Community {
     static public int POPULATION = 40000 ;
-    static public int MAX_CYCLES = 2690 ;
+    static public int MAX_CYCLES = 4000 ;
     //static public String NAME_ROOT = "TestNoScreenAsympUrethra"
-    static public String NAME_ROOT = "From2007To2012b" 
+    //static public String NAME_ROOT = "From2007To2012NoCondomIV" 
     //static public String NAME_ROOT = "Year2007Commence4a"        
-    //static public String NAME_ROOT = "Year2007Calibration12d"        
+    static public String NAME_ROOT = "Year2007New5a"        
     //static public String NAME_ROOT = "IntroPrepCalibration74acycle6000" 
     //static public String NAME_ROOT = "FallingCondomUseCalibration76b" 
     //static public String NAME_ROOT = "NoPrepCalibration6a" 
@@ -43,11 +43,14 @@ public class Community {
             + "Pop" + String.valueOf(POPULATION) + "Cycles" + String.valueOf(MAX_CYCLES) ;
 
     static String COMMENT = ""
+            + "Checking calibration after changing the probability "
+            + "of accepting Casual Relationships. "
             //+ "Calibrate to 2007 data notifications. "
             // + "every cycle from 3000 "
             //+ "Agents reduce their chances of choosing condoms. "
-            + "Every year from cycle 500 "
-            + "parameters are adjusted according to ARTB data on a yearly basis"
+            //+ "Every year from cycle 500 "
+            //+ "parameters are adjusted according to ARTB data on a yearly basis"
+            //+ "Continue From2007To2012NoCondomIII to see if prevalence rises. "
             //+ "five RiskyMSM go on PrEP "
             //+ "Testing rates are altered to compare with long-term data " 
             //+ "and their condom usage rates are multiplied by random fraction between 0 and 1."
@@ -62,12 +65,12 @@ public class Community {
             + "" ;
     
     static boolean TO_PLOT = true ;
-    static public String FILE_PATH = "output/prePrEP/" ;
+    static public String FILE_PATH = "output/year2007/" ;
     //static public String FILE_PATH = "/srv/scratch/z3524276/prepsti/output/test/" ;
     //static public String FILE_PATH = "/short/is14/mw7704/prepsti/output/year2007/" ;
     /** Dump reports to disk after this many cycles. */
     /** Whether parameters change throughout simulation. */
-    static boolean DYNAMIC = true ;
+    static boolean DYNAMIC = false ;
     
     static final int DUMP_CYCLE = ((int) Math.pow(10, 7))/POPULATION ;
     /** Whether to dump partial reports during simulation. */
@@ -282,6 +285,7 @@ public class Community {
         if (!PARTIAL_DUMP || (((Community.MAX_CYCLES)/DUMP_CYCLE) * DUMP_CYCLE) != Community.MAX_CYCLES )
             community.dump() ;
         community.dumpMetaData() ;
+        community.dumpRebootData() ;
         
         long elapsedTime = System.nanoTime() - startTime ;
         long milliTime = elapsedTime/1000000 ;
@@ -449,7 +453,7 @@ public class Community {
             System.out.println(initialiseCommunity()) ;
         else
         {
-            this.agents = Agent.REBOOT_AGENTS(simName) ;
+            this.agents = Agent.REBOOT_AGENTS(simName,true) ;
             this.initialRecord = "" ; 
             for (Agent agent : agents)
                 initialRecord += agent.getCensusReport() ;
@@ -512,7 +516,7 @@ public class Community {
      */
     private String interveneCommunity(int cycle)
     {
-        int startCycle = 500 ;
+        int startCycle = 700 ;
         if (cycle < startCycle)
             return "" ;
         
@@ -533,7 +537,8 @@ public class Community {
                     ((MSM) agent).reinitScreenCycle(year);
                     ((MSM) agent).reinitProbabilityAntiViral(year) ;
                     ((MSM) agent).reinitProbablityDiscloseHIV(year);
-                    //agent.adjustCondomUse() ;
+                    if (year == 1)
+                        agent.stopCondomUse() ;
                 }
                 catch( Exception e ) // cycle extends beyond trend data
                 {
@@ -1024,7 +1029,9 @@ public class Community {
         }
     }
     
-    
+    /**
+     * Saves metadata of simulation to file via scribe.dumpMetaData.
+     */
     private void dumpMetaData()
     {
         ArrayList<String> metaLabels = new ArrayList<String>() ; 
@@ -1059,6 +1066,32 @@ public class Community {
         metaData.add(Community.COMMENT) ;
         
         scribe.dumpMetaData(metaLabels,metaData) ;
+    }
+    
+    /**
+     * Saves Agent, infection, and Relationship data to file in order to resume
+     * simulation later. 
+     */
+    private void dumpRebootData()
+    {
+        ArrayList<String> metaLabels = new ArrayList<String>() ; 
+        ArrayList<Object> metaData = new ArrayList<Object>() ; 
+        
+        metaLabels.add("Agents") ;
+        String agentsReboot = "" ;
+        for (Agent agent : agents)
+            agentsReboot.concat(agent.getRebootData()) ;
+        metaData.add(agentsReboot) ; 
+        
+        metaLabels.add("Relationships") ;
+        String relationshipReboot = "" ;
+        for (Agent agent : agents)
+            for (Relationship relationship : agent.getCurrentRelationships())
+                if (relationship.getLowerIdAgent() == agent)
+                    relationshipReboot.concat(relationship.getRecord()) ;
+        metaData.add(relationshipReboot) ; 
+     
+        scribe.dumpRebootData(metaLabels, metaData);
     }
     
     /**
@@ -1184,6 +1217,26 @@ public class Community {
         protected void dumpMetaData(ArrayList<String> metaLabels, ArrayList<Object> metaData)
         {
             String fileName = simName + "-METADATA" + extension ;
+            try
+            {
+                BufferedWriter metadataWriter = new BufferedWriter(new FileWriter(globalFolder + fileName,false)) ;
+                writeMetaData(metadataWriter,metaLabels,metaData) ;
+                metadataWriter.close() ;
+            } 
+            catch ( Exception e )
+            {
+                LOGGER.info(e.toString());
+            }
+        }
+        
+        /**
+         * Opens file and writes metadata to it.
+         * @param metaLabels
+         * @param metaData 
+         */
+        protected void dumpRebootData(ArrayList<String> metaLabels, ArrayList<Object> metaData)
+        {
+            String fileName = simName + "-REBOOT" + extension ;
             try
             {
                 BufferedWriter metadataWriter = new BufferedWriter(new FileWriter(globalFolder + fileName,false)) ;
