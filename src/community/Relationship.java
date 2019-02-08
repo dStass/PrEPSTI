@@ -34,6 +34,8 @@ public class Relationship {
     private String relationship ;
     
     static public String RELATIONSHIP_ID = "relationshipId" ;
+    //static String FOLDER_PATH =  "output/test/" ;
+    //static String FOLDER_PATH =  "output/year2007/" ;
     static String FOLDER_PATH =  "output/prePrEP/" ;
     
     /** Random number generator. */
@@ -270,7 +272,7 @@ public class Relationship {
                 }
 
                 // Find Relationship Class and create Relationship
-                relationshipClazzName = Reporter.extractValue("Relationship", relationshipString) ;
+                relationshipClazzName = Reporter.extractValue("relationship", relationshipString) ;
                 Class relationshipClazz = Class.forName("community.".concat(relationshipClazzName)) ;
 
                 Relationship relationship = (Relationship) relationshipClazz.newInstance();
@@ -556,7 +558,7 @@ public class Relationship {
         record += Reporter.ADD_REPORT_PROPERTY("relationship",getRelationship()) ;
     	record += Reporter.ADD_REPORT_PROPERTY(Reporter.AGENTID0,agent0.getAgentId());
     	record += Reporter.ADD_REPORT_PROPERTY(Reporter.AGENTID1,agent1.getAgentId()) ;
-    	return record ;
+        return record ;
     }
     
     public String endRelationship()
