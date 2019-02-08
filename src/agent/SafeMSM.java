@@ -11,57 +11,13 @@ package agent;
  */
 public class SafeMSM extends MSM{
     
-    // The maximum number of Regular Relationships an agent may be willing to sustain
-    static int MAX_RELATIONSHIPS = MSM.MAX_RELATIONSHIPS ;
-    
-    // Associated probabilities for the above
-    //static double probabilityRequireDiscloseHIV = 0.5 ;
-    
-    /** Fraction of SafeMSM with positive HIV status. */
-    static double PROBABILITY_HIV = 0.092 ; // 
-    
-    /** Fraction of SafeMSM who disclose HIV status if HIV positive. */
-    static double PROBABILITY_DISCLOSE_POSITIVE_HIV = 0.20 ; // 0.40 ;
-    /** Fraction of SafeMSM who disclose HIV status if HIV negative. */
-    static double PROBABILITY_DISCLOSE_NEGATIVE_HIV = 0.18 ; // 0.35 ;
-    
-    /** probability of using condom even when apparently safe (PrEP, TasP, etc) */
-    private double probabilityUseCondom = RAND.nextDouble() ;
-    
-    /** Probability of joining an orgy if invited. */
+    /** Probability of joining a Group Sex Event if invited. */
     static double JOIN_GSE_PROBABILITY = 0.0 ;
     
     public SafeMSM(int startAge){
         super(startAge) ;
     }
     
-    /**
-     * getter for MAX_RELATIONSHIPS.
-     * @return MAX_RELATIONSHIPS
-     */
-    @Override
-    protected int getMaxRelationships()
-    {
-        return MAX_RELATIONSHIPS ;
-    }
-    
-    /** Fraction of SafeMSM with positive HIV status. */
-    protected double getProportionHIV()
-    { 
-        return PROBABILITY_HIV ;
-    }
-    
-    
-    /**
-     * HIV positive MSM are more likely to disclose the statusHIV
-     * @return (Double) probability of disclosing statusHIV
-     */
-    protected double getProbabilityDiscloseHIV()
-    {
-        if (getStatusHIV())
-            return PROBABILITY_DISCLOSE_POSITIVE_HIV ;
-        return PROBABILITY_DISCLOSE_NEGATIVE_HIV ;
-    }
     
     /**
      * Decides probabilistically whether MSM chooses to use a condom in a given encounter.
@@ -98,29 +54,4 @@ public class SafeMSM extends MSM{
         return JOIN_GSE_PROBABILITY ;
     }
     
-    /**
-     * Adjusts probabilityUseCondom to reflect behavioural trends
-     */
-    @Override
-    public void adjustProbabilityUseCondom()
-    {
-        probabilityUseCondom *= RAND.nextDouble() ;
-    }
-    
-    /**
-     * Setter for probabilityUseCondom.
-     * @param useCondom 
-     */
-    @Override
-    public void setProbabilityUseCondom(double useCondom)
-    {
-        probabilityUseCondom = useCondom ;
-    }
-    
-    /*
-    @Override
-    public void adjustCondomUse()
-    {
-        probabilityUseCondom = 0.0 ;
-    }*/
 }
