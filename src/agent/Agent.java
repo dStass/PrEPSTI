@@ -42,9 +42,12 @@ public abstract class Agent {
     /** Age of Agent in cycles (days)*/
     private int age ;
 
-    // Age beyond which Agents are removed from the population. */
+    /** Age beyond which Agents are removed from the population. */
     static int MAX_LIFE = 65 ;
     
+    //static String FOLDER_PATH =  "output/year2007/" ;
+    //static String FOLDER_PATH =  "output/test/" ;
+    static String FOLDER_PATH =  "output/prePrEP/" ;
     
     /** Names of Sites for Agent*/ 
     static public String[] SITE_NAMES = new String[] {} ;
@@ -162,7 +165,9 @@ public abstract class Agent {
     /** Cycles remaining until next STI screen. */
     private int screenTime ;
 
-    
+    /** probability of using condom even when apparently safe (PrEP, TasP, etc) */
+    protected double probabilityUseCondom = RAND.nextDouble() ;
+
     // names of fields of interest to the census.
     private String[] censusFieldNames = {"agentId","agent","concurrency","infidelity"} ;
             //"symptomatic","available","inMonogomous","regularNumber","casualNumber",
@@ -240,7 +245,7 @@ public abstract class Agent {
     static public ArrayList<Agent> REBOOT_AGENTS(String simName, boolean rebootFile)
     {
         ArrayList<Agent> agents = new ArrayList<Agent>() ;
-        String folderPath = "output/prePrEP/" ;
+        String folderPath = FOLDER_PATH ;
         
         // Needed if rebootFile == false
         ArrayList<String> birthReport = new ArrayList<String>() ;
@@ -270,19 +275,19 @@ public abstract class Agent {
         }
         else
         {
-        PopulationReporter populationReporter = new PopulationReporter(simName,folderPath) ;
-        //PopulationReporter populationReporter = new PopulationReporter(simName,"/srv/scratch/z3524276/prepsti/output/test/") ;
-        //PopulationReporter populationReporter = new PopulationReporter(simName,"/short/is14/mw7704/prepsti/output/year2007/") ;
-        
-        birthReport = populationReporter.prepareBirthReport() ;
-        
-        agentDeathReport = populationReporter.prepareAgentDeathReport() ;
-        
-        ScreeningReporter screeningReporter = new ScreeningReporter(simName,"output/prePrEP/") ;
-        //ScreeningReporter screeningReporter = new ScreeningReporter(simName,"/srv/scratch/z3524276/prepsti/output/test/") ;
-        //ScreeningReporter screeningReporter = new ScreeningReporter(simName,"/short/is14/mw7704/prepsti/output/year2007/") ;
-        
-        screeningRecord = screeningReporter.getFinalRecord() ;
+            PopulationReporter populationReporter = new PopulationReporter(simName,folderPath) ;
+            //PopulationReporter populationReporter = new PopulationReporter(simName,"/srv/scratch/z3524276/prepsti/output/test/") ;
+            //PopulationReporter populationReporter = new PopulationReporter(simName,"/short/is14/mw7704/prepsti/output/year2007/") ;
+
+            birthReport = populationReporter.prepareBirthReport() ;
+
+            agentDeathReport = populationReporter.prepareAgentDeathReport() ;
+
+            ScreeningReporter screeningReporter = new ScreeningReporter(simName,"output/prePrEP/") ;
+            //ScreeningReporter screeningReporter = new ScreeningReporter(simName,"/srv/scratch/z3524276/prepsti/output/test/") ;
+            //ScreeningReporter screeningReporter = new ScreeningReporter(simName,"/short/is14/mw7704/prepsti/output/year2007/") ;
+
+            screeningRecord = screeningReporter.getFinalRecord() ;
         }
         int infectionIndex ;
         int siteIndex ;
@@ -356,6 +361,7 @@ public abstract class Agent {
                             if (rebootFile)
                             {
                                 site.receiveInfection(1.1) ;
+                                newAgent.setInfectedStatus(true) ;
                                 
                                 // Set symptomatic, or not
                                 if (symptoms)
@@ -426,7 +432,7 @@ public abstract class Agent {
             for (String property : propertyArray)
             {
                 testProperty = property ;
-                LOGGER.info(testProperty) ;
+                //LOGGER.info(testProperty) ;
                 valueString = Reporter.extractValue(property, census) ;
                 if (property.equals("screenInterval"))
                     property = "screenCycle" ;
@@ -444,7 +450,7 @@ public abstract class Agent {
                                 valueOfClazz = Boolean.class ;
                             else
                             {
-                                LOGGER.info(property) ;
+                                //LOGGER.info(property) ;
                                 valueOfClazz = propertyClazz ;
                             }
                             valueOfMethod = valueOfClazz.getMethod("valueOf", String.class) ;
@@ -761,7 +767,6 @@ public abstract class Agent {
     public String getRebootData()
     {
         String report = getCensusReport() ;
-        
         // Infection status
         if (infectedStatus)
             for (Site site : getSites())
@@ -770,7 +775,6 @@ public abstract class Agent {
                     report += Reporter.ADD_REPORT_PROPERTY(site.getSite(),site.getSymptomatic()) ;
                     report += Reporter.ADD_REPORT_PROPERTY("infectionTime",site.getInfectionTime()) ;
                 }
-        
         return report ;
     }
     
@@ -814,7 +818,55 @@ public abstract class Agent {
     /**
      * Called to adjust condom use to reflect behavioural trends.
      */
-    abstract public void adjustCondomUse() ;
+    public void adjustCondomUse() 
+    {
+        adjustProbabilityUseCondom() ;
+    }
+    
+    /**
+     * Randomly scales down probabilityUseCondom to reflect behavioural trends
+     */
+    public void adjustProbabilityUseCondom()
+    {
+        probabilityUseCondom *= RAND.nextDouble() ;
+    }
+    
+    /**
+     * Called to adjust condom use to reflect behavioural trends.
+     */
+    public void adjustCondomUse(double parameter) 
+    {
+        adjustProbabilityUseCondom(parameter) ;
+    }
+    
+    /**
+     * Randomly scales down probabilityUseCondom to no less than bottom times
+     * its current value.
+     * @param bottom - probabilityUseCondom scales no lower than this.
+     */
+    public void adjustProbabilityUseCondom(double bottom)
+    {
+        probabilityUseCondom *= (bottom + (1.0 - bottom) * RAND.nextDouble()) ;
+    }
+    
+    /**
+     * Setter for probabilityUseCondom.
+     * @param useCondom 
+     */
+    public void setProbabilityUseCondom(double useCondom)
+    {
+        probabilityUseCondom = useCondom ;
+    }
+    
+    /**
+     *
+     * Rescales the probability of using a condom by factor scale
+     * @param scale
+     */
+    public void scaleProbabilityUseCondom(double scale) 
+    {
+        probabilityUseCondom *= scale ;
+    }
     
     /**
      * Agent never again demands a condom
@@ -823,12 +875,6 @@ public abstract class Agent {
     {
         setProbabilityUseCondom(0.0) ;
     }
-    
-    /**
-     *
-     * @param useCondom
-     */
-    abstract public void setProbabilityUseCondom(double useCondom) ;
     
     /**
      * Concurrency and infidelity decrease from startAge == 30
