@@ -38,6 +38,9 @@ abstract public class MSM extends Agent {
     /** The maximum number of Regular Relationships an agent may be willing to sustain. */
     static int MAX_RELATIONSHIPS = 3 ;
     
+    /** The probability of positive HIV status */
+    static double PROPORTION_HIV = 0.092 ;
+    
     /** The probability of disclosing HIV status if HIV positive */
     static double PROBABILITY_DISCLOSE_POSITIVE_HIV = 0.2 ;
     /** The probability of disclosing HIV status if HIV negative */
@@ -125,7 +128,7 @@ abstract public class MSM extends Agent {
     private boolean discloseStatusHIV ;
     /** Whether currently taking PrEP. */
     private boolean prepStatus ;
-	
+    
     /** Transmission probabilities per sexual contact from Urethra to Rectum */
     static double URETHRA_TO_RECTUM = 0.029 ; 
     /** Transmission probabilities sexual contact from Urethra to Pharynx. */
@@ -299,7 +302,7 @@ abstract public class MSM extends Agent {
     {
         super(startAge) ;
         initStatus(startAge) ;
-        initConsentCasualProbability() ;
+        //initConsentCasualProbability() ;
     }
 
     /**
@@ -780,11 +783,11 @@ abstract public class MSM extends Agent {
      */
     public void reinitScreenCycle(int year) throws Exception
     {
-        // Go from 2011
-        double[] testRates = new double[] {382,383,382,391,419,445,499} ;
+        // Go from 2007
+        double[] testRates = new double[] {333,340,398,382,383,382,391,419,445,499} ;
         double testBase ;
         if (year == 0)
-            testBase = 382 ;
+            testBase = testRates[0] ;
         else
             testBase = testRates[year - 1] ;
         // Frequencies, given by per 1000 per year, from 2007-2016
@@ -793,6 +796,38 @@ abstract public class MSM extends Agent {
         double ratio = testBase/testRates[year] ;
         int newScreenCycle = (int) Math.ceil(ratio * getScreenCycle()) ;
         setScreenCycle(newScreenCycle) ;
+    }
+    
+    /**
+     * Resets the probability of choosing to use a condom according to the year.
+     * Rates taken from GCPS 2011 Table 16, 2014 Table 15, 
+     */
+    public void reinitProbabilityUseCondom(int year) throws Exception
+    {
+        // Go from 2007
+        // Year-by-year rates of UAIC for HIV positive
+        double[] posRates = new double[] {0.565,0.538,0.611,0.596,0.562,0.691,0.682,0.584,0.712,0.75,0.812,0.759} ;
+        // Year-by-year rates of UAIC for HIV positive
+        double[] negRates = new double[] {0.235,0.249,0.322,0.311,0.298,0.291,0.327,0.318,0.325,0.389,0.506,0.561} ;
+        
+        double[] useRates = new double[] {} ;
+        if (statusHIV)
+            useRates = posRates ;
+        else
+            useRates = negRates ;
+        
+        // yearly variance
+        double useBase ;
+        if (year == 0)
+            useBase = useRates[0] ;
+        else
+            useBase = useRates[year - 1] ;
+        // Frequencies, given by per 1000 per year, from 2007-2016
+        // Ratio inverted due to definitions
+        double ratio = useBase/useRates[year] ;
+        
+        probabilityUseCondom *= ratio ;
+        
     }
     
     /**
@@ -842,27 +877,6 @@ abstract public class MSM extends Agent {
     }
     
     /**
-     * Called to adjust condom use.
-     */
-    @Override
-    public void adjustCondomUse()
-    {
-        adjustProbabilityUseCondom() ;
-    }
-    
-    /**
-     * Adjusts probabilityUseCondom to reflect behavioural trends
-     */
-    abstract public void adjustProbabilityUseCondom() ;
-    
-    /**
-     *
-     * @param useCondom
-     */
-    @Override
-    abstract public void setProbabilityUseCondom(double useCondom);
-    
-    /**
      * Whether to enter a proposed relationship of class relationshipClazz .
      * Currently according to whether in a monogomous relationship and 
      * the number of relationships already entered compared to promiscuity.
@@ -897,52 +911,77 @@ abstract public class MSM extends Agent {
         return NONE ;
     }
 
+    /**
+     * getter() for MAX_RELATIONSHIPS.
+     * @return MAX_RELATIONSHIPS
+     */
     @Override
-    abstract int getMaxRelationships();
+    protected int getMaxRelationships()
+    {
+        return MAX_RELATIONSHIPS ;
+    }
+
+        /**
+     * getter() of static PROPORTION_HIV.
+     * @return (double) The proportion of MSM who are HIV positive.
+     */
+    protected double getProportionHIV()
+    { 
+        return PROPORTION_HIV ;
+    }
     
-    abstract double getProportionHIV();
-    
+
     final private double getAntiviralProbability()
     {
         return PROBABILITY_ANTIVIRAL ;
     }
     
-    abstract double getProbabilityDiscloseHIV() ;
+    /**
+     * HIV positive MSM are more likely to disclose the statusHIV
+     * @return (Double) probability of disclosing statusHIV
+     */
+    protected double getProbabilityDiscloseHIV()
+    {
+        if (getStatusHIV())
+            return PROBABILITY_DISCLOSE_POSITIVE_HIV ;
+        return PROBABILITY_DISCLOSE_NEGATIVE_HIV ;
+    }
+    
     
     public double getProbabilityPrep() 
     {
         return PROBABILITY_PREP ;
     }
     
-    protected double getProbabilitySeroSort(boolean hivStatus)
+    public double getProbabilitySeroSort(boolean hivStatus)
     {
         if (hivStatus)
             return PROBABILITY_POSITIVE_SERO_SORT ;
         return PROBABILITY_NEGATIVE_SERO_SORT ;
     }
 
-        protected double getProbabilitySeroSortCasual(boolean hivStatus)
+    public double getProbabilitySeroSortCasual(boolean hivStatus)
     {
         if (hivStatus)
             return PROBABILITY_POSITIVE_CASUAL_SERO_SORT ;
         return PROBABILITY_NEGATIVE_CASUAL_SERO_SORT ;
     }
 
-    protected double getProbabilitySeroSortRegular(boolean hivStatus)
+    public double getProbabilitySeroSortRegular(boolean hivStatus)
     {
         if (hivStatus)
             return PROBABILITY_POSITIVE_REGULAR_SERO_SORT ;
         return PROBABILITY_NEGATIVE_REGULAR_SERO_SORT ;
     }
 
-    protected double getProbabilitySeroSortMonogomous(boolean hivStatus)
+    public double getProbabilitySeroSortMonogomous(boolean hivStatus)
     {
         if (hivStatus)
             return PROBABILITY_POSITIVE_MONOGOMOUS_SERO_SORT ;
         return PROBABILITY_NEGATIVE_MONOGOMOUS_SERO_SORT ;
     }
 
-    protected double getProbabilitySeroPosition(boolean hivStatus) 
+    public double getProbabilitySeroPosition(boolean hivStatus) 
     {
         if (hivStatus)
             return PROBABILITY_POSITIVE_SERO_POSITION ;
