@@ -30,47 +30,46 @@ import java.util.logging.Level;
  *******************************************************************/
 public class Community {
     static public int POPULATION = 40000 ;
-    static public int MAX_CYCLES = 4000 ;
-    //static public String NAME_ROOT = "TestNoScreenAsympUrethra"
-    //static public String NAME_ROOT = "From2007To2012NoCondomIV" 
-    //static public String NAME_ROOT = "Year2007Commence4a"        
-    static public String NAME_ROOT = "Year2007New5a"        
+    static public int MAX_CYCLES = 2325 ; 
+    //static public String NAME_ROOT = "TestRebootp5v3a"
+    static public String NAME_ROOT = "From2007To2011AdjustCondomsa" 
+    //static public String NAME_ROOT = "Year2007p5v8b"        
+    //static public String NAME_ROOT = "Year2007Commence5f"        
     //static public String NAME_ROOT = "IntroPrepCalibration74acycle6000" 
-    //static public String NAME_ROOT = "FallingCondomUseCalibration76b" 
+    //static public String NAME_ROOT = "FallingCondomUseNew5a" 
     //static public String NAME_ROOT = "NoPrepCalibration6a" 
     //static public String NAME_ROOT = "AllSexualContacts"
     //        + "DecliningCondomsAlteredTesting"
             + "Pop" + String.valueOf(POPULATION) + "Cycles" + String.valueOf(MAX_CYCLES) ;
 
     static String COMMENT = ""
-            + "Checking calibration after changing the probability "
-            + "of accepting Casual Relationships. "
+            //+ "Checking calibration after changing the probability "
+            //+ "of accepting Casual Relationships back to 5/12. "
             //+ "Calibrate to 2007 data notifications. "
+            //+ "probabilityUseCondom becomes zero at cycle 2095. "
             // + "every cycle from 3000 "
-            //+ "Agents reduce their chances of choosing condoms. "
-            //+ "Every year from cycle 500 "
-            //+ "parameters are adjusted according to ARTB data on a yearly basis"
+            //+ "Agents reduce their chances of choosing condoms by up to 0.5"
+            + "parameters are adjusted according to ARTB data on a yearly basis"
             //+ "Continue From2007To2012NoCondomIII to see if prevalence rises. "
             //+ "five RiskyMSM go on PrEP "
             //+ "Testing rates are altered to compare with long-term data " 
             //+ "and their condom usage rates are multiplied by random fraction between 0 and 1."
             //+ "MAX_RELATIONSHIPS set to 3 "  // "Uses parameters from NoPrepCalibration53" ;
             //+ "All encounters are recorded in full." 
-              //      + "consentCasualProbability * 5/12 "
-            //+ "Test of loading burn-in. Uses Calibration24. "
+            //+ "Test of loading burn-in. Uses From2007To2011p5v3aAdjust. "
             // + "Begins by reloading NoPrepCalibration76a"
-            //+ "with 100 cycle grace period."
-            //+ "Test or reload METADATA to rerun simlation exactly with no burn-in. "
+            + "with 1000 cycle grace period."
+            //+ "Test of reload METADATA to rerun simulation exactly with no burn-in. "
             //+ "Assumes number of Agents at least N times number of cycles minus 1000." ;*/
             + "" ;
     
     static boolean TO_PLOT = true ;
-    static public String FILE_PATH = "output/year2007/" ;
+    static public String FILE_PATH = "output/prePrEP/" ;
     //static public String FILE_PATH = "/srv/scratch/z3524276/prepsti/output/test/" ;
     //static public String FILE_PATH = "/short/is14/mw7704/prepsti/output/year2007/" ;
     /** Dump reports to disk after this many cycles. */
     /** Whether parameters change throughout simulation. */
-    static boolean DYNAMIC = false ;
+    static boolean DYNAMIC = true ;
     
     static final int DUMP_CYCLE = ((int) Math.pow(10, 7))/POPULATION ;
     /** Whether to dump partial reports during simulation. */
@@ -82,13 +81,13 @@ public class Community {
      * (String) Name of previous burn-in to reload.
      * Not reloaded if this is an empty string.
      */
-    static final String RELOAD_BURNIN = "" ; // "NoPrepCalibration24Pop40000Cycles8000" ;
+    static final String RELOAD_BURNIN = "" ; // Year2007New8bPop40000Cycles4000" ; // "NoPrepCalibration24Pop40000Cycles8000" ;
     
     /**
      * (String) Name of previous simulation to reload.
      * Not reloaded if this is an empty string.
      */
-    static final String RELOAD_SIMULATION = "" ; // "NoPrepCalibration76aPop40000Cycles4000" ; // "NoPrepCalibration24Pop40000Cycles8000" ;
+    static final String RELOAD_SIMULATION = "" ; // "From2007To2011p5v3aAdjustCondomsPop40000Cycles2525" ; // "TestRebootRelationship8aPop4000Cycles500" ; 
     
     static public String getFilePath()
     {
@@ -171,14 +170,15 @@ public class Community {
         String cycleString ;
         
         System.out.println("population: " + POPULATION + ", Cycles: " + MAX_CYCLES );
+        /*
         int outputInterval ;
-        
         if (POPULATION < MAX_CYCLES)
             outputInterval = POPULATION/2 ;
         else
             outputInterval = POPULATION / (MAX_CYCLES) ;
         if (outputInterval < 100)
             outputInterval = 100 ;
+        */
         
         if (!RELOAD_SIMULATION.isEmpty())
         {
@@ -231,8 +231,8 @@ public class Community {
         //outputInterval = 1 ;
         for (int cycle = 0; cycle < MAX_CYCLES; cycle++)
         {	
-            if (cycle == ((cycle/outputInterval) * outputInterval))
-                LOGGER.log(Level.INFO, "Cycle no. {0}", cycleString);
+            //if (cycle == ((cycle/outputInterval) * outputInterval))
+              //  LOGGER.log(Level.INFO, "Cycle no. {0}", cycleString);
 
             if (DYNAMIC)
                 community.interveneCommunity(cycle) ;
@@ -457,7 +457,7 @@ public class Community {
             this.initialRecord = "" ; 
             for (Agent agent : agents)
                 initialRecord += agent.getCensusReport() ;
-            nbRelationships = Relationship.RELOAD_RELATIONSHIPS(simName, agents) ;
+            nbRelationships = Relationship.REBOOT_RELATIONSHIPS(simName, agents) ;
         }
     }
 
@@ -516,7 +516,7 @@ public class Community {
      */
     private String interveneCommunity(int cycle)
     {
-        int startCycle = 700 ;
+        int startCycle = 500 ;
         if (cycle < startCycle)
             return "" ;
         
@@ -537,8 +537,8 @@ public class Community {
                     ((MSM) agent).reinitScreenCycle(year);
                     ((MSM) agent).reinitProbabilityAntiViral(year) ;
                     ((MSM) agent).reinitProbablityDiscloseHIV(year);
-                    if (year == 1)
-                        agent.stopCondomUse() ;
+                    if (year == 3)
+                        agent.adjustCondomUse() ;
                 }
                 catch( Exception e ) // cycle extends beyond trend data
                 {
@@ -1080,7 +1080,7 @@ public class Community {
         metaLabels.add("Agents") ;
         String agentsReboot = "" ;
         for (Agent agent : agents)
-            agentsReboot.concat(agent.getRebootData()) ;
+            agentsReboot += agent.getRebootData() ;
         metaData.add(agentsReboot) ; 
         
         metaLabels.add("Relationships") ;
@@ -1207,6 +1207,7 @@ public class Community {
                 }
             }
             dumpsSoFar++ ;
+            LOGGER.log(Level.INFO, "dumpsSoFar:{0} nb Files:{1}", new Object[] {dumpsSoFar,(new File(globalFolder)).listFiles().length});
         }
         
         /**
@@ -1237,6 +1238,7 @@ public class Community {
         protected void dumpRebootData(ArrayList<String> metaLabels, ArrayList<Object> metaData)
         {
             String fileName = simName + "-REBOOT" + extension ;
+            LOGGER.info(fileName);
             try
             {
                 BufferedWriter metadataWriter = new BufferedWriter(new FileWriter(globalFolder + fileName,false)) ;
