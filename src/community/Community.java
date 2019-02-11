@@ -30,46 +30,46 @@ import java.util.logging.Level;
  *******************************************************************/
 public class Community {
     static public int POPULATION = 40000 ;
-    static public int MAX_CYCLES = 2325 ; 
-    //static public String NAME_ROOT = "TestRebootp5v3a"
-    static public String NAME_ROOT = "From2007To2011AdjustCondomsa" 
-    //static public String NAME_ROOT = "Year2007p5v8b"        
-    //static public String NAME_ROOT = "Year2007Commence5f"        
+    static public int MAX_CYCLES = 700 ; 
+    // static public String NAME_ROOT = "Test" ;
+    static public String NAME_ROOT = "CorrectedSafeRatioRisky2a" 
+    //static public String NAME_ROOT = "From2007To2011StopCondoms1" 
     //static public String NAME_ROOT = "IntroPrepCalibration74acycle6000" 
     //static public String NAME_ROOT = "FallingCondomUseNew5a" 
-    //static public String NAME_ROOT = "NoPrepCalibration6a" 
+    //static public String NAME_ROOT = "AllRiskyI" 
     //static public String NAME_ROOT = "AllSexualContacts"
     //        + "DecliningCondomsAlteredTesting"
             + "Pop" + String.valueOf(POPULATION) + "Cycles" + String.valueOf(MAX_CYCLES) ;
 
     static String COMMENT = ""
+            //+ "Fit sensitivity to ratio of SafeMSM to RiskyMSM"
             //+ "Checking calibration after changing the probability "
-            //+ "of accepting Casual Relationships back to 5/12. "
+            //+ "of accepting Casual Relationships back to EPIC-inspired levels. "
             //+ "Calibrate to 2007 data notifications. "
             //+ "probabilityUseCondom becomes zero at cycle 2095. "
             // + "every cycle from 3000 "
             //+ "Agents reduce their chances of choosing condoms by up to 0.5"
-            + "parameters are adjusted according to ARTB data on a yearly basis"
+            //+ "parameters are adjusted according to ARTB data on a yearly basis"
             //+ "Continue From2007To2012NoCondomIII to see if prevalence rises. "
             //+ "five RiskyMSM go on PrEP "
             //+ "Testing rates are altered to compare with long-term data " 
             //+ "and their condom usage rates are multiplied by random fraction between 0 and 1."
             //+ "MAX_RELATIONSHIPS set to 3 "  // "Uses parameters from NoPrepCalibration53" ;
             //+ "All encounters are recorded in full." 
-            //+ "Test of loading burn-in. Uses From2007To2011p5v3aAdjust. "
+            //+ "Test of loading burn-in. " // Uses From2007To2011p5v3aAdjust. "
             // + "Begins by reloading NoPrepCalibration76a"
-            + "with 1000 cycle grace period."
+            //+ "with 1000 cycle grace period."
             //+ "Test of reload METADATA to rerun simulation exactly with no burn-in. "
             //+ "Assumes number of Agents at least N times number of cycles minus 1000." ;*/
             + "" ;
     
     static boolean TO_PLOT = true ;
-    static public String FILE_PATH = "output/prePrEP/" ;
+    static public String FILE_PATH = "output/test/" ;
     //static public String FILE_PATH = "/srv/scratch/z3524276/prepsti/output/test/" ;
     //static public String FILE_PATH = "/short/is14/mw7704/prepsti/output/year2007/" ;
     /** Dump reports to disk after this many cycles. */
     /** Whether parameters change throughout simulation. */
-    static boolean DYNAMIC = true ;
+    static boolean DYNAMIC = false ;
     
     static final int DUMP_CYCLE = ((int) Math.pow(10, 7))/POPULATION ;
     /** Whether to dump partial reports during simulation. */
@@ -87,7 +87,7 @@ public class Community {
      * (String) Name of previous simulation to reload.
      * Not reloaded if this is an empty string.
      */
-    static final String RELOAD_SIMULATION = "" ; // "From2007To2011p5v3aAdjustCondomsPop40000Cycles2525" ; // "TestRebootRelationship8aPop4000Cycles500" ; 
+    static final String RELOAD_SIMULATION = "" ; // "CorrectedSafeRatioRisky1aPop40000Cycles1000" ; //  "Year2007Commence5f" ; // "TestRebootBasePop4000Cycles500" ; // "From2007To2011p5v3aAdjustCondomsPop40000Cycles2525" ; // "TestRebootRelationship8aPop4000Cycles500" ; 
     
     static public String getFilePath()
     {
@@ -537,8 +537,8 @@ public class Community {
                     ((MSM) agent).reinitScreenCycle(year);
                     ((MSM) agent).reinitProbabilityAntiViral(year) ;
                     ((MSM) agent).reinitProbablityDiscloseHIV(year);
-                    if (year == 3)
-                        agent.adjustCondomUse() ;
+                    if (year == 0)
+                        agent.stopCondomUse() ;
                 }
                 catch( Exception e ) // cycle extends beyond trend data
                 {
@@ -1088,7 +1088,7 @@ public class Community {
         for (Agent agent : agents)
             for (Relationship relationship : agent.getCurrentRelationships())
                 if (relationship.getLowerIdAgent() == agent)
-                    relationshipReboot.concat(relationship.getRecord()) ;
+                    relationshipReboot +=relationship.getRecord() ;
         metaData.add(relationshipReboot) ; 
      
         scribe.dumpRebootData(metaLabels, metaData);
@@ -1207,7 +1207,7 @@ public class Community {
                 }
             }
             dumpsSoFar++ ;
-            LOGGER.log(Level.INFO, "dumpsSoFar:{0} nb Files:{1}", new Object[] {dumpsSoFar,(new File(globalFolder)).listFiles().length});
+            LOGGER.log(Level.INFO, "dumpsSoFar:{0} nb_Files:{1} properties:{2}", new Object[] {dumpsSoFar,(new File(globalFolder)).listFiles().length,properties});
         }
         
         /**
