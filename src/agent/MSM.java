@@ -118,7 +118,7 @@ abstract public class MSM extends Agent {
     /** Given seroSort or seroPosition, whether being on antiviral is sufficient. */
     private boolean acceptAntiViral ;
     /** Probability of accepting proposed Casual Relationship */
-    private double consentCasualProbability = RAND.nextDouble() * 5/12 ; //* 0.999999 + 0.000001  ;
+    private double consentCasualProbability ; // = RAND.nextDouble() * 5/12 ; //* 0.999999 + 0.000001  ;
     
     /** Status for HIV infection. */
     private boolean statusHIV ;
@@ -128,23 +128,25 @@ abstract public class MSM extends Agent {
     private boolean discloseStatusHIV ;
     /** Whether currently taking PrEP. */
     private boolean prepStatus ;
+    /** Whether MSM is Risky, Safe otherwise. */
+    private boolean riskyStatus ;
     
     /** Transmission probabilities per sexual contact from Urethra to Rectum */
-    static double URETHRA_TO_RECTUM = 0.029 ; 
+    static double URETHRA_TO_RECTUM = 0.025 ; 
     /** Transmission probabilities sexual contact from Urethra to Pharynx. */
-    static double URETHRA_TO_PHARYNX = 0.029 ; 
+    static double URETHRA_TO_PHARYNX = 0.0235 ; 
     /** Transmission probabilities sexual contact from Rectum to Urethra. */ 
-    static double RECTUM_TO_URETHRA = 0.029 ; 
+    static double RECTUM_TO_URETHRA = 0.025 ; 
     /** Transmission probabilities sexual contact from Rectum to Pharynx. */
-    static double RECTUM_TO_PHARYNX = 0.029 ; 
+    static double RECTUM_TO_PHARYNX = 0.0235 ; 
     /** Transmission probabilities sexual contact in Pharynx to Urethra intercourse. */
-    static double PHARYNX_TO_URETHRA = 0.029 ;
+    static double PHARYNX_TO_URETHRA = 0.0235 ;
     /** Transmission probabilities sexual contact in Pharynx to Rectum intercourse. */
-    static double PHARYNX_TO_RECTUM = 0.029 ; 
+    static double PHARYNX_TO_RECTUM = 0.0235 ; 
     /** Transmission probabilities sexual contact in Pharynx to Pharynx intercourse (kissing). */
-    static double PHARYNX_TO_PHARYNX = 0.029 ; 
+    static double PHARYNX_TO_PHARYNX = 0.0235 ; 
     /** Transmission probabilities sexual contact in Urethra to Urethra intercourse (docking). */
-    static double URETHRA_TO_URETHRA = 0.029 ; 
+    static double URETHRA_TO_URETHRA = 0.0235 ; 
     /** Transmission probabilities sexual contact in Rectum to Rectum intercourse. */
     static double RECTUM_TO_RECTUM = 0.003 ; // 0.003 ; 
     
@@ -262,8 +264,8 @@ abstract public class MSM extends Agent {
     }
     
     	
-    // Odds of an MSM being safeMSM
-    static int SAFE_ODDS = 64 ;
+    // Odds of a MSM having anal intercourse safely (consistent condom use)
+    static int SAFE_ODDS = 44 ;    // 64
     // Odds of an MSM being riskyMSM
     static int RISKY_ODDS = 36 ;
     // Sum of safeOdds and riskyOdds
@@ -278,7 +280,7 @@ abstract public class MSM extends Agent {
     {
         Class clazz ;
         int choice = RAND.nextInt(TOTAL_ODDS) ;
-    	if (choice < SAFE_ODDS)
+    	if ((choice < SAFE_ODDS) && (1 < 0))
             clazz = SafeMSM.class ;
         else 
             clazz = RiskyMSM.class ;
@@ -301,8 +303,10 @@ abstract public class MSM extends Agent {
     public MSM(int startAge) 
     {
         super(startAge) ;
+        int choice = RAND.nextInt(TOTAL_ODDS) ;
+        riskyStatus = (choice < SAFE_ODDS) ;
         initStatus(startAge) ;
-        //initConsentCasualProbability() ;
+        initConsentCasualProbability() ;
     }
 
     /**
@@ -744,6 +748,15 @@ abstract public class MSM extends Agent {
     }
     
     /**
+     * Getter for riskyStatus.
+     * @return 
+     */
+    public boolean getRiskyStatus()
+    {
+        return riskyStatus ;
+    }
+    
+    /**
      * Initialise prepStatus and set up screenCycle and screenTime accordingly.
      * screenCycle is initiated here because it is prepStatus dependent.
      * @param prep 
@@ -784,49 +797,35 @@ abstract public class MSM extends Agent {
     public void reinitScreenCycle(int year) throws Exception
     {
         // Go from 2007
+        // Frequencies, given by per 1000 per year, from 2007-2016
+        // Table 17 ARTB 2016
         double[] testRates = new double[] {333,340,398,382,383,382,391,419,445,499} ;
         double testBase ;
         if (year == 0)
             testBase = testRates[0] ;
         else
             testBase = testRates[year - 1] ;
-        // Frequencies, given by per 1000 per year, from 2007-2016
-        // Table 17 ARTB 2016
-        //double[] testRates = new double[] {333,340,398,382,383,382,391,419,445,499} ;
+        
         double ratio = testBase/testRates[year] ;
         int newScreenCycle = (int) Math.ceil(ratio * getScreenCycle()) ;
         setScreenCycle(newScreenCycle) ;
     }
     
     /**
-     * Resets the probability of choosing to use a condom according to the year.
+     * Resets the probability of Risky vs Safe behaviour according to the year.
      * Rates taken from GCPS 2011 Table 16, 2014 Table 15, 
      */
-    public void reinitProbabilityUseCondom(int year) throws Exception
+    public void reinitRiskOdds(int year) throws Exception
     {
-        // Go from 2007
+        // Go from 2013
         // Year-by-year rates of UAIC for HIV positive
-        double[] posRates = new double[] {0.565,0.538,0.611,0.596,0.562,0.691,0.682,0.584,0.712,0.75,0.812,0.759} ;
+        int[] riskyOdds = new int[] {357,375,388,482} ;
         // Year-by-year rates of UAIC for HIV positive
-        double[] negRates = new double[] {0.235,0.249,0.322,0.311,0.298,0.291,0.327,0.318,0.325,0.389,0.506,0.561} ;
+        int[] safeOdds = new int[] {443,445,421,398} ;
         
-        double[] useRates = new double[] {} ;
-        if (statusHIV)
-            useRates = posRates ;
-        else
-            useRates = negRates ;
+        int totalOdds = riskyOdds[year] + safeOdds[year] ;
         
-        // yearly variance
-        double useBase ;
-        if (year == 0)
-            useBase = useRates[0] ;
-        else
-            useBase = useRates[year - 1] ;
-        // Frequencies, given by per 1000 per year, from 2007-2016
-        // Ratio inverted due to definitions
-        double ratio = useBase/useRates[year] ;
-        
-        probabilityUseCondom *= ratio ;
+        riskyStatus = RAND.nextInt(totalOdds) < riskyOdds[year] ;
         
     }
     
@@ -998,6 +997,58 @@ abstract public class MSM extends Agent {
     @Override
     abstract protected boolean chooseCondom(String relationshipClazzName, Agent msm);
     
+    
+    /**
+     * Decides probabilistically whether MSM chooses to use a condom in a given encounter.
+     * RiskyMSM choose use strategies other than condoms
+     * @param partner
+     * @return true if condom is to be used, false otherwise
+     */
+    /*
+    protected boolean chooseCondom(String relationshipClazzName, Agent partner) 
+    {
+        if (riskyStatus)
+        {
+            String partnerDisclosure = partner.declareStatus() ;
+            //Boolean partnerSeroPosition = ((MSM) partner).getSeroPosition() ;
+
+            // Not if on PrEP
+            if (getPrepStatus())
+                return false ;
+
+            if (getSeroSort(relationshipClazzName))    // might use condom when serodiscordance or nondisclosure
+            {
+                if (!(getStatusHIV() == Boolean.getBoolean(partnerDisclosure))) 
+                {
+                    if (RAND.nextDouble() < probabilityUseCondom ) 
+                        return true;
+                    if (getStatusHIV() && !((MSM)partner).getPrepStatus()) // !getPrepStatus() || 
+                        return (RAND.nextDouble() < probabilityUseCondom ) ;
+                    else if (!getStatusHIV() && ((MSM)partner).getPrepStatus())
+                        return (RAND.nextDouble() < probabilityUseCondom ) ;
+                }
+            }
+            if (getSeroPosition())
+                if (NONE.equals(partnerDisclosure))  // maybe if partner does not disclose
+                    return (RAND.nextDouble() < probabilityUseCondom ) ;
+            return false ;
+        }
+        else
+        {
+            if (getStatusHIV())
+                if (!getAntiViralStatus())
+                    return true ;
+            else if (!getPrepStatus())
+            {
+                if (!((MSM) partner).getDiscloseStatusHIV()) // Partner doesn't disclose
+                    return true ; 
+                if (((MSM) partner).getStatusHIV() && !((MSM) partner).getAntiViralStatus()) // Partner HIV +ve without antivirals
+                    return true ;
+            return (RAND.nextDouble() < probabilityUseCondom ) ;  //TODO: Should there be subset who always use?
+        }
+    }
+    */
+    
     /**
      * 
      * @return (int) the number of orgies in a MSM community per cycle
@@ -1023,7 +1074,12 @@ abstract public class MSM extends Agent {
      * @return (double) the probability of MSM joining an orgy when invited
      */
     @Override
-    abstract public double getJoinGroupSexEventProbability();
+    public double getJoinGroupSexEventProbability()
+    {
+        if (riskyStatus)
+            return RiskyMSM.JOIN_GSE_PROBABILITY ;
+        return SafeMSM.JOIN_GSE_PROBABILITY ;
+    }
     
     /**
      * Probability of MSM screening on that day. Depends on prepStatus and statusHIV.
