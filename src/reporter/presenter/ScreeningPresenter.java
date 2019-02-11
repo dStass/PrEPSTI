@@ -68,13 +68,14 @@ public class ScreeningPresenter extends Presenter {
 
     public static void main(String[] args)
     {
-        //String simName = "TestCycle585AlteredTestingPop40000Cycles2000" ; // Community.NAME_ROOT ; // "introPrepCalibration48Pop40000Cycles7000" ; // args[0] ;
-        //String simName = "IntroPrepCalibration74acycle6000Pop40000Cycles12000" ; // "NoPrepCalibration51bPop40000Cycles4000" ; // "DecliningCondoms3Pop40000Cycles5000" ; 
+        //String simName = "Year2007New2aPop40000Cycles2000" ; 
+        String simName =  "CorrectedSafeRatioRisky1aPop40000Cycles1000" ;
         //String simName = "RiskyPrep74Pop40000Cycles4000" ;
         //String simName = "FallingCondomUseAlteredTestingPop40000Cycles2000" ;
         //String simName = "NoPrepCalibration73aPop40000Cycles3500" ; // "DecliningCondoms3Pop40000Cycles5000" ; 
-        String simName = "Year2007Calibration12dPop40000Cycles3000" ;
-        //String simName = "IntroPrepCalibration51testPop40000Cycles1000" ;
+        //String simName = "Year2007Commence5fPop40000Cycles2500" ;
+        //String simName = "TestPop40000Cycles1000" ;
+        //String simName = "AllRiskyIPop40000Cycles1000" ;
         //String chartTitle = "mean_prevalence" ; //  args[1] ;
         //String chartTitle = "multi-site prevalence" ; //  args[1] ;
         String chartTitle = "notifications" ; //
@@ -83,7 +84,9 @@ public class ScreeningPresenter extends Presenter {
         //String chartTitle = "site-specific symptomatic" ; // args[1] ;
         //String chartTitle = "testing_6_months" ; // args[1] ;
         //String chartTitle = "infections_past_2years_PrEP" ; // args[1] ;
-        String reportFileName = "output/year2007/" ; // args[2] ;
+        //String reportFileName = "output/prePrEP/" ; // args[2] ;
+        String reportFileName = "output/test/" ; // args[2] ;
+        //String reportFileName = "output/year2007/" ; // args[2] ;
 
         LOGGER.info(chartTitle) ;
         
@@ -109,8 +112,8 @@ public class ScreeningPresenter extends Presenter {
         //screeningPresenter.plotFinalSymptomatic(new String[] {"Pharynx","Rectum","Urethra"}) ;
         //screeningPresenter.plotFinalPrevalences(new String[] {"Pharynx","Rectum","Urethra"}) ;
         screeningPresenter.plotFinalNotifications(new String[] {"Pharynx","Rectum","Urethra"}, 0, Reporter.DAYS_PER_YEAR, 0) ;
-        //screeningPresenter.plotNotificationsYears(new String[] {"Pharynx","Rectum","Urethra"},5,2007) ;
-        //screeningPresenter.plotPositivityYears(new String[] {"Pharynx","Rectum","Urethra"},5,2007) ;
+        //screeningPresenter.plotNotificationsYears(new String[] {"all"},5,2011) ;
+        //screeningPresenter.plotPositivityYears(new String[] {"Pharynx","Rectum","Urethra"},5,2011) ;
         //screeningPresenter.plotNotificationPerCycle() ;    
         //screeningPresenter.plotSiteProportionSymptomatic(siteNames) ;
 
