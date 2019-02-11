@@ -25,25 +25,27 @@ public class RelationshipPresenter extends Presenter{
     
     public static void main(String[] args)
     {
-        String simName = "NoPrepCalibration10Pop40000Cycles1000" ; // "NoPrepCalibration86Pop40000Cycles5000" ; // "introPrepCalibration49Pop40000Cycles5000" ; // "NoPrepSetting01Pop40000Cycles5000" ; // 
-        //String simName = "TESTPop40000Cycles400" ;
-        //String simName = "RelationshipCalibration4Pop40000Cycles200" ; // "testPlotCondomUsePop4000Cycles500" ; // args[0] ;
-        //String simName = "RelationshipCalibration16Pop40000Cycles1200" ; // "testPlotCondomUsePop4000Cycles500" ; // args[0] ;
+        //String simName = "NoPrepCalibration22Pop40000Cycles500" ; // "NoPrepCalibration86Pop40000Cycles5000" ; // "introPrepCalibration49Pop40000Cycles5000" ; // "NoPrepSetting01Pop40000Cycles5000" ; // 
+        //String simName = "NoBurninPop40000Cycles8000" ;
+        String simName = "TestPop40000Cycles100" ; // "testPlotCondomUsePop4000Cycles500" ; // args[0] ;
+        //String simName = "RelationshipCalibration74Pop40000Cycles100" ; // "testPlotCondomUsePop4000Cycles500" ; // args[0] ;
         //String chartTitle = "Nb_Agents_had_given_relationships" ; // args[1] ;
         //String chartTitle = "cumulative_relationships" ; // args[1] ;
-        String chartTitle = "mean_nb_relationships" ;
+        //String chartTitle = "mean_nb_relationships" ;
+        String chartTitle = "breakups" ;
         //String chartTitle = "agents_entered_relationships" ;
         String reportFileName = "output/test/" ; // args[2] ;
         
         LOGGER.info(chartTitle) ;
-        String[] relationshipClazzNames = new String[] {"Casual","Regular","Monogomous"} ; // "Casual","Regular","Monogomous"
+        LOGGER.info(simName) ;
+        String[] relationshipClazzNames = new String[] {"Regular","Monogomous","Casual"} ; // "Casual","Regular","Monogomous"
         RelationshipPresenter relationshipPresenter = new RelationshipPresenter(simName,chartTitle,reportFileName) ;
-        //relationshipPresenter.plotBreakupsPerCycle() ;
+        relationshipPresenter.plotBreakupsPerCycle() ;
         //relationshipPresenter.plotCumulativeRelationshipGaps() ;
         //relationshipPresenter.plotCumulativeRelationships(10, new String[] {"Casual","Regular","Monogomous"}, 0, 6, 0) ;
         //relationshipPresenter.plotCumulativeRelationshipLengths() ;
         //relationshipPresenter.plotRelationshipCumulativeTransmissions() ;
-        relationshipPresenter.plotMeanNumberRelationshipsReport(new String[] {"Casual","Regular","Monogomous"});
+        //relationshipPresenter.plotMeanNumberRelationshipsReport(relationshipClazzNames);
         //relationshipPresenter.plotAgentRelationshipsMeanYears(relationshipClazzNames, 3, 6, 0, 2017) ;
         //relationshipPresenter.plotAgentRelationshipsMean(new String[] {"Casual","Regular","Monogomous"}, 0, 6, 0) ;
         //relationshipPresenter.plotRelationshipLength() ;
