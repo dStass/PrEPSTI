@@ -24,7 +24,8 @@ public class PopulationPresenter extends Presenter{
     
     public static void main(String[] args)
     {
-        String simName = "NoPrepCalibration33Pop40000Cycles3000" ; // Community.NAME_ROOT ; // "introPrepCalibration48Pop40000Cycles7000" ; // args[0] ;
+        //String simName = "NoPrepCalibration33Pop40000Cycles3000" ; // Community.NAME_ROOT ; // "introPrepCalibration48Pop40000Cycles7000" ; // args[0] ;
+        String simName = "TESTPop40000Cycles400" ;
         String chartTitle = "age_at_death" ; // args[1] ;
         String reportFileName = "output/test/" ; // args[2] ;
         LOGGER.info(chartTitle) ;
