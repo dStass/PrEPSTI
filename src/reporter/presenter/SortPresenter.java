@@ -28,8 +28,10 @@ public class SortPresenter extends Presenter {
     public static void main(String[] args) // "test1","encounter","population","fileName","test1","plotReceiveSortPrepStatusReport","false"
     {
         //String simName = "NoPrepCalibration49Pop40000Cycles20000" ; // "NoPrepCalibration33Pop40000Cycles3000" ;
-        String simName = "RelationshipCalibration15Pop40000Cycles20000" ; // Community.NAME_ROOT ; // "testPlotCondomUsePop4000Cycles500" ; // args[0] ;
-        String chartTitle = "mean_relationships_by_given_age" ; // args[1] ;
+        //String simName = "NoPrepCalibration93Pop40000Cycles20000" ; // Community.NAME_ROOT ; // "testPlotCondomUsePop4000Cycles500" ; // args[0] ;
+        String simName = "TESTPop40000Cycles400" ;
+        //String chartTitle = "mean_relationships_by_given_age" ; // args[1] ;
+        String chartTitle = "proportion_by_nb_partners" ;
         String reportFileName = "output/test/" ; // args[2] ;
         
         System.out.println(chartTitle) ;
@@ -38,10 +40,10 @@ public class SortPresenter extends Presenter {
         //sortPresenter.plotSortIncidence(5,1,3,0,0) ;    // nbRelationships, binSize, backYears, backMonths, backDays
         //SortPresenter sortPresenter = new SortPresenter(simName,chartTitle,reportFileName,"encounter","population") ;
         //sortPresenter.plotSortConcurrencyIncidence(3,2,0,0) ;    // nbRelationships, backYears, backMonths, backDays
-        //SortPresenter sortPresenter = new SortPresenter(simName,chartTitle,reportFileName,"infection","relationship") ;
-        //sortPresenter.plotSortPrevalence(ScreeningPresenter.PREVALENCE,5,1,0,6,0) ;    // scoreName, nbRelationships, binSize, backYears, backMonths, backDays
-        SortPresenter sortPresenter = new SortPresenter(simName,chartTitle,reportFileName,"relationship","population") ;
-        sortPresenter.plotAgeNumberEnteredRelationshipRecord(new String[] {"Casual","Regular","Monogomous"}) ;
+        SortPresenter sortPresenter = new SortPresenter(simName,chartTitle,reportFileName,"infection","relationship") ;
+        sortPresenter.plotSortPrevalence(Presenter.PROPORTION,5,1,0,6,0) ;    // scoreName, nbRelationships, binSize, backYears, backMonths, backDays
+        //SortPresenter sortPresenter = new SortPresenter(simName,chartTitle,reportFileName,"relationship","population") ;
+        //sortPresenter.plotAgeNumberEnteredRelationshipRecord(new String[] {"Casual","Regular","Monogomous"}) ;
     }
     
     public SortPresenter()
