@@ -72,6 +72,15 @@ public class Presenter {
     static protected String GROUP = "__" ;
     static final String CSV = ".csv" ;
     static final String COMMA = Reporter.COMMA ;
+
+    // Used for controlling if and what is co-plotted from file.
+    static boolean PLOT_FILE = false ;    
+    static String FOLDER_PATH = "data_files/" ;
+    static String FILENAME = "notifications" ;    //  "incidence_kirby2018"
+    //static String[] dataScore = new String[] {"hiv_negative","hiv_positive"} ;
+    static String[] dataScore = new String[] {"notifications"} ;
+            
+    
     private BarChart_AWT chart_awt ;
     
     private String folderPath = Community.FILE_PATH ;
@@ -157,7 +166,6 @@ public class Presenter {
         // Plotting Integer or Double?
         Object key ;
         String[] recordArray ;
-        String scoreName = "" ;
         Number[] valueArray ;
         int recordLength = 0 ;
         
@@ -232,7 +240,7 @@ public class Presenter {
         try
         {
             BufferedReader fileReader 
-                    = new BufferedReader(new FileReader(folder + fileName + CSV)) ;
+                    = new BufferedReader(new FileReader(FOLDER_PATH + fileName + CSV)) ;
             fileHeader = fileReader.readLine() ;
             
             arrayHeader = fileHeader.split(COMMA) ;
@@ -1456,23 +1464,23 @@ public class Presenter {
             DefaultCategoryDataset dataset = createDataset(scoreNames, categoryList, scoreLists,bin) ;
             
             String[] finalNames = new String[2] ;
-            if (0 > 1)
+            if (PLOT_FILE)
             {
-            // Data from file
-            HashMap<Object,Number[]> dataReport = readHashMapNumberArrayCSV("incidence_kirby2018") ;
-            String[] dataScore = new String[] {"hiv_negative","hiv_positive"} ;
-            dataset = expandDataset(dataset,dataReport,dataScore) ;
-            
-            finalNames = new String[scoreNames.length + dataScore.length] ;
-            for (int scoreIndex = 0 ; scoreIndex < scoreNames.length ; scoreIndex++ )
-                finalNames[scoreIndex] = scoreNames[scoreIndex] ;
-            
-            for (int dataIndex = 0 ; dataIndex < dataScore.length ; dataIndex++ )
-                finalNames[scoreNames.length + dataIndex] = dataScore[dataIndex].concat(GROUP).concat("DATA") ;
-            /*if (bin)
+                // Data from file
+                HashMap<Object,Number[]> dataReport = readHashMapNumberArrayCSV(FILENAME) ;
+
+                dataset = expandDataset(dataset,dataReport,dataScore) ;
+
+                finalNames = new String[scoreNames.length + dataScore.length] ;
                 for (int scoreIndex = 0 ; scoreIndex < scoreNames.length ; scoreIndex++ )
-                    scoreNames[scoreIndex] = "Log() ".concat(scoreNames[scoreIndex]) ;*/
-            //LOGGER.log(Level.INFO, "{0}", finalNames);
+                    finalNames[scoreIndex] = scoreNames[scoreIndex] ;
+
+                for (int dataIndex = 0 ; dataIndex < dataScore.length ; dataIndex++ )
+                    finalNames[scoreNames.length + dataIndex] = dataScore[dataIndex].concat(GROUP).concat("DATA") ;
+                /*if (bin)
+                    for (int scoreIndex = 0 ; scoreIndex < scoreNames.length ; scoreIndex++ )
+                        scoreNames[scoreIndex] = "Log() ".concat(scoreNames[scoreIndex]) ;*/
+                //LOGGER.log(Level.INFO, "{0}", finalNames);
             }
             else 
                 finalNames = scoreNames ;
