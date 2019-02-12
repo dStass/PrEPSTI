@@ -30,9 +30,9 @@ import java.util.logging.Level;
  *******************************************************************/
 public class Community {
     static public int POPULATION = 40000 ;
-    static public int MAX_CYCLES = 700 ; 
+    static public int MAX_CYCLES = 1000 ; 
     // static public String NAME_ROOT = "Test" ;
-    static public String NAME_ROOT = "CorrectedSafeRatioRisky2a" 
+    static public String NAME_ROOT = "CorrectedSafeRatioRisky6bCont" 
     //static public String NAME_ROOT = "From2007To2011StopCondoms1" 
     //static public String NAME_ROOT = "IntroPrepCalibration74acycle6000" 
     //static public String NAME_ROOT = "FallingCondomUseNew5a" 
@@ -64,7 +64,7 @@ public class Community {
             + "" ;
     
     static boolean TO_PLOT = true ;
-    static public String FILE_PATH = "output/test/" ;
+    static public String FILE_PATH = "output/year2007/" ;
     //static public String FILE_PATH = "/srv/scratch/z3524276/prepsti/output/test/" ;
     //static public String FILE_PATH = "/short/is14/mw7704/prepsti/output/year2007/" ;
     /** Dump reports to disk after this many cycles. */
@@ -87,7 +87,7 @@ public class Community {
      * (String) Name of previous simulation to reload.
      * Not reloaded if this is an empty string.
      */
-    static final String RELOAD_SIMULATION = "" ; // "CorrectedSafeRatioRisky1aPop40000Cycles1000" ; //  "Year2007Commence5f" ; // "TestRebootBasePop4000Cycles500" ; // "From2007To2011p5v3aAdjustCondomsPop40000Cycles2525" ; // "TestRebootRelationship8aPop4000Cycles500" ; 
+    static final String RELOAD_SIMULATION = "CorrectedSafeRatioRisky6bPop40000Cycles1500" ; // "CorrectedSafeRatioRisky1aPop40000Cycles1000" ; //  "Year2007Commence5f" ; // "TestRebootBasePop4000Cycles500" ; // "From2007To2011p5v3aAdjustCondomsPop40000Cycles2525" ; // "TestRebootRelationship8aPop4000Cycles500" ; 
     
     static public String getFilePath()
     {
@@ -1207,7 +1207,7 @@ public class Community {
                 }
             }
             dumpsSoFar++ ;
-            LOGGER.log(Level.INFO, "dumpsSoFar:{0} nb_Files:{1} properties:{2}", new Object[] {dumpsSoFar,(new File(globalFolder)).listFiles().length,properties});
+            LOGGER.log(Level.INFO, "dumpsSoFar:{0} nb_Files:{1} properties:{2}", new Object[] {dumpsSoFar,(new File(globalFolder)).listFiles().length,properties.length});
         }
         
         /**
