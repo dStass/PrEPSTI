@@ -45,9 +45,9 @@ public abstract class Agent {
     /** Age beyond which Agents are removed from the population. */
     static int MAX_LIFE = 65 ;
     
-    //static String FOLDER_PATH =  "output/year2007/" ;
+    static String FOLDER_PATH =  "output/year2007/" ;
     //static String FOLDER_PATH =  "output/test/" ;
-    static String FOLDER_PATH =  "output/prePrEP/" ;
+    //static String FOLDER_PATH =  "output/prePrEP/" ;
     
     /** Names of Sites for Agent*/ 
     static public String[] SITE_NAMES = new String[] {} ;
@@ -566,8 +566,6 @@ public abstract class Agent {
     final protected void reinitInfectedStatus(boolean symptomaticSite, Site site)
     {
         site.receiveInfection(1.1) ;
-        // TODO: Read actual remaining infectionTime from file.
-        //site.setInfectionDuration() ;
         site.setInfectionTime(RAND.nextInt(site.setInfectionDuration()-1)+1) ;
         symptomatic = symptomatic || site.setSymptomatic(symptomaticSite) ;
         infectedStatus = true ; // infectedStatus || (site.getInfectedStatus() > 0) ;
@@ -1340,14 +1338,15 @@ public abstract class Agent {
         
     }
 
-    //TODO: Clean up leaveRelationship(int agentNb)
-    private void leaveRelationship(int agentNb)
+    /**
+     * 
+     * @param agentNb 
+     */
+    private void leavePartnerId(int agentNb)
     {
-            //Convert agentNb to Object so not treated as index
-            currentPartnerIds.remove(agentNb) ;
-            //lostPartners.add((Object) agentNb) ;
-
-            nbRelationships-- ;
+        int partnerIndex = currentPartnerIds.indexOf(agentNb) ;
+        Relationship doomedRelationship = currentRelationships.get(partnerIndex) ;
+        leaveRelationship(doomedRelationship) ;
     }
 
     public String enterCasual(Relationship relationship)
