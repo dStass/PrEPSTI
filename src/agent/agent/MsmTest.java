@@ -54,8 +54,8 @@ public class MsmTest {
     
     public MsmTest(int startAge0, int startAge1)
     {
-        msm0 = MSM.birthMSM(startAge0) ;
-        msm1 = MSM.birthMSM(startAge1) ;
+        msm0 = new MSM(startAge0) ; // BIRTH_MSM
+        msm1 = new MSM(startAge1) ; // BIRTH_MSM
         int msmId0 = msm0.getAgentId() ;
         int msmId1 = msm1.getAgentId() ;
         assert (msmId1 == (msmId0 + 1)) : "msm0 Id:" + String.valueOf(msmId0) +
@@ -191,21 +191,21 @@ public class MsmTest {
      * Test that Sites are chosen with proper accounting for relevant factors
      * such as seroPositioning and statusHIV.
      * 
-     * The (String) parameter in MSM.chooseSites is the Class name of the 
-     * Relationship, which is currently unused.
+     * The (String) parameter in MSM.CHOOSE_SITES is the Class name of the 
+ Relationship, which is currently unused.
      */
     public void testChooseSites()
     {
         setStatusHIV(true,false) ;
         
         msm0.setSeroPosition(true);
-        Site[] sites = MSM.chooseSites(msm0, msm1, "") ;
+        Site[] sites = MSM.CHOOSE_SITES(msm0, msm1, "") ;
         
         assert (Urethra.class.isInstance(sites[0])) : "Site chosen for msm0 must not be Urethra." ;
     }
     
     /**
-     * Method to set statusHIV of both MSMs for above tests
+     * Method to set statusHIV of both MSMs for above tests.
      * @param statusHIV0
      * @param statusHIV1 
      */    
