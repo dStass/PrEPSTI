@@ -30,10 +30,10 @@ import java.util.logging.Level;
  *******************************************************************/
 public class Community {
     static public int POPULATION = 40000 ;
-    static public int MAX_CYCLES = 1000 ; 
-    // static public String NAME_ROOT = "Test" ;
-    static public String NAME_ROOT = "CorrectedSafeRatioRisky6bCont" 
-    //static public String NAME_ROOT = "From2007To2011StopCondoms1" 
+    static public int MAX_CYCLES = 1500 ; 
+    static public String NAME_ROOT = "TestUrethraSymp75" 
+    //static public String NAME_ROOT = "CorrectedSafeRatioRisky6bCont" 
+    //static public String NAME_ROOT = "From2007To2012a" 
     //static public String NAME_ROOT = "IntroPrepCalibration74acycle6000" 
     //static public String NAME_ROOT = "FallingCondomUseNew5a" 
     //static public String NAME_ROOT = "AllRiskyI" 
@@ -58,18 +58,19 @@ public class Community {
             //+ "All encounters are recorded in full." 
             //+ "Test of loading burn-in. " // Uses From2007To2011p5v3aAdjust. "
             // + "Begins by reloading NoPrepCalibration76a"
-            //+ "with 1000 cycle grace period."
-            //+ "Test of reload METADATA to rerun simulation exactly with no burn-in. "
+            //+ "with 500 cycle grace period."
+            + "Test of Urethra symptomaticProbability 0.75 "
+            //+ "against 2012 values. "
             //+ "Assumes number of Agents at least N times number of cycles minus 1000." ;*/
             + "" ;
     
     static boolean TO_PLOT = true ;
-    static public String FILE_PATH = "output/year2007/" ;
+    static public String FILE_PATH = "output/test/" ;
     //static public String FILE_PATH = "/srv/scratch/z3524276/prepsti/output/test/" ;
     //static public String FILE_PATH = "/short/is14/mw7704/prepsti/output/year2007/" ;
     /** Dump reports to disk after this many cycles. */
     /** Whether parameters change throughout simulation. */
-    static boolean DYNAMIC = false ;
+    static boolean DYNAMIC = true ;
     
     static final int DUMP_CYCLE = ((int) Math.pow(10, 7))/POPULATION ;
     /** Whether to dump partial reports during simulation. */
@@ -87,7 +88,7 @@ public class Community {
      * (String) Name of previous simulation to reload.
      * Not reloaded if this is an empty string.
      */
-    static final String RELOAD_SIMULATION = "CorrectedSafeRatioRisky6bPop40000Cycles1500" ; // "CorrectedSafeRatioRisky1aPop40000Cycles1000" ; //  "Year2007Commence5f" ; // "TestRebootBasePop4000Cycles500" ; // "From2007To2011p5v3aAdjustCondomsPop40000Cycles2525" ; // "TestRebootRelationship8aPop4000Cycles500" ; 
+    static final String RELOAD_SIMULATION = "CorrectedSafeRatioPop40000Cycles1500" ; // "CorrectedSafeRatioRisky1aPop40000Cycles1000" ; //  "Year2007Commence5f" ; // "TestRebootBasePop4000Cycles500" ; // "From2007To2011p5v3aAdjustCondomsPop40000Cycles2525" ; // "TestRebootRelationship8aPop4000Cycles500" ; 
     
     static public String getFilePath()
     {
@@ -580,7 +581,8 @@ public class Community {
     private MSM generateAgent(int startAge)
     {
         // if Agent.subclass == MSM
-        MSM newAgent = MSM.BIRTH_MSM(startAge);
+        MSM newAgent = new MSM(startAge);
+        //MSM newAgent = MSM.BIRTH_MSM(startAge);
         
         // Impose initial condition here
         newAgent.setPrepStatus(false) ;
