@@ -20,7 +20,7 @@ import reporter.ScreeningReporter;
  * @author Michael Walker
  *
  */
-abstract public class MSM extends Agent {
+public class MSM extends Agent {
 	
     // The maximum number of relationships an agent may be willing to sustain
     // static int maxRelationships = 20;
@@ -265,9 +265,9 @@ abstract public class MSM extends Agent {
     
     	
     // Odds of a MSM having anal intercourse safely (consistent condom use)
-    static int SAFE_ODDS = 44 ;    // 64
+    static int SAFE_ODDS = 398 ; // 44 ;    // 64
     // Odds of an MSM being riskyMSM
-    static int RISKY_ODDS = 36 ;
+    static int RISKY_ODDS = 482 ; //36 ;
     // Sum of safeOdds and riskyOdds
     static int TOTAL_ODDS = RISKY_ODDS + SAFE_ODDS ;
     	
@@ -280,7 +280,7 @@ abstract public class MSM extends Agent {
     {
         Class clazz ;
         int choice = RAND.nextInt(TOTAL_ODDS) ;
-    	if ((choice < SAFE_ODDS) && (1 < 0))
+    	if (choice < SAFE_ODDS)
             clazz = SafeMSM.class ;
         else 
             clazz = RiskyMSM.class ;
@@ -303,8 +303,8 @@ abstract public class MSM extends Agent {
     public MSM(int startAge) 
     {
         super(startAge) ;
-        int choice = RAND.nextInt(TOTAL_ODDS) ;
-        riskyStatus = (choice < SAFE_ODDS) ;
+        // Risky or Safe behaviour
+        riskyStatus = (RAND.nextInt(TOTAL_ODDS) < SAFE_ODDS) ;
         initStatus(startAge) ;
         initConsentCasualProbability() ;
     }
@@ -333,6 +333,7 @@ abstract public class MSM extends Agent {
 
         // Sets whether disclosesHIV, allowing for statusHIV
         double probabilityDiscloseHIV = getProbabilityDiscloseHIV() ;
+        // Sero -sorting and -positioning status'
         initSeroStatus(probabilityDiscloseHIV) ;
         
     }
@@ -438,10 +439,14 @@ abstract public class MSM extends Agent {
     @Override
     protected String[] getCensusFieldNames()
     {
+        // Agent census names
         String[] baseCensusNames = super.getCensusFieldNames() ;
-        String[] censusNames = new String[baseCensusNames.length + 1] ;
+        String[] censusNames = new String[baseCensusNames.length + 2] ;
         System.arraycopy(baseCensusNames, 0, censusNames, 0, baseCensusNames.length);
+        
+        // Uniquely MSM census names
         censusNames[baseCensusNames.length] = "prepStatus" ;
+        censusNames[baseCensusNames.length + 1] = "statusHIV" ;
         return censusNames ;
     }
 
@@ -995,8 +1000,8 @@ abstract public class MSM extends Agent {
      * @param msm
      * @return true if condom is to be used, false otherwise
      */
-    @Override
-    abstract protected boolean chooseCondom(String relationshipClazzName, Agent msm);
+    //@Override
+    //abstract protected boolean chooseCondom(String relationshipClazzName, Agent msm);
     
     
     /**
@@ -1005,7 +1010,7 @@ abstract public class MSM extends Agent {
      * @param partner
      * @return true if condom is to be used, false otherwise
      */
-    /*
+    @Override
     protected boolean chooseCondom(String relationshipClazzName, Agent partner) 
     {
         if (riskyStatus)
@@ -1045,10 +1050,10 @@ abstract public class MSM extends Agent {
                     return true ; 
                 if (((MSM) partner).getStatusHIV() && !((MSM) partner).getAntiViralStatus()) // Partner HIV +ve without antivirals
                     return true ;
+            }
             return (RAND.nextDouble() < probabilityUseCondom ) ;  //TODO: Should there be subset who always use?
         }
     }
-    */
     
     /**
      * 
