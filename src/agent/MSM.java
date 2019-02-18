@@ -10,7 +10,8 @@ import java.util.logging.Level;
 import site.* ;
 
 import java.lang.reflect.*;
-import java.util.ArrayList;
+import java.util.ArrayList ;
+import java.util.HashMap ;
 import org.apache.commons.math3.distribution.* ;
 import reporter.PopulationReporter;
 import static reporter.Reporter.AGENTID;
@@ -132,11 +133,11 @@ public class MSM extends Agent {
     private boolean riskyStatus ;
     
     /** Transmission probabilities per sexual contact from Urethra to Rectum */
-    static double URETHRA_TO_RECTUM = 0.027 ; 
+    static double URETHRA_TO_RECTUM = 0.029 ; 
     /** Transmission probabilities sexual contact from Urethra to Pharynx. */
     static double URETHRA_TO_PHARYNX = 0.0240 ; 
     /** Transmission probabilities sexual contact from Rectum to Urethra. */ 
-    static double RECTUM_TO_URETHRA = 0.027 ; 
+    static double RECTUM_TO_URETHRA = 0.029 ; 
     /** Transmission probabilities sexual contact from Rectum to Pharynx. */
     static double RECTUM_TO_PHARYNX = 0.0240 ; 
     /** Transmission probabilities sexual contact in Pharynx to Urethra intercourse. */
@@ -172,8 +173,51 @@ public class MSM extends Agent {
     static double JOIN_GSE_PROBABILITY = 6.35 * Math.pow(10,-4) ;
     
     
+    public static void RESET_INFECT_PROBABILITIES()
+    {
+        HashMap<String[],double[]> transmissionMap = new HashMap<String[], double[]>() ;
+        transmissionMap.put(new String[] {URETHRA, RECTUM},new double[] {0.028,0.032}) ;
+        transmissionMap.put(new String[] {RECTUM, URETHRA},new double[] {0.026,0.028}) ;
+        transmissionMap.put(new String[] {PHARYNX, RECTUM},new double[] {0.024,0.024}) ;
+        transmissionMap.put(new String[] {PHARYNX, URETHRA},new double[] {0.024,0.024}) ;
+        transmissionMap.put(new String[] {URETHRA, PHARYNX},new double[] {0.024,0.024}) ;
+        
+        String siteNames[] = new String[] {URETHRA,RECTUM,PHARYNX} ;
+        String[] keyArray ;
+        for (String infectedSiteName : siteNames)
+            for (String clearSiteName : siteNames)
+            {
+                keyArray = new String[] {infectedSiteName, clearSiteName} ;
+                if (!transmissionMap.containsKey(keyArray))
+                    continue ;
+                for (double transmissions : transmissionMap.get(keyArray))
+                {
+
+                }
+            }
+    }
+    
     /**
-     * 
+     * Allows changing of SITE_TO_SITE transmission probabilities.
+     * @param infectedSiteName
+     * @param clearSiteName
+     * @param transmission 
+     */
+    public static void SET_INFECT_PROBABILITY(String infectedSiteName, String clearSiteName, double transmission)
+    {
+        String probabilityString = infectedSiteName.toUpperCase() + "_TO_" + clearSiteName.toUpperCase() ;
+        try
+        {
+            MSM.class.getDeclaredField(probabilityString).setDouble(null,transmission) ;
+        }
+        catch ( Exception e )
+        {
+            LOGGER.log(Level.SEVERE, "{0} : {1}", new Object[]{e.getClass().getName(), e.getLocalizedMessage()});
+        }
+    }
+    
+    /**
+     * Earlier versions of theis Meth had parameters Agent infectedAgent, Agent clearAgent,
      * @param infectedAgent
      * @param clearAgent
      * @param infectionStatus
@@ -181,8 +225,7 @@ public class MSM extends Agent {
      * @param clearSite
      * @return infectProbability (double) the probability of infection of clearSite
      */
-    public static double GET_INFECT_PROBABILITY(Agent infectedAgent, Agent clearAgent, int infectionStatus,
-    		Site infectedSite, Site clearSite)
+    public static double GET_INFECT_PROBABILITY(Site infectedSite, Site clearSite)
     {
     	double infectProbability = -1.0 ;
         String probabilityString = infectedSite.getSite().toUpperCase() + "_TO_" + clearSite.getSite().toUpperCase() ;
@@ -265,9 +308,9 @@ public class MSM extends Agent {
     
     	
     // Odds of a MSM having anal intercourse safely (consistent condom use)
-    static int SAFE_ODDS = 398 ; // 44 ;    // 64
+    static int SAFE_ODDS = 464 ; // 475 ;    // 64 ; // 398 ; // 
     // Odds of an MSM being riskyMSM
-    static int RISKY_ODDS = 482 ; //36 ;
+    static int RISKY_ODDS = 337; // 321 ; // 482 ; // 
     // Sum of safeOdds and riskyOdds
     static int TOTAL_ODDS = RISKY_ODDS + SAFE_ODDS ;
     	
@@ -304,7 +347,7 @@ public class MSM extends Agent {
     {
         super(startAge) ;
         // Risky or Safe behaviour
-        riskyStatus = (RAND.nextInt(TOTAL_ODDS) < SAFE_ODDS) ;
+        riskyStatus = (RAND.nextInt(TOTAL_ODDS) < RISKY_ODDS) ;
         initStatus(startAge) ;
         initConsentCasualProbability() ;
     }
@@ -824,10 +867,10 @@ public class MSM extends Agent {
     {
         // Go from 2007, ARTB (Table 9, 2014) (Table 11, 2017)
         // Year-by-year rates of UAIC 
-        int[] riskyOdds = new int[] {321,327,378,361,337,360,357,375,388,482} ;
+        int[] riskyOdds = new int[] {321,327,378,361,337,360,357,375,388,482,482} ;
         // Year-by-year rates of non-UAIC 
         // 2013- Table 11 2017, 2007-2012 Table 9 2014 * .7
-        int[] safeOdds = new int[] {475,471,435,447,464,448,443,445,421,398} ;
+        int[] safeOdds = new int[] {475,471,435,447,464,448,443,445,421,398,398} ;
         
         int totalOdds = riskyOdds[year] + safeOdds[year] ;
         
@@ -1034,7 +1077,7 @@ public class MSM extends Agent {
                         return (RAND.nextDouble() < probabilityUseCondom ) ;
                 }
             }
-            if (getSeroPosition())
+            else if (getSeroPosition())
                 if (NONE.equals(partnerDisclosure))  // maybe if partner does not disclose
                     return (RAND.nextDouble() < probabilityUseCondom ) ;
             return false ;
@@ -1166,4 +1209,28 @@ public class MSM extends Agent {
         report += Reporter.ADD_REPORT_PROPERTY("consentCasualProbability", consentCasualProbability) ;
         return super.ageEffects() + report ;
     }*/
+    
+    static public void TEST_SET_INFECT_PROBABILITY()
+    {
+        String[] siteNames = new String[] {URETHRA,RECTUM,PHARYNX} ;
+        try
+        {
+            double transmission ;
+            String probabilityString ;
+            for (String infectedSiteName : siteNames)
+                for (String clearSiteName : siteNames)
+                {
+                    transmission = RAND.nextDouble() ;
+                    SET_INFECT_PROBABILITY(infectedSiteName, clearSiteName, transmission) ;
+                    probabilityString = infectedSiteName.toUpperCase() + "_TO_" + clearSiteName.toUpperCase() ;
+        assert(MSM.class.getDeclaredField(probabilityString).getDouble(null) == transmission) : probabilityString + "not correctly assigned" ;
+                }
+        }
+        catch ( Exception e )
+        {
+            LOGGER.log(Level.SEVERE, "{0} : {1}", new Object[]{e.getClass().getName(), e.getLocalizedMessage()});
+        }
+    	
+    }
+            
 }
