@@ -35,7 +35,8 @@ public class Relationship {
     
     static public String RELATIONSHIP_ID = "relationshipId" ;
     //static String FOLDER_PATH =  "output/test/" ;
-    static String FOLDER_PATH =  "output/year2007/" ;
+    static String FOLDER_PATH =  "output/year2012/" ;
+    //static String FOLDER_PATH =  "output/year2007/" ;
     //static String FOLDER_PATH =  "output/prePrEP/" ;
     
     /** Random number generator. */
@@ -107,7 +108,8 @@ public class Relationship {
     // Number of sexual contacts per cycle ;
     //private int contacts ;
     
-    // Probability of breakup() in a given cycle. This value chosen for debugging
+    // Probability of breakup() in a given cycle. This value chosen for debugging.
+    // Subclasses use their own values.
     static double BREAKUP_PROBABILITY = -1.0 ;
     
     //LOGGER
