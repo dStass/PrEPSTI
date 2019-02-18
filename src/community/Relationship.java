@@ -35,8 +35,8 @@ public class Relationship {
     
     static public String RELATIONSHIP_ID = "relationshipId" ;
     //static String FOLDER_PATH =  "output/test/" ;
-    //static String FOLDER_PATH =  "output/year2007/" ;
-    static String FOLDER_PATH =  "output/prePrEP/" ;
+    static String FOLDER_PATH =  "output/year2007/" ;
+    //static String FOLDER_PATH =  "output/prePrEP/" ;
     
     /** Random number generator. */
     /** Generate and record Random number seed. */
@@ -492,7 +492,7 @@ public class Relationship {
                     //	Agent.class, int.class, Site.class, Site.class ) ;
             if ((infectStatus0 != 0)) // && (infectStatus1 == 0))
             {
-                infectProbability*= MSM.GET_INFECT_PROBABILITY(agent0, agent1, infectStatus0, site0, site1) ; 
+                infectProbability*= MSM.GET_INFECT_PROBABILITY(site0, site1) ; 
                                 //(double) getInfectionMethod.
                                 //invoke(agent0,agent1,infectStatus0,site0,site1) ;
 
@@ -502,7 +502,7 @@ public class Relationship {
             }
             else if ((infectStatus1 != 0)) // && (infectStatus0 == 0))    // agent1 must be infected
             {
-                infectProbability*= MSM.GET_INFECT_PROBABILITY(agent1, agent0, infectStatus1, site1, site0) ;
+                infectProbability*= MSM.GET_INFECT_PROBABILITY(site1, site0) ;
                 //infectProbability*= (double) getInfectionMethod.
                         //	invoke(agent1,agent0,infectStatus1,site1,site0) ;
 
