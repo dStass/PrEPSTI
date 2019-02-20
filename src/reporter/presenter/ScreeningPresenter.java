@@ -68,25 +68,27 @@ public class ScreeningPresenter extends Presenter {
 
     public static void main(String[] args)
     {
-        //String simName = "Year2007New2aPop40000Cycles2000" ; 
-        String simName =  "CorrectedSafeRatioRisky1aPop40000Cycles1000" ;
-        //String simName = "RiskyPrep74Pop40000Cycles4000" ;
+        //String simName = "From2007To2016a16Pop40000Cycles4150" ; 
+        //String simName =  "ReversedSafeRatio6aPop40000Cycles3000" ;
+        String simName =  "CorrectedSafeRatio17aPop40000Cycles750" ;
         //String simName = "FallingCondomUseAlteredTestingPop40000Cycles2000" ;
-        //String simName = "NoPrepCalibration73aPop40000Cycles3500" ; // "DecliningCondoms3Pop40000Cycles5000" ; 
         //String simName = "Year2007Commence5fPop40000Cycles2500" ;
-        //String simName = "TestPop40000Cycles1000" ;
-        //String simName = "AllRiskyIPop40000Cycles1000" ;
+        //String simName = "TestUrethraSymp79Pop40000Cycles2000" ;
+        //String simName = "AllRisky8Pop40000Cycles1000" ;
         //String chartTitle = "mean_prevalence" ; //  args[1] ;
         //String chartTitle = "multi-site prevalence" ; //  args[1] ;
-        String chartTitle = "notifications" ; //
-        //String chartTitle = "positivity" ; //
+        //String chartTitle = "notifications" ; //
+        String chartTitle = "positivity" ; //
+        int notifications = 1 ; 
         //String chartTitle = "proportion_symptomatic" ;
         //String chartTitle = "site-specific symptomatic" ; // args[1] ;
         //String chartTitle = "testing_6_months" ; // args[1] ;
         //String chartTitle = "infections_past_2years_PrEP" ; // args[1] ;
         //String reportFileName = "output/prePrEP/" ; // args[2] ;
-        String reportFileName = "output/test/" ; // args[2] ;
-        //String reportFileName = "output/year2007/" ; // args[2] ;
+        //String reportFileName = "output/test/" ; // args[2] ;
+        //String reportFileName = "output/reverse/" ; // args[2] ;
+        //String reportFileName = "output/year2012/" ; // args[2] ;
+        String reportFileName = "output/year2007/" ; // args[2] ;
 
         LOGGER.info(chartTitle) ;
         
@@ -111,9 +113,9 @@ public class ScreeningPresenter extends Presenter {
         //screeningPresenter.plotSiteMeanPrevalence(siteNames, simNames) ;
         //screeningPresenter.plotFinalSymptomatic(new String[] {"Pharynx","Rectum","Urethra"}) ;
         //screeningPresenter.plotFinalPrevalences(new String[] {"Pharynx","Rectum","Urethra"}) ;
-        screeningPresenter.plotFinalNotifications(new String[] {"Pharynx","Rectum","Urethra"}, 0, Reporter.DAYS_PER_YEAR, 0) ;
-        //screeningPresenter.plotNotificationsYears(new String[] {"all"},5,2011) ;
-        //screeningPresenter.plotPositivityYears(new String[] {"Pharynx","Rectum","Urethra"},5,2011) ;
+        screeningPresenter.plotFinalNotifications(new String[] {"Pharynx","Rectum","Urethra"}, 0, Reporter.DAYS_PER_YEAR, notifications) ;
+        //screeningPresenter.plotNotificationsYears(new String[] {"all"},10,2016) ;
+        //screeningPresenter.plotPositivityYears(new String[] {"Pharynx","Rectum","Urethra"},3,2016) ;
         //screeningPresenter.plotNotificationPerCycle() ;    
         //screeningPresenter.plotSiteProportionSymptomatic(siteNames) ;
 
