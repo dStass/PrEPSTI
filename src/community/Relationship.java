@@ -34,10 +34,14 @@ public class Relationship {
     private String relationship ;
     
     static public String RELATIONSHIP_ID = "relationshipId" ;
-    //static String FOLDER_PATH =  "output/test/" ;
-    static String FOLDER_PATH =  "output/year2012/" ;
-    //static String FOLDER_PATH =  "output/year2007/" ;
-    //static String FOLDER_PATH =  "output/prePrEP/" ;
+    
+    //static String FOLDER_PATH = "/srv/scratch/z3524276/prepsti/"
+    //static String FOLDER_PATH = "/short/is14/mw7704/prepsti/"
+    static String FOLDER_PATH = ""
+      +  "output/year2007/" ;
+    // +  "output/year2012/" ;
+    // +  "output/test/" ;
+    // +  "output/prePrEP/" ;
     
     /** Random number generator. */
     /** Generate and record Random number seed. */
@@ -231,6 +235,7 @@ public class Relationship {
                     break ;
                 }
             }
+            fileReader.close() ;
             String agentId0 ;
             String agentId1 ;
             int agentIndex0 = 0 ;
