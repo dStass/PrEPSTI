@@ -1962,6 +1962,7 @@ public class Reporter {
         {
             BufferedReader fileReader = new BufferedReader(new FileReader(folderPath + fileNames.get(0))) ;
             String record = fileReader.readLine() ;
+            fileReader.close() ;
             //LOGGER.info(record) ;
             if (record == null)
                 LOGGER.info(Level.WARNING + ":Empty report file");
@@ -1982,6 +1983,8 @@ public class Reporter {
             // Find last line
             for (String record = "" ;  record != null ; record = fileReader.readLine() )
                 outputString = record ;
+            fileReader.close() ;
+            
             if (outputString.isEmpty())
                 LOGGER.info(Level.WARNING + ":Empty report file");
 
@@ -2065,6 +2068,7 @@ public class Reporter {
                         outputList.add(outputString) ;
                         readLines++ ;
                     }
+                    fileReader.close() ;
 
                     // Prepare for next file
                     startLine = 0 ;
@@ -2141,6 +2145,8 @@ public class Reporter {
                 // Find last line
                 for (String record = "" ;  record != null ; record = fileReader.readLine() )
                     outputString.add(record) ;
+                
+                fileReader.close() ;
 
                 metaData = outputString ;
             }
