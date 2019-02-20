@@ -45,9 +45,14 @@ public abstract class Agent {
     /** Age beyond which Agents are removed from the population. */
     static int MAX_LIFE = 65 ;
     
-    static String FOLDER_PATH =  "output/year2007/" ;
-    //static String FOLDER_PATH =  "output/test/" ;
-    //static String FOLDER_PATH =  "output/prePrEP/" ;
+    //static String FOLDER_PATH = "/srv/scratch/z3524276/prepsti/"
+    //static String FOLDER_PATH = "/short/is14/mw7704/prepsti/"
+    static String FOLDER_PATH = ""
+       +  "output/year2007/" ;
+    //+  "output/year2012/" ;
+    // +  "output/test/" ;
+    // +  "output/prePrEP/" ;
+    
     
     /** Names of Sites for Agent*/ 
     static public String[] SITE_NAMES = new String[] {} ;
@@ -267,6 +272,7 @@ public abstract class Agent {
                         break ;
                     }
                 }
+                fileReader.close() ;
             }
             catch (Exception e)
             {
@@ -936,7 +942,7 @@ public abstract class Agent {
      */
     public boolean setSymptomatic(Site site)
     {
-            return symptomatic = (symptomatic || site.getSymptomatic()) ;
+        return symptomatic = (symptomatic || site.getSymptomatic()) ;
     }
 
     /** screenTime setter(). */
@@ -995,7 +1001,8 @@ public abstract class Agent {
         Site[] sites = getSites() ;
         boolean successful = true ;
         for (Site site : sites)
-            site.treat() ;
+            if ((site.getInfectedStatus()!=0))
+                site.treat() ;
 //            if ((site.getInfectedStatus()!=0))
 //                successful = (successful && site.treat()) ;
         //if (successful) 
