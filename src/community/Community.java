@@ -30,16 +30,18 @@ import java.util.logging.Level;
  *******************************************************************/
 public class Community {
     static public int POPULATION = 40000 ;
-    static public int MAX_CYCLES = 750 ; 
-    //static public String NAME_ROOT = "TestUrethraSymp75" 
-    static public String NAME_ROOT = "CorrectedSafeRatio17b" 
-    //static public String NAME_ROOT = "From2007To2012a" 
-    //static public String NAME_ROOT = "IntroPrepCalibration74acycle6000" 
-    //static public String NAME_ROOT = "FallingCondomUseNew5a" 
-    //static public String NAME_ROOT = "AllRiskyI" 
-    //static public String NAME_ROOT = "AllSexualContacts"
-    //        + "DecliningCondomsAlteredTesting"
-            + "Pop" + String.valueOf(POPULATION) + "Cycles" + String.valueOf(MAX_CYCLES) ;
+    static public int MAX_CYCLES = 1000 ; 
+    static public String NAME_ROOT = "" ;
+    //static public String SIM_NAME = "TestUrethraSymp60a2" ;
+    //static public String SIM_NAME = "CorrectedSafeRatio17aCont" ;
+    //static public String SIM_NAME = "From2007To2012a" ;
+    //static public String SIM_NAME = "IntroPrepCalibration74acycle6000" ;
+    //static public String SIM_NAME = "FallingCondomUseNew5a" ;
+    //static public String SIM_NAME = "AllRiskyI" ;
+    //static public String SIM_NAME = "AllSexualContacts" 
+    //        + "DecliningCondomsAlteredTesting" ;
+    static String NAME_SUFFIX = "Pop" + String.valueOf(POPULATION) + "Cycles" + String.valueOf(MAX_CYCLES) ;
+    static public String SIM_NAME = NAME_ROOT + NAME_SUFFIX ;
 
     static String COMMENT = ""
             //+ "Fit sensitivity to ratio of SafeMSM to RiskyMSM"
@@ -65,7 +67,7 @@ public class Community {
             + "" ;
     
     static boolean TO_PLOT = true ;
-    static public String FILE_PATH = "output/year2007/" ;
+    static public String FILE_PATH = "output/test/" ;
     //static public String FILE_PATH = "/srv/scratch/z3524276/prepsti/output/test/" ;
     //static public String FILE_PATH = "/short/is14/mw7704/prepsti/output/year2007/" ;
     /** Dump reports to disk after this many cycles. */
@@ -88,7 +90,7 @@ public class Community {
      * (String) Name of previous simulation to reload.
      * Not reloaded if this is an empty string.
      */
-    static final String RELOAD_SIMULATION = "CorrectedSafeRatioPop40000Cycles1500" ; // "CorrectedSafeRatioRisky1aPop40000Cycles1000" ; //  "Year2007Commence5f" ; // "TestRebootBasePop4000Cycles500" ; // "From2007To2011p5v3aAdjustCondomsPop40000Cycles2525" ; // "TestRebootRelationship8aPop4000Cycles500" ; 
+    static final String RELOAD_SIMULATION = "" ; // "CorrectedSafeRatioPop40000Cycles1500" ; // "CorrectedSafeRatioRisky1aPop40000Cycles1000" ; //  "Year2007Commence5f" ; // "TestRebootBasePop4000Cycles500" ; // "From2007To2011p5v3aAdjustCondomsPop40000Cycles2525" ; // "TestRebootRelationship8aPop4000Cycles500" ; 
     
     static public String getFilePath()
     {
@@ -134,7 +136,7 @@ public class Community {
     protected ArrayList<String> infectionReport = new ArrayList<String>() ;
     protected ArrayList<String> populationReport = new ArrayList<String>() ;
     
-    private Scribe scribe = new Scribe(NAME_ROOT, new String[] {"relationship","encounter","infection", "population"}) ;
+    private Scribe scribe = new Scribe(SIM_NAME, new String[] {"relationship","encounter","infection", "population"}) ;
 
 
     // Logger
@@ -142,15 +144,26 @@ public class Community {
 
     public static void main(String[] args)
     {
-        //POPULATION = Integer.valueOf(args[0]) ;
+        //String infectedSiteName ;
+        double urethralTransmission ;
+        if (args.length > 0)
+        {
+            NAME_ROOT = args[0] ;
+            SIM_NAME = NAME_ROOT + NAME_SUFFIX ;
+        }
         //MAX_CYCLES = Integer.valueOf(args[1]) ;
-        
+        if (args.length > 1)
+        {
+            urethralTransmission = Double.valueOf(args[1]) ;
+            MSM.SET_INFECT_PROBABILITY("URETHRA","RECTUM",urethralTransmission) ;
+            MSM.SET_INFECT_PROBABILITY("RECTUM","URETHRA",urethralTransmission) ;
+        }
         // Record starting time to measure running time
         long startTime = System.nanoTime() ;
         LOGGER.log(Level.INFO, "Seed:{0}", System.currentTimeMillis());
     
         // Establish Community of Agents for simulation
-        LOGGER.info(Community.NAME_ROOT);
+        LOGGER.info(SIM_NAME);
         
         Community community = new Community(RELOAD_SIMULATION,200) ;
         
@@ -301,33 +314,33 @@ public class Community {
         {
         String[] relationshipClassNames = new String[] {"Casual","Regular","Monogomous"} ; // "Casual","Regular","Monogomous"
         
-        //RelationshipReporter relationshipReporter = new RelationshipReporter(Community.NAME_ROOT,Community.FILE_PATH) ;
+        //RelationshipReporter relationshipReporter = new RelationshipReporter(Community.SIM_NAME,Community.FILE_PATH) ;
         //HashMap<Object,HashMap<Object,Number>> relationshipReport 
           //      = relationshipReporter.prepareCumulativeRelationshipRecord(-1, relationshipClassNames, 0, 6, 0) ;
         //HashMap<Object,Number[]> plotReport = Reporter.invertHashMapList(relationshipReport, relationshipClassNames) ;
-        //Reporter.writeCSV(plotReport, "Number of Relationships", relationshipClassNames, "cumulativeRelationship", NAME_ROOT, "output/test/") ;
+        //Reporter.writeCSV(plotReport, "Number of Relationships", relationshipClassNames, "cumulativeRelationship", SIM_NAME, "output/test/") ;
         
         ScreeningReporter screeningReporter = 
                 //new ScreeningReporter("prevalence",community.infectionReport) ;
-                new ScreeningReporter(NAME_ROOT,FILE_PATH) ;
+                new ScreeningReporter(SIM_NAME,FILE_PATH) ;
         //ArrayList<Object> pharynxPrevalenceReport = screeningReporter.preparePrevalenceReport("Pharynx") ;
-        //Reporter.writeCSV(pharynxPrevalenceReport, "Pharynx", NAME_ROOT, FILE_PATH);
+        //Reporter.writeCSV(pharynxPrevalenceReport, "Pharynx", SIM_NAME, FILE_PATH);
         //ScreeningPresenter screeningPresenter 
-          //      = new ScreeningPresenter("prevalence",Community.NAME_ROOT,screeningReporter) ;
+          //      = new ScreeningPresenter("prevalence",Community.SIM_NAME,screeningReporter) ;
         //screeningPresenter.multiPlotScreening(new Object[] {"prevalence", new String[] {"Pharynx","Urethra","Rectum"},"coprevalence",new String[] {"Rectum","Pharynx"}});
         //ScreeningPresenter screeningPresenter2 
-          //      = new ScreeningPresenter("prevalence",Community.NAME_ROOT,screeningReporter) ;
+          //      = new ScreeningPresenter("prevalence",Community.SIM_NAME,screeningReporter) ;
         //screeningPresenter2.plotPrevalence();
         //screeningPresenter2.plotNotificationsPerCycle();
         ScreeningPresenter screeningPresenter3 
-                = new ScreeningPresenter(NAME_ROOT,"multi prevalence",screeningReporter) ;
+                = new ScreeningPresenter(SIM_NAME,"multi prevalence",screeningReporter) ;
         screeningPresenter3.multiPlotScreening(new Object[] {"prevalence","prevalence",new String[] {"Pharynx","Rectum","Urethra"},"coprevalence",new String[] {"Pharynx","Rectum"}});  // ,"coprevalence",new String[] {"Pharynx","Rectum"},new String[] {"Urethra","Rectum"}
         
         //EncounterReporter encounterReporter = new EncounterReporter("Agent to Agent",community.encounterReport) ;
-        //EncounterReporter encounterReporter = new EncounterReporter(Community.NAME_ROOT,Community.FILE_PATH) ;
-//        EncounterPresenter encounterPresenter = new EncounterPresenter(Community.NAME_ROOT,"agent to agent", encounterReporter) ;
+        //EncounterReporter encounterReporter = new EncounterReporter(Community.SIM_NAME,Community.FILE_PATH) ;
+//        EncounterPresenter encounterPresenter = new EncounterPresenter(Community.SIM_NAME,"agent to agent", encounterReporter) ;
 //        encounterPresenter.plotCondomUse();
-//        EncounterPresenter encounterPresenter2 = new EncounterPresenter(Community.NAME_ROOT,"agent to agent", encounterReporter) ;
+//        EncounterPresenter encounterPresenter2 = new EncounterPresenter(Community.SIM_NAME,"agent to agent", encounterReporter) ;
 //        encounterPresenter2.plotProtection();
         //encounterPresenter.plotNbTransmissions(); 
         //encounterPresenter.plotTransmittingSites(new String[] {"Urethra","Rectum","Pharynx"});
@@ -381,9 +394,9 @@ public class Community {
           //      = new RelationshipPresenter("Cumulative Relationships to date","Cumulative Relationships to date",relationshipReporter) ;
         //relationshipPresenter.plotCumulativeRelationships();
         //RelationshipReporter relationshipReporter 
-          //      = new RelationshipReporter(Community.NAME_ROOT,Community.FILE_PATH) ; 
+          //      = new RelationshipReporter(Community.SIM_NAME,Community.FILE_PATH) ; 
         //RelationshipPresenter relationshipPresenter2 
-          //      = new RelationshipPresenter("Mean number of Relationships",Community.NAME_ROOT,relationshipReporter) ;
+          //      = new RelationshipPresenter("Mean number of Relationships",Community.SIM_NAME,relationshipReporter) ;
         //relationshipPresenter2.plotMeanNumberRelationshipsReport();
         }
     }
@@ -1039,7 +1052,7 @@ public class Community {
         ArrayList<String> metaLabels = new ArrayList<String>() ; 
         ArrayList<Object> metaData = new ArrayList<Object>() ; 
         metaLabels.add("Community.NAME_ROOT") ;
-        metaData.add(Community.NAME_ROOT) ;
+        metaData.add(Community.SIM_NAME) ;
         metaLabels.add("Community.FILE_PATH") ;
         metaData.add(Community.FILE_PATH) ;
         metaLabels.add("Community.POPULATION") ;
