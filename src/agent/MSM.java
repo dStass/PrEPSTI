@@ -11,7 +11,10 @@ import site.* ;
 
 import java.lang.reflect.*;
 import java.util.ArrayList ;
+import java.util.Arrays;
 import java.util.HashMap ;
+import java.util.Collection ;
+import java.util.stream.IntStream;
 import org.apache.commons.math3.distribution.* ;
 import reporter.PopulationReporter;
 import static reporter.Reporter.AGENTID;
@@ -133,21 +136,21 @@ public class MSM extends Agent {
     private boolean riskyStatus ;
     
     /** Transmission probabilities per sexual contact from Urethra to Rectum */
-    static double URETHRA_TO_RECTUM = 0.029 ; 
+    static double URETHRA_TO_RECTUM = 0.017 ; 
     /** Transmission probabilities sexual contact from Urethra to Pharynx. */
-    static double URETHRA_TO_PHARYNX = 0.0240 ; 
+    static double URETHRA_TO_PHARYNX = 0.017 ; 
     /** Transmission probabilities sexual contact from Rectum to Urethra. */ 
-    static double RECTUM_TO_URETHRA = 0.029 ; 
+    static double RECTUM_TO_URETHRA = 0.017 ; 
     /** Transmission probabilities sexual contact from Rectum to Pharynx. */
-    static double RECTUM_TO_PHARYNX = 0.0240 ; 
+    static double RECTUM_TO_PHARYNX = 0.017 ; 
     /** Transmission probabilities sexual contact in Pharynx to Urethra intercourse. */
-    static double PHARYNX_TO_URETHRA = 0.0240 ;
+    static double PHARYNX_TO_URETHRA = 0.017 ;
     /** Transmission probabilities sexual contact in Pharynx to Rectum intercourse. */
-    static double PHARYNX_TO_RECTUM = 0.0240 ; 
+    static double PHARYNX_TO_RECTUM = 0.017 ; 
     /** Transmission probabilities sexual contact in Pharynx to Pharynx intercourse (kissing). */
-    static double PHARYNX_TO_PHARYNX = 0.0240 ; 
+    static double PHARYNX_TO_PHARYNX = 0.017 ; 
     /** Transmission probabilities sexual contact in Urethra to Urethra intercourse (docking). */
-    static double URETHRA_TO_URETHRA = 0.0240 ; 
+    static double URETHRA_TO_URETHRA = 0.017 ; 
     /** Transmission probabilities sexual contact in Rectum to Rectum intercourse. */
     static double RECTUM_TO_RECTUM = 0.003 ; // 0.003 ; 
     
@@ -308,11 +311,14 @@ public class MSM extends Agent {
     
     	
     // Odds of a MSM having anal intercourse safely (consistent condom use)
-    static int SAFE_ODDS = 464 ; // 475 ;    // 64 ; // 398 ; // 
+    static int SAFE_ODDS = 475 ;    // 64 ; // 398 ; // 464 ; // 
     // Odds of an MSM being riskyMSM
-    static int RISKY_ODDS = 337; // 321 ; // 482 ; // 
+    static int RISKY_ODDS = 321 ; // 482 ; // 337; // 
     // Sum of safeOdds and riskyOdds
     static int TOTAL_ODDS = RISKY_ODDS + SAFE_ODDS ;
+//        int[] safeOdds = new int[] {475,471,435,447,464,448,443,445,421,398,398} ;
+//        int[] riskyOdds = new int[] {321,327,378,361,337,360,357,375,388,482,482} ;
+
     	
     /**
      * Choose whether MSM is RiskyMSM or SafeMSM
@@ -870,6 +876,7 @@ public class MSM extends Agent {
         int[] riskyOdds = new int[] {321,327,378,361,337,360,357,375,388,482,482} ;
         // Year-by-year rates of non-UAIC 
         // 2013- Table 11 2017, 2007-2012 Table 9 2014 * .7
+        //int[] safeOdds = new int[] {679,673,622,639,663,640,643,625,622,518,518} ;
         int[] safeOdds = new int[] {475,471,435,447,464,448,443,445,421,398,398} ;
         
         int totalOdds = riskyOdds[year] + safeOdds[year] ;
