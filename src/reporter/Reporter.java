@@ -312,7 +312,7 @@ public class Reporter {
             //if (INDEX_OF_PROPERTY(propertyName,boundedString) >= 0)
             
             // TODO: Label Sites site0, site1 in generation of encounterString so that boolean || is not necessary
-            if (compareValue(propertyName,value,boundedString) || COMPARE_VALUE(propertyName,value,boundedString,boundedString.lastIndexOf(propertyName))) 
+            if (COMPARE_VALUE(propertyName,value,boundedString) || Reporter.COMPARE_VALUE(propertyName,value,boundedString,boundedString.lastIndexOf(propertyName))) 
                 boundedOutput += boundedString ;
         }
         return boundedOutput ;
@@ -352,9 +352,9 @@ public class Reporter {
             while (indexStart >= 0)
             {
                 boundedString = EXTRACT_BOUNDED_STRING(bound, checkRecord, indexStart) ;
-                key = (Object) extractValue(propertyName,boundedString) ;
-                boundValue = extractValue(bound,boundedString) ;
-                sortedHashMap = updateHashMap(key,boundValue,sortedHashMap) ;
+                key = (Object) EXTRACT_VALUE(propertyName,boundedString) ;
+                boundValue = EXTRACT_VALUE(bound,boundedString) ;
+                sortedHashMap = UPDATE_HASHMAP(key,boundValue,sortedHashMap) ;
                 indexStart = INDEX_OF_PROPERTY(bound,indexStart+1,checkRecord);
             }
             //LOGGER.log(Level.INFO, "key:{0}", new Object[]{key});
@@ -440,14 +440,14 @@ public class Reporter {
     }
 
     /**
-     * When position within string is not known, call extractValue(startIndex = 0)
+     * When position within string is not known, call EXTRACT_VALUE(startIndex = 0)
      * @param propertyName - name of variable whose value is wanted
      * @param string
      * @return (String) value of propertyName
      */
-    public static String extractValue(String propertyName, String string)
+    public static String EXTRACT_VALUE(String propertyName, String string)
     {
-        return extractValue(propertyName, string, 0) ;
+        return Reporter.EXTRACT_VALUE(propertyName, string, 0) ;
     }
 
     /**
@@ -456,9 +456,9 @@ public class Reporter {
      * @param string
      * @return ArrayList of (String) values of propertyName from String string
      */
-    public static ArrayList<Object> extractAllValues(String propertyName, String string)
+    public static ArrayList<Object> EXTRACT_ALL_VALUES(String propertyName, String string)
     {
-        return extractAllValues(propertyName,string,0) ;
+        return Reporter.EXTRACT_ALL_VALUES(propertyName,string,0) ;
     }
     
     /**
@@ -468,14 +468,14 @@ public class Reporter {
      * @param startIndex
      * @return ArrayList of (String) values of propertyName from String string
      */
-    public static ArrayList<Object> extractAllValues(String propertyName, String string, int startIndex)
+    public static ArrayList<Object> EXTRACT_ALL_VALUES(String propertyName, String string, int startIndex)
     {
         ArrayList<Object> values = new ArrayList<Object>() ;
         int index = INDEX_OF_PROPERTY(propertyName,startIndex,string) ; 
         
         while ( index >= 0 )
         {
-            values.add(extractValue(propertyName, string, index)) ;
+            values.add(Reporter.EXTRACT_VALUE(propertyName, string, index)) ;
             index = INDEX_OF_PROPERTY(propertyName, index+1, string) ;
         }
         return values ;
@@ -489,7 +489,7 @@ public class Reporter {
      * than 0, otherwise search
      * @return (String) value of valueName as stored in string
      */
-    public static String extractValue(String propertyName, String string, int startIndex)
+    public static String EXTRACT_VALUE(String propertyName, String string, int startIndex)
     {
         // Find value of valueName in string
         startIndex = INDEX_OF_PROPERTY(propertyName, startIndex, string) ;
@@ -510,11 +510,11 @@ public class Reporter {
      * @return (String) value of propertyName in string if it is the next property,
      * otherwise return "None"
      */
-    protected static String extractValueIfNext(String propertyName, String string, int startIndex)
+    protected static String EXTRACT_VALUE_IF_NEXT(String propertyName, String string, int startIndex)
     {
-        startIndex = isPropertyNameNext(propertyName, string, startIndex) ;
+        startIndex = IS_PROPERTY_NAME_NEXT(propertyName, string, startIndex) ;
         if (startIndex > 0)
-            return extractValue(propertyName, string, startIndex) ;
+            return Reporter.EXTRACT_VALUE(propertyName, string, startIndex) ;
         return NONE ;
     }
 
@@ -523,9 +523,9 @@ public class Reporter {
      * @param record
      * @return String[] pairs of agentIds corresponding to relationships described in record
      */
-    protected String[] extractAgentIds(String record)
+    protected String[] EXTRACTAGENTIDS(String record)
     {
-        return extractAgentIds(record, 0) ;
+        return EXTRACT_AGENTIDS(record, 0) ;
     }
     
     /**
@@ -534,12 +534,12 @@ public class Reporter {
      * @param startIndex
      * @return String[] pairs of agentIds corresponding to relationships described in record
      */
-    protected String[] extractAgentIds(String record, int startIndex)
+    protected String[] EXTRACT_AGENTIDS(String record, int startIndex)
     {
-            String agentId0 = extractValue("agentId0", record, startIndex) ;
+            String agentId0 = Reporter.EXTRACT_VALUE("agentId0", record, startIndex) ;
 
             startIndex = INDEX_OF_PROPERTY("agentId1", startIndex, record) ;
-            String agentId1 = extractValue("agentId1", record, startIndex) ;
+            String agentId1 = Reporter.EXTRACT_VALUE("agentId1", record, startIndex) ;
             return new String[] {agentId0,agentId1} ;
     }
     
@@ -550,7 +550,7 @@ public class Reporter {
      * @param startIndex
      * @return index of propertyName in string if propertyName is next property in string, -1 otherwise
      */
-    protected static int isPropertyNameNext(String propertyName, String string, int startIndex)
+    protected static int IS_PROPERTY_NAME_NEXT(String propertyName, String string, int startIndex)
     {
         int colonIndex = string.indexOf(":",startIndex) ;
         int propertyIndex = INDEX_OF_PROPERTY(propertyName, startIndex, string) ;
@@ -572,7 +572,7 @@ public class Reporter {
     protected static boolean COMPARE_VALUE(String propertyName, String value, String string, int startIndex)
     {
         if (INDEX_OF_PROPERTY(propertyName,startIndex,string) >= 0)
-            return extractValue(propertyName, string, startIndex).equals(value) ;
+            return Reporter.EXTRACT_VALUE(propertyName, string, startIndex).equals(value) ;
         return false ;
     }
     
@@ -593,7 +593,7 @@ public class Reporter {
             index = INDEX_OF_PROPERTY(propertyName, index+1, string))
         {
             total++ ;
-            if (COMPARE_VALUE(propertyName, value, string, index))
+            if (Reporter.COMPARE_VALUE(propertyName, value, string, index))
                 count++ ;
         }
         if (total == 0)
@@ -608,9 +608,9 @@ public class Reporter {
      * @param string
      * @return true if the String representation of the value of propertyName equals (String) value
      */
-    protected static boolean compareValue(String propertyName, String value, String string)
+    protected static boolean COMPARE_VALUE(String propertyName, String value, String string)
     {
-        return COMPARE_VALUE(propertyName, value, string, Reporter.INDEX_OF_PROPERTY(propertyName,string)) ;
+        return Reporter.COMPARE_VALUE(propertyName, value, string, Reporter.INDEX_OF_PROPERTY(propertyName,string)) ;
     }
     
     
@@ -629,11 +629,11 @@ public class Reporter {
      * @param valueMap - Adding entry and sometimes key to this HashMap
      * @return partnerMap - HashMap indicating partnerIds of each agent (key: agentId)
      */
-    /*protected static HashMap<Integer,ArrayList<Integer>> updateHashMap(String keyString, String entryString, HashMap<Integer,ArrayList<Integer>> valueMap)
+    /*protected static HashMap<Integer,ArrayList<Integer>> UPDATE_HASHMAP(String keyString, String entryString, HashMap<Integer,ArrayList<Integer>> valueMap)
     {
         int key = Integer.valueOf(keyString) ;
         int boundValue = Integer.valueOf(entryString) ;
-        return updateHashMap(key, boundValue, valueMap) ;
+        return UPDATE_HASHMAP(key, boundValue, valueMap) ;
     }*/
     
     /**
@@ -645,9 +645,9 @@ public class Reporter {
      * @param valueMap - Adding boundValue and sometimes key to this HashMap
      * @return partnerMap - HashMap indicating partnerIds of each agent (key: agentId)
      */
-    public static HashMap<Object,ArrayList<Object>> updateHashMap(Object key, Object entry, HashMap<Object,ArrayList<Object>> valueMap)
+    public static HashMap<Object,ArrayList<Object>> UPDATE_HASHMAP(Object key, Object entry, HashMap<Object,ArrayList<Object>> valueMap)
     {
-        return updateHashMap(key, entry, valueMap, true) ;
+        return Reporter.UPDATE_HASHMAP(key, entry, valueMap, true) ;
     }
 		
     /**
@@ -660,7 +660,7 @@ public class Reporter {
      * @param allowDuplicates
      * @return partnerMap - HashMap indicating partnerIds of each agent (key: agentId)
      */
-    protected static HashMap<Object,ArrayList<Object>> updateHashMap(Object key, Object entry, HashMap<Object,ArrayList<Object>> valueMap, boolean allowDuplicates)
+    protected static HashMap<Object,ArrayList<Object>> UPDATE_HASHMAP(Object key, Object entry, HashMap<Object,ArrayList<Object>> valueMap, boolean allowDuplicates)
     {
         //HashMap<Integer,ArrayList<Integer>> partnerMap = new HashMap<Integer,ArrayList<Integer>>() ;
         
@@ -689,7 +689,7 @@ public class Reporter {
      * @param valueMap
      * @return 
      */
-    protected static HashMap<Object,Integer> updateHashMap(Object key, Integer entry, HashMap<Object,Integer> valueMap)
+    protected static HashMap<Object,Integer> UPDATE_HASHMAP(Object key, Integer entry, HashMap<Object,Integer> valueMap)
     {
         Integer listEntry ;
         
@@ -710,7 +710,7 @@ public class Reporter {
      * @param valueMap - Adding boundValue and sometimes key to this HashMap
      * @return partnerMap - HashMap indicating partnerIds of each agent (key: agentId)
      */
-    protected static HashMap<Object,Number> incrementHashMap(Object key, HashMap<Object,Number> valueMap)
+    protected static HashMap<Object,Number> INCREMENT_HASHMAP(Object key, HashMap<Object,Number> valueMap)
     {
         //HashMap<Integer,ArrayList<Integer>> partnerMap = new HashMap<Integer,ArrayList<Integer>>() ;
         
@@ -731,12 +731,12 @@ public class Reporter {
      * @param valueMap
      * @return 
      */
-    /*protected static HashMap<Integer,HashMap<Integer,ArrayList<Integer>>> updateHashMap(String keyString, String entryString, 
+    /*protected static HashMap<Integer,HashMap<Integer,ArrayList<Integer>>> UPDATE_HASHMAP(String keyString, String entryString, 
             int cycle, HashMap<Integer,HashMap<Integer,ArrayList<Integer>>> valueMap)
     {
         int key = Integer.valueOf(keyString) ;
         int boundValue = Integer.valueOf(entryString) ;
-        return updateHashMap(key, boundValue, cycle, valueMap) ;
+        return UPDATE_HASHMAP(key, boundValue, cycle, valueMap) ;
     }*/
     
     /**
@@ -748,7 +748,7 @@ public class Reporter {
      * @param valueMap
      * @return 
      */
-    protected static HashMap<Object,HashMap<Object,ArrayList<Object>>> updateHashMap(Object key, 
+    protected static HashMap<Object,HashMap<Object,ArrayList<Object>>> UPDATE_HASHMAP(Object key, 
             Object key2, int cycle, HashMap<Object,HashMap<Object,ArrayList<Object>>> valueMap)
     {
         //HashMap<Integer,ArrayList<Integer>> partnerMap = new HashMap<Integer,ArrayList<Integer>>() ;
@@ -763,7 +763,7 @@ public class Reporter {
             entryHashMap = new HashMap<Object,ArrayList<Object>>() ;
             //entryArray.add(key2) ;
         }
-        valueMap.put(key, updateHashMap((Object) key2,(Object) cycle,entryHashMap)) ;
+        valueMap.put(key, UPDATE_HASHMAP((Object) key2,(Object) cycle,entryHashMap)) ;
 
         return valueMap ;
     }
@@ -773,7 +773,7 @@ public class Reporter {
      * @param objectHashMap
      * @return 
      */
-    static protected HashMap<String,ArrayList<String>> hashMapString(HashMap<Object,ArrayList<Object>> objectHashMap)
+    static protected HashMap<String,ArrayList<String>> HASHMAP_STRING(HashMap<Object,ArrayList<Object>> objectHashMap)
     {
         HashMap<String,ArrayList<String>> stringHashMap = new HashMap<String,ArrayList<String>>() ;
         
@@ -795,7 +795,7 @@ public class Reporter {
      * @param objectHashMap
      * @return 
      */
-    static protected HashMap<Number,ArrayList<Number>> hashMapNumber(HashMap<Object,ArrayList<Object>> objectHashMap)
+    static protected HashMap<Number,ArrayList<Number>> HASHMAP_NUMBER(HashMap<Object,ArrayList<Object>> objectHashMap)
     {
         HashMap<Number,ArrayList<Number>> numberHashMap = new HashMap<Number,ArrayList<Number>>() ;
         
@@ -818,7 +818,7 @@ public class Reporter {
      * @param objectHashMap
      * @return (HashMap) showing number of keys in each subHashMap.
      */
-    static protected HashMap<Object,Number> countSubKeys(HashMap<Object,HashMap<Object,ArrayList<Object>>> objectHashMap)
+    static protected HashMap<Object,Number> COUNT_SUB_KEYS(HashMap<Object,HashMap<Object,ArrayList<Object>>> objectHashMap)
     {
         HashMap<Object,Number> outputHashMap = new HashMap<Object,Number>() ;
         
@@ -834,7 +834,7 @@ public class Reporter {
      * @param objectHashMapHashMap
      * @return 
      */
-    static protected HashMap<Number,HashMap<Number,ArrayList<Number>>> hashMapHashMapNumber(HashMap<Object,HashMap<Object,ArrayList<Object>>> objectHashMapHashMap )
+    static protected HashMap<Number,HashMap<Number,ArrayList<Number>>> HASHMAP_HASHMAP_NUMBER(HashMap<Object,HashMap<Object,ArrayList<Object>>> objectHashMapHashMap )
     {
         HashMap<Number,HashMap<Number,ArrayList<Number>>> numberHashMapHashMap = new HashMap<Number,HashMap<Number,ArrayList<Number>>>() ;
         
@@ -842,7 +842,7 @@ public class Reporter {
         
         for (Object key : objectHashMapHashMap.keySet())
         {
-            numberHashMap = hashMapNumber(objectHashMapHashMap.get(key)) ;
+            numberHashMap = HASHMAP_NUMBER(objectHashMapHashMap.get(key)) ;
             numberHashMapHashMap.put((Number) key, numberHashMap) ;
         }
         return numberHashMapHashMap ;
@@ -856,9 +856,9 @@ public class Reporter {
      * @return HashTable
      */
     static public HashMap<Object,HashMap<Object,ArrayList<Object>>> 
-        invertHashMapHashMap(HashMap<Object,HashMap<Object,ArrayList<Object>>> paramHashMap)
+        INVERT_HASHMAP_HASHMAP(HashMap<Object,HashMap<Object,ArrayList<Object>>> paramHashMap)
     {
-        //LOGGER.info("invertHashMapHashMap()");
+        //LOGGER.info("INVERT_HASHMAP_HASHMAP()");
         HashMap<Object,HashMap<Object,ArrayList<Object>>> invertedHashMap = new HashMap<Object,HashMap<Object,ArrayList<Object>>>() ;
         HashMap<Object,ArrayList<Object>> cycleHashMap ;
         
@@ -874,7 +874,7 @@ public class Reporter {
                         cycleHashMap = new HashMap<Object,ArrayList<Object>>() ;
                     else 
                         cycleHashMap = invertedHashMap.get(cycle) ;
-                    invertedHashMap.put(cycle, updateHashMap(key1,key2,cycleHashMap)) ;
+                    invertedHashMap.put(cycle, UPDATE_HASHMAP(key1,key2,cycleHashMap)) ;
                 }
             }
         }
@@ -888,7 +888,7 @@ public class Reporter {
      * @return (HashMap) of Number[] 
      */
     static public ArrayList<ArrayList<Object>> 
-        invertArrayHashMap(ArrayList<HashMap<Object,Number>> initialList, Object[] initialKeys)
+        INVERT_ARRAY_HASHMAP(ArrayList<HashMap<Object,Number>> initialList, Object[] initialKeys)
     {
         ArrayList<ArrayList<Object>> invertedList = new ArrayList<ArrayList<Object>>() ;
         
@@ -921,7 +921,7 @@ public class Reporter {
      * @return (HashMap) of Number[] 
      */
     static public HashMap<Object,Number[]> 
-        invertHashMapArray(HashMap<Object,HashMap<Object,Number>> initialMap, Object[] initialKeys)
+        INVERT_HASHMAP_ARRAY(HashMap<Object,HashMap<Object,Number>> initialMap, Object[] initialKeys)
     {
         HashMap<Object,Number[]> invertedMap = new HashMap<Object,Number[]>() ;
         
@@ -958,7 +958,7 @@ public class Reporter {
      * @return (HashMap) of (ArrayList) of Number 
      */
     static public HashMap<Object,Number[]> 
-        invertHashMapList(HashMap<Object,HashMap<Object,Number>> initialMap, Object[] initialKeys)
+        INVERT_HASHMAP_LIST(HashMap<Object,HashMap<Object,Number>> initialMap, Object[] initialKeys)
     {
         HashMap<Object,Number[]> invertedMap = new HashMap<Object,Number[]>() ;
         
@@ -992,7 +992,7 @@ public class Reporter {
      * @param values
      * @return 
      */
-    static protected HashMap<Object,HashMap<Object,ArrayList<Object>>> sortHashMap(HashMap<Object,ArrayList<Object>> hashMap, 
+    static protected HashMap<Object,HashMap<Object,ArrayList<Object>>> SORT_HASHMAP(HashMap<Object,ArrayList<Object>> hashMap, 
             HashMap<Object,ArrayList<Object>> sortedHashMap, Object[] values )
     {
         // Output HashMap
@@ -1022,11 +1022,11 @@ public class Reporter {
      * @param sortedHashMap
      * @return 
      */
-    static protected HashMap<Object,HashMap<Object,ArrayList<Object>>> sortHashMap(HashMap<Object,ArrayList<Object>> hashMap, 
+    static protected HashMap<Object,HashMap<Object,ArrayList<Object>>> SORT_HASHMAP(HashMap<Object,ArrayList<Object>> hashMap, 
             HashMap<Object,ArrayList<Object>> sortedHashMap)
     {
         Object[] values = sortedHashMap.keySet().toArray() ;
-        return sortHashMap(hashMap, sortedHashMap, values ) ;
+        return SORT_HASHMAP(hashMap, sortedHashMap, values ) ;
     }
     
     /**
@@ -1036,10 +1036,10 @@ public class Reporter {
      * @param value
      * @return 
      */
-    static protected HashMap<Object,ArrayList<Object>> sortHashMap(HashMap<Object,ArrayList<Object>> hashMap, 
+    static protected HashMap<Object,ArrayList<Object>> SORT_HASHMAP(HashMap<Object,ArrayList<Object>> hashMap, 
             HashMap<Object,ArrayList<Object>> sortedHashMap, Object value )
     {
-        return sortHashMap(hashMap, sortedHashMap, new Object[] {value} ).get(value) ;
+        return SORT_HASHMAP(hashMap, sortedHashMap, new Object[] {value} ).get(value) ;
     }
     
     /**
@@ -1049,7 +1049,7 @@ public class Reporter {
      * @param values
      * @return 
      */
-    static protected HashMap<Object,HashMap<Object,Object>> sortHashMapKeys(HashMap<Object,Object> hashMap, 
+    static protected HashMap<Object,HashMap<Object,Object>> SORT_HASHMAP_KEYS(HashMap<Object,Object> hashMap, 
             HashMap<Object,ArrayList<Object>> sortingHashMap, Object[] values)
     {
         HashMap<Object,HashMap<Object,Object>> outputHashMap = new HashMap<Object,HashMap<Object,Object>>() ;
@@ -1075,7 +1075,7 @@ public class Reporter {
      * @return (int) The number of cycles specified by backYears, backMonths, backDays
      * or maxCycles, whichever is smaller. 
      */
-    static protected int getBackCycles(int backYears, int backMonths, int backDays, int maxCycles)
+    static protected int GET_BACK_CYCLES(int backYears, int backMonths, int backDays, int maxCycles)
     {
         int daysPerYear = 365 ;
         int daysPerMonth = 31 ;
@@ -1111,13 +1111,13 @@ public class Reporter {
      * @param report
      * @return HashMap showing the cycles containing each key 
      */
-    static protected HashMap<Object,ArrayList<Object>> findAgentIdKeys(Integer[] cycles, ArrayList<HashMap<Object,?>> report)
+    static protected HashMap<Object,ArrayList<Object>> FIND_AGENTID_KEYS(Integer[] cycles, ArrayList<HashMap<Object,?>> report)
     {
         HashMap<Object,ArrayList<Object>> agentIdKeys = new HashMap<Object,ArrayList<Object>>() ;
 
         for (int index : cycles)
             for ( Object agentId : report.get(index).keySet() )
-                agentIdKeys = updateHashMap(index,agentId,agentIdKeys) ;
+                agentIdKeys = UPDATE_HASHMAP(index,agentId,agentIdKeys) ;
         return agentIdKeys ;
     }
 
@@ -1127,7 +1127,7 @@ public class Reporter {
      * @param report
      * @return HashMap showing the cycles containing each value in ArrayList value of HashMap 
      */
-    static protected HashMap<Object,ArrayList<Object>> findAgentIdValues(Integer[] cycles, ArrayList<HashMap<Object,ArrayList<?>>> report)
+    static protected HashMap<Object,ArrayList<Object>> FIND_AGENTID_VALUES(Integer[] cycles, ArrayList<HashMap<Object,ArrayList<?>>> report)
     {
         HashMap<Object,ArrayList<Object>> agentIdValues = new HashMap<Object,ArrayList<Object>>() ;
 
@@ -1136,7 +1136,7 @@ public class Reporter {
             HashMap<Object,ArrayList<?>> cycleHashMap = report.get(index) ;
             for ( Object key : cycleHashMap.keySet() )
                 for ( Object agentId : cycleHashMap.get(key))
-                    agentIdValues = updateHashMap(index,agentId,agentIdValues) ;
+                    agentIdValues = UPDATE_HASHMAP(index,agentId,agentIdValues) ;
         }
         return agentIdValues ;
     }
@@ -1149,7 +1149,7 @@ public class Reporter {
      * in the subreports are averaged over the innermost ArrayList.
      */
     static public ArrayList<ArrayList<Object>> 
-        prepareMeanReport(String propertyName, ArrayList<ArrayList<ArrayList<Object>>> reportList)
+        PREPARE_MEAN_REPORT(String propertyName, ArrayList<ArrayList<ArrayList<Object>>> reportList)
     {
         // Find mean of reports
         ArrayList<ArrayList<Object>> meanReport = new ArrayList<ArrayList<Object>>() ;
@@ -1169,7 +1169,7 @@ public class Reporter {
                 for (ArrayList<ArrayList<Object>> report : reportList)
                 {
                     ArrayList<Object> record = report.get(cycle) ;
-                    itemValue += Double.valueOf(Reporter.extractValue(propertyName,String.valueOf(record.get(itemIndex)))) ;
+                    itemValue += Double.valueOf(Reporter.EXTRACT_VALUE(propertyName,String.valueOf(record.get(itemIndex)))) ;
                 }
                 itemString = Reporter.ADD_REPORT_PROPERTY(propertyName, itemValue/nbReports) ;
                 meanRecord.add(itemString) ;
@@ -1186,9 +1186,9 @@ public class Reporter {
      * @param simName 
      * @param folderPath 
      */
-    static public void writeCSV(ArrayList<Object> report, String reportName, String simName, String folderPath)
+    static public void WRITE_CSV(ArrayList<Object> report, String reportName, String simName, String folderPath)
     {
-        writeCSV(report, new String[] {reportName}, simName, folderPath) ;
+        Reporter.WRITE_CSV(report, new String[] {reportName}, simName, folderPath) ;
     }
 
 
@@ -1199,7 +1199,7 @@ public class Reporter {
      * @param simName 
      * @param folderPath 
      */
-    static public void writeCSV(ArrayList<Object> report, String[] scoreNames, String simName, String folderPath)
+    static public void WRITE_CSV(ArrayList<Object> report, String[] scoreNames, String simName, String folderPath)
     {
         String filePath ;
         String line ;
@@ -1211,7 +1211,7 @@ public class Reporter {
         Object firstRecord = report.get(0) ;
         valueClass = String.class ;
         filePath = folderPath + simName + scoreNames[0] + ".csv";
-        properties = identifyProperties((String) report.get(0)) ;    // TODO: Try (String) instead of String.valueOf()
+        properties = IDENTIFY_PROPERTIES((String) report.get(0)) ;    // TODO: Try (String) instead of String.valueOf()
         //for (int index = 1 ; index < properties.size() ; index++ )
           //  fileHeader += "," + properties.get(index) ;
         fileHeader += String.join(COMMA, properties) ;
@@ -1226,7 +1226,7 @@ public class Reporter {
                 LOGGER.info(String.valueOf(record)) ;
                 line = String.valueOf(cycle) ;
                 for (String property : properties)
-                    line += COMMA + extractValue(property,(String) record) ;
+                    line += COMMA + EXTRACT_VALUE(property,(String) record) ;
                 fileWriter.write(line) ;
                 fileWriter.newLine() ;
                 cycle++ ;
@@ -1248,7 +1248,7 @@ public class Reporter {
      * @param simName 
      * @param folderPath 
      */
-    static public void writeCSV(ArrayList<ArrayList<Object>> report, String[] scoreNames, String property, String simName, String folderPath)
+    static public void WRITE_CSV(ArrayList<ArrayList<Object>> report, String[] scoreNames, String property, String simName, String folderPath)
     {
         String filePath ;
         String line ;
@@ -1271,7 +1271,7 @@ public class Reporter {
             {
                 //for (String entry : (ArrayList<String>) record)
                 String entry = ((ArrayList<String>) record).get(cycle) ;
-                line += COMMA + extractValue(property,entry) ;
+                line += COMMA + EXTRACT_VALUE(property,entry) ;
             }
                 fileWriter.write(line) ;
                 fileWriter.newLine() ;
@@ -1287,20 +1287,24 @@ public class Reporter {
     /**
      * Stores a (HashMap of ArrayList or Object) report as a csv file for other packages to read.
      * @param report 
+     * @param categoryName 
+     * @param scoreNames 
      * @param reportName 
+     * @param simName 
+     * @param folderPath 
      */
-    static public void writeCSV(HashMap<Object,Number[]> report, String categoryName, String[] scoreNames, String reportName, String simName, String folderPath)
+    static public void WRITE_CSV(HashMap<Object,Number[]> report, String categoryName, String[] scoreNames, String reportName, String simName, String folderPath)
     {
         String filePath = folderPath + simName + reportName + ".csv" ;
         String line ;
         Object value ;
         int nbProperties = 0 ;
         //Determine if report values are ArrayList<Object>
-        Object firstRecord = report.values().iterator().next() ;
-        LOGGER.log(Level.INFO, "{0}", firstRecord);
+        Object firstRecord = report.values().toArray()[0] ;
+        //LOGGER.log(Level.INFO, "{0}", firstRecord);
 
         String fileHeader = categoryName.concat(COMMA) ;
-        fileHeader += String.join(COMMA, identifyProperties((String) firstRecord))  ;
+        fileHeader += String.join(COMMA, scoreNames)  ;
         LOGGER.info(fileHeader) ;
         
         try
@@ -1346,7 +1350,7 @@ public class Reporter {
      * @param record
      * @return (ArrayList) String names of properties with given values in record.
      */
-    static public ArrayList<String> identifyProperties(String record)
+    static public ArrayList<String> IDENTIFY_PROPERTIES(String record)
     {
         ArrayList<String> propertyArray = new ArrayList<String>() ;
         
@@ -1375,9 +1379,9 @@ public class Reporter {
      * Averages value of propertyName over (ArrayList) reports
      * @param reports
      * @param propertyName
-     * @return (ArrayList) averagedReport
+     * @return (ArrayList) AVERAGED_REPORT
      */
-    static public ArrayList<Object> averagedReport(ArrayList<ArrayList<Object>> reports, String propertyName)
+    static public ArrayList<Object> AVERAGED_REPORT(ArrayList<ArrayList<Object>> reports, String propertyName)
     {
         ArrayList<Object> averagedReport = new ArrayList<Object>() ;
         
@@ -1390,7 +1394,7 @@ public class Reporter {
         
         ArrayList<String> meanProperties ;
         if (propertyName.isEmpty())
-            meanProperties = identifyProperties((String) reports.get(0).get(0)) ;
+            meanProperties = IDENTIFY_PROPERTIES((String) reports.get(0).get(0)) ;
         else
         {
             meanProperties = new ArrayList<String>() ;
@@ -1406,7 +1410,7 @@ public class Reporter {
                 for (ArrayList<Object> report : reports)
                 {
                     record = (String) report.get(cycle) ;
-                    meanValue += Double.valueOf(extractValue(property,record)) ;
+                    meanValue += Double.valueOf(EXTRACT_VALUE(property,record)) ;
                 }
                 meanValue = meanValue/nbReports ;
                 meanRecord += ADD_REPORT_PROPERTY(property,meanValue) ;
@@ -1419,9 +1423,9 @@ public class Reporter {
     /**
      * Averages over (Number[]) entries in (ArrayList) reports
      * @param reports 
-     * @return (HashMap) averagedReport
+     * @return (HashMap) AVERAGED_REPORT
      */
-    static public HashMap<Object,Number[]> averagedHashMapReport(ArrayList<HashMap<Object,Number[]>> reports)
+    static public HashMap<Object,Number[]> AVERAGED_HASHMAP_REPORT(ArrayList<HashMap<Object,Number[]>> reports)
     {
         HashMap<Object,Number[]> averagedReport = new HashMap<Object,Number[]>() ;
         
@@ -1570,7 +1574,7 @@ public class Reporter {
     
     protected ArrayList<String> getBackCyclesReport(int backYears, int backMonths, int backDays, int endCycle)
     {
-        int backCycles = getBackCycles(backYears, backMonths, backDays, endCycle) ;
+        int backCycles = GET_BACK_CYCLES(backYears, backMonths, backDays, endCycle) ;
         
         return reader.getBackCyclesReport(backCycles,endCycle) ;
     }
@@ -1579,7 +1583,7 @@ public class Reporter {
     {
         int maxCycles = getMaxCycles() ; 
         
-        return getBackCycles(backYears, backMonths, backDays, maxCycles) ;
+        return GET_BACK_CYCLES(backYears, backMonths, backDays, maxCycles) ;
     }
     
     
