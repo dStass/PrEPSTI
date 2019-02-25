@@ -14,6 +14,7 @@ import community.Community ;
 
 import java.io.* ;
 import java.util.ArrayList ;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.logging.Level;
 
@@ -25,6 +26,7 @@ public class ScreeningReporter extends Reporter {
     static String TESTED = "tested" ;
     static String TREATED = "treated" ;
     
+    static boolean writeReport = true ;
     public ScreeningReporter()
     {
         
@@ -111,11 +113,11 @@ public class ScreeningReporter extends Reporter {
      * @param siteNames
      * @return Records of final incidence for specified siteNames and in total.
      */
-    public HashMap<Object,Number[]> prepareFinalNotificationsRecord(String[] siteNames, int backMonths, int backDays)
+    public HashMap<Object,Number[]> prepareFinalNotificationsRecord(String[] siteNames, boolean unique, int backMonths, int backDays)
     {
         int endCycle = getMaxCycles() ;
         
-        return prepareFinalNotificationsRecord(siteNames, 0, backMonths, backDays, endCycle) ;
+        return prepareFinalNotificationsRecord(siteNames, unique, 0, backMonths, backDays, endCycle) ;
     }
     
     /**
@@ -126,6 +128,19 @@ public class ScreeningReporter extends Reporter {
      * @return Records of final notifications for specified siteNames and in total.
      */
     public HashMap<Object,Number[]> prepareFinalNotificationsRecord(String[] siteNames, int backYears, int backMonths, int backDays, int endCycle)
+    {
+        return prepareFinalNotificationsRecord(siteNames, true, backYears, backMonths, backDays, endCycle) ;
+    }
+    
+    /**
+     * 
+     * @param siteNames
+     * @param backYears
+     * @param endCycle
+     * @param unique  - Count one positive result per Agent. 
+     * @return Records of final notifications for specified siteNames and in total.
+     */
+    public HashMap<Object,Number[]> prepareFinalNotificationsRecord(String[] siteNames, boolean unique, int backYears, int backMonths, int backDays, int endCycle)
     {
         HashMap<Object,Number[]> finalNotifications = new HashMap<Object,Number[]>() ;
         
@@ -153,8 +168,8 @@ public class ScreeningReporter extends Reporter {
                 //* 100 because units  per 100 person years
                 notifications += COUNT_VALUE_INCIDENCE("treated","",record,0)[1] ;
                 
-                ArrayList<Object> positiveList = extractAllValues(AGENTID,record) ;
-                // Avoid double counting
+                ArrayList<Object> positiveList = EXTRACT_ALL_VALUES(AGENTID,record) ;
+                // Avoid double counting, ACCESS counts unique patient visits
                 positiveList.removeAll(positiveAgents) ;
                 positiveAgents.addAll(positiveList) ;
             }
@@ -169,14 +184,14 @@ public class ScreeningReporter extends Reporter {
         {
             notifications += COUNT_VALUE_INCIDENCE("treated","",finalNotificationsRecord,0)[1] ;
             
-            ArrayList<Object> testedList = extractAllValues(AGENTID,finalNotificationsRecord) ;
+            ArrayList<Object> testedList = EXTRACT_ALL_VALUES(AGENTID,finalNotificationsRecord) ;
             // Avoid double counting Agents
             testedList.removeAll(testedAgents) ;
             testedAgents.addAll(testedList) ;
             
             // Positive Agents
             record = BOUNDED_STRING_BY_CONTENTS("treated",AGENTID,finalNotificationsRecord) ;
-            ArrayList<Object> positiveList = extractAllValues(AGENTID,record) ;
+            ArrayList<Object> positiveList = EXTRACT_ALL_VALUES(AGENTID,record) ;
             // Avoid double counting
             positiveList.removeAll(positiveAgents) ;
             positiveAgents.addAll(positiveList) ;
@@ -196,6 +211,8 @@ public class ScreeningReporter extends Reporter {
             finalNotifications.put(siteName,entry) ;
         }
         
+        if (writeReport)
+            WRITE_CSV(finalNotifications, "Site", new String[] {"incidence","positivity"}, "finalNotifications", simName, getFolderPath()) ;
         return finalNotifications ;
     }
     
@@ -306,7 +323,7 @@ public class ScreeningReporter extends Reporter {
         symptomatic = 0 ;
         for (String record : agentRecords)
             for (String siteName : siteNames)
-                if (compareValue(siteName, TRUE, record))
+                if (COMPARE_VALUE(siteName, TRUE, record))
                 {
                     symptomatic++ ;
                     break ;
@@ -339,7 +356,7 @@ public class ScreeningReporter extends Reporter {
         for (ArrayList<Object> value : agentTestingReport.values())
         {
             nbTests = value.size() ;
-            numberAgentTestingReport = incrementHashMap(nbTests,numberAgentTestingReport) ;
+            numberAgentTestingReport = INCREMENT_HASHMAP(nbTests,numberAgentTestingReport) ;
             untested-- ;
         }
         numberAgentTestingReport.put(0, untested) ;
@@ -362,7 +379,7 @@ public class ScreeningReporter extends Reporter {
         HashMap<Object,ArrayList<Object>> agentTestingReport = new HashMap<Object,ArrayList<Object>>() ; 
         
         int maxCycles = getMaxCycles() ;
-        int backCycles = getBackCycles(backYears, backMonths, backDays, maxCycles) ;
+        int backCycles = GET_BACK_CYCLES(backYears, backMonths, backDays, maxCycles) ;
         int startCycle = maxCycles - backCycles ;
         
         ArrayList<String> inputReport = getBackCyclesReport(backYears, backMonths, backDays) ;
@@ -375,8 +392,8 @@ public class ScreeningReporter extends Reporter {
             ArrayList<String> agentReport = EXTRACT_ARRAYLIST(record,AGENTID,TESTED) ;
             for (String agentRecord : agentReport)
             {
-                agentId = extractValue(AGENTID,agentRecord) ;
-                updateHashMap(agentId, startCycle + cycle, agentTestingReport) ;
+                agentId = EXTRACT_VALUE(AGENTID,agentRecord) ;
+                UPDATE_HASHMAP(agentId, startCycle + cycle, agentTestingReport) ;
             }
         }
         return agentTestingReport ;
@@ -450,7 +467,7 @@ public class ScreeningReporter extends Reporter {
             for (ArrayList<Object> value : sortedTreatedReport.values())
             {
                 nbTreatments = value.size() ;
-                numberAgentTreatedReport = incrementHashMap(nbTreatments,numberAgentTreatedReport) ;
+                numberAgentTreatedReport = INCREMENT_HASHMAP(nbTreatments,numberAgentTreatedReport) ;
             }
 
             for (Object treatments : numberAgentTreatedReport.keySet())
@@ -519,7 +536,7 @@ public class ScreeningReporter extends Reporter {
         for (ArrayList<Object> value : agentTreatedReport.values())
         {
             nbTreatments = value.size() ;
-            numberAgentTreatedReport = incrementHashMap(nbTreatments,numberAgentTreatedReport) ;
+            numberAgentTreatedReport = INCREMENT_HASHMAP(nbTreatments,numberAgentTreatedReport) ;
             untreated-- ;
         }
         numberAgentTreatedReport.put(0, untreated) ;
@@ -542,7 +559,7 @@ public class ScreeningReporter extends Reporter {
         HashMap<Object,ArrayList<Object>> agentTreatedReport = new HashMap<Object,ArrayList<Object>>() ; 
         
         int maxCycles = getMaxCycles() ;
-        int backCycles = getBackCycles(backYears, backMonths, backDays, maxCycles) ;
+        int backCycles = GET_BACK_CYCLES(backYears, backMonths, backDays, maxCycles) ;
         int startCycle = maxCycles - backCycles ;
         
         ArrayList<String> inputReport = getBackCyclesReport(backYears, backMonths, backDays) ;
@@ -555,8 +572,8 @@ public class ScreeningReporter extends Reporter {
             ArrayList<String> agentReport = EXTRACT_ARRAYLIST(record,AGENTID,TREATED) ;
             for (String agentRecord : agentReport)
             {
-                agentId = extractValue(AGENTID,agentRecord) ;
-                updateHashMap(agentId, startCycle + cycle, agentTreatedReport) ;
+                agentId = EXTRACT_VALUE(AGENTID,agentRecord) ;
+                UPDATE_HASHMAP(agentId, startCycle + cycle, agentTreatedReport) ;
             }
         }
         return agentTreatedReport ;
@@ -594,7 +611,7 @@ public class ScreeningReporter extends Reporter {
                 nbInfected = infections.size() ;
                 for (String infection : infections)
                     for (String siteName : MSM.SITE_NAMES)
-                        if (compareValue(siteName,TRUE,infection))
+                        if (COMPARE_VALUE(siteName,TRUE,infection))
                         {
                             nbSymptomatic++ ;
                             break ;
