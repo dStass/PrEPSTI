@@ -24,10 +24,11 @@ import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import static reporter.Reporter.AGENTID;
-import static reporter.Reporter.extractValue;
-import static reporter.Reporter.identifyProperties;
 import static reporter.Reporter.EXTRACT_ARRAYLIST;
 import static reporter.Reporter.EXTRACT_ARRAYLIST;
+import static reporter.Reporter.IDENTIFY_PROPERTIES;
+import static reporter.Reporter.EXTRACT_VALUE;
+import static reporter.Reporter.EXTRACT_VALUE;
 /**
  * @author <a href = "mailto:mlwalker@kirby.unsw.edu.au">Michael Walker</a>
  *
@@ -320,18 +321,18 @@ public abstract class Agent {
             if (birthList.isEmpty()) 
                 continue ;
             birthIndex += birthList.size() ;
-            ArrayList<String> properties = Reporter.identifyProperties(birthList.get(0)) ;
+            ArrayList<String> properties = Reporter.IDENTIFY_PROPERTIES(birthList.get(0)) ;
             
             for (String birth : birthList)
             {
                 // Extract Agents still living
-                id = Reporter.extractValue(AGENTID, birth);
+                id = Reporter.EXTRACT_VALUE(AGENTID, birth);
                 if (deadAgentIds.contains(id))
                     continue ;
                 
-                startAge = Integer.valueOf(Reporter.extractValue("age",birth));
+                startAge = Integer.valueOf(Reporter.EXTRACT_VALUE("age",birth));
                 //age += (maxCycles - birthIndex)/daysPerYear ;
-                className = Reporter.extractValue("agent",birth);
+                className = Reporter.EXTRACT_VALUE("agent",birth);
                 try
                 {
                     //clazz = Class.forName(className);
@@ -363,7 +364,7 @@ public abstract class Agent {
                         siteIndex = infectionString.indexOf(site.getSite()) ;
                         if (siteIndex > 0)    // (infectionString.contains(site.getSite()))
                         {
-                            Boolean symptoms = Boolean.valueOf(Reporter.extractValue(site.getSite(),infectionString,siteIndex));
+                            Boolean symptoms = Boolean.valueOf(Reporter.EXTRACT_VALUE(site.getSite(),infectionString,siteIndex));
                             if (rebootFile)
                             {
                                 site.receiveInfection(1.1) ;
@@ -377,7 +378,7 @@ public abstract class Agent {
                                 newAgent.setSymptomatic(site) ;
                                 
                                 // Set remaining infectionTime
-                                infectionTime = Reporter.extractValue("infectionTime", infectionString, siteIndex) ;
+                                infectionTime = Reporter.EXTRACT_VALUE("infectionTime", infectionString, siteIndex) ;
                                 site.setInfectionTime(Integer.valueOf(infectionTime)) ;
                             }
                             else
@@ -439,7 +440,7 @@ public abstract class Agent {
             {
                 testProperty = property ;
                 //LOGGER.info(testProperty) ;
-                valueString = Reporter.extractValue(property, census) ;
+                valueString = Reporter.EXTRACT_VALUE(property, census) ;
                 if (property.equals("screenInterval"))
                     property = "screenCycle" ;
                 for (Class agentClazz : clazzFields.keySet())
