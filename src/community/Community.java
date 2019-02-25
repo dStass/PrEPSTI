@@ -30,15 +30,15 @@ import java.util.logging.Level;
  *******************************************************************/
 public class Community {
     static public int POPULATION = 40000 ;
-    static public int MAX_CYCLES = 1000 ; 
+    static public int MAX_CYCLES = 2500 ; 
     static public String NAME_ROOT = "" ;
-    //static public String SIM_NAME = "TestUrethraSymp60a2" ;
-    //static public String SIM_NAME = "CorrectedSafeRatio17aCont" ;
-    //static public String SIM_NAME = "From2007To2012a" ;
-    //static public String SIM_NAME = "IntroPrepCalibration74acycle6000" ;
-    //static public String SIM_NAME = "FallingCondomUseNew5a" ;
-    //static public String SIM_NAME = "AllRiskyI" ;
-    //static public String SIM_NAME = "AllSexualContacts" 
+    //static public String NAME_ROOT = "TestUrethraSymp60a2" ;
+    //static public String NAME_ROOT = "CorrectedSafeRatio17aCont" ;
+    //static public String NAME_ROOT = "From2007To2012a" ;
+    //static public String NAME_ROOT = "IntroPrepCalibration74acycle6000" ;
+    //static public String NAME_ROOT = "FallingCondomUseNew5a" ;
+    //static public String NAME_ROOT = "AllRiskyI" ;
+    //static public String NAME_ROOT = "AllSexualContacts" 
     //        + "DecliningCondomsAlteredTesting" ;
     static String NAME_SUFFIX = "Pop" + String.valueOf(POPULATION) + "Cycles" + String.valueOf(MAX_CYCLES) ;
     static public String SIM_NAME = NAME_ROOT + NAME_SUFFIX ;
@@ -67,7 +67,7 @@ public class Community {
             + "" ;
     
     static boolean TO_PLOT = true ;
-    static public String FILE_PATH = "output/test/" ;
+    static public String FILE_PATH = "output/year2007/" ;
     //static public String FILE_PATH = "/srv/scratch/z3524276/prepsti/output/test/" ;
     //static public String FILE_PATH = "/short/is14/mw7704/prepsti/output/year2007/" ;
     /** Dump reports to disk after this many cycles. */
@@ -90,7 +90,7 @@ public class Community {
      * (String) Name of previous simulation to reload.
      * Not reloaded if this is an empty string.
      */
-    static final String RELOAD_SIMULATION = "" ; // "CorrectedSafeRatioPop40000Cycles1500" ; // "CorrectedSafeRatioRisky1aPop40000Cycles1000" ; //  "Year2007Commence5f" ; // "TestRebootBasePop4000Cycles500" ; // "From2007To2011p5v3aAdjustCondomsPop40000Cycles2525" ; // "TestRebootRelationship8aPop4000Cycles500" ; 
+    static final String RELOAD_SIMULATION = "" ; // "CorrectedSafeRatioPop40000Cycles1500" ; // "TestUrethraSymp60a4ContPop40000Cycles1000" ; // "CorrectedSafeRatioPop40000Cycles1500" ; // "CorrectedSafeRatioRisky1aPop40000Cycles1000" ; //  "Year2007Commence5f" ; // "TestRebootBasePop4000Cycles500" ; // "From2007To2011p5v3aAdjustCondomsPop40000Cycles2525" ; // "TestRebootRelationship8aPop4000Cycles500" ; 
     
     static public String getFilePath()
     {
@@ -317,14 +317,14 @@ public class Community {
         //RelationshipReporter relationshipReporter = new RelationshipReporter(Community.SIM_NAME,Community.FILE_PATH) ;
         //HashMap<Object,HashMap<Object,Number>> relationshipReport 
           //      = relationshipReporter.prepareCumulativeRelationshipRecord(-1, relationshipClassNames, 0, 6, 0) ;
-        //HashMap<Object,Number[]> plotReport = Reporter.invertHashMapList(relationshipReport, relationshipClassNames) ;
-        //Reporter.writeCSV(plotReport, "Number of Relationships", relationshipClassNames, "cumulativeRelationship", SIM_NAME, "output/test/") ;
+        //HashMap<Object,Number[]> plotReport = Reporter.INVERT_HASHMAP_LIST(relationshipReport, relationshipClassNames) ;
+        //Reporter.WRITE_CSV(plotReport, "Number of Relationships", relationshipClassNames, "cumulativeRelationship", SIM_NAME, "output/test/") ;
         
         ScreeningReporter screeningReporter = 
                 //new ScreeningReporter("prevalence",community.infectionReport) ;
                 new ScreeningReporter(SIM_NAME,FILE_PATH) ;
         //ArrayList<Object> pharynxPrevalenceReport = screeningReporter.preparePrevalenceReport("Pharynx") ;
-        //Reporter.writeCSV(pharynxPrevalenceReport, "Pharynx", SIM_NAME, FILE_PATH);
+        //Reporter.WRITE_CSV(pharynxPrevalenceReport, "Pharynx", SIM_NAME, FILE_PATH);
         //ScreeningPresenter screeningPresenter 
           //      = new ScreeningPresenter("prevalence",Community.SIM_NAME,screeningReporter) ;
         //screeningPresenter.multiPlotScreening(new Object[] {"prevalence", new String[] {"Pharynx","Urethra","Rectum"},"coprevalence",new String[] {"Rectum","Pharynx"}});
@@ -1117,7 +1117,7 @@ public class Community {
         Reporter reporter = new Reporter(Community.RELOAD_BURNIN, Community.FILE_PATH) ;
         
         String breakupString = reporter.getMetaDatum("Relationship.BURNIN_BREAKUP") ;
-        ArrayList<Object> breakupList = Reporter.extractAllValues(Relationship.RELATIONSHIP_ID, breakupString) ;
+        ArrayList<Object> breakupList = Reporter.EXTRACT_ALL_VALUES(Relationship.RELATIONSHIP_ID, breakupString) ;
         String commenceString = reporter.getMetaDatum("Relationship.BURNIN_COMMENCE") ;
         String returnString = "" ;
         
@@ -1128,18 +1128,18 @@ public class Community {
         for (int commenceIndex = 0 ; commenceIndex >= 0 ; commenceIndex = commenceString.indexOf(Relationship.RELATIONSHIP_ID,commenceIndex+1)) 
         {
             boundedString = Reporter.EXTRACT_BOUNDED_STRING(Relationship.RELATIONSHIP_ID, commenceString, commenceIndex);
-            relationshipId = Reporter.extractValue(Relationship.RELATIONSHIP_ID, boundedString) ;
+            relationshipId = Reporter.EXTRACT_VALUE(Relationship.RELATIONSHIP_ID, boundedString) ;
             if (!breakupList.contains(relationshipId)) 
             {
                 returnString += boundedString ;
-                String relationshipClazzName = "community." + Reporter.extractValue("relationship", boundedString) ;
+                String relationshipClazzName = "community." + Reporter.EXTRACT_VALUE("relationship", boundedString) ;
                 try
                 {
                     Relationship relationship = (Relationship) Class.forName(relationshipClazzName).newInstance();
                     relationship.setRelationshipId(Integer.valueOf(relationshipId)) ;
                     nbRelationships++ ;
-                    agentId0 = Integer.valueOf(Reporter.extractValue(Reporter.AGENTID0,boundedString)) ;
-                    agentId1 = Integer.valueOf(Reporter.extractValue(Reporter.AGENTID1,boundedString)) ;
+                    agentId0 = Integer.valueOf(Reporter.EXTRACT_VALUE(Reporter.AGENTID0,boundedString)) ;
+                    agentId1 = Integer.valueOf(Reporter.EXTRACT_VALUE(Reporter.AGENTID1,boundedString)) ;
                     relationship.addAgents(agents.get(agentId0), agents.get(agentId1)) ;
                     
                 }
