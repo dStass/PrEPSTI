@@ -29,7 +29,7 @@ public class EncounterPresenter extends Presenter {
     
     public static void main(String[] args)
     {
-        //String simName = "TestPop40000Cycles100" ; // Community.NAME_ROOT ; // "introPrepCalibration48Pop40000Cycles7000" ; // args[0] ;
+        //String simName = "TestPop40000Cycles100" ; // Community.SIM_NAME ; // "introPrepCalibration48Pop40000Cycles7000" ; // args[0] ;
         String simName = "NoPrepCalibration74aPop40000Cycles5000" ; // "NoPrepCalibration86Pop40000Cycles5000" ; // "introPrepCalibration48Pop40000Cycles7000" ; // args[0] ;
         //String simName = "neutral_calibration2Pop40000Cycles4000" ;
         //String simName = "RelationshipCalibrationPop40000Cycles200" ; // "NoPrepCalibration86Pop40000Cycles5000" ; // "introPrepCalibration48Pop40000Cycles7000" ; // args[0] ;
@@ -121,7 +121,7 @@ public class EncounterPresenter extends Presenter {
         for (String report : transmissionReport)
             for (String name : siteNames)
             {
-                infectedStatus = Reporter.extractAllValues(name, report, 0) ;
+                infectedStatus = Reporter.EXTRACT_ALL_VALUES(name, report, 0) ;
                 count = 0 ;
                 for (Object site : infectedStatus)
                     count += Integer.valueOf((String) site) ;
@@ -211,7 +211,7 @@ public class EncounterPresenter extends Presenter {
                     = encounterReporter.prepareYearsIncidenceRecord(siteNames, backYears, lastYear) ;
             reports.add((HashMap<Object,Number[]>) report.clone()) ;
         }
-        incidenceRecordYears = Reporter.averagedHashMapReport(reports) ;
+        incidenceRecordYears = Reporter.AVERAGED_HASHMAP_REPORT(reports) ;
         
         String[] scoreNames = new String[siteNames.length + 1] ;
         for (int siteIndex = 0 ; siteIndex < siteNames.length ; siteIndex++ )
@@ -264,7 +264,7 @@ public class EncounterPresenter extends Presenter {
             
             reports.add((ArrayList<Object>) transmissionReport.clone()) ;
         }
-        nbTransmissionReport = Reporter.averagedReport(reports,"transmission") ;
+        nbTransmissionReport = Reporter.AVERAGED_REPORT(reports,"transmission") ;
         
         plotCycleValue("transmission", nbTransmissionReport) ;
     }
@@ -285,7 +285,7 @@ public class EncounterPresenter extends Presenter {
                 EncounterReporter encounterReporter = new EncounterReporter(simulation,reporter.getFolderPath()) ;
                 reports.add(encounterReporter.prepareTransmissionCountReport(siteName)) ;
             }
-            nbTransmissionsReports.add(Reporter.averagedReport(reports,"transmission")) ;
+            nbTransmissionsReports.add(Reporter.AVERAGED_REPORT(reports,"transmission")) ;
         }
         
         multiPlotCycleValue("transmission",nbTransmissionsReports,siteNames) ;
@@ -461,7 +461,7 @@ public class EncounterPresenter extends Presenter {
     {
         HashMap<Object,HashMap<Object,ArrayList<Object>>> transmittingAgentsReport = reporter.prepareAgentToAgentReport() ;
         HashMap<Object,HashMap<Object,ArrayList<Object>>> invertedTransmittingAgentsReport 
-                = Reporter.invertHashMapHashMap(transmittingAgentsReport) ;
+                = Reporter.INVERT_HASHMAP_HASHMAP(transmittingAgentsReport) ;
         
         ArrayList<HashMap<Object,ArrayList<Object>>> plottingAgentsReport = new ArrayList<HashMap<Object,ArrayList<Object>>>() ;
         for (int cycle = 0 ; cycle < invertedTransmittingAgentsReport.keySet().size() ; cycle++ )
@@ -494,7 +494,7 @@ public class EncounterPresenter extends Presenter {
                 = reporter.prepareReceiveSortPrepStatusReport(value) ;
         LOGGER.log(Level.INFO, "{0}", receiveSortPrepStatusReport);
         HashMap<Object,HashMap<Object,ArrayList<Object>>> invertedPrepStatusReport 
-                = SortReporter.invertHashMapHashMap(receiveSortPrepStatusReport) ;
+                = SortReporter.INVERT_HASHMAP_HASHMAP(receiveSortPrepStatusReport) ;
         LOGGER.info("prepareTransmissionCountReport");
         ArrayList<ArrayList<Object>> nbTransmissionReport 
                 = reporter.prepareReceiveCountReport(invertedPrepStatusReport) ;
