@@ -152,7 +152,7 @@ public class RelationshipPresenter extends Presenter{
         HashMap<Object,Number> numberAgentsEnteredRelationshipReport 
         = reporter.prepareNumberAgentsEnteredRelationshipReport(relationshipClassNames, backYears, backMonths, backDays) ;
     
-        String timePeriod = getTimePeriodString(backYears, backMonths, backDays) ;
+        String timePeriod = GET_TIME_PERIOD_STRING(backYears, backMonths, backDays) ;
         
         plotHashMap("Class of Relationships","Proportion of Agents in last " + timePeriod, numberAgentsEnteredRelationshipReport) ;
     }
@@ -172,7 +172,7 @@ public class RelationshipPresenter extends Presenter{
         HashMap<Object,Number> agentRelationshipsMean
             = reporter.prepareAgentRelationshipsMean(relationshipClassNames, backYears, backMonths, backDays) ;
         
-        String timePeriod = getTimePeriodString(backYears, backMonths, backDays) ;
+        String timePeriod = GET_TIME_PERIOD_STRING(backYears, backMonths, backDays) ;
         
         plotHashMap("Class of Relationships","Relationships per Agent for last " + timePeriod, agentRelationshipsMean) ;
     }
@@ -191,7 +191,7 @@ public class RelationshipPresenter extends Presenter{
         HashMap<Object,Number[]> agentRelationshipsMeanYears
             = reporter.prepareAgentRelationshipsMeanYears(relationshipClassNames, backYears, backMonths, backDays, lastYear) ; 
         
-        //String timePeriod = getTimePeriodString(backYears, backMonths, backDays) ;
+        //String timePeriod = GET_TIME_PERIOD_STRING(backYears, backMonths, backDays) ;
         
         plotHashMap("Year", relationshipClassNames, agentRelationshipsMeanYears) ;
     }
@@ -245,7 +245,7 @@ public class RelationshipPresenter extends Presenter{
                 = reporter.prepareCumulativeRelationshipRecord(-1,relationshipClassNames, backYears, backMonths, backDays) ;
         
         HashMap<Object,Number[]> invertedHashMap 
-                = Reporter.invertHashMapList(cumulativeRelationshipRecord,relationshipClassNames) ;
+                = Reporter.INVERT_HASHMAP_LIST(cumulativeRelationshipRecord,relationshipClassNames) ;
         
         plotSpline("Cumulative number of partners","Number of agents",invertedHashMap,relationshipClassNames) ;
     }
@@ -263,7 +263,7 @@ public class RelationshipPresenter extends Presenter{
                 = reporter.prepareRecentRelationshipsReport(relationshipClassNames, backYears, backMonths, backDays) ;
         
         HashMap<Object,Number[]> invertedHashMap 
-                = Reporter.invertHashMapList(recentRelationshipsReport,relationshipClassNames) ;
+                = Reporter.INVERT_HASHMAP_LIST(recentRelationshipsReport,relationshipClassNames) ;
         
         String timePeriod = String.valueOf(backYears) + "Y" 
                 + String.valueOf(backMonths) + "M" 
@@ -282,7 +282,7 @@ public class RelationshipPresenter extends Presenter{
         ArrayList<HashMap<Object,String>> meanNumberRelationshipsReport 
                 = reporter.prepareMeanNumberRelationshipsReport(relationshipClassNames) ;
         LOGGER.log(Level.INFO, "{0}", meanNumberRelationshipsReport);
-        //ArrayList<ArrayList<Object>> invertedReport = Reporter.invertArrayHashMap(meanNumberRelationshipsReport,relationshipClassNames) ;
+        //ArrayList<ArrayList<Object>> invertedReport = Reporter.INVERT_ARRAY_HASHMAP(meanNumberRelationshipsReport,relationshipClassNames) ;
         //LOGGER.log(Level.INFO, "{0}", invertedReport);
         ArrayList<ArrayList<Object>> invertedReport = new ArrayList<ArrayList<Object>>() ;
         for (String relationshipClassName : relationshipClassNames)
