@@ -457,7 +457,7 @@ public class EncounterReporter extends Reporter {
         //LOGGER.log(Level.INFO, "relationshipAgentReport {0}", relationshipAgentReport);
         
         int maxCycles = getMaxCycles() ;
-        int backCycles = getBackCycles(backYears, backMonths, backDays, maxCycles) ;
+        int backCycles = GET_BACK_CYCLES(backYears, backMonths, backDays, maxCycles) ;
         int startCycle = maxCycles - backCycles ;
         
         ArrayList<String> encounterReport = this.getBackCyclesReport(0, 0, backCycles) ;
@@ -480,9 +480,9 @@ public class EncounterReporter extends Reporter {
                 ArrayList<String> encounters = EXTRACT_ARRAYLIST(record,RELATIONSHIPID) ; 
                 for (String encounter : encounters)
                 {
-                    Object[] agentIds = relationshipAgentReport.get(extractValue(RELATIONSHIPID,encounter)) ;
+                    Object[] agentIds = relationshipAgentReport.get(EXTRACT_VALUE(RELATIONSHIPID,encounter)) ;
                     for (Object agentId : agentIds)
-                        agentAnalIntercourseReport.put(condom, updateHashMap(agentId,(startCycle + recordNb),agentAnalIntercourseReport.get(condom))) ;
+                        agentAnalIntercourseReport.put(condom, UPDATE_HASHMAP(agentId,(startCycle + recordNb),agentAnalIntercourseReport.get(condom))) ;
                 }
             }
         
@@ -530,7 +530,7 @@ public class EncounterReporter extends Reporter {
         for (ArrayList<Object> condomlessValue : agentCondomlessReport.values() ) 
         {
             int intercourses = condomlessValue.size() ;
-            numberAgentCondomlessReport = incrementHashMap(intercourses,numberAgentCondomlessReport) ;
+            numberAgentCondomlessReport = INCREMENT_HASHMAP(intercourses,numberAgentCondomlessReport) ;
         }
         
         return numberAgentCondomlessReport ;
@@ -561,7 +561,7 @@ public class EncounterReporter extends Reporter {
         RelationshipReporter relationshipReporter = new RelationshipReporter(simName,getFolderPath()) ;
         HashMap<Object,String[]> relationshipAgentReport = (HashMap<Object,String[]>) getReport("relationshipAgent",relationshipReporter) ; //  relationshipReporter.prepareRelationshipAgentReport() ;
         
-        int backCycles = getBackCycles(backYears, backMonths, backDays, endCycle) ;
+        int backCycles = GET_BACK_CYCLES(backYears, backMonths, backDays, endCycle) ;
         int startCycle = endCycle - backCycles ;
         
         ArrayList<String> encounterReport = getBackCyclesReport(0, 0, backCycles, endCycle) ;
@@ -576,9 +576,9 @@ public class EncounterReporter extends Reporter {
             ArrayList<String> encounters = EXTRACT_ARRAYLIST(record,RELATIONSHIPID) ; 
             for (String encounter : encounters)
             {
-                String[] agentIds = relationshipAgentReport.get(extractValue(RELATIONSHIPID,encounter)) ;
+                String[] agentIds = relationshipAgentReport.get(EXTRACT_VALUE(RELATIONSHIPID,encounter)) ;
                 for (String agentId : agentIds)
-                    agentCondomlessIntercourse = updateHashMap(agentId,startCycle + recordNb,agentCondomlessIntercourse) ;
+                    agentCondomlessIntercourse = UPDATE_HASHMAP(agentId,startCycle + recordNb,agentCondomlessIntercourse) ;
             }
         }
         
@@ -759,7 +759,7 @@ public class EncounterReporter extends Reporter {
             while (agentIndex >= 0)
             {
                 agentValue = EXTRACT_BOUNDED_STRING(AGENTID,record,agentIndex) ;
-                agentKey = extractValue(AGENTID,agentValue) ;
+                agentKey = EXTRACT_VALUE(AGENTID,agentValue) ;
                 agentProperties.put(agentKey, agentValue) ;
                 agentIndex = record.indexOf(AGENTID,agentIndex + 1) ;
             }
@@ -785,19 +785,19 @@ public class EncounterReporter extends Reporter {
                 {
                     seroPosition = false ;
                     seroSort = false ;
-                    agentIds = relationshipAgentReport.get(extractValue(RELATIONSHIPID,encounter)) ;
+                    agentIds = relationshipAgentReport.get(EXTRACT_VALUE(RELATIONSHIPID,encounter)) ;
                     finished = !(agentProperties.containsKey(agentIds[0]) && agentProperties.containsKey(agentIds[1])) ;
                     for (String agentId : agentIds)
                     {
                         if (!(agentProperties.containsKey(agentId)))
                             LOGGER.info("Missing agentId " + agentId); 
                     
-                        if (false && extractValue("seroSort",agentProperties.get(agentId)).equals(TRUE))
+                        if (false && EXTRACT_VALUE("seroSort",agentProperties.get(agentId)).equals(TRUE))
                         {
                             seroSort = true ;
                             break ;
                         }
-                        else if (extractValue("seroPosition",agentProperties.get(agentId)).equals(TRUE))
+                        else if (EXTRACT_VALUE("seroPosition",agentProperties.get(agentId)).equals(TRUE))
                         {
                             seroPosition = true ;
                             break ;
@@ -811,7 +811,7 @@ public class EncounterReporter extends Reporter {
                         if (contact.indexOf(CONDOM) < 0)
                             continue ;
                         total++ ;
-                        condom = TRUE.equals(extractValue(CONDOM,contact)) ;
+                        condom = TRUE.equals(EXTRACT_VALUE(CONDOM,contact)) ;
                         if (condom)
                         {
                             if (seroSort)
@@ -874,7 +874,7 @@ public class EncounterReporter extends Reporter {
             for (encounterIndex = record.indexOf(RELATIONSHIPID) ; encounterIndex >= 0 ; encounterIndex = record.indexOf(RELATIONSHIPID,encounterIndex+1))
             {
                 String encounterString = extractEncounter(record,encounterIndex) ;
-                agentIdPair = relationshipAgentReport.get(extractValue(RELATIONSHIPID,encounterString,0)) ;
+                agentIdPair = relationshipAgentReport.get(EXTRACT_VALUE(RELATIONSHIPID,encounterString,0)) ;
                 
                 // Check each sexual contact 
                 contactIndex = encounterString.indexOf(CONTACT);
@@ -888,9 +888,9 @@ public class EncounterReporter extends Reporter {
                     trueIndex = contact.indexOf("1",spaceIndex);
                     falseIndex = contact.indexOf("0",spaceIndex);
                     if (trueIndex < falseIndex)    
-                        Reporter.updateHashMap(Integer.valueOf(agentIdPair[0]), Integer.valueOf(agentIdPair[1]), transmissionRecord) ;
+                        Reporter.UPDATE_HASHMAP(Integer.valueOf(agentIdPair[0]), Integer.valueOf(agentIdPair[1]), transmissionRecord) ;
                     else    // falseIndex < trueIndex
-                        Reporter.updateHashMap(Integer.valueOf(agentIdPair[1]), Integer.valueOf(agentIdPair[0]), transmissionRecord) ;
+                        Reporter.UPDATE_HASHMAP(Integer.valueOf(agentIdPair[1]), Integer.valueOf(agentIdPair[0]), transmissionRecord) ;
                     contactIndex = encounterString.indexOf(CONTACT,contactIndex+1);
                 }
             }
@@ -929,7 +929,7 @@ public class EncounterReporter extends Reporter {
             for (encounterIndex = record.indexOf(RELATIONSHIPID) ; encounterIndex >= 0 ; encounterIndex = record.indexOf(RELATIONSHIPID,encounterIndex+1) )
             {
                 String encounterString = extractEncounter(record,encounterIndex) ;
-                agentIdPair = relationshipAgentReport.get(extractValue(RELATIONSHIPID,encounterString,0)) ;
+                agentIdPair = relationshipAgentReport.get(EXTRACT_VALUE(RELATIONSHIPID,encounterString,0)) ;
                 
                 // Check each sexual contact 
                 contactIndex = encounterString.indexOf(CONTACT);
@@ -944,19 +944,19 @@ public class EncounterReporter extends Reporter {
                     falseIndex = contact.indexOf("0",spaceIndex);
                     if (trueIndex < falseIndex)    
                     {
-                        objectReport = Reporter.updateHashMap(agentIdPair[0], agentIdPair[1], cycle, objectReport) ;
+                        objectReport = Reporter.UPDATE_HASHMAP(agentIdPair[0], agentIdPair[1], cycle, objectReport) ;
                         break ;
                     }
                     else    // falseIndex < trueIndex
                     {
-                        objectReport = Reporter.updateHashMap(agentIdPair[1], agentIdPair[0], cycle, objectReport) ;
+                        objectReport = Reporter.UPDATE_HASHMAP(agentIdPair[1], agentIdPair[0], cycle, objectReport) ;
                         break ;
                     }
                     //contactIndex = encounterString.indexOf(CONTACT,contactIndex+1);
                 }
             }
         }
-        //return hashMapHashMapNumber(objectReport) ;
+        //return HASHMAP_HASHMAP_NUMBER(objectReport) ;
         return objectReport ;
     }
     
@@ -1134,7 +1134,7 @@ public class EncounterReporter extends Reporter {
                     if (! contactString.contains(name0))
                         continue ;
                     //nameIndex = Reporter.INDEX_OF_PROPERTY(name0,contactString) ;
-                    value0 = extractValue(name0,contactString) ;
+                    value0 = EXTRACT_VALUE(name0,contactString) ;
                     
                     for (String name1 : siteNames)
                     {
@@ -1163,7 +1163,7 @@ public class EncounterReporter extends Reporter {
                     }
                 
                     key = fromName + " to " + toName ;
-                    fromSiteToSiteReport = incrementHashMap(key,fromSiteToSiteReport) ;
+                    fromSiteToSiteReport = INCREMENT_HASHMAP(key,fromSiteToSiteReport) ;
                     break ;
                 }
             }
@@ -1187,8 +1187,8 @@ public class EncounterReporter extends Reporter {
             agentNb0 = pairString[0] ;
             agentNb1 = pairString[1] ;
 
-            updateHashMap(agentNb0,agentNb1,partnerMap) ;
-            updateHashMap(agentNb1,agentNb0,partnerMap) ;
+            UPDATE_HASHMAP(agentNb0,agentNb1,partnerMap) ;
+            UPDATE_HASHMAP(agentNb1,agentNb0,partnerMap) ;
 
         }
         return partnerMap ;
