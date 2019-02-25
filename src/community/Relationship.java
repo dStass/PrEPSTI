@@ -248,7 +248,7 @@ public class Relationship {
        
             for (String relationshipString : relationshipIdList)
             {
-                relationshipId = Reporter.extractValue(Reporter.RELATIONSHIPID, relationshipString) ;
+                relationshipId = Reporter.EXTRACT_VALUE(Reporter.RELATIONSHIPID, relationshipString) ;
                 if (currentRelationshipIds.contains(relationshipId))
                 {
                     LOGGER.severe(String.valueOf(relationshipId) + " found again!");
@@ -256,8 +256,8 @@ public class Relationship {
                 }
                 currentRelationshipIds.add(relationshipId) ;
 
-                agentId0 = Reporter.extractValue(Reporter.AGENTID0, relationshipString) ;
-                agentId1 = Reporter.extractValue(Reporter.AGENTID1, relationshipString) ;
+                agentId0 = Reporter.EXTRACT_VALUE(Reporter.AGENTID0, relationshipString) ;
+                agentId1 = Reporter.EXTRACT_VALUE(Reporter.AGENTID1, relationshipString) ;
 
                 // Add Agents of correct agentId
                 agentsFound = 0 ;
@@ -279,7 +279,7 @@ public class Relationship {
                 }
 
                 // Find Relationship Class and create Relationship
-                relationshipClazzName = Reporter.extractValue("relationship", relationshipString) ;
+                relationshipClazzName = Reporter.EXTRACT_VALUE("relationship", relationshipString) ;
                 Class relationshipClazz = Class.forName("community.".concat(relationshipClazzName)) ;
 
                 Relationship relationship = (Relationship) relationshipClazz.newInstance();
