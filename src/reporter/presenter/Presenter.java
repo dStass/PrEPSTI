@@ -74,11 +74,11 @@ public class Presenter {
     static final String COMMA = Reporter.COMMA ;
 
     // Used for controlling if and what is co-plotted from file.
-    static boolean PLOT_FILE = false ;    
+    static boolean PLOT_FILE = false ; //true ;    
     static String FOLDER_PATH = "data_files/" ;
     static String FILENAME = "notifications" ;    //  "incidence_kirby2018"
     //static String[] dataScore = new String[] {"hiv_negative","hiv_positive"} ;
-    static String[] dataScore = new String[] {"notifications"} ;
+    static String[] dataScore = new String[] {"ACCESS"} ;
             
     
     private BarChart_AWT chart_awt ;
@@ -87,7 +87,7 @@ public class Presenter {
 
     static final java.util.logging.Logger LOGGER = java.util.logging.Logger.getLogger("presenter") ;
     
-    static protected String getTimePeriodString(int backYears, int backMonths, int backDays)
+    static protected String GET_TIME_PERIOD_STRING(int backYears, int backMonths, int backDays)
     {
         String timeString = "" ;
         if (backYears > 1) 
@@ -108,7 +108,7 @@ public class Presenter {
         return timeString ;
     }
     
-    static private String getYLabel(String[] scoreNames)
+    static private String GET_Y_LABEL(String[] scoreNames)
     {
         String scoreName = "" ;
         String name2 ;
@@ -132,7 +132,7 @@ public class Presenter {
      * @param readScores - (String[]) valueTypes given in new report
      * @return (DefaultCategoryDataset) dataset with new data from report
      */
-    static public DefaultCategoryDataset expandDataset(DefaultCategoryDataset dataset, HashMap<Object,Number[]> report, String[] readScores )
+    static public DefaultCategoryDataset EXPAND_DATASET(DefaultCategoryDataset dataset, HashMap<Object,Number[]> report, String[] readScores )
     {
         Number[] scoreValueArray ;
         for (Object key : report.keySet())
@@ -146,6 +146,11 @@ public class Presenter {
                     dataset.addValue( scoreValue, scoreName, String.valueOf(key)) ;
                 }
         }
+        
+        LOGGER.info("// Remove categories not in report.keySet") ;
+        for (Object key : dataset.getColumnKeys())
+            if (!report.containsKey(key))
+                dataset.removeColumn((Comparable) key);
 
         return dataset ;
     }
@@ -155,7 +160,7 @@ public class Presenter {
      * @param fileName
      * @return (HashMap) Report (Object) key maps to (Number) value
      */
-    static HashMap<Object,Number> readHashMapNumberCSV(String fileName)
+    static HashMap<Object,Number> READ_HASHMAP_NUMBER_CSV(String fileName)
     {
         HashMap<Object,Number> hashMapNumber = new HashMap<Object,Number>() ;
         
@@ -209,6 +214,7 @@ public class Presenter {
                 hashMapNumber.put(key, valueArray[0]) ;
                 record = fileReader.readLine() ;
             }
+            fileReader.close() ;
         }
         catch ( Exception e )
         {
@@ -223,11 +229,10 @@ public class Presenter {
      * @param fileName
      * @return (HashMap) Report (Object) key maps to (Number) value
      */
-    static HashMap<Object,Number[]> readHashMapNumberArrayCSV(String fileName)
+    static HashMap<Object,Number[]> READ_HASHMAP_NUMBER_ARRAY_CSV(String fileName)
     {
         HashMap<Object,Number[]> hashMapNumberArray = new HashMap<Object,Number[]>() ;
         
-        String folder = "data_files/" ;
         String fileHeader ;
         String[] arrayHeader  = new String[] {} ;
         
@@ -279,6 +284,7 @@ public class Presenter {
                 hashMapNumberArray.put(key, (Number[]) valueArray.clone()) ;
                 record = fileReader.readLine() ;
             }
+            fileReader.close() ;
         }
         catch ( Exception e )
         {
@@ -286,6 +292,68 @@ public class Presenter {
         }
         
         return hashMapNumberArray ;
+    }
+    
+    /**
+     * Load report .csv files and return a report with the mean of all entries.
+     * @param fileNames
+     * @return 
+     */
+    public static void MEAN_HASHMAP_NUMBER_ARRAY_CSV(String[] fileNames)
+    {
+        HashMap<Object,Number[]> meanHashMapNumberArray = new HashMap<Object,Number[]>() ;
+        
+        Number[] entries ;
+        String fileHeader = "" ;
+        String[] arrayHeader ;
+        ArrayList<HashMap<Object,Number[]>> meanHashMapList = new ArrayList<HashMap<Object,Number[]>>() ;
+        
+        try
+        {
+            BufferedReader fileReader 
+                    = new BufferedReader(new FileReader(FOLDER_PATH + fileNames[0] + CSV)) ;
+            fileHeader = fileReader.readLine() ;
+            fileReader.close();
+        }
+        catch ( Exception e )
+        {
+            LOGGER.severe(e.toString()) ;
+        }
+        // Read in HashMaps from .csv files
+        for (String fileName : fileNames)
+            meanHashMapList.add(READ_HASHMAP_NUMBER_ARRAY_CSV(fileName)) ;
+        
+        HashMap<Object,Number[]> hashMap0 = meanHashMapList.get(0) ;
+        int entryLength = hashMap0.get(hashMap0.keySet().toArray()[0]).length ;
+        Number[] sumEntry = Arrays.copyOf(new Number[] {0.0}, entryLength) ;
+        
+        for (Object key : hashMap0.keySet())
+            meanHashMapNumberArray.put(key, sumEntry) ;
+        
+        // Add all entries
+        for (HashMap<Object,Number[]> hashMap : meanHashMapList)
+            for (Object key : hashMap.keySet())
+            {
+                entries = hashMap.get(key) ;
+                sumEntry = meanHashMapNumberArray.get(key) ;
+                for (int index = 0 ; index < entries.length ; index++ )
+                    sumEntry[index] = sumEntry[index].doubleValue() + entries[index].doubleValue() ;
+                meanHashMapNumberArray.put(key,sumEntry) ;
+            }
+        
+        // Divide to find mean
+        for (Object key : meanHashMapNumberArray.keySet())
+        {
+            entries = meanHashMapNumberArray.get(key) ;
+            for (int index = 0 ; index < sumEntry.length ; index++ )
+                entries[index] = entries[index].doubleValue()/entryLength ;
+            meanHashMapNumberArray.put(key, entries) ;
+        }
+        
+        arrayHeader = fileHeader.split(COMMA) ;
+        Reporter.WRITE_CSV(meanHashMapNumberArray, arrayHeader[0], 
+                (String[]) Arrays.asList(fileHeader).subList(1, arrayHeader.length).toArray(), fileNames[0], "_MEAN", FOLDER_PATH) ;
+        //return meanHashMapNumberArray ;
     }
     
     public static void main(String[] args)
@@ -306,7 +374,7 @@ public class Presenter {
                 new ScreeningReporter(simName,folder) ;
         ArrayList<Object> pharynxPrevalenceReport = screeningReporter.preparePrevalenceReport("Pharynx") ;
         LOGGER.log(Level.INFO, "{0}", pharynxPrevalenceReport.get(0));
-        Reporter.writeCSV(pharynxPrevalenceReport, "Pharynx", simName, folder);
+        Reporter.WRITE_CSV(pharynxPrevalenceReport, "Pharynx", simName, folder);
         */
         
         /*RelationshipReporter relationshipReporter = 
@@ -325,13 +393,13 @@ public class Presenter {
                 record.add(report.get(relationshipClassName)) ;
             plotReport.add((ArrayList<Object>) record.clone()) ;
         }
-        Reporter.writeCSV(plotReport, relationshipClassNames, chartTitle, simName, folder);
+        Reporter.WRITE_CSV(plotReport, relationshipClassNames, chartTitle, simName, folder);
         Presenter presenter = new Presenter(simName, chartTitle) ;
         */
         
         //presenter.readCSV(simName, chartTitle, folder);
-        HashMap<Object,Number[]> hashMapNumber = readHashMapNumberArrayCSV(fileName);
-        //HashMap<Object,Number> hashMapNumber = readHashMapNumberCSV(fileName);
+        HashMap<Object,Number[]> hashMapNumber = READ_HASHMAP_NUMBER_ARRAY_CSV(fileName);
+        //HashMap<Object,Number> HASHMAP_NUMBER = READ_HASHMAP_NUMBER_CSV(fileName);
         LOGGER.log(Level.INFO, "{0}", hashMapNumber );
     }
     
@@ -441,6 +509,7 @@ public class Presenter {
                     hashMapNumber.put(key, valueArray[1]) ;
                 record = fileReader.readLine() ;
             }
+            fileReader.close() ;
         }
         catch ( Exception e )
         {
@@ -1225,8 +1294,8 @@ public class Presenter {
         {
             int categoryIndex = Reporter.INDEX_OF_PROPERTY(categoryNames[plotIndex],report) ;
 
-            categoryData.add(Reporter.extractAllValues(categoryNames[plotIndex], report, categoryIndex)) ;
-            scoreData.add(Reporter.extractAllValues(scoreName, report, categoryIndex)) ;
+            categoryData.add(Reporter.EXTRACT_ALL_VALUES(categoryNames[plotIndex], report, categoryIndex)) ;
+            scoreData.add(Reporter.EXTRACT_ALL_VALUES(scoreName, report, categoryIndex)) ;
         }
     }
 
@@ -1241,7 +1310,7 @@ public class Presenter {
         ArrayList<Object> plotArray = new ArrayList<Object>() ;
         for (Object record : report)
         {
-            String value = Reporter.extractValue(scoreName,String.valueOf(record)) ;
+            String value = Reporter.EXTRACT_VALUE(scoreName,String.valueOf(record)) ;
             plotArray.add(value) ;
         }
         scoreData.add(plotArray) ;
@@ -1262,7 +1331,7 @@ public class Presenter {
             plotArray = new ArrayList<Object>() ;
             for (Object record : report)
             {
-                String value = Reporter.extractValue(scoreName,String.valueOf(record)) ;
+                String value = Reporter.EXTRACT_VALUE(scoreName,String.valueOf(record)) ;
                 plotArray.add(value) ;
             }
             scoreData.add(plotArray) ;
@@ -1294,7 +1363,7 @@ public class Presenter {
             // Add value to plotArray for scoreData
             for (Object record : report)
             {
-                String value = Reporter.extractValue(scoreName,String.valueOf(record)) ;
+                String value = Reporter.EXTRACT_VALUE(scoreName,String.valueOf(record)) ;
                 plotArray.add(value) ;
             }
             scoreData.add(plotArray) ;
@@ -1318,7 +1387,7 @@ public class Presenter {
             // Add value to plotArray for scoreData
             for (Object record : report)
             {
-                String value = Reporter.extractValue(scoreName,String.valueOf(record)) ;
+                String value = Reporter.EXTRACT_VALUE(scoreName,String.valueOf(record)) ;
                 plotArray.add(value) ;
             }
             scoreData.add((ArrayList<Object>) plotArray.clone()) ;
@@ -1461,15 +1530,27 @@ public class Presenter {
             //LOGGER.info("callPlotChartInteger()") ;
             boolean bin = false ;    // Comparable.class.isInstance(categoryList.get(0)) ;
             
-            DefaultCategoryDataset dataset = createDataset(scoreNames, categoryList, scoreLists,bin) ;
+            DefaultCategoryDataset dataset ;
             
             String[] finalNames = new String[2] ;
             if (PLOT_FILE)
             {
                 // Data from file
-                HashMap<Object,Number[]> dataReport = readHashMapNumberArrayCSV(FILENAME) ;
+                HashMap<Object,Number[]> dataReport = READ_HASHMAP_NUMBER_ARRAY_CSV(FILENAME) ;
+                
+                // Match categories to input file
+                if (categoryList.size() > dataReport.size())
+                {
+                    ArrayList<Object> loseCategories = new ArrayList<Object>() ;
+                    for (Object category : categoryList)
+                        if (!dataReport.containsKey(category))
+                            loseCategories.add(category) ;
+                    categoryList.removeAll(loseCategories) ;
+                }
+                
+                dataset = createDataset(scoreNames, categoryList, scoreLists,bin) ;
 
-                dataset = expandDataset(dataset,dataReport,dataScore) ;
+                dataset = EXPAND_DATASET(dataset,dataReport,dataScore) ;
 
                 finalNames = new String[scoreNames.length + dataScore.length] ;
                 for (int scoreIndex = 0 ; scoreIndex < scoreNames.length ; scoreIndex++ )
@@ -1481,9 +1562,12 @@ public class Presenter {
                     for (int scoreIndex = 0 ; scoreIndex < scoreNames.length ; scoreIndex++ )
                         scoreNames[scoreIndex] = "Log() ".concat(scoreNames[scoreIndex]) ;*/
                 //LOGGER.log(Level.INFO, "{0}", finalNames);
-            }
+                }
             else 
+            {
+                dataset = createDataset(scoreNames, categoryList, scoreLists,bin) ;
                 finalNames = scoreNames ;
+            }
             plotStackedBarChart(chartTitle, dataset, finalNames, xLabel) ;
         }
         
@@ -1863,7 +1947,7 @@ public class Presenter {
             ArrayList<Number> scoreValueArray ;
             //Number scoreValue ;
             
-            for (int index = 0 ; index < scoreData.size() ; index++ )
+            for (int index = 0 ; index < scoreData.size()  ; index++ ) //-2
             {
                 categoryValue = String.valueOf(categoryData.get(index)) ;
                 scoreValueArray = scoreData.get(index) ;
