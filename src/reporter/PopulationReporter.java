@@ -113,8 +113,8 @@ public class PopulationReporter extends Reporter {
             ArrayList<String> censusArray = EXTRACT_ARRAYLIST(record,AGENTID) ;
             for (String birth : censusArray)
             {
-                String agentId = extractValue(AGENTID,birth) ;
-                String sortingValue = extractValue(sortingProperty,birth) ;
+                String agentId = EXTRACT_VALUE(AGENTID,birth) ;
+                String sortingValue = EXTRACT_VALUE(sortingProperty,birth) ;
                 sortedHashMap.put((Object) agentId, sortingValue) ;
             }
         }
@@ -171,8 +171,8 @@ public class PopulationReporter extends Reporter {
             
             for (String propertyEntry : propertyList)
             {
-                String agentId = extractValue(agentString,propertyEntry) ;
-                String agentValue = extractValue(propertyName,censusPropertyReport.get(agentId)) ;
+                String agentId = EXTRACT_VALUE(agentString,propertyEntry) ;
+                String agentValue = EXTRACT_VALUE(propertyName,censusPropertyReport.get(agentId)) ;
                 if (COMPARE_VALUE(propertyName,propertyValue,agentValue,0)) ;
                     filteredRecord += propertyEntry ;
             }
@@ -202,7 +202,7 @@ public class PopulationReporter extends Reporter {
             birthIndex = birthRecord.lastIndexOf(AGENTID) ;
         }
         
-        return Integer.valueOf(extractValue(AGENTID,birthRecord,birthIndex)) ;
+        return Integer.valueOf(EXTRACT_VALUE(AGENTID,birthRecord,birthIndex)) ;
     }
     
     /**
@@ -221,7 +221,7 @@ public class PopulationReporter extends Reporter {
         {
             String record = deathReport.get(recordIndex) ;
             //LOGGER.info(record);
-            ArrayList<Object> deadAgentList = extractAllValues(AGENTID, record) ;
+            ArrayList<Object> deadAgentList = EXTRACT_ALL_VALUES(AGENTID, record) ;
             agentsDeadRecord.addAll(deadAgentList) ;
         }
             
@@ -243,7 +243,7 @@ public class PopulationReporter extends Reporter {
         {
             String report = birthReport.get(reportNb) ;
             startIndex = INDEX_OF_PROPERTY(AGENTID,report);
-            agentBirthReport.add(extractAllValues(AGENTID, report, startIndex)) ;
+            agentBirthReport.add(EXTRACT_ALL_VALUES(AGENTID, report, startIndex)) ;
         }
         return agentBirthReport ;
     }
@@ -263,7 +263,7 @@ public class PopulationReporter extends Reporter {
         {
             String report = birthReport.get(reportNb) ;
             int startIndex = INDEX_OF_PROPERTY(AGE,report) ;
-            ageBirthReport.add(extractAllValues(AGE, report, startIndex)) ;
+            ageBirthReport.add(EXTRACT_ALL_VALUES(AGE, report, startIndex)) ;
         }
         return ageBirthReport ;
     }
@@ -286,7 +286,7 @@ public class PopulationReporter extends Reporter {
             //LOGGER.info(record);
             ArrayList<String> deathRecords = EXTRACT_ARRAYLIST(record, DEATH) ;
             for (String deathRecord : deathRecords)
-                agentDeathReport.add(extractAllValues(AGENTID,deathRecord,0)) ;
+                agentDeathReport.add(EXTRACT_ALL_VALUES(AGENTID,deathRecord,0)) ;
         }
         return agentDeathReport ;
     }
@@ -313,7 +313,7 @@ public class PopulationReporter extends Reporter {
         {
             ageDeathRecord = new ArrayList<Object>() ;  //.clear();
             String record = deathReport.get(reportNb) ;
-            ArrayList<Object> agentIds = extractAllValues(AGENTID,record) ;
+            ArrayList<Object> agentIds = EXTRACT_ALL_VALUES(AGENTID,record) ;
             for (Object agentId : agentIds)
                 agentAgeHashMap.put(agentId, reportNb/daysInYear) ;
         }
@@ -324,10 +324,10 @@ public class PopulationReporter extends Reporter {
             ArrayList<String> birthRecords = EXTRACT_ARRAYLIST(record,AGENTID) ;
             for (String birthRecord : birthRecords )
             {
-                String agentId = extractValue(AGENTID,birthRecord) ;
+                String agentId = EXTRACT_VALUE(AGENTID,birthRecord) ;
                 if (agentAgeHashMap.keySet().contains(agentId))
                 {
-                    int birthAge = Integer.valueOf(extractValue(AGE,birthRecord)) ;
+                    int birthAge = Integer.valueOf(EXTRACT_VALUE(AGE,birthRecord)) ;
                     agentAgeHashMap.put(agentId, agentAgeHashMap.get(agentId) - recordNb/daysInYear + birthAge) ;
                 }
             }
@@ -350,7 +350,7 @@ public class PopulationReporter extends Reporter {
         for (Object agentId : ageDeathReport.keySet())
         {
             String ageString = String.valueOf(ageDeathReport.get(agentId)) ;
-            ageAtDeathMap = incrementHashMap(ageString,ageAtDeathMap) ;
+            ageAtDeathMap = INCREMENT_HASHMAP(ageString,ageAtDeathMap) ;
         }
         return ageAtDeathMap ;
     }
@@ -388,7 +388,7 @@ public class PopulationReporter extends Reporter {
         
         for (int recordNb = startRecordNb ; recordNb < endRecordNb ; recordNb++ )
         {
-            ArrayList<Object> stringArray = extractAllValues(AGENTID,deathReport.get(recordNb),0) ;
+            ArrayList<Object> stringArray = EXTRACT_ALL_VALUES(AGENTID,deathReport.get(recordNb),0) ;
             deathsDuringPeriodReport.addAll(stringArray) ;
         }
         
@@ -464,15 +464,15 @@ public class PopulationReporter extends Reporter {
             ArrayList<String> birthArray = EXTRACT_ARRAYLIST(birthRecord,AGENTID) ;
             for (String birthAgent : birthArray)
             {
-                Object agentId = extractValue(AGENTID,birthAgent) ;
-                int age = Integer.valueOf(extractValue(AGE,birthAgent)) ;
+                Object agentId = EXTRACT_VALUE(AGENTID,birthAgent) ;
+                int age = Integer.valueOf(EXTRACT_VALUE(AGE,birthAgent)) ;
                 agentAgeHashMap.put(agentId, age + (nbCycles - recordIndex)/daysInYear) ;
             }
             String deathRecord = deathReport.get(recordIndex) ;
             ArrayList<String> deathArray = EXTRACT_ARRAYLIST(deathRecord,AGENTID) ;
             for (String deathAgent : deathArray) 
             {
-                Object agentId = extractValue(AGENTID,deathAgent) ;
+                Object agentId = EXTRACT_VALUE(AGENTID,deathAgent) ;
                 int correctAge = agentAgeHashMap.get(agentId) - (nbCycles - recordIndex)/daysInYear ;
                 agentAgeHashMap.put(agentId,correctAge) ;
             }
@@ -485,7 +485,7 @@ public class PopulationReporter extends Reporter {
 //            int age = agentAgeHashMap.get(agentId) ;
 //            // Sort into age ranges (n*5 + 1) to (n+1)*5
 //            int ageRange = ((age-1)/5) * 5 + 5 ;
-//            sortAgeRecord = updateHashMap(ageRange,agentId,sortAgeRecord) ;
+//            sortAgeRecord = UPDATE_HASHMAP(ageRange,agentId,sortAgeRecord) ;
 //        }
         return agentAgeHashMap ;
     }
@@ -531,14 +531,14 @@ public class PopulationReporter extends Reporter {
             ArrayList<String> birthArray = EXTRACT_ARRAYLIST(birthRecord,AGENTID) ;
             for (String birthAgent : birthArray)
             {
-                Object agentId = extractValue(AGENTID,birthAgent) ;
+                Object agentId = EXTRACT_VALUE(AGENTID,birthAgent) ;
                 String propertyValue ;
                 String censusEntry = "" ;
-                ArrayList<String> propertyNames = identifyProperties(birthAgent) ;
+                ArrayList<String> propertyNames = IDENTIFY_PROPERTIES(birthAgent) ;
                 propertyNames.remove(AGENTID) ;
                 for (String propertyName : propertyNames)
                 {
-                    propertyValue = extractValue(propertyName,birthAgent);
+                    propertyValue = EXTRACT_VALUE(propertyName,birthAgent);
                     censusEntry += Reporter.ADD_REPORT_PROPERTY(propertyName, propertyValue) ;
                 }
                 censusPropertyReport.put(agentId, censusEntry) ;
@@ -565,8 +565,8 @@ public class PopulationReporter extends Reporter {
             ArrayList<String> birthArray = EXTRACT_ARRAYLIST(birthRecord,AGENTID) ;
             for (String birthAgent : birthArray)
             {
-                Object agentId = extractValue(AGENTID,birthAgent) ;
-                String propertyValue = extractValue(propertyName,birthAgent) ;
+                Object agentId = EXTRACT_VALUE(AGENTID,birthAgent) ;
+                String propertyValue = EXTRACT_VALUE(propertyName,birthAgent) ;
                 censusPropertyReport.put(agentId, propertyValue) ;
             }
         }
