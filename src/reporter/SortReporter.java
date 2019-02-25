@@ -135,7 +135,7 @@ public class SortReporter extends Reporter {
             for (Object relationshipClassName : enteredRelationshipRecord.keySet())
                 for (Object agentId : enteredRelationshipRecord.get(relationshipClassName).keySet())
                     ageEnteredRelationshipRecord.put(relationshipClassName,
-                            updateHashMap(sortAgeRecord.get(agentId),
+                            UPDATE_HASHMAP(sortAgeRecord.get(agentId),
                                     enteredRelationshipRecord.get(relationshipClassName).get(agentId).size(),ageEnteredRelationshipRecord.get(relationshipClassName))) ; 
 
         for (Object relationshipClassName : ageEnteredRelationshipRecord.keySet())
@@ -301,10 +301,10 @@ public class SortReporter extends Reporter {
             ArrayList<String> agentList = EXTRACT_ARRAYLIST(record,AGENTID) ;
             for (String agentRecord : agentList)
             {
-                Object agentId = extractValue(AGENTID,agentRecord) ;
+                Object agentId = EXTRACT_VALUE(AGENTID,agentRecord) ;
                 if (!agentsAlive.contains(agentId))
                     continue ;
-                int concurrency = Integer.valueOf(extractValue("concurrency",agentRecord)) ;
+                int concurrency = Integer.valueOf(EXTRACT_VALUE("concurrency",agentRecord)) ;
                 agentConcurrencyReport.get(concurrency - 1).add(agentId) ;    // -1 due to concurrency != 0
             }
         }
@@ -331,7 +331,7 @@ public class SortReporter extends Reporter {
         // transmitting agentId maps to receiving agentId maps to (ArrayList) cycle of infection
         HashMap<Object,HashMap<Object,ArrayList<Object>>> agentToAgentReport = ((EncounterReporter) unsortedReporter).prepareAgentToAgentReport() ;
         // Inverts to Cycle maps to infecting agentId maps to (ArrayList) receiviing AgentIds
-        HashMap<Object,HashMap<Object,ArrayList<Object>>> invertedHashMap = EncounterReporter.invertHashMapHashMap(agentToAgentReport) ;
+        HashMap<Object,HashMap<Object,ArrayList<Object>>> invertedHashMap = EncounterReporter.INVERT_HASHMAP_HASHMAP(agentToAgentReport) ;
         
         ArrayList<ArrayList<Object>> unsortedReport = ((EncounterReporter) unsortedReporter).prepareReceiveCountReport(invertedHashMap) ;
         
@@ -353,7 +353,7 @@ public class SortReporter extends Reporter {
         {
             ArrayList<Object> receivingAgentIds = unsortedReport.get(recordIndex - cycle) ;
             for (Object agentId : receivingAgentIds)
-                agentIncidenceCount = incrementHashMap(agentId,agentIncidenceCount) ;
+                agentIncidenceCount = INCREMENT_HASHMAP(agentId,agentIncidenceCount) ;
         }
         return agentIncidenceCount ;
     }
@@ -415,12 +415,12 @@ public class SortReporter extends Reporter {
                 // Determine nb of infected
                 for (String infection : infections)
                 {
-                    if (!agentIdList.contains(extractValue(AGENTID,infection))) 
+                    if (!agentIdList.contains(EXTRACT_VALUE(AGENTID,infection))) 
                         continue ;
                     nbInfected++ ;
                     // Determine nb of symptomatic infected
                     for (String siteName : siteNames)
-                        if (compareValue(siteName,TRUE,infection))
+                        if (COMPARE_VALUE(siteName,TRUE,infection))
                         {
                             nbSymptomatic++ ;
                             break ;
@@ -487,7 +487,7 @@ public class SortReporter extends Reporter {
         // Count new relationships for each Agent over past backYears years
         for (int cycle = 0 ; cycle < backCycles ; cycle++)
             for (Object agentId : sortingReport.get(recordIndex-cycle))
-                agentCommenceCount = incrementHashMap(agentId,agentCommenceCount) ;
+                agentCommenceCount = INCREMENT_HASHMAP(agentId,agentCommenceCount) ;
         //LOGGER.log(Level.INFO, "{0}", agentCommenceCount);
 
         PopulationReporter populationReporter = new PopulationReporter(sortingReporter.simName,sortingReporter.getFolderPath()) ;
