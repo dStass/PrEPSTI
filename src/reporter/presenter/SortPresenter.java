@@ -118,8 +118,8 @@ public class SortPresenter extends Presenter {
             prevalenceSortReportEntry = prevalenceSortReport.get(binIndex) ;
             if (!prevalenceSortReportEntry.isEmpty())
             {
-                populations.add(Integer.valueOf(Reporter.extractValue("population", prevalenceSortReportEntry))) ;
-                prevalences.add(Double.valueOf(Reporter.extractValue(scoreName, prevalenceSortReportEntry))) ;
+                populations.add(Integer.valueOf(Reporter.EXTRACT_VALUE("population", prevalenceSortReportEntry))) ;
+                prevalences.add(Double.valueOf(Reporter.EXTRACT_VALUE(scoreName, prevalenceSortReportEntry))) ;
             }
             //else 
               //  break ;
@@ -166,7 +166,7 @@ public class SortPresenter extends Presenter {
             //prevalence = score * populationRatio ;
             prevalenceSortCount.put(binLabel, new Number[] {populationRatio, score}) ;
         }
-        String timePeriod = getTimePeriodString(backYear,backMonths,backDays) ;
+        String timePeriod = GET_TIME_PERIOD_STRING(backYear,backMonths,backDays) ;
         
         
         plotHashMapArea("nbPartners in last " + timePeriod, scoreName, prevalenceSortCount) ;
@@ -203,7 +203,7 @@ public class SortPresenter extends Presenter {
         String scoreName = "incidence" ;
         LOGGER.log(Level.INFO, "{0}", sortConcurrencyIncidenceReport);
         
-        String timePeriod = getTimePeriodString(backYears,backMonths,backDays) ;
+        String timePeriod = GET_TIME_PERIOD_STRING(backYears,backMonths,backDays) ;
         
         plotHashMapArea("concurrency in last " + timePeriod,scoreName, sortConcurrencyIncidenceReport) ;
     }
@@ -218,7 +218,7 @@ public class SortPresenter extends Presenter {
                 = reporter.prepareAgeNumberEnteredRelationshipRecord(relationshipClassNames) ;
         
         HashMap<Object,Number[]> invertedHashMap 
-                = Reporter.invertHashMapArray(ageNumberEnteredRelationshipRecord,relationshipClassNames) ;
+                = Reporter.INVERT_HASHMAP_ARRAY(ageNumberEnteredRelationshipRecord,relationshipClassNames) ;
         
             
         plotHashMap("age", relationshipClassNames, invertedHashMap ) ;
