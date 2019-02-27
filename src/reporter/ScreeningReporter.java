@@ -55,6 +55,12 @@ public class ScreeningReporter extends Reporter {
         {
             HashMap<Object,Number[]> positivityRecordYears = new HashMap<Object,Number[]>() ;
             
+            // Whether to save this Report to file
+            boolean writeLocal = writeReport ;
+            // Do not save subreports
+            writeReport = false ;
+            
+            //Count from the last cycle of the simulation.
             int maxCycles = getMaxCycles() ;
             
             HashMap<Object,Number[]> positivityRecord ;
@@ -71,7 +77,10 @@ public class ScreeningReporter extends Reporter {
                 
                 positivityRecordYears.put(lastYear - year, (Number[]) yearlyPositivityRecord.clone()) ;
             }
-            
+            if (writeLocal)
+                WRITE_CSV(positivityRecordYears, "Year", siteNames, "Positivity", simName, getFolderPath()) ;
+            writeReport = writeLocal ;
+        
             return positivityRecordYears ;
         }
     
@@ -149,7 +158,7 @@ public class ScreeningReporter extends Reporter {
         int notifications ;
         //double nbTests ;
         String record ;
-        
+        String positiveRecord ;
         //String finalIncidenceRecord ; // getFinalRecord() ;
         ArrayList<String> finalNotificationsReport = getBackCyclesReport(0, backMonths, backDays, endCycle) ;
         
@@ -164,13 +173,17 @@ public class ScreeningReporter extends Reporter {
             {
                 // Count infected siteName
                 record = BOUNDED_STRING_BY_CONTENTS(siteName,AGENTID,finalIncidenceRecord) ;
+                // Count Agents with positive tests
+                positiveRecord = BOUNDED_STRING_BY_CONTENTS("treated",AGENTID,record) ;
                 
-                //* 100 because units  per 100 person years
-                notifications += COUNT_VALUE_INCIDENCE("treated","",record,0)[1] ;
+                // Extract agentIds with positive result
+                ArrayList<Object> positiveList = EXTRACT_ALL_VALUES(AGENTID,positiveRecord) ;
+                notifications += positiveList.size() ;
+                //notifications += COUNT_VALUE_INCIDENCE("treated","",record,0)[1] ;
                 
-                ArrayList<Object> positiveList = EXTRACT_ALL_VALUES(AGENTID,record) ;
                 // Avoid double counting, ACCESS counts unique patient visits
-                positiveList.removeAll(positiveAgents) ;
+                if (unique)
+                    positiveList.removeAll(positiveAgents) ;
                 positiveAgents.addAll(positiveList) ;
             }
             Number[] entry = new Number[] {notifications/denominator,positiveAgents.size()} ;
@@ -184,16 +197,19 @@ public class ScreeningReporter extends Reporter {
         {
             notifications += COUNT_VALUE_INCIDENCE("treated","",finalNotificationsRecord,0)[1] ;
             
-            ArrayList<Object> testedList = EXTRACT_ALL_VALUES(AGENTID,finalNotificationsRecord) ;
+            record = BOUNDED_STRING_BY_CONTENTS("tested",AGENTID,finalNotificationsRecord) ;
+            ArrayList<Object> testedList = EXTRACT_ALL_VALUES(AGENTID,record) ;
             // Avoid double counting Agents
-            testedList.removeAll(testedAgents) ;
+            if (unique)
+                    testedList.removeAll(testedAgents) ;
             testedAgents.addAll(testedList) ;
             
             // Positive Agents
             record = BOUNDED_STRING_BY_CONTENTS("treated",AGENTID,finalNotificationsRecord) ;
             ArrayList<Object> positiveList = EXTRACT_ALL_VALUES(AGENTID,record) ;
             // Avoid double counting
-            positiveList.removeAll(positiveAgents) ;
+            if (unique)
+                    positiveList.removeAll(positiveAgents) ;
             positiveAgents.addAll(positiveList) ;
                 
         }
@@ -207,7 +223,7 @@ public class ScreeningReporter extends Reporter {
         {
             entry = finalNotifications.get(siteName) ;
             notifications = entry[1].intValue() ;
-            entry[1] = notifications/nbTested ;
+            entry[1] = (Integer) notifications/nbTested ;
             finalNotifications.put(siteName,entry) ;
         }
         
