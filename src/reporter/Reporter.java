@@ -1203,13 +1203,11 @@ public class Reporter {
     {
         String filePath ;
         String line ;
-        String plotProperty = "meanNb" ;
-        Class valueClass ;
+        
         ArrayList<String> properties = new ArrayList<String>() ;
         String fileHeader = "cycle," ;
         
-        Object firstRecord = report.get(0) ;
-        valueClass = String.class ;
+        //Object firstRecord = report.get(0) ;
         filePath = folderPath + simName + scoreNames[0] + ".csv";
         properties = IDENTIFY_PROPERTIES((String) report.get(0)) ;    // TODO: Try (String) instead of String.valueOf()
         //for (int index = 1 ; index < properties.size() ; index++ )
@@ -1305,7 +1303,7 @@ public class Reporter {
 
         String fileHeader = categoryName.concat(COMMA) ;
         fileHeader += String.join(COMMA, scoreNames)  ;
-        LOGGER.info(fileHeader) ;
+        //LOGGER.info(fileHeader) ;
         
         try
         {
@@ -1316,7 +1314,7 @@ public class Reporter {
         {
             nbProperties = 1 ;
         }
-        LOGGER.log(Level.INFO, "nbProperties:{1}", new Object[] {nbProperties});
+        //LOGGER.log(Level.INFO, "nbProperties:{1}", new Object[] {nbProperties});
         
         
         try
@@ -1388,7 +1386,7 @@ public class Reporter {
         String record ;
         String meanRecord ;
         double meanValue ;
-        double value ;
+        
         int nbRecords = reports.get(0).size() ;
         int nbReports = reports.size() ;
         
