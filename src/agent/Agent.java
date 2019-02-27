@@ -367,15 +367,15 @@ public abstract class Agent {
                             Boolean symptoms = Boolean.valueOf(Reporter.EXTRACT_VALUE(site.getSite(),infectionString,siteIndex));
                             if (rebootFile)
                             {
-                                site.receiveInfection(1.1) ;
-                                newAgent.setInfectedStatus(true) ;
+                                newAgent.receiveInfection(1.1,site) ;
+                                //newAgent.setInfectedStatus(true) ;
                                 
                                 // Set symptomatic, or not
                                 if (symptoms)
-                                    site.setSymptomatic(1.1) ;
+                                    newAgent.setSymptomatic(true,site) ;
                                 else
-                                    site.setSymptomatic(-0.1) ;
-                                newAgent.setSymptomatic(site) ;
+                                    newAgent.setSymptomatic(false,site) ;
+                                //newAgent.setSymptomatic(site) ;
                                 
                                 // Set remaining infectionTime
                                 infectionTime = Reporter.EXTRACT_VALUE("infectionTime", infectionString, siteIndex) ;
@@ -943,6 +943,17 @@ public abstract class Agent {
      */
     public boolean setSymptomatic(Site site)
     {
+        return symptomatic = (symptomatic || site.getSymptomatic()) ;
+    }
+
+    /**
+     * The Agent becomes symptomatic if and only if the newly infected Site is.
+     * @param site
+     * @return 
+     */
+    public boolean setSymptomatic(boolean symptoms, Site site)
+    {
+        site.setSymptomatic(symptoms) ;
         return symptomatic = (symptomatic || site.getSymptomatic()) ;
     }
 
@@ -1531,7 +1542,7 @@ public abstract class Agent {
     }
 
     
-    public void checkInfectedStatus()
+    public void reportInfectedStatus()
     {
         Site[] sites = getSites() ;
         String siteReport = "" ;
