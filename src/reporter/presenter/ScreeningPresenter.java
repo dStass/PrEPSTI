@@ -70,17 +70,27 @@ public class ScreeningPresenter extends Presenter {
     {
         //String simName = "From2007To2014Ratio15aPop40000Cycles3420" ; 
         //String simName =  "ReversedSafeRatio6aPop40000Cycles3000" ;
-        String simName =  "CorrectedSafeRatio4cUrethral70Pop40000Cycles2500" ;
+        String simName =  "CorrectedSafe8aUrethral60Pop40000Cycles2000" ;
         //String simName = "FallingCondomUseAlteredTestingPop40000Cycles2000" ;
         //String simName = "Year2007Commence5fPop40000Cycles2500" ;
-        //String simName = "From2007To2016UrethralSymp60c30Pop40000Cycles4150" ;
+        //String simName = "From2007To2016Urethral70b4Pop40000Cycles4650" ;
         //String simName = "AllRisky8Pop40000Cycles1000" ;
+        
+        boolean unique = false ;
+        int notifications = 1 ; 
+        String chartTitle ;
+        if (unique && (notifications == 1))
+            chartTitle = "unique " ;
+        else
+            chartTitle = "" ;
         //String chartTitle = "mean_prevalence" ; //  args[1] ;
         //String chartTitle = "multi-site prevalence" ; //  args[1] ;
-        String chartTitle = "notifications" ; //
-        //String chartTitle = "positivity" ; //
-        boolean unique = true ;
-        int notifications = 0 ; 
+        if (notifications == 0)
+            chartTitle += "notifications" ; //
+        else if (notifications == 1)
+            chartTitle += "positivity" ;
+        
+        //+ "" ;
         //String chartTitle = "proportion_symptomatic" ;
         //String chartTitle = "site-specific symptomatic" ; // args[1] ;
         //String chartTitle = "testing_6_months" ; // args[1] ;
@@ -116,7 +126,7 @@ public class ScreeningPresenter extends Presenter {
         //screeningPresenter.plotFinalPrevalences(new String[] {"Pharynx","Rectum","Urethra"}) ;
         screeningPresenter.plotFinalNotifications(new String[] {"Pharynx","Rectum","Urethra"}, unique, 0, Reporter.DAYS_PER_YEAR, notifications) ;
         //screeningPresenter.plotNotificationsYears(new String[] {"all"},8,2014) ;
-        //screeningPresenter.plotPositivityYears(new String[] {"Pharynx","Rectum","Urethra"},3,2016) ;
+        //screeningPresenter.plotPositivityYears(new String[] {"Pharynx","Rectum","Urethra"},8,2014) ;
         //screeningPresenter.plotNotificationPerCycle() ;    
         //screeningPresenter.plotSiteProportionSymptomatic(siteNames) ;
 
