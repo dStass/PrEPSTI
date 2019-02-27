@@ -30,7 +30,7 @@ import java.util.logging.Level;
  *******************************************************************/
 public class Community {
     static public int POPULATION = 40000 ;
-    static public int MAX_CYCLES = 2500 ; 
+    static public int MAX_CYCLES = 1000 ; 
     static public String NAME_ROOT = "" ;
     //static public String NAME_ROOT = "TestUrethraSymp60a2" ;
     //static public String NAME_ROOT = "CorrectedSafeRatio17aCont" ;
@@ -310,7 +310,7 @@ public class Community {
         System.out.println("Elapsed running time: " + seconds + "seconds") ;
         System.out.println("Elapsed running time: " + minutes + "minutes") ;
         
-        if (TO_PLOT)
+        //if (TO_PLOT)
         {
         String[] relationshipClassNames = new String[] {"Casual","Regular","Monogomous"} ; // "Casual","Regular","Monogomous"
         
@@ -332,10 +332,26 @@ public class Community {
           //      = new ScreeningPresenter("prevalence",Community.SIM_NAME,screeningReporter) ;
         //screeningPresenter2.plotPrevalence();
         //screeningPresenter2.plotNotificationsPerCycle();
-        ScreeningPresenter screeningPresenter3 
-                = new ScreeningPresenter(SIM_NAME,"multi prevalence",screeningReporter) ;
-        screeningPresenter3.multiPlotScreening(new Object[] {"prevalence","prevalence",new String[] {"Pharynx","Rectum","Urethra"},"coprevalence",new String[] {"Pharynx","Rectum"}});  // ,"coprevalence",new String[] {"Pharynx","Rectum"},new String[] {"Urethra","Rectum"}
+        if (TO_PLOT)
+        {
+            ScreeningPresenter screeningPresenter3 
+                    = new ScreeningPresenter(SIM_NAME,"multi prevalence",screeningReporter) ;
+            screeningPresenter3.multiPlotScreening(new Object[] {"prevalence","prevalence",new String[] {"Pharynx","Rectum","Urethra"},"coprevalence",new String[] {"Pharynx","Rectum"}});  // ,"coprevalence",new String[] {"Pharynx","Rectum"},new String[] {"Urethra","Rectum"}
+        }
         
+        {
+            for (boolean unique : new boolean[] {true,false})
+            {
+                HashMap<Object,Number> finalNotificationsRecord = new HashMap<Object,Number>() ;
+                HashMap<Object,Number[]> notificationsRecord = screeningReporter.prepareFinalNotificationsRecord(new String[] {"Pharynx","Rectum","Urethra"}, unique, 0, Reporter.DAYS_PER_YEAR) ;
+                for (Object key : notificationsRecord.keySet())
+                {
+                    finalNotificationsRecord.put(key, notificationsRecord.get(key)[1]) ;
+                }
+                LOGGER.log(Level.INFO, "Positivity unique:{0} {1}", new Object[] {unique,finalNotificationsRecord});
+            }
+    
+        }
         //EncounterReporter encounterReporter = new EncounterReporter("Agent to Agent",community.encounterReport) ;
         //EncounterReporter encounterReporter = new EncounterReporter(Community.SIM_NAME,Community.FILE_PATH) ;
 //        EncounterPresenter encounterPresenter = new EncounterPresenter(Community.SIM_NAME,"agent to agent", encounterReporter) ;
@@ -530,7 +546,7 @@ public class Community {
      */
     private String interveneCommunity(int cycle)
     {
-        int startCycle = 500 ;
+        int startCycle = 1000 ;
         if (cycle < startCycle)
             return "" ;
         
