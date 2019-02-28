@@ -30,10 +30,10 @@ import java.util.logging.Level;
  *******************************************************************/
 public class Community {
     static public int POPULATION = 40000 ;
-    static public int MAX_CYCLES = 1000 ; 
+    static public int MAX_CYCLES = 2000 ; 
     static public String NAME_ROOT = "" ;
     //static public String NAME_ROOT = "TestUrethraSymp60a2" ;
-    //static public String NAME_ROOT = "CorrectedSafeRatio17aCont" ;
+    //static public String NAME_ROOT = "CorrectedSafe24a" ;
     //static public String NAME_ROOT = "From2007To2012a" ;
     //static public String NAME_ROOT = "IntroPrepCalibration74acycle6000" ;
     //static public String NAME_ROOT = "FallingCondomUseNew5a" ;
