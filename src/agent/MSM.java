@@ -136,21 +136,21 @@ public class MSM extends Agent {
     private boolean riskyStatus ;
     
     /** Transmission probabilities per sexual contact from Urethra to Rectum */
-    static double URETHRA_TO_RECTUM = 0.021 ; 
+    static double URETHRA_TO_RECTUM = 0.030 ; 
     /** Transmission probabilities sexual contact from Urethra to Pharynx. */
-    static double URETHRA_TO_PHARYNX = 0.021 ; 
+    static double URETHRA_TO_PHARYNX = 0.024 ; 
     /** Transmission probabilities sexual contact from Rectum to Urethra. */ 
     static double RECTUM_TO_URETHRA = 0.021 ; 
     /** Transmission probabilities sexual contact from Rectum to Pharynx. */
-    static double RECTUM_TO_PHARYNX = 0.021 ; 
+    static double RECTUM_TO_PHARYNX = 0.030 ; 
     /** Transmission probabilities sexual contact in Pharynx to Urethra intercourse. */
-    static double PHARYNX_TO_URETHRA = 0.021 ;
+    static double PHARYNX_TO_URETHRA = 0.020 ;
     /** Transmission probabilities sexual contact in Pharynx to Rectum intercourse. */
-    static double PHARYNX_TO_RECTUM = 0.021 ; 
+    static double PHARYNX_TO_RECTUM = 0.030 ; 
     /** Transmission probabilities sexual contact in Pharynx to Pharynx intercourse (kissing). */
-    static double PHARYNX_TO_PHARYNX = 0.021 ; 
+    static double PHARYNX_TO_PHARYNX = 0.025 ; 
     /** Transmission probabilities sexual contact in Urethra to Urethra intercourse (docking). */
-    static double URETHRA_TO_URETHRA = 0.021 ; 
+    static double URETHRA_TO_URETHRA = 0.020 ; 
     /** Transmission probabilities sexual contact in Rectum to Rectum intercourse. */
     static double RECTUM_TO_RECTUM = 0.003 ; // 0.003 ; 
     
@@ -176,7 +176,7 @@ public class MSM extends Agent {
     static double JOIN_GSE_PROBABILITY = 6.35 * Math.pow(10,-4) ;
     
     
-    public static void RESET_INFECT_PROBABILITIES()
+    public static void RESET_INFECT_PROBABILITIES(int index)
     {
         HashMap<String[],double[]> transmissionMap = new HashMap<String[], double[]>() ;
         transmissionMap.put(new String[] {URETHRA, RECTUM},new double[] {0.028,0.032}) ;
@@ -185,17 +185,19 @@ public class MSM extends Agent {
         transmissionMap.put(new String[] {PHARYNX, URETHRA},new double[] {0.024,0.024}) ;
         transmissionMap.put(new String[] {URETHRA, PHARYNX},new double[] {0.024,0.024}) ;
         
-        String siteNames[] = new String[] {URETHRA,RECTUM,PHARYNX} ;
+        int nbKeys = transmissionMap.size() ;
+        int nbValues = transmissionMap.values().toArray().length ;
+        int maxIndex = nbKeys * nbValues ;
+        index = Math.floorMod(index, maxIndex) ;
+        
+        int keyIndex = Math.floorDiv(index,nbValues) ;
+        int valueIndex = Math.floorMod(index, nbValues) ;
+        //String siteNames[] = new String[] {URETHRA,RECTUM,PHARYNX} ;
         String[] keyArray ;
-        for (String infectedSiteName : siteNames)
-            for (String clearSiteName : siteNames)
-            {
-                keyArray = new String[] {infectedSiteName, clearSiteName} ;
-                if (!transmissionMap.containsKey(keyArray))
-                    continue ;
-                for (double transmissions : transmissionMap.get(keyArray))
+        String[] key = (String[]) transmissionMap.keySet().toArray()[(int) Math.floorMod(index,nbKeys)] ;
+        {
                 {
-
+                    // Implement using 
                 }
             }
     }
