@@ -30,10 +30,10 @@ import java.util.logging.Level;
  *******************************************************************/
 public class Community {
     static public int POPULATION = 40000 ;
-    static public int MAX_CYCLES = 2000 ; 
+    static public int MAX_CYCLES = 750 ; 
     static public String NAME_ROOT = "" ;
     //static public String NAME_ROOT = "TestUrethraSymp60a2" ;
-    //static public String NAME_ROOT = "CorrectedSafe24a" ;
+    //static public String NAME_ROOT = "CorrectedSafe46a" ;
     //static public String NAME_ROOT = "From2007To2012a" ;
     //static public String NAME_ROOT = "IntroPrepCalibration74acycle6000" ;
     //static public String NAME_ROOT = "FallingCondomUseNew5a" ;
@@ -350,6 +350,14 @@ public class Community {
                 }
                 LOGGER.log(Level.INFO, "Positivity unique:{0} {1}", new Object[] {unique,finalNotificationsRecord});
             }
+            String prevalenceReports = "" ;
+            ArrayList<Object> prevalenceReport ;
+            for (String siteName : new String[] {"Pharynx","Rectum","Urethra"})
+            {
+                prevalenceReport = screeningReporter.preparePrevalenceReport(siteName) ;
+                prevalenceReports += Reporter.ADD_REPORT_PROPERTY(siteName, prevalenceReport.get(prevalenceReport.size() - 1)) ;
+            }
+            LOGGER.info(prevalenceReports) ;
     
         }
         //EncounterReporter encounterReporter = new EncounterReporter("Agent to Agent",community.encounterReport) ;
