@@ -8,7 +8,8 @@ import reporter.Reporter ;
 
 import java.util.logging.Level;
 import site.* ;
-
+import agent.* ;
+        
 import java.lang.reflect.*;
 import java.util.ArrayList ;
 import java.util.Arrays;
@@ -136,23 +137,23 @@ public class MSM extends Agent {
     private boolean riskyStatus ;
     
     /** Transmission probabilities per sexual contact from Urethra to Rectum */
-    static double URETHRA_TO_RECTUM = 0.037 ;
+    static double URETHRA_TO_RECTUM = 0.040 ;
     /** Transmission probabilities sexual contact from Urethra to Pharynx. */
     static double URETHRA_TO_PHARYNX = 0.030 ; 
     /** Transmission probabilities sexual contact from Rectum to Urethra. */ 
-    static double RECTUM_TO_URETHRA = 0.008 ; 
+    static double RECTUM_TO_URETHRA = 0.005 ; 
     /** Transmission probabilities sexual contact from Rectum to Pharynx. */
     static double RECTUM_TO_PHARYNX = 0.030 ; 
     /** Transmission probabilities sexual contact in Pharynx to Urethra intercourse. */
-    static double PHARYNX_TO_URETHRA = 0.008 ;
+    static double PHARYNX_TO_URETHRA = 0.005 ;
     /** Transmission probabilities sexual contact in Pharynx to Rectum intercourse. */
-    static double PHARYNX_TO_RECTUM = 0.037 ; 
+    static double PHARYNX_TO_RECTUM = 0.040 ; 
     /** Transmission probabilities sexual contact in Pharynx to Pharynx intercourse (kissing). */
     static double PHARYNX_TO_PHARYNX = 0.025 ; 
     /** Transmission probabilities sexual contact in Urethra to Urethra intercourse (docking). */
-    static double URETHRA_TO_URETHRA = 0.008 ; 
+    static double URETHRA_TO_URETHRA = 0.005 ; 
     /** Transmission probabilities sexual contact in Rectum to Rectum intercourse. */
-    static double RECTUM_TO_RECTUM = 0.003 ; // 0.003 ; 
+    static double RECTUM_TO_RECTUM = 0.0030 ; // 0.003 ; 
     
     /** The probability of screening in a given cycle with statusHIV true. */
     static double SCREEN_PROBABILITY_HIV_POSITIVE = 0.0029 ;
@@ -1135,8 +1136,8 @@ public class MSM extends Agent {
     public double getJoinGroupSexEventProbability()
     {
         if (riskyStatus)
-            return RiskyMSM.JOIN_GSE_PROBABILITY ;
-        return SafeMSM.JOIN_GSE_PROBABILITY ;
+            return 1.0/(3 * 184) ; // RiskyMSM.JOIN_GSE_PROBABILITY ;
+        return 0.0 ; // SafeMSM.JOIN_GSE_PROBABILITY ;
     }
     
     /**
