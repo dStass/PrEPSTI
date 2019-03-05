@@ -22,7 +22,7 @@ public class Urethra extends Site {
      * Proper value unknown as almost always treated. 
      * Value for Rectum taken.
      */
-    static int INFECTION_DURATION = 183 ;
+    static int INFECTION_DURATION = 92 ; // 183 ;
     
     static int SYMPTOMATIC_DURATION = 3 ;
     
