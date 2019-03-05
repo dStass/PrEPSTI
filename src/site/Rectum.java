@@ -15,7 +15,7 @@ public class Rectum extends Site {
     static double INITIAL = 0.02 ;
     
     // Probability of positive symptomatic status if infected
-    static double SYMPTOMATIC_PROBABILITY = 0.10 ; // 0.15 ;
+    static double SYMPTOMATIC_PROBABILITY = 0.15 ;
 
     /**
      * Duration of gonorrhoea infection in rectum, 6 months.
