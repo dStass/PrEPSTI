@@ -5,6 +5,7 @@ package community;
 
 import agent.* ;
 import site.* ;
+import reporter.* ;
         
 import java.io.* ;
 //import java.io.FileWriter ;
@@ -66,8 +67,8 @@ public class Community {
             //+ "Assumes number of Agents at least N times number of cycles minus 1000." ;*/
             + "" ;
     
-    static boolean TO_PLOT = true ;
-    static public String FILE_PATH = "output/year2007/" ;
+    static boolean TO_PLOT ; //= true ;
+    static public String FILE_PATH = "output/" ;
     //static public String FILE_PATH = "/srv/scratch/z3524276/prepsti/output/test/" ;
     //static public String FILE_PATH = "/short/is14/mw7704/prepsti/output/year2007/" ;
     /** Dump reports to disk after this many cycles. */
@@ -145,7 +146,7 @@ public class Community {
     public static void main(String[] args)
     {
         //String infectedSiteName ;
-        double urethralTransmission ;
+        //double urethralTransmission ;
         if (args.length > 0)
         {
             NAME_ROOT = args[0] ;
@@ -154,10 +155,24 @@ public class Community {
         //MAX_CYCLES = Integer.valueOf(args[1]) ;
         if (args.length > 1)
         {
+            FILE_PATH += args[1] ;
+            /*
             urethralTransmission = Double.valueOf(args[1]) ;
             MSM.SET_INFECT_PROBABILITY("URETHRA","RECTUM",urethralTransmission) ;
             MSM.SET_INFECT_PROBABILITY("RECTUM","URETHRA",urethralTransmission) ;
+            */
         }
+        if (args.length > 2)
+        {
+            if (args[2].equals("raijin"))
+                FILE_PATH = "/srv/scratch/z3524276/prepsti/" + FILE_PATH ;
+            else if (args[2].equals("katana"))
+                FILE_PATH = "/short/is14/mw7704/prepsti/" + FILE_PATH ;
+        }
+        // Whether to plot prevalence upon completion.
+        // Must be false when run on an HPC cluster.
+        TO_PLOT = (!FILE_PATH.contains("prepsti")) ;
+        
         // Record starting time to measure running time
         long startTime = System.nanoTime() ;
         LOGGER.log(Level.INFO, "Seed:{0}", System.currentTimeMillis());
@@ -554,7 +569,7 @@ public class Community {
      */
     private String interveneCommunity(int cycle)
     {
-        int startCycle = 1000 ;
+        int startCycle = 500 ;
         if (cycle < startCycle)
             return "" ;
         
@@ -575,8 +590,7 @@ public class Community {
                     ((MSM) agent).reinitScreenCycle(year);
                     ((MSM) agent).reinitProbabilityAntiViral(year) ;
                     ((MSM) agent).reinitProbablityDiscloseHIV(year);
-                    if (year == 0)
-                        agent.stopCondomUse() ;
+                    ((MSM) agent).reinitRiskOdds(year);
                 }
                 catch( Exception e ) // cycle extends beyond trend data
                 {
