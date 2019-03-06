@@ -107,7 +107,7 @@ public class Relationship {
     //static double CONDOM_USE = 0.5;
     
     // Protective effect of condom
-    static final double CONDOM_EFFECT = 0.60 ;
+    static final double CONDOM_EFFECT = 0.86 ;
     
     // Number of sexual contacts per cycle ;
     //private int contacts ;
