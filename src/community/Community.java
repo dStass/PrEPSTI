@@ -149,12 +149,14 @@ public class Community {
         //double urethralTransmission ;
         if (args.length > 0)
         {
+            LOGGER.info(args[0]);
             NAME_ROOT = args[0] ;
             SIM_NAME = NAME_ROOT + NAME_SUFFIX ;
         }
         //MAX_CYCLES = Integer.valueOf(args[1]) ;
         if (args.length > 1)
         {
+            LOGGER.info(args[1]) ;
             FILE_PATH += args[1] ;
             /*
             urethralTransmission = Double.valueOf(args[1]) ;
@@ -164,6 +166,7 @@ public class Community {
         }
         if (args.length > 2)
         {
+            LOGGER.info(args[2]);
             if (args[2].equals("raijin"))
                 FILE_PATH = "/srv/scratch/z3524276/prepsti/" + FILE_PATH ;
             else if (args[2].equals("katana"))
