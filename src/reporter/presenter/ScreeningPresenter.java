@@ -68,15 +68,15 @@ public class ScreeningPresenter extends Presenter {
 
     public static void main(String[] args)
     {
-        String simName = "From2007To2012a16Pop40000Cycles2690" ; 
+        //String simName = "From2007To2012a16Pop40000Cycles2690" ; 
         //String simName =  "ReversedSafeRatio6aPop40000Cycles3000" ;
         //String simName =  "CorrectedSafe1aRectal30Pop40000Cycles1500" ;
-        //String simName = "FallingCondomUseAlteredTestingPop40000Cycles2000" ;
+        String simName = "condom86stopPrePrep3aPop40000Cycles4650" ;
         //String simName = "Year2007Commence5fPop40000Cycles2500" ;
         //String simName = "From2007To2016Urethral70b4Pop40000Cycles4650" ;
         //String simName = "AllRisky8Pop40000Cycles1000" ;
         
-        boolean unique = true ;
+        boolean unique = false ;
         int notifications = 1 ; 
         String chartTitle ;
         if (unique && (notifications == 1))
@@ -98,8 +98,8 @@ public class ScreeningPresenter extends Presenter {
         //String chartTitle = "site-specific symptomatic" ; // args[1] ;
         //String chartTitle = "testing_6_months" ; // args[1] ;
         //String chartTitle = "infections_past_2years_PrEP" ; // args[1] ;
-        String reportFileName = "output/prePrEP/" ; // args[2] ;
-        //String reportFileName = "output/test/" ; // args[2] ;
+        //String reportFileName = "output/prePrEP/" ; // args[2] ;
+        String reportFileName = "output/test/" ; // args[2] ;
         //String reportFileName = "output/reverse/" ; // args[2] ;
         //String reportFileName = "output/year2012/" ; // args[2] ;
         //String reportFileName = "output/year2007/" ; // args[2] ;
@@ -129,7 +129,7 @@ public class ScreeningPresenter extends Presenter {
         //screeningPresenter.plotFinalPrevalences(new String[] {"Pharynx","Rectum","Urethra"}) ;
         //screeningPresenter.plotFinalNotifications(new String[] {"Pharynx","Rectum","Urethra"}, unique, 0, Reporter.DAYS_PER_YEAR, notifications) ;
         //screeningPresenter.plotNotificationsYears(new String[] {"all"},6,2012) ;
-        screeningPresenter.plotPositivityYears(new String[] {"Pharynx","Rectum","Urethra"},6,2012) ;
+        screeningPresenter.plotPositivityYears(new String[] {"Pharynx","Rectum","Urethra"}, unique, 10, 2016) ;
         //screeningPresenter.plotNotificationPerCycle() ;    
         //screeningPresenter.plotSiteProportionSymptomatic(siteNames) ;
 
@@ -162,9 +162,9 @@ public class ScreeningPresenter extends Presenter {
      * @param backYears
      * @param lastYear 
      */
-    public void plotPositivityYears(String[] siteNames, int backYears, int lastYear)
+    public void plotPositivityYears(String[] siteNames, boolean unique, int backYears, int lastYear)
     {
-        HashMap<Object,Number[]> positivityRecordYears = reporter.prepareYearsPositivityRecord(siteNames, backYears, lastYear) ;
+        HashMap<Object,Number[]> positivityRecordYears = reporter.prepareYearsPositivityRecord(siteNames, unique, backYears, lastYear) ;
         
         plotHashMap("Year", siteNames, positivityRecordYears) ;
     }
