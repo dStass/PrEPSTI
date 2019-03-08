@@ -51,7 +51,7 @@ public class ScreeningReporter extends Reporter {
      * of each year ending lastYear.
      */
     public HashMap<Object,Number[]> 
-        prepareYearsPositivityRecord(String[] siteNames, int backYears, int lastYear) 
+        prepareYearsPositivityRecord(String[] siteNames, boolean unique, int backYears, int lastYear) 
         {
             HashMap<Object,Number[]> positivityRecordYears = new HashMap<Object,Number[]>() ;
             
@@ -69,7 +69,7 @@ public class ScreeningReporter extends Reporter {
                 Number[] yearlyPositivityRecord = new Number[siteNames.length] ;
                
                 //endCycle = maxCycles - year * DAYS_PER_YEAR ;
-                positivityRecord = prepareFinalNotificationsRecord(siteNames, year, 0, DAYS_PER_YEAR, maxCycles);
+                positivityRecord = prepareFinalNotificationsRecord(siteNames, unique, year, 0, DAYS_PER_YEAR, maxCycles);
                
                 // [1] for positivity
                 for (int siteIndex = 0 ; siteIndex < siteNames.length ; siteIndex++ )
