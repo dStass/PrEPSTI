@@ -168,9 +168,9 @@ public class Community {
         {
             LOGGER.info(args[2]);
             if (args[2].equals("raijin"))
-                FILE_PATH = "/srv/scratch/z3524276/prepsti/" + FILE_PATH ;
-            else if (args[2].equals("katana"))
                 FILE_PATH = "/short/is14/mw7704/prepsti/" + FILE_PATH ;
+            else if (args[2].equals("katana"))
+                FILE_PATH = "/srv/scratch/z3524276/prepsti/" + FILE_PATH ;
         }
         // Whether to plot prevalence upon completion.
         // Must be false when run on an HPC cluster.
