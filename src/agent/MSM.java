@@ -109,6 +109,14 @@ public class MSM extends Agent {
     private Pharynx pharynx = new Pharynx() ;
     /** Array of infection Sites */
     private Site[] sites = {rectum,urethra,pharynx} ;
+    
+    /** Odds of choosing pharynx for sexual contact. */
+    private int choosePharynx = RAND.nextInt(5) + 1  ;
+    /** Odds of choosing rectum for sexual contact. */
+    private int chooseRectum = RAND.nextInt(5) ;
+    /** Odds of choosing rectum for sexual contact. */
+    private int chooseUrethra = RAND.nextInt(3) ;
+    
 
     /** Whether MSM serosorts, ie match for statusHIV. */
     private boolean seroSort ;
@@ -137,21 +145,21 @@ public class MSM extends Agent {
     private boolean riskyStatus ;
     
     /** Transmission probabilities per sexual contact from Urethra to Rectum */
-    static double URETHRA_TO_RECTUM = 0.023 ;
+    static double URETHRA_TO_RECTUM = 0.020 ;
     /** Transmission probabilities sexual contact from Urethra to Pharynx. */
-    static double URETHRA_TO_PHARYNX = 0.023 ; 
+    static double URETHRA_TO_PHARYNX = 0.020 ; 
     /** Transmission probabilities sexual contact from Rectum to Urethra. */ 
-    static double RECTUM_TO_URETHRA = 0.023 ; 
+    static double RECTUM_TO_URETHRA = 0.020 ; 
     /** Transmission probabilities sexual contact from Rectum to Pharynx. */
-    static double RECTUM_TO_PHARYNX = 0.023 ; 
+    static double RECTUM_TO_PHARYNX = 0.020 ; 
     /** Transmission probabilities sexual contact in Pharynx to Urethra intercourse. */
-    static double PHARYNX_TO_URETHRA = 0.023 ;
+    static double PHARYNX_TO_URETHRA = 0.020 ;
     /** Transmission probabilities sexual contact in Pharynx to Rectum intercourse. */
-    static double PHARYNX_TO_RECTUM = 0.023 ; 
+    static double PHARYNX_TO_RECTUM = 0.020 ; 
     /** Transmission probabilities sexual contact in Pharynx to Pharynx intercourse (kissing). */
-    static double PHARYNX_TO_PHARYNX = 0.023 ; 
+    static double PHARYNX_TO_PHARYNX = 0.020 ; 
     /** Transmission probabilities sexual contact in Urethra to Urethra intercourse (docking). */
-    static double URETHRA_TO_URETHRA = 0.023 ; 
+    static double URETHRA_TO_URETHRA = 0.020 ; 
     /** Transmission probabilities sexual contact in Rectum to Rectum intercourse. */
     static double RECTUM_TO_RECTUM = 0.0030 ; // 0.003 ; 
     
@@ -349,7 +357,7 @@ public class MSM extends Agent {
    
     /**
      * 
-     * Specifies Agent subclass Men having Sex with Men. Necessary to call super.constructor()
+     * Specifies Agent subclass Men having Sex with Men. Necessary to call super()
      * @param startAge - Age of MSM at sexual 'birth'
      */
     public MSM(int startAge) 
@@ -536,10 +544,11 @@ public class MSM extends Agent {
     @Override
     protected Site chooseSite()
 	{
-            int index = RAND.nextInt(3) ;
-            if (index < 1)
+            int chooseTotal = chooseUrethra + chooseRectum + choosePharynx ;
+            int index = RAND.nextInt(chooseTotal) ;
+            if (index < chooseRectum)
                 return rectum ;
-            if (index < 2)
+            if (index < (chooseRectum + chooseUrethra))
                 return urethra ;
             else 
                 return pharynx ;
@@ -555,29 +564,32 @@ public class MSM extends Agent {
     {
         if (site.getSite().equals(RECTUM))
         {
-            int index = RAND.nextInt(6) ;
-            if (index < 3) 
+            int chooseTotal = chooseUrethra + choosePharynx + 3 ;
+            int index = RAND.nextInt(chooseTotal) ;
+            if (index < (chooseUrethra + 2)) 
                 return urethra ;
-            else if (index < 5) 
+            else if (index < (chooseUrethra + choosePharynx + 2)) 
                 return pharynx ;
             else 
                 return rectum ;
         }
         else if (site.getSite().equals(PHARYNX))
         {
-            int index = RAND.nextInt(7) ;
-            if (index < 3)
+            int chooseTotal = chooseUrethra + choosePharynx + 1 ;
+            int index = RAND.nextInt(chooseTotal) ;
+            if (index < choosePharynx)
                 return pharynx ;
-            if (index < 6) 
+            if (index < (choosePharynx + chooseUrethra)) 
                 return urethra ;
             return rectum ;
         }
         else    // if (site.getSite().equals(URETHRA))
         {
-            int index = RAND.nextInt(10) ;
-            if (index < 5)
+            int chooseTotal = chooseRectum + choosePharynx + 1 ;
+            int index = RAND.nextInt(chooseTotal) ;
+            if (index < choosePharynx)
                 return pharynx ;
-            if (index < 9) 
+            if (index < (choosePharynx + chooseRectum)) 
                 return rectum ;
             return urethra ;
         }
@@ -625,8 +637,9 @@ public class MSM extends Agent {
      */
     protected Site chooseNotUrethraSite() 
     {
-        int index = RAND.nextInt(4) ;
-        if (index > 0)
+        int chooseTotal = chooseRectum + choosePharynx ;
+        int index = RAND.nextInt(chooseTotal) ;
+        if (index < chooseRectum)
             return rectum ;
         return pharynx ;
     }
