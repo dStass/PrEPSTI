@@ -157,19 +157,24 @@ public class Community {
         if (args.length > 1)
         {
             LOGGER.info(args[1]) ;
-            FILE_PATH += args[1] ;
+            MAX_CYCLES = Integer.valueOf(args[1]) ;
+        }
+        if (args.length > 2)
+        {
+            LOGGER.info(args[2]) ;
+            FILE_PATH += args[2] ;
             /*
             urethralTransmission = Double.valueOf(args[1]) ;
             MSM.SET_INFECT_PROBABILITY("URETHRA","RECTUM",urethralTransmission) ;
             MSM.SET_INFECT_PROBABILITY("RECTUM","URETHRA",urethralTransmission) ;
             */
         }
-        if (args.length > 2)
+        if (args.length > 3)
         {
-            LOGGER.info(args[2]);
-            if (args[2].equals("raijin"))
+            LOGGER.info(args[3]);
+            if (args[3].equals("raijin"))
                 FILE_PATH = "/short/is14/mw7704/prepsti/" + FILE_PATH ;
-            else if (args[2].equals("katana"))
+            else if (args[3].equals("katana"))
                 FILE_PATH = "/srv/scratch/z3524276/prepsti/" + FILE_PATH ;
         }
         // Whether to plot prevalence upon completion.
