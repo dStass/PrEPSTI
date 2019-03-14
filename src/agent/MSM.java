@@ -111,11 +111,11 @@ public class MSM extends Agent {
     private Site[] sites = {rectum,urethra,pharynx} ;
     
     /** Odds of choosing pharynx for sexual contact. */
-    private int choosePharynx = RAND.nextInt(5) + 1  ;
+    private int choosePharynx = 3 ; // RAND.nextInt(3) + 1  ;
     /** Odds of choosing rectum for sexual contact. */
-    private int chooseRectum = RAND.nextInt(5) ;
+    private int chooseRectum = 3 ; // RAND.nextInt(3) ;
     /** Odds of choosing rectum for sexual contact. */
-    private int chooseUrethra = RAND.nextInt(3) ;
+    private int chooseUrethra = 3 ; // RAND.nextInt(3) ;
     
 
     /** Whether MSM serosorts, ie match for statusHIV. */
@@ -145,23 +145,23 @@ public class MSM extends Agent {
     private boolean riskyStatus ;
     
     /** Transmission probabilities per sexual contact from Urethra to Rectum */
-    static double URETHRA_TO_RECTUM = 0.020 ;
+    static double URETHRA_TO_RECTUM = 0.250 ;
     /** Transmission probabilities sexual contact from Urethra to Pharynx. */
-    static double URETHRA_TO_PHARYNX = 0.020 ; 
+    static double URETHRA_TO_PHARYNX = 0.040 ; 
     /** Transmission probabilities sexual contact from Rectum to Urethra. */ 
-    static double RECTUM_TO_URETHRA = 0.020 ; 
+    static double RECTUM_TO_URETHRA = 0.015 ; 
     /** Transmission probabilities sexual contact from Rectum to Pharynx. */
     static double RECTUM_TO_PHARYNX = 0.020 ; 
     /** Transmission probabilities sexual contact in Pharynx to Urethra intercourse. */
-    static double PHARYNX_TO_URETHRA = 0.020 ;
+    static double PHARYNX_TO_URETHRA = 0.015 ;
     /** Transmission probabilities sexual contact in Pharynx to Rectum intercourse. */
-    static double PHARYNX_TO_RECTUM = 0.020 ; 
+    static double PHARYNX_TO_RECTUM = 0.015 ; 
     /** Transmission probabilities sexual contact in Pharynx to Pharynx intercourse (kissing). */
-    static double PHARYNX_TO_PHARYNX = 0.020 ; 
+    static double PHARYNX_TO_PHARYNX = 0.030 ; 
     /** Transmission probabilities sexual contact in Urethra to Urethra intercourse (docking). */
-    static double URETHRA_TO_URETHRA = 0.020 ; 
+    static double URETHRA_TO_URETHRA = 0.000 ; 
     /** Transmission probabilities sexual contact in Rectum to Rectum intercourse. */
-    static double RECTUM_TO_RECTUM = 0.0030 ; // 0.003 ; 
+    static double RECTUM_TO_RECTUM = 0.0000 ; // 0.003 ; 
     
     /** The probability of screening in a given cycle with statusHIV true. */
     static double SCREEN_PROBABILITY_HIV_POSITIVE = 0.0029 ;
@@ -367,6 +367,13 @@ public class MSM extends Agent {
         riskyStatus = (RAND.nextInt(TOTAL_ODDS) < RISKY_ODDS) ;
         initStatus(startAge) ;
         initConsentCasualProbability() ;
+        
+        // Choose tops, 1/5
+        //if (RAND.nextInt(5) > 0)
+          //  chooseRectum = 0 ;
+        // Choose bottoms, 4/5 * 3/4
+        //else if (RAND.nextInt(4) > 0)
+          //  chooseUrethra = 0 ;
     }
 
     /**
