@@ -136,8 +136,9 @@ public class Community {
     protected ArrayList<String> encounterReport = new ArrayList<String>() ;
     protected ArrayList<String> infectionReport = new ArrayList<String>() ;
     protected ArrayList<String> populationReport = new ArrayList<String>() ;
-    
-    private Scribe scribe = new Scribe(SIM_NAME, new String[] {"relationship","encounter","infection", "population"}) ;
+    private Scribe scribe = new Scribe() ;
+    // Define Scribe in full in Community() constructor
+    //private Scribe scribe = new Scribe(SIM_NAME, new String[] {"relationship","encounter","infection", "population"}) ;
 
 
     // Logger
@@ -519,6 +520,7 @@ public class Community {
             for (Agent agent : agents)
                 initialRecord += agent.getCensusReport() ;
             nbRelationships = Relationship.REBOOT_RELATIONSHIPS(simName, agents) ;
+            scribe = new Scribe(SIM_NAME, new String[] {"relationship","encounter","infection", "population"}) ;
         }
     }
 
@@ -528,8 +530,9 @@ public class Community {
     private String initialiseCommunity()
     {
         String report = "" ;
-        
         initialRecord = "" ;
+        
+        scribe = new Scribe(SIM_NAME, new String[] {"relationship","encounter","infection", "population"}) ;
         for (int id = 0 ; id <  population ; id++ ) 
         {
             //Class<?> AgentClazz = Class.forName("MSM") ; 
@@ -1235,6 +1238,11 @@ public class Community {
         File outputFile ;
         */
 
+        private Scribe() 
+        {
+            
+        }
+        
         private Scribe(String simName, String[] propertyNames) 
         {
             this.simName = simName ;
