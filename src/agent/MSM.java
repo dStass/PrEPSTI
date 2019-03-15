@@ -155,9 +155,9 @@ public class MSM extends Agent {
     /** Transmission probabilities sexual contact in Pharynx to Urethra intercourse. */
     static double PHARYNX_TO_URETHRA = 0.015 ;
     /** Transmission probabilities sexual contact in Pharynx to Rectum intercourse. */
-    static double PHARYNX_TO_RECTUM = 0.015 ; 
+    static double PHARYNX_TO_RECTUM = 0.020 ; 
     /** Transmission probabilities sexual contact in Pharynx to Pharynx intercourse (kissing). */
-    static double PHARYNX_TO_PHARYNX = 0.030 ; 
+    static double PHARYNX_TO_PHARYNX = 0.023 ; 
     /** Transmission probabilities sexual contact in Urethra to Urethra intercourse (docking). */
     static double URETHRA_TO_URETHRA = 0.000 ; 
     /** Transmission probabilities sexual contact in Rectum to Rectum intercourse. */
