@@ -73,7 +73,7 @@ public class Community {
     //static public String FILE_PATH = "/short/is14/mw7704/prepsti/output/year2007/" ;
     /** Dump reports to disk after this many cycles. */
     /** Whether parameters change throughout simulation. */
-    static boolean DYNAMIC = false ;
+    static boolean DYNAMIC = true ;
     
     static final int DUMP_CYCLE = ((int) Math.pow(10, 7))/POPULATION ;
     /** Whether to dump partial reports during simulation. */
@@ -159,6 +159,8 @@ public class Community {
         {
             LOGGER.info(args[1]) ;
             MAX_CYCLES = Integer.valueOf(args[1]) ;
+            NAME_SUFFIX = "Pop" + String.valueOf(POPULATION) + "Cycles" + args[1] ;
+            SIM_NAME = NAME_ROOT + NAME_SUFFIX ;
         }
         if (args.length > 2)
         {
