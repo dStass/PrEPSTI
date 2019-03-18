@@ -78,8 +78,6 @@ public class Community {
     static final int DUMP_CYCLE = ((int) Math.pow(10, 7))/POPULATION ;
     /** Whether to dump partial reports during simulation. */
     static final boolean PARTIAL_DUMP = (DUMP_CYCLE > 0) ;
-    /** How many digits represent cycles in DUMP filename. */
-    static final int DUMP_DIGITS = (int) Math.floor(Math.log10(MAX_CYCLES-1)) + 1 ;
     
     /**
      * (String) Name of previous burn-in to reload.
@@ -1335,8 +1333,9 @@ public class Community {
             String fileName = simName + property ; 
             if (dumpCycle > 0)
             {
+                int dumpDigits = (int) Math.floor(Math.log10(MAX_CYCLES-1)) + 1 ;
                 String nameIndex = String.valueOf(dumpsSoFar * dumpCycle) ;
-                while (nameIndex.length() < Community.DUMP_DIGITS)
+                while (nameIndex.length() <  dumpDigits)
                     nameIndex = "0" + nameIndex ;
                 fileName += "-" + nameIndex;
             }
