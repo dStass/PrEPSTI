@@ -419,7 +419,7 @@ public class PopulationReporter extends Reporter {
                     continue ;
                 deathReport.add(record.substring(deathIndex)) ;
             }
-        nextInput = updateReport() ;
+            nextInput = updateReport() ;
         }
         return deathReport ;
     }
@@ -582,7 +582,17 @@ public class PopulationReporter extends Reporter {
         ArrayList<String> openingArray = new ArrayList<String>() ;
         openingArray.add(input.get(0)) ;
         return SORT_BOUNDED_STRING_ARRAY("prepStatus", 
-                new String[] {Reporter.TRUE,Reporter.FALSE}, AGENTID, openingArray ) ;
+                new String[] {TRUE,FALSE}, AGENTID, openingArray ) ;
+    }
+    
+    /**
+     * 
+     * @return (HashMap) key: prepStatus, value: ArrayList of agentIds
+     */
+    public HashMap<Object,ArrayList<Object>> sortStatusHIV()
+    {
+        return SORT_BOUNDED_STRING_ARRAY("statusHIV", 
+                new String[] {TRUE,FALSE}, AGENTID, input ) ;
     }
     
 }
