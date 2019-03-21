@@ -375,7 +375,7 @@ public abstract class Agent {
                                     newAgent.setSymptomatic(true,site) ;
                                 else
                                     newAgent.setSymptomatic(false,site) ;
-                                //newAgent.setSymptomatic(site) ;
+                                //newAgent.chooseSymptomatic(site) ;
                                 
                                 // Set remaining infectionTime
                                 infectionTime = Reporter.EXTRACT_VALUE("infectionTime", infectionString, siteIndex) ;
@@ -1011,7 +1011,15 @@ public abstract class Agent {
     public boolean treatSymptomatic()
     {
         Site[] sites = getSites() ;
-        boolean successful = true ;
+        boolean successful = false ;
+        // Check incubation period, are symptoms manifest?
+        for (Site site : sites)
+            if (site.getSymptomatic())
+                successful = successful || (site.getIncubationTime() == 0) ;
+        
+        if (!successful)
+            return false ;
+        
         for (Site site : sites)
             if ((site.getInfectedStatus()!=0))
                 site.treat() ;
@@ -1034,7 +1042,7 @@ public abstract class Agent {
         boolean successful = true ;
         for (Site site : sites)
             if ((site.getInfectedStatus()!=0))
-                site.clearInfection();
+                site.treat() ; //
         infectedStatus = false ;
         clearSymptomatic();
         screenTime = screenCycle ;
