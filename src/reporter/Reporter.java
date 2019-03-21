@@ -353,8 +353,13 @@ public class Reporter {
             {
                 boundedString = EXTRACT_BOUNDED_STRING(bound, checkRecord, indexStart) ;
                 key = (Object) EXTRACT_VALUE(propertyName,boundedString) ;
-                boundValue = EXTRACT_VALUE(bound,boundedString) ;
-                sortedHashMap = UPDATE_HASHMAP(key,boundValue,sortedHashMap) ;
+                if (String.valueOf(key).isEmpty())
+                    break ;
+                else
+                {
+                    boundValue = EXTRACT_VALUE(bound,boundedString) ;
+                    sortedHashMap = UPDATE_HASHMAP(key,boundValue,sortedHashMap) ;
+                }
                 indexStart = INDEX_OF_PROPERTY(bound,indexStart+1,checkRecord);
             }
             //LOGGER.log(Level.INFO, "key:{0}", new Object[]{key});
@@ -378,6 +383,28 @@ public class Reporter {
         {
             boundedString = EXTRACT_BOUNDED_STRING(bound, string, indexStart) ;
             if (boundedString.contains(propertyName))   //(COMPARE_VALUE(propertyName,value,boundedString)) 
+                boundedOutput += boundedString ;
+        }
+        return boundedOutput ;
+    }
+
+    /**
+     * Extracts bounded substrings containing propertyName as substring
+     * @param propertyName 
+     * @param bound - String bounding substrings of interest
+     * @param string
+     * @return String boundedOutput
+     */
+    protected static String BOUNDED_STRING_FROM_ARRAY(String propertyName, ArrayList<Object> values, String bound, String string)
+    {
+        String boundedOutput = "" ;
+        String boundedString ;
+        String value ;
+        for (int indexStart = Reporter.INDEX_OF_PROPERTY(bound,string) ; indexStart >= 0 ; indexStart = INDEX_OF_PROPERTY(bound,indexStart+1,string) )
+        {
+            boundedString = EXTRACT_BOUNDED_STRING(bound, string, indexStart) ;
+            value = EXTRACT_VALUE(propertyName, boundedString) ;
+            if (values.contains(value))   //(COMPARE_VALUE(propertyName,value,boundedString)) 
                 boundedOutput += boundedString ;
         }
         return boundedOutput ;
@@ -1221,7 +1248,6 @@ public class Reporter {
             int cycle = 0 ;
             for (Object record : report)
             {
-                LOGGER.info(String.valueOf(record)) ;
                 line = String.valueOf(cycle) ;
                 for (String property : properties)
                     line += COMMA + EXTRACT_VALUE(property,(String) record) ;
@@ -1333,7 +1359,6 @@ public class Reporter {
                     line += COMMA + String.valueOf(value) ;
                 fileWriter.write(line) ; 
                 fileWriter.newLine() ;
-                LOGGER.info(line);
             }
             fileWriter.close() ;
         }
