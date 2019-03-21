@@ -67,6 +67,12 @@ abstract public class Site {
      */
     private int infectionTime = 0 ;
     
+    /** 
+     * Days left of incubation period.
+     * Equals zero unless infectedStatus == true
+     */
+    private int incubationTime = 0 ;
+    
     // Constants that vary according to Site subclass
     /** Probability of initial gonorrhoea infection in any Site except Urethra.
      * Urethra start uninfected
@@ -75,6 +81,12 @@ abstract public class Site {
 
     /** Probability of positive symptomatic status if infected. */
     static double SYMPTOMATIC_PROBABILITY = 0.5 ;
+    
+    /** Minimum incubation period. */
+    static int MIN_INCUBATION = 2 ;
+    
+    /** Range of incubation periods. */
+    static int RANGE_INCUBATION = 4 ;
 
     // Probability of site transmitting infection, if all other probabilities unity
     //static double TRANSMIT = 0.5 ;
@@ -138,7 +150,10 @@ abstract public class Site {
         {
             infectedStatus = 1 ;
             infectionTime = getInfectionDuration() ;
-            chooseSymptomatic() ;
+            
+            // Select whether symptomatic
+            if (chooseSymptomatic())
+                chooseIncubationTime() ;
             return true ;
         }
         return false ;
@@ -146,12 +161,12 @@ abstract public class Site {
 
     /**
      * Choose probability that Site is symptomatic and then invoke 
-     * setSymptomatic() to choose.
+ chooseSymptomatic() to choose.
      * @return 
      */
     private boolean chooseSymptomatic()
     {
-        return setSymptomatic(getSymptomaticProbability()) ;
+        return chooseSymptomatic(getSymptomaticProbability()) ;
     }
 
     /**
@@ -159,7 +174,7 @@ abstract public class Site {
      * @param symptomaticProbability
      * @return 
      */
-    public boolean setSymptomatic(double symptomaticProbability)
+    public boolean chooseSymptomatic(double symptomaticProbability)
     {
         symptomatic = (RAND.nextDouble() < symptomaticProbability) ;
         return symptomatic ;
@@ -211,6 +226,7 @@ abstract public class Site {
         infectedStatus = 0 ;
         symptomatic = false ;
         infectionTime = 0 ;
+        incubationTime = 0 ;
     }
 
     public int getInfectedStatus()
@@ -236,6 +252,7 @@ abstract public class Site {
     public int progressInfection()
     {
         infectionTime-- ;
+        incubationTime-- ;
         if (infectionTime == 0)
             clearInfection() ;
         return infectionTime ;
@@ -263,12 +280,19 @@ abstract public class Site {
      * Randomly chooses how long an infection lasts, assuming it is asymptomatic.
      * @return Randomly chosen from Gamma Distribution from half mean cutoff.
      */
-    public int setSymptomaticDuration()
+    public int chooseIncubationTime()
     {
-        int infectionDuration = getSymptomaticDuration() ;
-        int distributionMean = infectionDuration/2 ;
-        infectionTime = ((int) new GammaDistribution(distributionMean,1).sample()) + distributionMean ;
-        return infectionTime ;
+        incubationTime = MIN_INCUBATION + RAND.nextInt(RANGE_INCUBATION) ; // (int) new GammaDistribution(distributionMean,1).sample()) + distributionMean ;
+        return incubationTime ;
+    }
+    
+    /**
+     * Getter for days left in incubation period.
+     * @return incubationTime
+     */
+    public int getIncubationTime()
+    {
+        return incubationTime ;
     }
     
     /**
