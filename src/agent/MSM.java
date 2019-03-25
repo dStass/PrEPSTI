@@ -145,23 +145,23 @@ public class MSM extends Agent {
     private boolean riskyStatus ;
     
     /** Transmission probabilities per sexual contact from Urethra to Rectum */
-    static double URETHRA_TO_RECTUM = 0.70 ;
+    static double URETHRA_TO_RECTUM = 0.040 ;
     /** Transmission probabilities sexual contact from Urethra to Pharynx. */
-    static double URETHRA_TO_PHARYNX = 0.020 ; 
+    static double URETHRA_TO_PHARYNX = 0.040 ; 
     /** Transmission probabilities sexual contact from Rectum to Urethra. */ 
-    static double RECTUM_TO_URETHRA = 0.010 ; 
+    static double RECTUM_TO_URETHRA = 0.045 ; 
     /** Transmission probabilities sexual contact from Rectum to Pharynx. */
-    static double RECTUM_TO_PHARYNX = 0.000 ; 
+    static double RECTUM_TO_PHARYNX = 0.025 ; 
     /** Transmission probabilities sexual contact in Pharynx to Urethra intercourse. */
-    static double PHARYNX_TO_URETHRA = 0.010 ;
+    static double PHARYNX_TO_URETHRA = 0.050 ;
     /** Transmission probabilities sexual contact in Pharynx to Rectum intercourse. */
-    static double PHARYNX_TO_RECTUM = 0.010 ; 
+    static double PHARYNX_TO_RECTUM = 0.020 ; 
     /** Transmission probabilities sexual contact in Pharynx to Pharynx intercourse (kissing). */
-    static double PHARYNX_TO_PHARYNX = 0.015 ; 
+    static double PHARYNX_TO_PHARYNX = 0.055 ; 
     /** Transmission probabilities sexual contact in Urethra to Urethra intercourse (docking). */
-    static double URETHRA_TO_URETHRA = 0.000 ; 
+    static double URETHRA_TO_URETHRA = 0.030 ; 
     /** Transmission probabilities sexual contact in Rectum to Rectum intercourse. */
-    static double RECTUM_TO_RECTUM = 0.000 ; // 0.003 ; 
+    static double RECTUM_TO_RECTUM = 0.0003 ; // 0.003 ; 
     
     /** The probability of screening in a given cycle with statusHIV true. */
     static double SCREEN_PROBABILITY_HIV_POSITIVE = 0.0029 ;
@@ -857,13 +857,13 @@ public class MSM extends Agent {
             //int firstScreenCycle = (int) new GammaDistribution(7,55).sample() ; 
             //setScreenCycle(firstScreenCycle) ;  // 49.9% screen within a year 2016
             if (statusHIV)
-                setScreenCycle(((int) new GammaDistribution(7,60).sample())) ;  // 41% screen within a year
+                setScreenCycle(137) ; //184) ; // (((int) new GammaDistribution(7,60).sample())) ;  // 41% screen within a year
             else
-                setScreenCycle(((int) new GammaDistribution(8,61).sample())) ;  // 26% screen within a year
+                setScreenCycle(137) ; //184) ; // (((int) new GammaDistribution(8,61).sample())) ;  // 26% screen within a year
             
         }
         // Randomly set timer for first STI screen 
-        setScreenTime(RAND.nextInt(getScreenCycle())) ;
+        setScreenTime(RAND.nextInt(getScreenCycle()) + 3) ;
     }
     
     /**
