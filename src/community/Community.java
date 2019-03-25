@@ -73,7 +73,7 @@ public class Community {
     //static public String FILE_PATH = "/short/is14/mw7704/prepsti/output/year2007/" ;
     /** Dump reports to disk after this many cycles. */
     /** Whether parameters change throughout simulation. */
-    static boolean DYNAMIC = true ;
+    static boolean DYNAMIC = false ;
     
     static final int DUMP_CYCLE = ((int) Math.pow(10, 7))/POPULATION ;
     /** Whether to dump partial reports during simulation. */
@@ -374,14 +374,17 @@ public class Community {
                 }
                 LOGGER.log(Level.INFO, "Positivity unique:{0} {1}", new Object[] {unique,finalNotificationsRecord});
             }
+            screeningReporter = new ScreeningReporter(SIM_NAME,FILE_PATH) ;
             String prevalenceReports = "" ;
             ArrayList<Object> prevalenceReport ;
             for (String siteName : new String[] {"Pharynx","Rectum","Urethra"})
             {
                 prevalenceReport = screeningReporter.preparePrevalenceReport(siteName) ;
-                prevalenceReports += Reporter.ADD_REPORT_PROPERTY(siteName, prevalenceReport.get(prevalenceReport.size() - 1)) ;
+                //LOGGER.info(String.valueOf(prevalenceReport.size())) ;
+                LOGGER.log(Level.INFO,"{0} {1}", new Object[] {siteName, prevalenceReport.get(prevalenceReport.size() - 1)}) ;
             }
-            LOGGER.info(prevalenceReports) ;
+            prevalenceReport = screeningReporter.preparePrevalenceReport() ;
+            LOGGER.log(Level.INFO,"{0} {1}", new Object[] {"all", prevalenceReport.get(prevalenceReport.size() - 1)}) ;
     
         }
         //EncounterReporter encounterReporter = new EncounterReporter("Agent to Agent",community.encounterReport) ;
@@ -564,9 +567,9 @@ public class Community {
 //            // Start with single Rectum infection
 //            Site site = msm.getUrethra() ;
 //            boolean infected = site.receiveInfection(1.1) ;
-//            site.setSymptomatic(-1) ;
+//            site.chooseSymptomatic(-1) ;
 //            msm.setInfectedStatus(infected);
-//            msm.setSymptomatic(site) ;
+//            msm.chooseSymptomatic(site) ;
 //            break ;
 //        }
 //        return "Population clear except for one RiskyMSM with asymptomatic Urethral infection." ;
@@ -580,7 +583,7 @@ public class Community {
      */
     private String interveneCommunity(int cycle)
     {
-        int startCycle = 500 ;
+        int startCycle = 1000 ;
         if (cycle < startCycle)
             return "" ;
         
@@ -602,6 +605,8 @@ public class Community {
                     ((MSM) agent).reinitProbabilityAntiViral(year) ;
                     ((MSM) agent).reinitProbablityDiscloseHIV(year);
                     ((MSM) agent).reinitRiskOdds(year);
+                    if ((year > 1) && (year < 6))
+                        agent.scaleProbabilityUseCondom(.075);
                 }
                 catch( Exception e ) // cycle extends beyond trend data
                 {
