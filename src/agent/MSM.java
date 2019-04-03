@@ -145,21 +145,21 @@ public class MSM extends Agent {
     private boolean riskyStatus ;
     
     /** Transmission probabilities per sexual contact from Urethra to Rectum */
-    static double URETHRA_TO_RECTUM = 0.040 ;
+    static double URETHRA_TO_RECTUM = 0.030 ;
     /** Transmission probabilities sexual contact from Urethra to Pharynx. */
-    static double URETHRA_TO_PHARYNX = 0.040 ; 
+    static double URETHRA_TO_PHARYNX = 0.030 ; 
     /** Transmission probabilities sexual contact from Rectum to Urethra. */ 
-    static double RECTUM_TO_URETHRA = 0.045 ; 
+    static double RECTUM_TO_URETHRA = 0.030 ; 
     /** Transmission probabilities sexual contact from Rectum to Pharynx. */
-    static double RECTUM_TO_PHARYNX = 0.025 ; 
+    static double RECTUM_TO_PHARYNX = 0.030 ;
     /** Transmission probabilities sexual contact in Pharynx to Urethra intercourse. */
-    static double PHARYNX_TO_URETHRA = 0.050 ;
+    static double PHARYNX_TO_URETHRA = 0.030 ;
     /** Transmission probabilities sexual contact in Pharynx to Rectum intercourse. */
-    static double PHARYNX_TO_RECTUM = 0.020 ; 
+    static double PHARYNX_TO_RECTUM = 0.030 ; 
     /** Transmission probabilities sexual contact in Pharynx to Pharynx intercourse (kissing). */
-    static double PHARYNX_TO_PHARYNX = 0.055 ; 
+    static double PHARYNX_TO_PHARYNX = 0.035 ; 
     /** Transmission probabilities sexual contact in Urethra to Urethra intercourse (docking). */
-    static double URETHRA_TO_URETHRA = 0.030 ; 
+    static double URETHRA_TO_URETHRA = 0.025 ; 
     /** Transmission probabilities sexual contact in Rectum to Rectum intercourse. */
     static double RECTUM_TO_RECTUM = 0.0003 ; // 0.003 ; 
     
@@ -571,11 +571,10 @@ public class MSM extends Agent {
     {
         if (site.getSite().equals(RECTUM))
         {
-            int chooseTotal = chooseUrethra + choosePharynx + 3 ;
-            int index = RAND.nextInt(chooseTotal) ;
-            if (index < (chooseUrethra + 2)) 
+            int index = RAND.nextInt(6) ;
+            if (index < 3) 
                 return urethra ;
-            else if (index < (chooseUrethra + choosePharynx + 2)) 
+            else if (index < 5) 
                 return pharynx ;
             else 
                 return rectum ;
@@ -584,19 +583,18 @@ public class MSM extends Agent {
         {
             int chooseTotal = chooseUrethra + choosePharynx + 1 ;
             int index = RAND.nextInt(chooseTotal) ;
-            if (index < choosePharynx)
+            if (index < choosePharynx)    // choosePharynx = 3
                 return pharynx ;
-            if (index < (choosePharynx + chooseUrethra)) 
+            if (index < (choosePharynx + chooseUrethra))   // chooseUrethra = 3
                 return urethra ;
             return rectum ;
         }
         else    // if (site.getSite().equals(URETHRA))
         {
-            int chooseTotal = chooseRectum + choosePharynx + 1 ;
-            int index = RAND.nextInt(chooseTotal) ;
-            if (index < choosePharynx)
+            int index = RAND.nextInt(10) ;
+            if (index < 5)
                 return pharynx ;
-            if (index < (choosePharynx + chooseRectum)) 
+            if (index < 9) 
                 return rectum ;
             return urethra ;
         }
@@ -644,9 +642,8 @@ public class MSM extends Agent {
      */
     protected Site chooseNotUrethraSite() 
     {
-        int chooseTotal = chooseRectum + choosePharynx ;
-        int index = RAND.nextInt(chooseTotal) ;
-        if (index < chooseRectum)
+        int index = RAND.nextInt(4) ;
+        if (index > 0)
             return rectum ;
         return pharynx ;
     }
@@ -850,20 +847,8 @@ public class MSM extends Agent {
      */
     private void initScreenCycle()
     {
-        if (getPrepStatus())
-            setScreenCycle(((int) new GammaDistribution(31,1).sample()) + 61) ;
-        else
-        {
-            //int firstScreenCycle = (int) new GammaDistribution(7,55).sample() ; 
-            //setScreenCycle(firstScreenCycle) ;  // 49.9% screen within a year 2016
-            if (statusHIV)
-                setScreenCycle(137) ; //184) ; // (((int) new GammaDistribution(7,60).sample())) ;  // 41% screen within a year
-            else
-                setScreenCycle(137) ; //184) ; // (((int) new GammaDistribution(8,61).sample())) ;  // 26% screen within a year
-            
-        }
-        // Randomly set timer for first STI screen 
-        setScreenTime(RAND.nextInt(getScreenCycle()) + 3) ;
+        for (Site site : getSites())
+            site.initScreenCycle(statusHIV, prepStatus) ;
     }
     
     /**
@@ -1183,6 +1168,16 @@ public class MSM extends Agent {
         }
         else
             return 0.0 ;
+    }
+    
+    public double chooseScreen(String[] args)
+    {
+        for (Site site : getSites())
+        {
+            if (site.getScreenProbability(args)> 0 )
+                return 1.1 ;
+        }
+        return -0.1 ; 
     }
     
         /**
