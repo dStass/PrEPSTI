@@ -4,6 +4,7 @@
 package community;
 
 import agent.* ;
+import static community.Community.RAND;
 import site.* ;
 import reporter.* ;
         
@@ -270,7 +271,7 @@ public class Community {
         for (int cycle = 0; cycle < MAX_CYCLES; cycle++)
         {	
             //if (cycle == ((cycle/outputInterval) * outputInterval))
-              //  LOGGER.log(Level.INFO, "Cycle no. {0}", cycleString);
+            //LOGGER.log(Level.INFO, "Cycle no. {0}", cycleString);
 
             if (DYNAMIC)
                 community.interveneCommunity(cycle) ;
@@ -292,7 +293,7 @@ public class Community {
             infectionRecord = cycleString + community.progressInfection(cycle) ;
             
             //deathRecord = cycleString
-            int deltaPopulation = community.agents.size() ;  // Current poulation
+            int deltaPopulation = community.agents.size() ;  // Current population
             
             //LOGGER.info("death");
             populationRecord += community.grimReaper() ;
@@ -605,8 +606,8 @@ public class Community {
                     ((MSM) agent).reinitProbabilityAntiViral(year) ;
                     ((MSM) agent).reinitProbablityDiscloseHIV(year);
                     ((MSM) agent).reinitRiskOdds(year);
-                    if ((year > 1) && (year < 6))
-                        agent.scaleProbabilityUseCondom(.075);
+                    //if ((year > 1) && (year < 6))
+                      //  agent.scaleProbabilityUseCondom(.075);
                 }
                 catch( Exception e ) // cycle extends beyond trend data
                 {
@@ -995,64 +996,67 @@ public class Community {
      */
     private String progressInfection(int cycle)
     {
+        String agentRecord ;
         String record = "" ;
-        boolean infected ;
+        boolean siteInfected ;
+        boolean treat ;
         //long startTime = System.nanoTime() ;
 
         for (Agent agent : agents)
         {
-            //LOGGER.log(Level.INFO,"infected:{0}",agent.getAgentId());
-            //record += Reporter.ADD_REPORT_PROPERTY("agentId",agent.getAgentId()) ;
-            infected = agent.getInfectedStatus();
-            //record += Reporter.ADD_REPORT_PROPERTY("infected", infected) ;
+            agentRecord = "" ; 
+            treat = false ;
+            //LOGGER.log(Level.INFO, "agentId:{0}", agent.getAgentId());
             
-            // Due for an STI screen?
-            if (RAND.nextDouble() < agent.getScreenProbability(new String[] {Integer.toString(cycle)})) 
+            for (Site site : agent.getSites())
             {
-                record += Reporter.ADD_REPORT_PROPERTY("agentId",agent.getAgentId()) ;
-                record += Reporter.ADD_REPORT_LABEL("tested") ;
-                if (infected)
+                siteInfected = (site.getInfectedStatus() != 0) ;
+                //LOGGER.log(Level.INFO, "{0} {1}", new Object[] {site.getSite(),siteInfected}) ;
+
+                // Due for an STI screen?
+                if (RAND.nextDouble() < site.getScreenProbability(new String[] {Integer.toString(cycle)})) 
                 {
-                    //LOGGER.info("screening agentId:"+String.valueOf(agent.getAgentId())) ;
+                    //record += Reporter.ADD_REPORT_PROPERTY("agentId",agent.getAgentId()) ;
+                    if (siteInfected)
+                    {        
+                        //LOGGER.info("infected") ;
+                        agentRecord += Reporter.ADD_REPORT_PROPERTY(site.getSite(), site.getSymptomatic()) ;
+                        treat = site.treat() ;
+                    }
+                    else
+                        agentRecord += Reporter.ADD_REPORT_PROPERTY(site.getSite(),Reporter.CLEAR) ;
                     
-                    for (Site site : agent.getSites())
-                    {
-                        if (site.getInfectedStatus() != 0)
-                            record += Reporter.ADD_REPORT_PROPERTY(site.getSite(), site.getSymptomatic()) ;
-                    }
-                    agent.treat() ;
-                    record += Reporter.ADD_REPORT_LABEL("treated") ;
+                    agentRecord += Reporter.ADD_REPORT_PROPERTY("tested") ;
                 }
-                record += " " ;
+                else if (siteInfected)
+                {
+                    agentRecord += Reporter.ADD_REPORT_PROPERTY(site.getSite(), site.getSymptomatic()) ;
+
+                    // agent.progressInfection() allow infection to run one cycle of its course
+                    // and returns boolean whether agent is cleared (!stillInfected)
+                    //if (agent.progressInfection())
+                    if (site.progressInfection())
+                    {
+                        agentRecord += Reporter.ADD_REPORT_PROPERTY("cleared") ;
+                        agent.updateInfectedStatus() ;
+                    }
+                    else if (site.getSymptomatic())
+                    {
+                        treat = site.treatSymptomatic() ;
+                        if (treat)
+                            agentRecord += Reporter.ADD_REPORT_PROPERTY("tested") ;
+                    }
+                }
             }
-            else if (infected)
+            if (treat)
             {
-                //LOGGER.log(Level.INFO, "infected:{0}", agent.getAgentId());
-                record += Reporter.ADD_REPORT_PROPERTY("agentId",agent.getAgentId()) ;
-                for (Site site : agent.getSites())
-                {
-                    if (site.getInfectedStatus() != 0)
-                        record += Reporter.ADD_REPORT_PROPERTY(site.getSite(), site.getSymptomatic()) ;
-                    //LOGGER.info(site.getSite()) ;
-                }
-                
-                // agent.progressInfection() allow infection to run one cycle of its course
-                // and returns boolean whether agent is cleared (!stillInfected)
-                if (agent.progressInfection())
-                {
-                    record += Reporter.ADD_REPORT_LABEL("cleared") ;
-                    record += " " ;
-                    //LOGGER.info("cleared");
-                }
-                else if (agent.getSymptomatic())
-                    if (agent.treatSymptomatic())  
-                    {
-                        record += Reporter.ADD_REPORT_LABEL("tested") ;
-                        // Currently assuming that treatment is always successful
-                        record += Reporter.ADD_REPORT_LABEL("treated") ;
-                        record += " " ;
-                        //LOGGER.info("treated");
-                    }
+                agentRecord += Reporter.ADD_REPORT_PROPERTY("treated") ;
+                agent.updateInfectedStatus() ;
+            }
+            if (!agentRecord.isEmpty())
+            {
+                record += Reporter.ADD_REPORT_PROPERTY(Reporter.AGENTID, agent.getAgentId()) ;
+                record += agentRecord ;
             }
         }
 //            long elapsedTime = System.nanoTime() - startTime ;
@@ -1423,5 +1427,5 @@ public class Community {
 
     }
 
-
 }
+    
