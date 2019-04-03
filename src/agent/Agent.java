@@ -165,7 +165,7 @@ public abstract class Agent {
      */
     private boolean symptomatic = false ;
     
-        /** Days between asymptomatic STI screens . */
+    /** Days between asymptomatic STI screens . */
     private int screenCycle = 92 ;
     
     /** Cycles remaining until next STI screen. */
@@ -1015,7 +1015,7 @@ public abstract class Agent {
         // Check incubation period, are symptoms manifest?
         for (Site site : sites)
             if (site.getSymptomatic())
-                successful = successful || (site.getIncubationTime() == 0) ;
+                successful = successful || (site.getIncubationTime() < 0) ;
         
         if (!successful)
             return false ;
@@ -1050,6 +1050,22 @@ public abstract class Agent {
     }
 
     /**
+     * Invoked when Agent is asymptomatic. Call site.treat(). If all treatments successful, call clearSymptomatic()
+     * @return true if all sites successfully treated, false otherwise
+     */
+    public boolean treat(Site site)
+    {
+        boolean successful = site.treat() ; //
+        if (successful)
+        {
+            infectedStatus = false ;
+            clearSymptomatic();
+            screenTime = screenCycle ;
+        }
+        return successful ;
+    }
+
+    /**
      * Set symptomatic to false. Called only when all sites have been successfully treated.
      */
     protected void clearSymptomatic()
@@ -1057,6 +1073,10 @@ public abstract class Agent {
         symptomatic = false ;
     }
     
+    /**
+     * Clear infection from all Sites and reset infectedStatus and 
+     * symptomatic, accordingly.
+     */
     public void clearInfection()
     {
         infectedStatus = false ;
@@ -1066,6 +1086,10 @@ public abstract class Agent {
             site.clearInfection() ;
     }
 
+    /**
+     * Getter for infectedStatus
+     * @return infectedStatus
+     */
     public boolean getInfectedStatus()
     {
         return infectedStatus ;
@@ -1083,6 +1107,22 @@ public abstract class Agent {
     }
     
     /**
+     * Update symptomatic and infectedStatus according to the status of all 
+     * Sites.
+     */
+    public void updateInfectedStatus()
+    {
+        infectedStatus = false ;
+        Site[] sites = getSites() ;
+        for (Site site : sites)
+            infectedStatus = (infectedStatus || (site.getInfectedStatus() != 0)) ;
+        symptomatic = false ;
+        if (infectedStatus)
+            for (Site site : sites)
+                symptomatic = (symptomatic || site.getSymptomatic()) ;
+    }
+    
+    /**
      * Progress infection, invoking each site.progressInfection and 
      * keeping track of whether the Agent is still infected.
      * @return (boolean) whether the infection was cleared
@@ -1093,7 +1133,7 @@ public abstract class Agent {
         boolean stillInfected = false ;
         for (Site site : sites)
         {
-            stillInfected = (stillInfected || (site.progressInfection() > 0)) ;
+            stillInfected = (stillInfected || site.progressInfection()) ;
         }
         setInfectedStatus(stillInfected) ;
         return !stillInfected ;
