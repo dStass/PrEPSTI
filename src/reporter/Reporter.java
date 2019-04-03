@@ -54,9 +54,11 @@ public class Reporter {
     /** String representation of 'None'. */
     static String NONE = "None" ;
     /** static String representation of 'true'. */
-    static String TRUE = "true" ;
+    static public String TRUE = "true" ;
     /** static String representation of 'false'. */
-    static String FALSE = "false" ;
+    static public String FALSE = "false" ;
+    /** static String representation of 'clear'. */
+    static public String CLEAR = "clear" ;
     /** static String representation of ','. */
     static public String COMMA = "," ;
     /** static String representation of 'agentId'. */
@@ -86,6 +88,11 @@ public class Reporter {
     {
         String report = ADD_REPORT_LABEL(label) ;
         return report + value + " " ;
+    }
+        
+    public static final String ADD_REPORT_PROPERTY(String label)
+    {
+        return ADD_REPORT_PROPERTY(label,"") ;
     }
         
     public static final String ADD_REPORT_PROPERTY(String label, Object value)
