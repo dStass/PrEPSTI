@@ -126,6 +126,8 @@ abstract public class Site {
         return false ;
     }
     
+    abstract public void initScreenCycle(boolean statusHIV, boolean prepStatus) ;
+    
     /**
      * 
      * @return Probability of site being infected initially.
@@ -201,6 +203,18 @@ abstract public class Site {
     }
 
     /**
+     * Invoked when Agent is symptomatic. Call each site.treat(). If all treatments successful, call clearSymptomatic()
+     * @return true if all sites successfully treated, false otherwise
+     */
+    public boolean treatSymptomatic()
+    {
+        if (!(incubationTime < 0)) 
+            return false ;
+        
+        return treat() ;
+    }
+
+    /**
      * Probabilistically treat infection at Site
      * @return true if treatment sought and successful, false otherwise.
      */
@@ -227,6 +241,7 @@ abstract public class Site {
         symptomatic = false ;
         infectionTime = 0 ;
         incubationTime = 0 ;
+        resetScreenTime() ;
     }
 
     public int getInfectedStatus()
@@ -249,13 +264,71 @@ abstract public class Site {
         infectionTime = time ;
     }
     
-    public int progressInfection()
+    public boolean progressInfection()
     {
         infectionTime-- ;
         incubationTime-- ;
         if (infectionTime == 0)
+        {
             clearInfection() ;
-        return infectionTime ;
+            return true ;
+        }
+        return false ;
+    }
+    
+    private void resetScreenTime()
+    {
+        setScreenTime(getScreenCycle()) ;
+    }
+    
+    /** screenTime setter().
+     * @param time */
+    abstract public void setScreenTime(int time);
+
+    /** screenTime getter().
+     * @return  
+     */
+    abstract public int getScreenTime() ;
+
+    /** 
+     * screenCycle setter().
+     * @param screen 
+     */
+    abstract public void setScreenCycle(int screen) ;
+
+    /** screenCycle getter().
+     * @return screenCycle 
+     */
+    abstract public int getScreenCycle() ;
+    
+    protected void decrementScreenTime()
+    {
+        setScreenTime((getScreenTime() - 1)) ;
+    }
+
+    /**
+     * Probability of MSM screening on that day. Depends on prepStatus and statusHIV.
+     * @param args
+     * @return for PrEP users, 1.0 if cycle multiple of screenCycle, 0.0 otherwise
+     *     for non-PrEP users, random double between 0.0 and 1.0 .
+     */    
+    public double getScreenProbability(String[] args)
+    {
+            // Find current cycle
+        //    int cycle = Integer.valueOf(args[0]) ;
+            
+        // Countdown to next STI screen
+        decrementScreenTime() ;
+
+        // Is it time for a regular screening?
+        if ( getScreenTime() < 0)
+        {
+            //LOGGER.log(Level.INFO,"{0} {1}", new Object[] {getScreenTime(),getScreenCycle()}) ;
+            setScreenTime(getScreenCycle()) ;
+            return 1.0 ;
+        }
+        else
+            return 0.0 ;
     }
     
     /**
@@ -282,7 +355,7 @@ abstract public class Site {
      */
     public int chooseIncubationTime()
     {
-        incubationTime = MIN_INCUBATION + RAND.nextInt(RANGE_INCUBATION) ; // (int) new GammaDistribution(distributionMean,1).sample()) + distributionMean ;
+        incubationTime = MIN_INCUBATION + RAND.nextInt(RANGE_INCUBATION) - 1 ; // (int) new GammaDistribution(distributionMean,1).sample()) + distributionMean ;
         return incubationTime ;
     }
     
@@ -300,5 +373,13 @@ abstract public class Site {
      * @return 
      */
     abstract protected int getSymptomaticDuration() ;
+    
+    /**
+     * Adjusts per year the screening period.
+     * @param year
+     * @throws Exception 
+     */
+    abstract public void reinitScreenCycle(int year) throws Exception ;
+    
     
 }
