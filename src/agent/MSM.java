@@ -859,19 +859,22 @@ public class MSM extends Agent {
      */
     public void reinitScreenCycle(int year) throws Exception
     {
+        //if (year == 0)
+          //  return ;
+        for (Site site : sites)
+            site.reinitScreenCycle(year,statusHIV);
         // Go from 2007
         // Frequencies, given by per 1000 per year, from 2007-2016
         // Table 17 ARTB 2016
-        double[] testRates = new double[] {333,340,398,382,383,382,391,419,445,499} ;
-        double testBase ;
-        if (year == 0)
-            testBase = testRates[0] ;
-        else
-            testBase = testRates[year - 1] ;
-        
+        //double[] testRates = new double[] {333,340,398,382,383,382,391,419,445,499} ;
+        //double testBase ;
+        //testBase = testRates[0] ;
+        //else
+          //  testBase = testRates[year - 1] ;
+        /*
         double ratio = testBase/testRates[year] ;
         int newScreenCycle = (int) Math.ceil(ratio * getScreenCycle()) ;
-        setScreenCycle(newScreenCycle) ;
+        setScreenCycle(newScreenCycle) ;*/
     }
     
     /**
