@@ -117,7 +117,16 @@ abstract public class Site {
      */
     public boolean initialiseInfection()
     {
-        return receiveInfection(getInfectedProbability()) ;
+        if (RAND.nextDouble() < getInfectedProbability() )
+        {
+            infectedStatus = 1 ;
+            infectionTime = RAND.nextInt(getInfectionDuration()) ;
+            
+            // Initiate infections as asymptomatic
+            //chooseSymptomatic() ; // Do not want chooseIncubationTime() for initialisation
+            return true ;
+        }
+        return false ;
     }
     
     abstract public void initScreenCycle(boolean statusHIV, boolean prepStatus) ;
