@@ -13,6 +13,7 @@ import java.io.* ;
 //import java.io.IOException;
 
 import reporter.* ; 
+import reporter.ScreeningReporter ;
 import reporter.presenter.* ;
 
 import java.util.Random;
@@ -31,7 +32,7 @@ import java.util.logging.Level;
  *
  *******************************************************************/
 public class Community {
-    static public int POPULATION = 40000 ;
+    static final public int POPULATION = 40000 ;
     static public int MAX_CYCLES = 750 ; 
     static public String NAME_ROOT = "" ;
     //static public String NAME_ROOT = "TestUrethraSymp60a2" ;
@@ -90,7 +91,7 @@ public class Community {
      * (String) Name of previous simulation to reload.
      * Not reloaded if this is an empty string.
      */
-    static final String RELOAD_SIMULATION = "" ; // "CorrectedSafeRatioPop40000Cycles1500" ; // "TestUrethraSymp60a4ContPop40000Cycles1000" ; // "CorrectedSafeRatioPop40000Cycles1500" ; // "CorrectedSafeRatioRisky1aPop40000Cycles1000" ; //  "Year2007Commence5f" ; // "TestRebootBasePop4000Cycles500" ; // "From2007To2011p5v3aAdjustCondomsPop40000Cycles2525" ; // "TestRebootRelationship8aPop4000Cycles500" ; 
+    static final String RELOAD_SIMULATION =  "" ; // "CorrectedSafeRatioPop40000Cycles1500" ; // "TestUrethraSymp60a4ContPop40000Cycles1000" ; // "CorrectedSafeRatioPop40000Cycles1500" ; // "CorrectedSafeRatioRisky1aPop40000Cycles1000" ; //  "Year2007Commence5f" ; // "TestRebootBasePop4000Cycles500" ; // "From2007To2011p5v3aAdjustCondomsPop40000Cycles2525" ; // "TestRebootRelationship8aPop4000Cycles500" ; 
     
     static public String getFilePath()
     {
@@ -584,13 +585,15 @@ public class Community {
      */
     private String interveneCommunity(int cycle)
     {
-        int startCycle = 1000 ;
+        int startCycle = 500 ;
         if (cycle < startCycle)
             return "" ;
         
         String report = "" ;
         
         int year = (cycle - startCycle)/365 ;
+        if (year == 0)
+            return "" ;
         if (year * 365 == (cycle - startCycle))
         {
             for (Agent agent : agents)
@@ -1042,6 +1045,7 @@ public class Community {
                     }
                     else if (site.getSymptomatic())
                     {
+                        // Test and treat only if incubation period has expired.
                         treat = site.treatSymptomatic() ;
                         if (treat)
                             agentRecord += Reporter.ADD_REPORT_PROPERTY("tested") ;
@@ -1059,13 +1063,7 @@ public class Community {
                 record += agentRecord ;
             }
         }
-//            long elapsedTime = System.nanoTime() - startTime ;
-//        long milliTime = elapsedTime/1000000 ;
-//        int seconds = (int) milliTime/1000 ;
-//        System.out.println("Elapsed running time: " + elapsedTime + "millseconds") ;
-//        System.out.println("Elapsed running time: " + milliTime + "millseconds") ;
-
-        //LOGGER.info(record);
+        
         return record ;
     }
 
