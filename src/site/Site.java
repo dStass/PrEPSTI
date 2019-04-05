@@ -117,13 +117,7 @@ abstract public class Site {
      */
     public boolean initialiseInfection()
     {
-        if (RAND.nextDouble() < getInfectedProbability() ) 
-        {
-            infectedStatus = 1 ;
-            infectionTime = RAND.nextInt(getInfectionDuration()) ; // + getInfectionDuration() ;
-            return true ;
-        }
-        return false ;
+        return receiveInfection(getInfectedProbability()) ;
     }
     
     abstract public void initScreenCycle(boolean statusHIV, boolean prepStatus) ;
