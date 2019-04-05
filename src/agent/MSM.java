@@ -145,21 +145,21 @@ public class MSM extends Agent {
     private boolean riskyStatus ;
     
     /** Transmission probabilities per sexual contact from Urethra to Rectum */
-    static double URETHRA_TO_RECTUM = 0.030 ;
+    static double URETHRA_TO_RECTUM = 0.100 ;
     /** Transmission probabilities sexual contact from Urethra to Pharynx. */
-    static double URETHRA_TO_PHARYNX = 0.030 ; 
+    static double URETHRA_TO_PHARYNX = 0.035 ; 
     /** Transmission probabilities sexual contact from Rectum to Urethra. */ 
-    static double RECTUM_TO_URETHRA = 0.030 ; 
+    static double RECTUM_TO_URETHRA = 0.005 ; 
     /** Transmission probabilities sexual contact from Rectum to Pharynx. */
-    static double RECTUM_TO_PHARYNX = 0.030 ;
+    static double RECTUM_TO_PHARYNX = 0.025 ;
     /** Transmission probabilities sexual contact in Pharynx to Urethra intercourse. */
-    static double PHARYNX_TO_URETHRA = 0.030 ;
+    static double PHARYNX_TO_URETHRA = 0.005 ;
     /** Transmission probabilities sexual contact in Pharynx to Rectum intercourse. */
     static double PHARYNX_TO_RECTUM = 0.030 ; 
     /** Transmission probabilities sexual contact in Pharynx to Pharynx intercourse (kissing). */
-    static double PHARYNX_TO_PHARYNX = 0.035 ; 
+    static double PHARYNX_TO_PHARYNX = 0.055 ; 
     /** Transmission probabilities sexual contact in Urethra to Urethra intercourse (docking). */
-    static double URETHRA_TO_URETHRA = 0.025 ; 
+    static double URETHRA_TO_URETHRA = 0.005 ; 
     /** Transmission probabilities sexual contact in Rectum to Rectum intercourse. */
     static double RECTUM_TO_RECTUM = 0.0003 ; // 0.003 ; 
     
@@ -365,7 +365,9 @@ public class MSM extends Agent {
         super(startAge) ;
         // Risky or Safe behaviour
         riskyStatus = (RAND.nextInt(TOTAL_ODDS) < RISKY_ODDS) ;
-        initStatus(startAge) ;
+        initStatus() ;
+        // Cannot be called in super() because sites is not initiated yet.
+        initInfectedStatus(startAge) ;
         initConsentCasualProbability() ;
         
         // Choose tops, 1/5
@@ -381,7 +383,7 @@ public class MSM extends Agent {
      * Ensures that those MSM who come out during simulation are initially
      * HIV free (statusHIV == false).
      */
-    final void initStatus(int startAge)
+    final void initStatus()
     {
         //requireDiscloseStatusHIV = (rand.nextDouble() < probabilityRequireDiscloseHIV) ;
         statusHIV = (RAND.nextDouble() < getProportionHIV()) ;
@@ -395,8 +397,7 @@ public class MSM extends Agent {
         
         // Initialises infectedStatus at beginning of simulation, 
         //ensuring consistency with Site.infectedStatus
-        if (startAge < 0)    // MSM generated at outset, represent initial population
-            initInfectedStatus() ;
+        //  initInfectedStatus(startAge) ;    // MSM generated at outset, represent initial population
 
         // Sets whether disclosesHIV, allowing for statusHIV
         double probabilityDiscloseHIV = getProbabilityDiscloseHIV() ;
@@ -541,7 +542,7 @@ public class MSM extends Agent {
     @Override
     public Site[] getSites()
     {
-        return new Site[] {rectum,urethra,pharynx} ;
+        return sites ; // new Site[] {rectum,urethra,pharynx} ;
     }
         
     /**
