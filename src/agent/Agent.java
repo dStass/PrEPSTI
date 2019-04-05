@@ -49,9 +49,9 @@ public abstract class Agent {
     //static String FOLDER_PATH = "/srv/scratch/z3524276/prepsti/"
     //static String FOLDER_PATH = "/short/is14/mw7704/prepsti/"
     static String FOLDER_PATH = ""
-       +  "output/year2007/" ;
+    //   +  "output/year2007/" ;
     //+  "output/year2012/" ;
-    // +  "output/test/" ;
+     +  "output/test/" ;
     // +  "output/prePrEP/" ;
     
     
@@ -247,6 +247,8 @@ public abstract class Agent {
     /**
      * Reloads Agents from a saved simulation to continue it.
      * @param simName 
+     * @param rebootFile 
+     * @return  
      */
     static public ArrayList<Agent> REBOOT_AGENTS(String simName, boolean rebootFile)
     {
@@ -553,9 +555,14 @@ public abstract class Agent {
     /**
      * Initialises Agent infectedStatus while ensuring consistency with 
      * Site.infectedStatus .
+     * @param startAge
      */
-    final public void initInfectedStatus()
+    final public void initInfectedStatus(int startAge)
     {
+        if (startAge >= 0)
+            return ;
+        
+        // else startAge<0 indicates initial population
         boolean infected = false ;    //  getInfectedStatus() ;
         for (Site site : getSites())
         {
