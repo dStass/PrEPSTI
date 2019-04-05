@@ -17,12 +17,12 @@ public class Rectum extends Site {
     static double INITIAL = 0.02 ;
     
     // Probability of positive symptomatic status if infected
-    static double SYMPTOMATIC_PROBABILITY = 0.15 ;
+    static double SYMPTOMATIC_PROBABILITY = 0.25 ;
 
     /**
      * Duration of gonorrhoea infection in rectum, 6 months.
      */
-    static int INFECTION_DURATION = 92 ;
+    static int INFECTION_DURATION = 183 ;
     
     static int SYMPTOMATIC_DURATION = 5 ;
     
@@ -80,9 +80,9 @@ public class Rectum extends Site {
         {
             
             if (statusHIV)
-                setScreenCycle(((int) new GammaDistribution(16,23).sample())) ;  // (((int) new GammaDistribution(10,37).sample())) ;  // (((int) new GammaDistribution(6,63).sample())) ;  // 52.2% screen within a year
+                setScreenCycle(((int) new GammaDistribution(6,63).sample())) ;  // (((int) new GammaDistribution(16,23).sample())) ;  // (((int) new GammaDistribution(10,37).sample())) ;  // 52.2% screen within a year
             else
-                setScreenCycle(((int) new GammaDistribution(14,32).sample())) ;  // (((int) new GammaDistribution(9,53).sample())) ;  // (((int) new GammaDistribution(7,71).sample())) ;  // 26% screen within a year
+                setScreenCycle(((int) new GammaDistribution(6,69).sample())) ;  // (((int) new GammaDistribution(14,32).sample())) ;  // (((int) new GammaDistribution(9,53).sample())) ;  // 43.6% screen within a year
             
         }
         // Randomly set timer for first STI screen 
@@ -172,17 +172,23 @@ public class Rectum extends Site {
      * @param year
      * @throws Exception 
      */
-    public void reinitScreenCycle(int year) throws Exception
+    @Override
+    public void reinitScreenCycle(int year, boolean hivStatus) throws Exception
     {
+        double[] testRates = new double[] {} ;
+        double testBase ;
         // Go from 2007
         // Frequencies, given by per 1000 per year, from 2007-2016
         // Table 17 ARTB 2016
-        double[] testRates = new double[] {333,340,398,382,383,382,391,419,445,499} ;
-        double testBase ;
-        if (year == 0)
-            testBase = testRates[0] ;
+        if (hivStatus)
+            testRates = new double[] {522,493,539,610,625,605,614,691} ;
         else
-            testBase = testRates[year - 1] ;
+            testRates = new double[] {436,459,461,444,484,467,511,514} ;
+        // year == 0 never calls this method
+        //if (year == 0)
+          //  testBase = testRates[0] ;
+        //else
+        testBase = testRates[year - 1] ;
         
         double ratio = testBase/testRates[year] ;
         int newScreenCycle = (int) Math.ceil(ratio * getScreenCycle()) ;
