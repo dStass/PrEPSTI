@@ -18,7 +18,7 @@ public class Urethra extends Site {
     static double INITIAL = 0.01 ;
 
     // Probability of positive symptomatic status if infected
-    static double SYMPTOMATIC_PROBABILITY = 0.80 ;
+    static double SYMPTOMATIC_PROBABILITY = 0.70 ; // 0.80 ;
     
     /**
      * Duration of gonorrhoea infection in Urethra.
@@ -152,22 +152,28 @@ public class Urethra extends Site {
      * @param year
      * @throws Exception 
      */
-    public void reinitScreenCycle(int year) throws Exception
+    @Override
+    public void reinitScreenCycle(int year, boolean hivStatus) throws Exception
     {
+        double[] testRates = new double[] {} ;
+        double testBase ;
         // Go from 2007
         // Frequencies, given by per 1000 per year, from 2007-2016
         // Table 17 ARTB 2016
-        double[] testRates = new double[] {333,340,398,382,383,382,391,419,445,499} ;
-        double testBase ;
-        if (year == 0)
-            testBase = testRates[0] ;
+        if (hivStatus)
+            testRates = new double[] {604,606,625,669,716,748,742,754} ;
         else
-            testBase = testRates[year - 1] ;
+            testRates = new double[] {542,576,567,563,589,591,603,626} ;
+        // year == 0 never calls this method
+        //if (year == 0)
+          //  testBase = testRates[0] ;
+        //else
+        testBase = testRates[year - 1] ;
         
         double ratio = testBase/testRates[year] ;
         int newScreenCycle = (int) Math.ceil(ratio * getScreenCycle()) ;
         setScreenCycle(newScreenCycle) ;
-    }
+    }    
     
     
 }
