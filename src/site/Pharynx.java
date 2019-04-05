@@ -87,6 +87,7 @@ public class Pharynx extends Site {
      * 
      * @return The probability of an infection at this Site causing symptoms.
      */        
+    @Override
     protected double getSymptomaticProbability()
     {
         return SYMPTOMATIC_PROBABILITY ;
@@ -142,23 +143,28 @@ public class Pharynx extends Site {
      * @param year
      * @throws Exception 
      */
-    public void reinitScreenCycle(int year) throws Exception
+    @Override
+    public void reinitScreenCycle(int year, boolean hivStatus) throws Exception
     {
+        double[] testRates = new double[] {} ;
+        double testBase ;
         // Go from 2007
         // Frequencies, given by per 1000 per year, from 2007-2016
         // Table 17 ARTB 2016
-        double[] testRates = new double[] {333,340,398,382,383,382,391,419,445,499} ;
-        double testBase ;
-        if (year == 0)
-            testBase = testRates[0] ;
+        if (hivStatus)
+            testRates = new double[] {546,546,564,613,625,634,633,695} ;
         else
-            testBase = testRates[year - 1] ;
+            testRates = new double[] {469,491,491,476,509,502,540,555} ;
+        // year == 0 never calls this method
+        //if (year == 0)
+          //  testBase = testRates[0] ;
+        //else
+        testBase = testRates[year - 1] ;
         
         double ratio = testBase/testRates[year] ;
         int newScreenCycle = (int) Math.ceil(ratio * getScreenCycle()) ;
         setScreenCycle(newScreenCycle) ;
-    }
-    
+    }    
     
     
 }
