@@ -382,7 +382,7 @@ abstract public class Site {
      * @param year
      * @throws Exception 
      */
-    abstract public void reinitScreenCycle(int year) throws Exception ;
+    abstract public void reinitScreenCycle(int year, boolean hivStatus) throws Exception ;
     
     
 }
