@@ -18,7 +18,7 @@ public class Urethra extends Site {
     static double INITIAL = 0.01 ;
 
     // Probability of positive symptomatic status if infected
-    static double SYMPTOMATIC_PROBABILITY = 0.70 ; // 0.80 ;
+    static double SYMPTOMATIC_PROBABILITY = 0.80 ;
     
     /**
      * Duration of gonorrhoea infection in Urethra.
@@ -59,17 +59,17 @@ public class Urethra extends Site {
      * @param prepStatus
      */
     @Override
-    public void initScreenCycle(boolean statusHIV, boolean prepStatus)
+    public void initScreenCycle(boolean statusHIV, boolean prepStatus, double rescale)
     {
         if (prepStatus)
-            setScreenCycle(((int) new GammaDistribution(31,1).sample()) + 61) ;
+            setScreenCycle(sampleGamma(31,1,rescale) + 61) ;
         else
         {
             
             if (statusHIV)
-                setScreenCycle(((int) new GammaDistribution(4,87).sample())) ;  // (((int) new GammaDistribution(6,58).sample())) ;  // 60.4% screen within a year
+                setScreenCycle(sampleGamma(4,87,rescale)) ;  // (((int) new GammaDistribution(6,58).sample())) ;  // 60.4% screen within first year
             else
-                setScreenCycle(((int) new GammaDistribution(3,128).sample())) ;  // (((int) new GammaDistribution(4,94).sample())) ;  // 54.2% screen within a year
+                setScreenCycle(sampleGamma(3,128,rescale)) ;  // (((int) new GammaDistribution(4,94).sample())) ;  // 54.2% screen within first year
             
         }
         // Randomly set timer for first STI screen 
@@ -168,11 +168,11 @@ public class Urethra extends Site {
         //if (year == 0)
           //  testBase = testRates[0] ;
         //else
-        testBase = testRates[year - 1] ;
+        testBase = testRates[0] ;
         
         double ratio = testBase/testRates[year] ;
-        int newScreenCycle = (int) Math.ceil(ratio * getScreenCycle()) ;
-        setScreenCycle(newScreenCycle) ;
+        // Do not reinitialise MSM on Prep
+        initScreenCycle(hivStatus,false,ratio) ;
     }    
     
     
