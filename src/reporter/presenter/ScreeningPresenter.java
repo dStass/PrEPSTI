@@ -7,6 +7,7 @@ package reporter.presenter;
 
 
 import java.util.ArrayList ;
+import java.util.Arrays;
 import java.util.HashMap;
 
 //import community.Community ;
@@ -68,16 +69,17 @@ public class ScreeningPresenter extends Presenter {
 
     public static void main(String[] args)
     {
-        //String simName = "From2007To2012a16Pop40000Cycles2690" ; 
-        //String simName =  "ReversedSafeRatio6aPop40000Cycles3000" ;
+        //String simName = "minimum16cPop40000Cycles750" ; 
+        //String simName = "minFrom2007a16Pop40000Cycles2690" ; 
+        //String simName =  "adjustCondom1Y16cPop40000Cycles4420" ;
         //String simName =  "CorrectedSafe1aRectal30Pop40000Cycles1500" ;
-        String simName = "condom86stopPrePrep3aPop40000Cycles4650" ;
+        //String simName = "condom86stopPrePrep3aPop40000Cycles4650" ;
         //String simName = "Year2007Commence5fPop40000Cycles2500" ;
         //String simName = "From2007To2016Urethral70b4Pop40000Cycles4650" ;
-        //String simName = "AllRisky8Pop40000Cycles1000" ;
+        String simName = "newSort3aPop40000Cycles1000" ;
         
         boolean unique = false ;
-        int notifications = 1 ; 
+        int notifications = -1 ; 
         String chartTitle ;
         if (unique && (notifications == 1))
             chartTitle = "unique " ;
@@ -110,8 +112,9 @@ public class ScreeningPresenter extends Presenter {
 
         String[] siteNames  = new String[] {"Pharynx","Rectum","Urethra"} ;
         //String[] simNames = new String[] {"test2Pop30000Cycles500","test3Pop30000Cycles500","test4Pop30000Cycles500"} ;
+        //String[] testArray[] = Arrays.asList(siteNames).subList(0,0)
         
-        String[] simNames = new String[] {"NoPrepCalibration74aPop40000Cycles5000","NoPrepCalibration74bPop40000Cycles5000","NoPrepCalibration74cPop40000Cycles5000"} ;
+        String[] simNames = new String[] {"adjustCondom1Y16bPop40000Cycles4420","adjustCondom1Y16cPop40000Cycles4420","adjustCondom1Y16dPop40000Cycles4420","adjustCondom1Y16ePop40000Cycles4420"} ;
         //String[] simNames = new String[] {"IntroPrepCalibration74acycle6000Pop40000Cycles12000","IntroPrepCalibration74bcycle6000Pop40000Cycles12000","IntroPrepCalibration74ccycle6000Pop40000Cycles12000"} ;
 
         //screeningPresenter.coplotPrevalence(simNames) ;
@@ -120,7 +123,7 @@ public class ScreeningPresenter extends Presenter {
         //screeningPresenter.plotNumberAgentTreatedReport(2, 0, 0,"prepStatus",5) ;
 
         //screeningPresenter.multiPlotScreening(new Object[] {SYMPTOMATIC,new String[] {"Pharynx","Rectum","Urethra"}});
-        //screeningPresenter.multiPlotScreening(new Object[] {"prevalence","coprevalence",new String[] {"Pharynx","Rectum"},new String[] {"Urethra","Rectum"},"prevalence",new String[] {"Pharynx","Rectum","Urethra"}});
+        screeningPresenter.multiPlotScreening(new Object[] {"prevalence","coprevalence",new String[] {"Pharynx","Rectum"},new String[] {"Urethra","Rectum"},"prevalence",new String[] {"Pharynx","Rectum","Urethra"}});
         //screeningPresenter.multiPlotScreening(new Object[] {"prevalence","prevalence",new String[] {"Pharynx","Rectum","Urethra"}});
         //screeningPresenter.plotNotificationsPerCycle(siteNames) ;
         //screeningPresenter.plotSitePrevalence(siteNames) ;
@@ -129,7 +132,7 @@ public class ScreeningPresenter extends Presenter {
         //screeningPresenter.plotFinalPrevalences(new String[] {"Pharynx","Rectum","Urethra"}) ;
         //screeningPresenter.plotFinalNotifications(new String[] {"Pharynx","Rectum","Urethra"}, unique, 0, Reporter.DAYS_PER_YEAR, notifications) ;
         //screeningPresenter.plotNotificationsYears(new String[] {"all"},6,2012) ;
-        screeningPresenter.plotPositivityYears(new String[] {"Pharynx","Rectum","Urethra"}, unique, 10, 2016) ;
+        //screeningPresenter.plotPositivityYears(new String[] {siteNames[2]}, unique, 4, 2010) ;
         //screeningPresenter.plotNotificationPerCycle() ;    
         //screeningPresenter.plotSiteProportionSymptomatic(siteNames) ;
 
@@ -575,7 +578,11 @@ public class ScreeningPresenter extends Presenter {
         }
         String[] legendArray =  new String[legend.size()] ;
         for (int i = 0 ; i < legendArray.length ; i++ )
+        {
             legendArray[i] = legend.get(i) ;
+            ArrayList<Object> plotReport = multiPlotReports.get(i) ;
+            LOGGER.log(Level.INFO, "{0} {1}", new Object[] {legend.get(i),plotReport.get(plotReport.size() - 1)}) ;
+        }
         multiPlotCycleValue(multiPlotNames,multiPlotReports,legendArray) ;
         
     }
