@@ -73,7 +73,7 @@ public class MSM extends Agent {
     /** Probability of sero-positioning if HIV negative */
     static double PROBABILITY_NEGATIVE_SERO_POSITION = 0.154 ;
     /** The probability of being on antivirals, given positive HIV status */
-    static double PROBABILITY_ANTIVIRAL = 0.53 ;
+    static double PROBABILITY_ANTIVIRAL = 0.532 ;
     /** The probability of being on PrEP, given negative HIV status */
     static double PROBABILITY_PREP = 0.0 ; // 0.14 ;
     /** Probability of accepting seropositive partner on antiVirals, given 
@@ -149,15 +149,15 @@ public class MSM extends Agent {
     /** Transmission probabilities sexual contact from Urethra to Pharynx. */
     static double URETHRA_TO_PHARYNX = 0.035 ; 
     /** Transmission probabilities sexual contact from Rectum to Urethra. */ 
-    static double RECTUM_TO_URETHRA = 0.005 ; 
+    static double RECTUM_TO_URETHRA = 0.010 ; 
     /** Transmission probabilities sexual contact from Rectum to Pharynx. */
     static double RECTUM_TO_PHARYNX = 0.025 ;
     /** Transmission probabilities sexual contact in Pharynx to Urethra intercourse. */
-    static double PHARYNX_TO_URETHRA = 0.005 ;
+    static double PHARYNX_TO_URETHRA = 0.010 ;
     /** Transmission probabilities sexual contact in Pharynx to Rectum intercourse. */
     static double PHARYNX_TO_RECTUM = 0.030 ; 
     /** Transmission probabilities sexual contact in Pharynx to Pharynx intercourse (kissing). */
-    static double PHARYNX_TO_PHARYNX = 0.055 ; 
+    static double PHARYNX_TO_PHARYNX = 0.045 ; 
     /** Transmission probabilities sexual contact in Urethra to Urethra intercourse (docking). */
     static double URETHRA_TO_URETHRA = 0.005 ; 
     /** Transmission probabilities sexual contact in Rectum to Rectum intercourse. */
@@ -416,10 +416,10 @@ public class MSM extends Agent {
         discloseStatusHIV = (RAND.nextDouble() < probabilityDiscloseHIV) ;
         if (discloseStatusHIV)
         {
-            seroSortCasual = ((RAND.nextDouble() < getProbabilitySeroSortCasual(statusHIV)/probabilityDiscloseHIV) && discloseStatusHIV) ;
-            seroSortRegular = ((RAND.nextDouble() < getProbabilitySeroSortRegular(statusHIV)/probabilityDiscloseHIV) && discloseStatusHIV) ;
-            seroSortMonogomous = ((RAND.nextDouble() < getProbabilitySeroSortMonogomous(statusHIV)/probabilityDiscloseHIV) && discloseStatusHIV) ;
-            seroPosition = ((RAND.nextDouble() < getProbabilitySeroPosition(statusHIV)/probabilityDiscloseHIV) && discloseStatusHIV) ;
+            seroSortCasual = ((RAND.nextDouble() < getProbabilitySeroSortCasual(statusHIV)) && discloseStatusHIV) ;
+            seroSortRegular = ((RAND.nextDouble() < getProbabilitySeroSortRegular(statusHIV)) && discloseStatusHIV) ;
+            seroSortMonogomous = ((RAND.nextDouble() < getProbabilitySeroSortMonogomous(statusHIV)) && discloseStatusHIV) ;
+            seroPosition = ((RAND.nextDouble() < getProbabilitySeroPosition(statusHIV)) && discloseStatusHIV) ;
         }
         else    // Cannot seroSort or SeroPosition without disclosing statusHIV
         {
@@ -833,7 +833,6 @@ public class MSM extends Agent {
     
     /**
      * Initialise prepStatus and set up screenCycle and screenTime accordingly.
-     * screenCycle is initiated here because it is prepStatus dependent.
      * @param prep 
      */
     private void initPrepStatus(boolean prep)
@@ -849,7 +848,7 @@ public class MSM extends Agent {
     private void initScreenCycle()
     {
         for (Site site : getSites())
-            site.initScreenCycle(statusHIV, prepStatus) ;
+            site.initScreenCycle(statusHIV, prepStatus,1) ;
     }
     
     /**
@@ -935,6 +934,7 @@ public class MSM extends Agent {
     
     /**
      * Setter of prepStatus.
+     * screenCycle is initiated here because it is prepStatus dependent.
      * @param prep 
      */
     public void setPrepStatus(boolean prep)
@@ -1086,13 +1086,13 @@ public class MSM extends Agent {
 
             if (getSeroSort(relationshipClazzName))    // might use condom when serodiscordance or nondisclosure
             {
-                if (!(getStatusHIV() == Boolean.getBoolean(partnerDisclosure))) 
+                if (!(String.valueOf(getStatusHIV()).equals(partnerDisclosure))) 
                 {
                     if (RAND.nextDouble() < probabilityUseCondom ) 
                         return true;
                     if (getStatusHIV() && !((MSM)partner).getPrepStatus()) // !getPrepStatus() || 
                         return (RAND.nextDouble() < probabilityUseCondom ) ;
-                    else if (!getStatusHIV() && ((MSM)partner).getPrepStatus())
+                    else if (!getStatusHIV() && ((MSM)partner).getAntiViralStatus())
                         return (RAND.nextDouble() < probabilityUseCondom ) ;
                 }
             }
@@ -1113,7 +1113,7 @@ public class MSM extends Agent {
                 if (((MSM) partner).getStatusHIV() && !((MSM) partner).getAntiViralStatus()) // Partner HIV +ve without antivirals
                     return true ;
             }
-            return (RAND.nextDouble() < probabilityUseCondom ) ;  //TODO: Should there be subset who always use?
+            return (RAND.nextDouble() > probabilityUseCondom ) ;  //TODO: Should there be subset who always use?
         }
     }
     
