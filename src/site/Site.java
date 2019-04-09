@@ -129,7 +129,12 @@ abstract public class Site {
         return false ;
     }
     
-    abstract public void initScreenCycle(boolean statusHIV, boolean prepStatus) ;
+    abstract public void initScreenCycle(boolean statusHIV, boolean prepStatus, double rescale) ;
+    
+    protected int sampleGamma(double shape, double scale, double rescale)
+    {
+        return (int) new GammaDistribution(shape,scale * rescale).sample() ;
+    }
     
     /**
      * 
@@ -380,6 +385,7 @@ abstract public class Site {
     /**
      * Adjusts per year the screening period.
      * @param year
+     * @param hivStatus
      * @throws Exception 
      */
     abstract public void reinitScreenCycle(int year, boolean hivStatus) throws Exception ;
