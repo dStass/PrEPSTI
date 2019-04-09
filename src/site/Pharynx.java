@@ -57,17 +57,17 @@ public class Pharynx extends Site {
      * Rectum is screened, and then starts the cycle in a random place so that 
      * not every MSM screens his Rectum at the same time.
      */
-    public void initScreenCycle(boolean statusHIV, boolean prepStatus)
+    public void initScreenCycle(boolean statusHIV, boolean prepStatus, double rescale)
     {
         if (prepStatus)
-            setScreenCycle(((int) new GammaDistribution(31,1).sample()) + 61) ;
+            setScreenCycle(sampleGamma(31,1,rescale) + 61) ;
         else
         {
             
             if (statusHIV)
-                setScreenCycle(((int) new GammaDistribution(5,74).sample())) ;  // 54.6% screen within a year
+                setScreenCycle(sampleGamma(5,74,rescale)) ;  // 54.6% screen within first year
             else
-                setScreenCycle(((int) new GammaDistribution(5,81).sample())) ;  // 46.9% screen within a year
+                setScreenCycle(sampleGamma(5,81,rescale)) ;  // 46.9% screen within first year
             
         }
         // Randomly set timer for first STI screen 
@@ -159,11 +159,11 @@ public class Pharynx extends Site {
         //if (year == 0)
           //  testBase = testRates[0] ;
         //else
-        testBase = testRates[year - 1] ;
+        testBase = testRates[0] ;
         
         double ratio = testBase/testRates[year] ;
-        int newScreenCycle = (int) Math.ceil(ratio * getScreenCycle()) ;
-        setScreenCycle(newScreenCycle) ;
+        // Do not reinitialise MSM on Prep
+        initScreenCycle(hivStatus,false,ratio) ;
     }    
     
     
