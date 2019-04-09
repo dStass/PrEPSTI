@@ -609,8 +609,9 @@ public class Community {
                     ((MSM) agent).reinitProbabilityAntiViral(year) ;
                     ((MSM) agent).reinitProbablityDiscloseHIV(year);
                     ((MSM) agent).reinitRiskOdds(year);
-                    //if ((year > 1) && (year < 6))
-                      //  agent.scaleProbabilityUseCondom(.075);
+                    if ((year > 1)) // && (year < 6))
+                        agent.adjustProbabilityUseCondom();
+                        //agent.scaleProbabilityUseCondom(.075);
                 }
                 catch( Exception e ) // cycle extends beyond trend data
                 {
