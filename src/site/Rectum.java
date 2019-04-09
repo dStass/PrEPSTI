@@ -17,7 +17,7 @@ public class Rectum extends Site {
     static double INITIAL = 0.02 ;
     
     // Probability of positive symptomatic status if infected
-    static double SYMPTOMATIC_PROBABILITY = 0.25 ;
+    static double SYMPTOMATIC_PROBABILITY = 0.15 ;
 
     /**
      * Duration of gonorrhoea infection in rectum, 6 months.
@@ -71,18 +71,22 @@ public class Rectum extends Site {
      * Initialises screenCycle from a Gamma distribution to determine how often 
      * Rectum is screened, and then starts the cycle in a random place so that 
      * not every MSM screens his Rectum at the same time.
+     * @param statusHIV
+     * @param prepStatus
+     * @param rescale
      */
-    public void initScreenCycle(boolean statusHIV, boolean prepStatus)
+    @Override
+    public void initScreenCycle(boolean statusHIV, boolean prepStatus, double rescale)
     {
         if (prepStatus)
-            setScreenCycle(((int) new GammaDistribution(31,1).sample()) + 61) ;
+            setScreenCycle(sampleGamma(31,1,rescale) + 61) ;  // ((int) new GammaDistribution(31,1).sample())
         else
         {
             
             if (statusHIV)
-                setScreenCycle(((int) new GammaDistribution(6,63).sample())) ;  // (((int) new GammaDistribution(16,23).sample())) ;  // (((int) new GammaDistribution(10,37).sample())) ;  // 52.2% screen within a year
+                setScreenCycle(sampleGamma(16,23,rescale)) ;  // (16,23,rescale)) ;  // (((int) new GammaDistribution(10,37).sample())) ;  // 52.2% screen within a year
             else
-                setScreenCycle(((int) new GammaDistribution(6,69).sample())) ;  // (((int) new GammaDistribution(14,32).sample())) ;  // (((int) new GammaDistribution(9,53).sample())) ;  // 43.6% screen within a year
+                setScreenCycle(sampleGamma(17,22.8,rescale)) ;  // (6,69,rescale)) ;  // (((int) new GammaDistribution(9,53).sample())) ;  // 43.6% screen within a year
             
         }
         // Randomly set timer for first STI screen 
@@ -188,11 +192,11 @@ public class Rectum extends Site {
         //if (year == 0)
           //  testBase = testRates[0] ;
         //else
-        testBase = testRates[year - 1] ;
+        testBase = testRates[0] ;
         
         double ratio = testBase/testRates[year] ;
-        int newScreenCycle = (int) Math.ceil(ratio * getScreenCycle()) ;
-        setScreenCycle(newScreenCycle) ;
+        // Do not reinitialise MSM on Prep
+        initScreenCycle(hivStatus,false,ratio) ;
     }    
     
 
