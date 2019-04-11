@@ -177,7 +177,7 @@ public abstract class Agent {
     // names of fields of interest to the census.
     private String[] censusFieldNames = {"agentId","agent","concurrency","infidelity"} ;
             //"symptomatic","available","inMonogomous","regularNumber","casualNumber",
-            //"nbRelationships",
+            //"nbRelationships","screenCycle"
 
     static final java.util.logging.Logger LOGGER = java.util.logging.Logger.getLogger("agent") ;
 
@@ -380,7 +380,7 @@ public abstract class Agent {
                                 //newAgent.chooseSymptomatic(site) ;
                                 
                                 // Set remaining infectionTime
-                                infectionTime = Reporter.EXTRACT_VALUE("infectionTime", infectionString, siteIndex) ;
+                                infectionTime = Reporter.EXTRACT_VALUE("screenTime", infectionString, siteIndex) ;
                                 site.setInfectionTime(Integer.valueOf(infectionTime)) ;
                             }
                             else
@@ -443,8 +443,8 @@ public abstract class Agent {
                 testProperty = property ;
                 //LOGGER.info(testProperty) ;
                 valueString = Reporter.EXTRACT_VALUE(property, census) ;
-                if (property.equals("screenInterval"))
-                    property = "screenCycle" ;
+                //if (property.equals("screenInterval"))
+                  //  property = "screenCycle" ;
                 for (Class agentClazz : clazzFields.keySet())
                     for (Field field : clazzFields.get(agentClazz))
                         if (field.getName().equals(property))
@@ -580,7 +580,6 @@ public abstract class Agent {
     final protected void reinitInfectedStatus(boolean symptomaticSite, Site site)
     {
         site.receiveInfection(1.1) ;
-        site.setInfectionTime(RAND.nextInt(site.setInfectionDuration()-1)+1) ;
         symptomatic = symptomatic || site.setSymptomatic(symptomaticSite) ;
         infectedStatus = true ; // infectedStatus || (site.getInfectedStatus() > 0) ;
     }
@@ -686,6 +685,14 @@ public abstract class Agent {
             return casualOdds ;
     }
 
+    /**
+     * Initialises screenCycle from a Gamma distribution to determine how often 
+     * an Agent is screened, and then starts the cycle in a random place so that 
+     * not every Agent gets screened at the same time.
+     */
+    abstract void initScreenCycle() ;
+    
+    
     /**
      * Randomly choose the agent's probability of cheating on a monogomous spouse.
      */
