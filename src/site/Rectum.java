@@ -22,7 +22,7 @@ public class Rectum extends Site {
     /**
      * Duration of gonorrhoea infection in rectum, 6 months.
      */
-    static int INFECTION_DURATION = 183 ;
+    static int INFECTION_DURATION = 365 ; // 183 ;
     
     static int SYMPTOMATIC_DURATION = 5 ;
     
@@ -84,9 +84,9 @@ public class Rectum extends Site {
         {
             
             if (statusHIV)
-                setScreenCycle(sampleGamma(7,60,rescale)) ; // setScreenCycle(sampleGamma(16,23,rescale)) ;  // (16,23,rescale)) ;  // (((int) new GammaDistribution(10,37).sample())) ;  // 52.2% screen within a year
+                setScreenCycle(sampleGamma(7,60,rescale)) ; // (20,18.3,rescale)) ;  // (16,23,rescale)) ;  // (((int) new GammaDistribution(10,37).sample())) ;  // 52.2% screen within a year
             else
-                setScreenCycle(sampleGamma(8,61,rescale)) ; // setScreenCycle(sampleGamma(17,22.8,rescale)) ;  // (6,69,rescale)) ;  // (((int) new GammaDistribution(9,53).sample())) ;  // 43.6% screen within a year
+                setScreenCycle(sampleGamma(8,61,rescale)) ; // setScreenCycle(sampleGamma(20,19.3,rescale)) ;  // (6,69,rescale)) ;  // (((int) new GammaDistribution(9,53).sample())) ;  // 43.6% screen within a year
             
         }
         // Randomly set timer for first STI screen 
