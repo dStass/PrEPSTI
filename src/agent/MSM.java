@@ -147,19 +147,19 @@ public class MSM extends Agent {
     /** Transmission probabilities per sexual contact from Urethra to Rectum */
     static double URETHRA_TO_RECTUM = 0.100 ;
     /** Transmission probabilities sexual contact from Urethra to Pharynx. */
-    static double URETHRA_TO_PHARYNX = 0.035 ; 
+    static double URETHRA_TO_PHARYNX = 0.035 ; // 0.035 ; 
     /** Transmission probabilities sexual contact from Rectum to Urethra. */ 
-    static double RECTUM_TO_URETHRA = 0.010 ; 
+    static double RECTUM_TO_URETHRA = 0.010 ; // 0.008 ; 
     /** Transmission probabilities sexual contact from Rectum to Pharynx. */
     static double RECTUM_TO_PHARYNX = 0.025 ;
     /** Transmission probabilities sexual contact in Pharynx to Urethra intercourse. */
     static double PHARYNX_TO_URETHRA = 0.005 ;
     /** Transmission probabilities sexual contact in Pharynx to Rectum intercourse. */
-    static double PHARYNX_TO_RECTUM = 0.030 ; 
+    static double PHARYNX_TO_RECTUM = 0.030 ; // 0.030 ; 
     /** Transmission probabilities sexual contact in Pharynx to Pharynx intercourse (kissing). */
-    static double PHARYNX_TO_PHARYNX = 0.055 ; 
+    static double PHARYNX_TO_PHARYNX = 0.050 ; // 0.052 ; 
     /** Transmission probabilities sexual contact in Urethra to Urethra intercourse (docking). */
-    static double URETHRA_TO_URETHRA = 0.005 ; 
+    static double URETHRA_TO_URETHRA = 0.005 ; // 0.005 ; 
     /** Transmission probabilities sexual contact in Rectum to Rectum intercourse. */
     static double RECTUM_TO_RECTUM = 0.0003 ; // 0.003 ; 
     
@@ -330,7 +330,11 @@ public class MSM extends Agent {
 //        int[] safeOdds = new int[] {475,471,435,447,464,448,443,445,421,398,398} ;
 //        int[] riskyOdds = new int[] {321,327,378,361,337,360,357,375,388,482,482} ;
 
-    	
+    /** 
+     * Describes correlation between statusHIV and riskyStatus.
+     * Must be less than 1/PROPORTION_HIV OR initRiskyStatus() fails.
+     */
+    static double HIV_RISKY_CORRELATION = 2 ;	
     /**
      * Choose whether MSM is RiskyMSM or SafeMSM
      * @param startAge - age of MSM at sexual 'birth'.
@@ -395,6 +399,8 @@ public class MSM extends Agent {
         initPrepStatus(RAND.nextDouble() < getProbabilityPrep()) ;
         
         
+        initRiskyStatus() ;
+        
         // Initialises infectedStatus at beginning of simulation, 
         //ensuring consistency with Site.infectedStatus
         //  initInfectedStatus(startAge) ;    // MSM generated at outset, represent initial population
@@ -406,6 +412,23 @@ public class MSM extends Agent {
         
     }
 
+    /**
+     * Initialises riskyStatus according to RISKY_ODDS, SAFE_ODDS
+     * Risky or Safe behaviour correlated with HIV status
+     * Keep overall risky behaviour the same
+     */
+    final void initRiskyStatus()
+    {
+        int totalOdds = SAFE_ODDS + RISKY_ODDS ;
+        double riskyProbability = RISKY_ODDS/totalOdds ;
+        if (statusHIV)
+            riskyProbability *= HIV_RISKY_CORRELATION ;
+        else
+            riskyProbability *= (1.0 - PROPORTION_HIV * HIV_RISKY_CORRELATION)/(1.0 - PROPORTION_HIV) ;
+        
+        riskyStatus = (RAND.nextDouble() < riskyProbability) ;
+    } 
+    
     /**
      * Chooses discloseStatusHIV according to probabilityDiscloseHIV and then 
      * chooses sero- Sort/Position parameters accordingly.
@@ -532,6 +555,8 @@ public class MSM extends Agent {
         censusReport += Reporter.ADD_REPORT_PROPERTY("seroSortRegular", seroSortRegular) ;
         censusReport += Reporter.ADD_REPORT_PROPERTY("seroSortMonogomous", seroSortMonogomous) ;
         censusReport += Reporter.ADD_REPORT_PROPERTY("seroPosition", seroPosition) ;
+        for (Site site : sites)
+            censusReport += site.getCensusReport() ;
         return censusReport ;
     }
     /**
@@ -845,7 +870,8 @@ public class MSM extends Agent {
      * an MSM is screened, and then starts the cycle in a random place so that 
      * not every MSM gets screened at the same time.
      */
-    private void initScreenCycle()
+    @Override
+    protected void initScreenCycle()
     {
         for (Site site : getSites())
             site.initScreenCycle(statusHIV, prepStatus,1) ;
@@ -890,9 +916,10 @@ public class MSM extends Agent {
         //int[] safeOdds = new int[] {679,673,622,639,663,640,643,625,622,518,518} ;
         int[] safeOdds = new int[] {475,471,435,447,464,448,443,445,421,398,398} ;
         
-        int totalOdds = riskyOdds[year] + safeOdds[year] ;
+        SAFE_ODDS = safeOdds[year] ;
+        RISKY_ODDS = riskyOdds[year] ;
         
-        riskyStatus = RAND.nextInt(totalOdds) < riskyOdds[year] ;
+        initRiskyStatus() ;
         
     }
     
@@ -1092,7 +1119,7 @@ public class MSM extends Agent {
                         return true;
                     if (getStatusHIV() && !((MSM)partner).getPrepStatus()) // !getPrepStatus() || 
                         return (RAND.nextDouble() < probabilityUseCondom ) ;
-                    else if (!getStatusHIV() && ((MSM)partner).getAntiViralStatus())
+                    else if (!getStatusHIV() && !((MSM)partner).getAntiViralStatus())
                         return (RAND.nextDouble() < probabilityUseCondom ) ;
                 }
             }
