@@ -9,6 +9,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.apache.commons.math3.distribution.GammaDistribution ;
+import reporter.Reporter;
 
 /**
  * @author Michael Walker
@@ -345,9 +346,8 @@ abstract public class Site {
      */
     public int setInfectionDuration()
     {
-        int infectionDuration = getInfectionDuration() ;
-        int distributionMean = infectionDuration/2 ;
-        infectionTime = ((int) new GammaDistribution(distributionMean,1).sample()) + distributionMean ;
+        infectionTime = RAND.nextInt(getInfectionDuration() - 1) + 1 ;
+        infectedStatus = 1 ;
         return infectionTime ;
     }
     
@@ -390,5 +390,17 @@ abstract public class Site {
      */
     abstract public void reinitScreenCycle(int year, boolean hivStatus) throws Exception ;
     
-    
+    /**
+     * 
+     * @return (String) giving values of the agent's important properties.
+     */
+    public String getCensusReport()
+    {
+        String censusReport = Reporter.ADD_REPORT_LABEL(getSite()) ;
+        censusReport += Reporter.ADD_REPORT_PROPERTY("screenCycle",getScreenCycle()) ;
+        censusReport += Reporter.ADD_REPORT_PROPERTY("screenTime",getScreenTime()) ;
+        censusReport += Reporter.ADD_REPORT_PROPERTY("infectionTime",infectionTime) ;
+        
+        return censusReport ;
+    }
 }
