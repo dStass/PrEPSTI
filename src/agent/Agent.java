@@ -254,6 +254,7 @@ public abstract class Agent {
     {
         ArrayList<Agent> agents = new ArrayList<Agent>() ;
         String folderPath = FOLDER_PATH ;
+        String siteString = "Site:" ;
         
         // Needed if rebootFile == false
         ArrayList<String> birthReport = new ArrayList<String>() ;
@@ -323,7 +324,7 @@ public abstract class Agent {
             if (birthList.isEmpty()) 
                 continue ;
             birthIndex += birthList.size() ;
-            ArrayList<String> properties = Reporter.IDENTIFY_PROPERTIES(birthList.get(0)) ;
+            ArrayList<String> properties = Reporter.IDENTIFY_PROPERTIES(birthList.get(0).substring(0, birthList.get(0).indexOf(siteString))) ;
             
             for (String birth : birthList)
             {
@@ -361,12 +362,59 @@ public abstract class Agent {
                     //LOGGER.info(infectionString);
                     sites = newAgent.getSites();
                     
+                    String stringSite = birthRecord.substring(birthRecord.indexOf(siteString)) ;
+                    String propertySite ; // = birthRecord.substring(birthRecord.indexOf(siteString)) ;
+                    ArrayList<String> siteProperties ;
                     for (Site site : sites)
                     {
+                        propertySite = Reporter.BOUNDED_STRING_BY_VALUE(siteString,site.getSite(),siteString, stringSite) ;
+                        siteProperties = Reporter.IDENTIFY_PROPERTIES(propertySite) ;
+                        try
+                        {
+                            for (String property : siteProperties)
+                            {
+                                //LOGGER.info(testProperty) ;
+                                String valueString = Reporter.EXTRACT_VALUE(property, propertySite) ;
+                                //if (property.equals("screenInterval"))
+                                //  property = "screenCycle" ;
+                                Class valueOfClazz ;
+                                Field[] siteFields = Site.class.getDeclaredFields() ;
+                                for (Field field : siteFields)
+                                    if (field.getName().equals(property))
+                                    {
+                                        Class propertyClazz = Site.class.getDeclaredField(property).getType() ;
+                                        if (propertyClazz.equals(int.class))
+                                            valueOfClazz = Integer.class ;
+                                        else if (propertyClazz.equals(double.class))
+                                            valueOfClazz = Double.class ;
+                                        else if (propertyClazz.equals(boolean.class))
+                                            valueOfClazz = Boolean.class ;
+                                        else
+                                        {
+                                            //LOGGER.info(property) ;
+                                            valueOfClazz = propertyClazz ;
+                                        }
+                                        Method valueOfMethod = valueOfClazz.getMethod("valueOf", String.class) ;
+                                        //LOGGER.log(Level.INFO,"{1} {0}", new Object[] {valueOfMethod.invoke(null,valueString),property});
+
+                                        String setterName = "set" + property.substring(0,1).toUpperCase() 
+                                                + property.substring(1) ;
+                                        Method setMethod = Site.class.getDeclaredMethod(setterName, propertyClazz) ;
+                                        setMethod.invoke(newAgent, valueOfMethod.invoke(null,valueString)) ;
+                                        break ;
+                                    }
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            LOGGER.severe(e.toString());
+                            //LOGGER.log(Level.SEVERE, "{0} {1} {2}", new Object[] {propertyClazz, valueString}) ;
+                        }
+        
                         siteIndex = infectionString.indexOf(site.getSite()) ;
+                            Boolean symptoms = Boolean.valueOf(Reporter.EXTRACT_VALUE(site.getSite(),infectionString,siteIndex));
                         if (siteIndex > 0)    // (infectionString.contains(site.getSite()))
                         {
-                            Boolean symptoms = Boolean.valueOf(Reporter.EXTRACT_VALUE(site.getSite(),infectionString,siteIndex));
                             if (rebootFile)
                             {
                                 newAgent.receiveInfection(1.1,site) ;
