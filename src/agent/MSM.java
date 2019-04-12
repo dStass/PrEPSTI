@@ -153,7 +153,7 @@ public class MSM extends Agent {
     /** Transmission probabilities sexual contact from Rectum to Pharynx. */
     static double RECTUM_TO_PHARYNX = 0.025 ;
     /** Transmission probabilities sexual contact in Pharynx to Urethra intercourse. */
-    static double PHARYNX_TO_URETHRA = 0.005 ;
+    static double PHARYNX_TO_URETHRA = 0.010 ;
     /** Transmission probabilities sexual contact in Pharynx to Rectum intercourse. */
     static double PHARYNX_TO_RECTUM = 0.030 ; // 0.030 ; 
     /** Transmission probabilities sexual contact in Pharynx to Pharynx intercourse (kissing). */
@@ -555,6 +555,7 @@ public class MSM extends Agent {
         censusReport += Reporter.ADD_REPORT_PROPERTY("seroSortRegular", seroSortRegular) ;
         censusReport += Reporter.ADD_REPORT_PROPERTY("seroSortMonogomous", seroSortMonogomous) ;
         censusReport += Reporter.ADD_REPORT_PROPERTY("seroPosition", seroPosition) ;
+        
         for (Site site : sites)
             censusReport += site.getCensusReport() ;
         return censusReport ;
