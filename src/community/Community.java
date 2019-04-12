@@ -75,7 +75,7 @@ public class Community {
     //static public String FILE_PATH = "/short/is14/mw7704/prepsti/output/year2007/" ;
     /** Dump reports to disk after this many cycles. */
     /** Whether parameters change throughout simulation. */
-    static boolean DYNAMIC = false ;
+    static boolean DYNAMIC = true ;
     
     static final int DUMP_CYCLE = ((int) Math.pow(10, 7))/POPULATION ;
     /** Whether to dump partial reports during simulation. */
@@ -91,7 +91,7 @@ public class Community {
      * (String) Name of previous simulation to reload.
      * Not reloaded if this is an empty string.
      */
-    static final String RELOAD_SIMULATION =  "" ; // "CorrectedSafeRatioPop40000Cycles1500" ; // "TestUrethraSymp60a4ContPop40000Cycles1000" ; // "CorrectedSafeRatioPop40000Cycles1500" ; // "CorrectedSafeRatioRisky1aPop40000Cycles1000" ; //  "Year2007Commence5f" ; // "TestRebootBasePop4000Cycles500" ; // "From2007To2011p5v3aAdjustCondomsPop40000Cycles2525" ; // "TestRebootRelationship8aPop4000Cycles500" ; 
+    static final String RELOAD_SIMULATION = "" ; //  "newSort9aPop40000Cycles1500" ; // 
     
     static public String getFilePath()
     {
@@ -362,11 +362,11 @@ public class Community {
         {
             ScreeningPresenter screeningPresenter3 
                     = new ScreeningPresenter(SIM_NAME,"multi prevalence",screeningReporter) ;
-            screeningPresenter3.multiPlotScreening(new Object[] {"prevalence","prevalence",new String[] {"Pharynx","Rectum","Urethra"},"coprevalence",new String[] {"Pharynx","Rectum"}});  // ,"coprevalence",new String[] {"Pharynx","Rectum"},new String[] {"Urethra","Rectum"}
+            screeningPresenter3.multiPlotScreening(new Object[] {"prevalence","prevalence",new String[] {"Pharynx","Rectum","Urethra"}}) ;  // ,"coprevalence",new String[] {"Pharynx","Rectum"},new String[] {"Urethra","Rectum"}
         }
         
         {
-            for (boolean unique : new boolean[] {true,false})
+            for (boolean unique : new boolean[] {false,true})
             {
                 HashMap<Object,Number> finalNotificationsRecord = new HashMap<Object,Number>() ;
                 HashMap<Object,Number[]> notificationsRecord = screeningReporter.prepareFinalNotificationsRecord(new String[] {"Pharynx","Rectum","Urethra"}, unique, 0, Reporter.DAYS_PER_YEAR) ;
@@ -383,10 +383,10 @@ public class Community {
             {
                 prevalenceReport = screeningReporter.preparePrevalenceReport(siteName) ;
                 //LOGGER.info(String.valueOf(prevalenceReport.size())) ;
-                LOGGER.log(Level.INFO,"{0} {1}", new Object[] {siteName, prevalenceReport.get(prevalenceReport.size() - 1)}) ;
+                //LOGGER.log(Level.INFO,"{0} {1}", new Object[] {siteName, prevalenceReport.get(prevalenceReport.size() - 1)}) ;
             }
             prevalenceReport = screeningReporter.preparePrevalenceReport() ;
-            LOGGER.log(Level.INFO,"{0} {1}", new Object[] {"all", prevalenceReport.get(prevalenceReport.size() - 1)}) ;
+            //LOGGER.log(Level.INFO,"{0} {1}", new Object[] {"all", prevalenceReport.get(prevalenceReport.size() - 1)}) ;
     
         }
         //EncounterReporter encounterReporter = new EncounterReporter("Agent to Agent",community.encounterReport) ;
@@ -406,51 +406,6 @@ public class Community {
         //PopulationPresenter populationPresenter = new PopulationPresenter("deaths per cycle","deaths per cycle",populationReporter) ;
         //populationPresenter.plotDeathsPerCycle();
         
-        //SortReporter sortReporter2 = new SortReporter("Prep +ve infections per cycle",encounterReporter,populationReporter) ;
-        //SortPresenter sortPresenter2 = new SortPresenter("Prep +ve infections per cycle","Infections per cycle",sortReporter2) ;
-        //sortPresenter2.plotReceiveSortPrepStatusReport(TRUE);
-        //RelationshipReporter relationshipReporter 
-          //      = new RelationshipReporter("New Relationships per cycle",community.relationshipReport) ;
-        //ScreeningReporter screeningReporter = new ScreeningReporter("prevalence",community.infectionReport) ;
-        //SortReporter sortReporter = new SortReporter("prevalence",screeningReporter,relationshipReporter) ;
-        //SortPresenter sortPresenter = new SortPresenter("prevalence","prevalence",sortReporter) ;
-        //sortPresenter.plotSortPrevalence(5,3);  // Up to 5 partners the past 3 years
-        
-        //RelationshipReporter relationshipReporter 
-          //      = new RelationshipReporter("Cumulative Relationships per age",community.relationshipReport) ;
-        //PopulationReporter populationReporter = new PopulationReporter("age",community.populationReport) ;
-        //SortReporter sortReporter = new SortReporter("Cumulative Relationships per age",relationshipReporter,populationReporter) ;
-        //SortPresenter sortPresenter = new SortPresenter("age","nbRelationships",sortReporter) ;
-        //sortPresenter.plotAgeNumberEnteredRelationshipRecord() ;
-        
-        //RelationshipReporter relationshipReporter 
-          //      = new RelationshipReporter("New Relationships per cycle",community.relationshipReport) ;
-        //RelationshipPresenter relationshipPresenter 
-          //      = new RelationshipPresenter("New relationships per cycle","New relationships per cycle",relationshipReporter) ;
-        //relationshipPresenter.plotNewRelationshipsPerCycle();
-        //RelationshipPresenter relationshipPresenter2 
-          //      = new RelationshipPresenter("New Regular relationships per cycle","New Regular relationships per cycle",relationshipReporter) ;
-        //relationshipPresenter2.plotNewRelationshipsPerCycle(new String[] {"Regular"});
-        //RelationshipReporter relationshipReporter 
-          //      = new RelationshipReporter("Relationship breakups per cycle",community.relationshipReport) ;
-        //RelationshipPresenter relationshipPresenter2 
-          //      = new RelationshipPresenter("Relationship breakups per cycle","Relationship breakups per cycle",relationshipReporter) ;
-        //relationshipPresenter2.plotBreakupsPerCycle();
-        //RelationshipReporter relationshipReporter 
-        //        = new RelationshipReporter("Relationships of given length",community.relationshipReport) ;
-        //RelationshipPresenter relationshipPresenter 
-          //      = new RelationshipPresenter("Relationships of given length","Relationships of given length",relationshipReporter) ;
-        //relationshipPresenter.plotRelationshipLength();
-        //RelationshipReporter relationshipReporter 
-          //      = new RelationshipReporter("Cumulative Relationships to date",community.relationshipReport) ;
-        //RelationshipPresenter relationshipPresenter 
-          //      = new RelationshipPresenter("Cumulative Relationships to date","Cumulative Relationships to date",relationshipReporter) ;
-        //relationshipPresenter.plotCumulativeRelationships();
-        //RelationshipReporter relationshipReporter 
-          //      = new RelationshipReporter(Community.SIM_NAME,Community.FILE_PATH) ; 
-        //RelationshipPresenter relationshipPresenter2 
-          //      = new RelationshipPresenter("Mean number of Relationships",Community.SIM_NAME,relationshipReporter) ;
-        //relationshipPresenter2.plotMeanNumberRelationshipsReport();
         }
     }
 
@@ -609,8 +564,8 @@ public class Community {
                     ((MSM) agent).reinitProbabilityAntiViral(year) ;
                     ((MSM) agent).reinitProbablityDiscloseHIV(year);
                     ((MSM) agent).reinitRiskOdds(year);
-                    if ((year > 1)) // && (year < 6))
-                        agent.adjustProbabilityUseCondom();
+                    //if ((year > 1)) // && (year < 6))
+                      //  agent.adjustProbabilityUseCondom();
                         //agent.scaleProbabilityUseCondom(.075);
                 }
                 catch( Exception e ) // cycle extends beyond trend data
@@ -1004,12 +959,20 @@ public class Community {
         String record = "" ;
         boolean siteInfected ;
         boolean treat ;
+        boolean allSites ;
+        ArrayList<Site> untestedSites ;
+        int siteIndex ;
+        int testedIndex ;
         //long startTime = System.nanoTime() ;
 
         for (Agent agent : agents)
         {
             agentRecord = "" ; 
             treat = false ;
+            allSites = false ;
+            untestedSites = new ArrayList<Site>() ;
+            for (Site site : agent.getSites())
+                untestedSites.add(site) ;
             //LOGGER.log(Level.INFO, "agentId:{0}", agent.getAgentId());
             
             for (Site site : agent.getSites())
@@ -1020,7 +983,6 @@ public class Community {
                 // Due for an STI screen?
                 if (RAND.nextDouble() < site.getScreenProbability(new String[] {Integer.toString(cycle)})) 
                 {
-                    //record += Reporter.ADD_REPORT_PROPERTY("agentId",agent.getAgentId()) ;
                     if (siteInfected)
                     {        
                         //LOGGER.info("infected") ;
@@ -1031,6 +993,7 @@ public class Community {
                         agentRecord += Reporter.ADD_REPORT_PROPERTY(site.getSite(),Reporter.CLEAR) ;
                     
                     agentRecord += Reporter.ADD_REPORT_PROPERTY("tested") ;
+                    untestedSites.remove(site) ;
                 }
                 else if (siteInfected)
                 {
@@ -1039,20 +1002,50 @@ public class Community {
                     // agent.progressInfection() allow infection to run one cycle of its course
                     // and returns boolean whether agent is cleared (!stillInfected)
                     //if (agent.progressInfection())
-                    if (site.progressInfection())
+                    if (site.progressInfection())    // STI has run its course and clears naturally
                     {
                         agentRecord += Reporter.ADD_REPORT_PROPERTY("cleared") ;
                         agent.updateInfectedStatus() ;
                     }
                     else if (site.getSymptomatic())
-                    {
-                        // Test and treat only if incubation period has expired.
-                        treat = site.treatSymptomatic() ;
-                        if (treat)
+                        if (site.treatSymptomatic())    // Incubation period has passed
+                        {
+                            allSites = true ;
+                            treat = true ;
                             agentRecord += Reporter.ADD_REPORT_PROPERTY("tested") ;
-                    }
+                            untestedSites.remove(site) ;
+                        }
                 }
             }
+            if (allSites)  // if any Site symptomatic
+                for (Site site : untestedSites)
+                {
+                    siteIndex = agentRecord.indexOf(site.getSite()) ;
+                    if (siteIndex > -1)    // Site infected but not tested
+                    {
+                        // Skip value of siteName
+                        testedIndex = agentRecord.indexOf(" ",siteIndex) + 1 ;
+                        if (agentRecord.substring(testedIndex).startsWith(Reporter.CLEAR))    // infection cleared naturally
+                            testedIndex = agentRecord.indexOf(" ",testedIndex) + 1 ;
+                        else    // infection undetected
+                            site.treat() ;
+                        agentRecord = agentRecord.substring(0, testedIndex) + Reporter.ADD_REPORT_PROPERTY("tested")
+                                + agentRecord.substring(testedIndex) ;
+                    }
+                    else
+                    {
+                        if (site.getInfectedStatus() != 0)
+                        {        
+                            //LOGGER.info("infected") ;
+                            agentRecord += Reporter.ADD_REPORT_PROPERTY(site.getSite(), site.getSymptomatic()) ;
+                            site.treat() ;
+                        }
+                        else
+                            agentRecord += Reporter.ADD_REPORT_PROPERTY(site.getSite(),Reporter.CLEAR) ;
+                        
+                        agentRecord += Reporter.ADD_REPORT_PROPERTY("tested") ;
+                    }
+                }
             if (treat)
             {
                 agentRecord += Reporter.ADD_REPORT_PROPERTY("treated") ;
