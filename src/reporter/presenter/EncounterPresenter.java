@@ -30,14 +30,14 @@ public class EncounterPresenter extends Presenter {
     public static void main(String[] args)
     {
         //String simName = "TestPop40000Cycles100" ; // Community.SIM_NAME ; // "introPrepCalibration48Pop40000Cycles7000" ; // args[0] ;
-        String simName = "NoPrepCalibration74aPop40000Cycles5000" ; // "NoPrepCalibration86Pop40000Cycles5000" ; // "introPrepCalibration48Pop40000Cycles7000" ; // args[0] ;
+        String simName = "minimum8aPop40000Cycles750" ; 
         //String simName = "neutral_calibration2Pop40000Cycles4000" ;
         //String simName = "RelationshipCalibrationPop40000Cycles200" ; // "NoPrepCalibration86Pop40000Cycles5000" ; // "introPrepCalibration48Pop40000Cycles7000" ; // args[0] ;
         //String simName = "AllSexualContactsPop40000Cycles1200" ;
         //String chartTitle = "infections_of_PrEP_users" ; // args[1] ;
         //String chartTitle = "proportion_of_Agents_had_CLAI" ; // args[1] ;
-        //String chartTitle = "transmissions" ;
-        String chartTitle = "incidence_rate" ;
+        String chartTitle = "transmissions" ;
+        //String chartTitle = "incidence_rate" ;
         //String chartTitle = "condom_use_in_AI" ; // args[1] ;
         String reportFileName = "output/test/" ; // args[2] ;
         LOGGER.info(chartTitle) ;
@@ -50,14 +50,14 @@ public class EncounterPresenter extends Presenter {
         //encounterPresenter.plotTransmissionsPerCycle(siteNames);
         //encounterPresenter.plotCumulativeAgentTransmissionReport() ;
         //encounterPresenter.plotTransmissionsPerCycle(siteNames);
-        encounterPresenter.plotIncidenceYears(siteNames, 5, 2017) ;
+        //encounterPresenter.plotIncidenceYears(siteNames, 5, 2017) ;
         //encounterPresenter.plotNumberCondomlessYears(3, 0, 0, 2017, new String[] {"Casual","Regular","Monogomous"}) ;
         //encounterPresenter.plotNumberCondomlessReport(0, 6, 0, new String[] {"Casual","Regular","Monogomous"}) ;
         //encounterPresenter.plotPercentAgentCondomlessReport(new String[] {"Casual","Regular","Monogomous"}, 0, 6, 0, "", false) ;
         //encounterPresenter.plotPercentAgentCondomlessReport(new String[] {"Casual","Regular","Monogomous"}, 0, 6, 0, "statusHIV", true) ; 
         //encounterPresenter.plotPercentAgentCondomlessYears(new String[] {"Casual","Regular","Monogomous"}, 3, 6, 0, 2017, "", false) ; 
         //encounterPresenter.plotNumberAgentTransmissionReport("statusHIV") ;
-        //encounterPresenter.plotFromSiteToSite(new String[] {"Rectum","Urethra","Pharynx"});
+        encounterPresenter.plotFromSiteToSite(new String[] {"Rectum","Urethra","Pharynx"});
         //encounterPresenter.plotReceiveSortPrepStatusReport("true") ;
 
         //String methodName = args[3] ;
@@ -243,6 +243,15 @@ public class EncounterPresenter extends Presenter {
         
         
         plotHashMap("Sites","prevalence",finalTransmissionsRecord) ;        
+    }
+    
+    /**
+     * Plots bar chart showing prevalence of requested siteNames and total prevalence.
+     * @param siteNames 
+     */
+    public void plotFinalTransmissions(String siteName)
+    {
+        plotFinalTransmissions(new String[] {siteName}) ;
     }
     
     
