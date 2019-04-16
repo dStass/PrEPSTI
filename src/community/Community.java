@@ -91,7 +91,7 @@ public class Community {
      * (String) Name of previous simulation to reload.
      * Not reloaded if this is an empty string.
      */
-    static final String RELOAD_SIMULATION = "" ; //  "newSort9aPop40000Cycles1500" ; // 
+    static final String RELOAD_SIMULATION = "" ; // "newScreen11bPop40000Cycles1200" ; //  "newSort9aPop40000Cycles1500" ; // 
     
     static public String getFilePath()
     {
@@ -655,7 +655,7 @@ public class Community {
                     //String enterMethodName = "enter" + relationshipClazzName ;
                     //Method enterRelationshipMethod = Agent.class.getDeclaredMethod(enterMethodName, Relationship.class ) ;
 
-                    Relationship relationship = (Relationship) relationshipClazz.newInstance();
+                    Relationship relationship = (Relationship) relationshipClazz.newInstance() ;
                     nbRelationships++ ;
                     report += relationship.addAgents(agent0, agent1);
                     
@@ -959,20 +959,20 @@ public class Community {
         String record = "" ;
         boolean siteInfected ;
         boolean treat ;
-        boolean allSites ;
-        ArrayList<Site> untestedSites ;
-        int siteIndex ;
-        int testedIndex ;
+        //boolean allSites ;
+        //ArrayList<Site> untestedSites ;
+        //int siteIndex ;
+        //int testedIndex ;
         //long startTime = System.nanoTime() ;
 
         for (Agent agent : agents)
         {
             agentRecord = "" ; 
             treat = false ;
-            allSites = false ;
-            untestedSites = new ArrayList<Site>() ;
-            for (Site site : agent.getSites())
-                untestedSites.add(site) ;
+            //allSites = false ;
+            //untestedSites = new ArrayList<Site>() ;
+            /*for (Site site : agent.getSites())
+                untestedSites.add(site) ;*/
             //LOGGER.log(Level.INFO, "agentId:{0}", agent.getAgentId());
             
             for (Site site : agent.getSites())
@@ -993,7 +993,7 @@ public class Community {
                         agentRecord += Reporter.ADD_REPORT_PROPERTY(site.getSite(),Reporter.CLEAR) ;
                     
                     agentRecord += Reporter.ADD_REPORT_PROPERTY("tested") ;
-                    untestedSites.remove(site) ;
+                    //untestedSites.remove(site) ;
                 }
                 else if (siteInfected)
                 {
@@ -1010,14 +1010,14 @@ public class Community {
                     else if (site.getSymptomatic())
                         if (site.treatSymptomatic())    // Incubation period has passed
                         {
-                            allSites = true ;
+                            //allSites = true ;
                             treat = true ;
                             agentRecord += Reporter.ADD_REPORT_PROPERTY("tested") ;
-                            untestedSites.remove(site) ;
+                            //untestedSites.remove(site) ;
                         }
                 }
             }
-            if (allSites)  // if any Site symptomatic
+            /*if (allSites)  // if any Site symptomatic
                 for (Site site : untestedSites)
                 {
                     siteIndex = agentRecord.indexOf(site.getSite()) ;
@@ -1045,7 +1045,7 @@ public class Community {
                         
                         agentRecord += Reporter.ADD_REPORT_PROPERTY("tested") ;
                     }
-                }
+                }*/
             if (treat)
             {
                 agentRecord += Reporter.ADD_REPORT_PROPERTY("treated") ;
