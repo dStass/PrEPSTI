@@ -23,6 +23,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.apache.commons.math3.distribution.GammaDistribution;
 import static reporter.Reporter.AGENTID;
 import static reporter.Reporter.EXTRACT_ARRAYLIST;
 import static reporter.Reporter.EXTRACT_ARRAYLIST;
@@ -411,10 +412,11 @@ public abstract class Agent {
                             //LOGGER.log(Level.SEVERE, "{0} {1} {2}", new Object[] {propertyClazz, valueString}) ;
                         }
         
-                        siteIndex = infectionString.indexOf(site.getSite()) ;
-                            Boolean symptoms = Boolean.valueOf(Reporter.EXTRACT_VALUE(site.getSite(),infectionString,siteIndex));
+                        // siteName: indicates infected site
+                        siteIndex = infectionString.substring(infectionString.indexOf(siteString)).indexOf(site.getSite()+":") ;
                         if (siteIndex > 0)    // (infectionString.contains(site.getSite()))
                         {
+                            Boolean symptoms = Boolean.valueOf(Reporter.EXTRACT_VALUE(site.getSite(),infectionString,siteIndex));
                             if (rebootFile)
                             {
                                 newAgent.receiveInfection(1.1,site) ;
@@ -738,8 +740,20 @@ public abstract class Agent {
      * an Agent is screened, and then starts the cycle in a random place so that 
      * not every Agent gets screened at the same time.
      */
-    abstract void initScreenCycle() ;
+    abstract void initScreenCycle(double rescale) ;
     
+    protected int sampleGamma(double shape, double scale, double rescale)
+    {
+        return (int) new GammaDistribution(shape,scale * rescale).sample() ;
+    }
+    
+    /**
+     * Adjusts per year the screening period.
+     * @param year
+     * @param hivStatus
+     * @throws Exception 
+     */
+    abstract public void reinitScreenCycle(int year) throws Exception ;
     
     /**
      * Randomly choose the agent's probability of cheating on a monogomous spouse.
@@ -1195,7 +1209,7 @@ public abstract class Agent {
         boolean stillInfected = false ;
         for (Site site : sites)
         {
-            stillInfected = (stillInfected || site.progressInfection()) ;
+            stillInfected = (stillInfected || !site.progressInfection()) ;
         }
         setInfectedStatus(stillInfected) ;
         return !stillInfected ;
