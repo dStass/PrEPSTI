@@ -146,12 +146,112 @@ public class ScreeningReporter extends Reporter {
      * @param siteNames
      * @param backYears
      * @param endCycle
+     * @param unique  - Count one positive result per Agent. 
+     * @return Records of final notifications for specified siteNames and in total.
+     */
+    public HashMap<Object,Number[]> prepareFinalNotificationsRecord(String[] siteNames, boolean unique, int backYears, int backMonths, int backDays, int endCycle)
+    {
+        HashMap<Object,Number[]> finalNotifications = new HashMap<Object,Number[]>() ;
+        
+        endCycle -= backYears * DAYS_PER_YEAR ;
+        
+        int notifications ;
+        //double nbTests ;
+        String record ;
+        String positiveRecord ;
+        //String finalIncidenceRecord ; // getFinalRecord() ;
+        ArrayList<String> finalNotificationsReport = getBackCyclesReport(0, backMonths, backDays, endCycle) ;
+        
+        double population = getPopulation() ; // Double.valueOf(getMetaDatum("Community.POPULATION")) ;
+        /**Sorting by statusHIV
+        PopulationReporter populationReporter = new PopulationReporter(getMetaDatum("Community.NAME_ROOT"), getFolderPath()); 
+        HashMap<Object,ArrayList<Object>> sortingReport = populationReporter.sortStatusHIV() ;
+        ArrayList<Object> sortedAgents = sortingReport.get(TRUE) ;
+        population = sortedAgents.size() ;
+        */
+        
+        // Adjust for portion of year sampled //! and units of 100 person-years
+        double denominator = ((double) getBackCycles(0,backMonths,backDays)*population)/(100*DAYS_PER_YEAR) ; // *population/100000
+        for (String siteName : siteNames)
+        {
+            notifications = 0 ;
+            ArrayList<Object> positiveAgents = new ArrayList<Object>() ;
+            for (String finalIncidenceRecord : finalNotificationsReport)
+            {
+                //sortedRecord = BOUNDED_STRING_FROM_ARRAY(AGENTID,sortedAgents,AGENTID,finalIncidenceRecord) ;
+                
+                // Count infected siteName
+                record = BOUNDED_STRING_BY_CONTENTS(siteName,AGENTID,finalIncidenceRecord) ;  // sortedRecord) ;
+                // Count Agents with positive tests
+                positiveRecord = BOUNDED_STRING_BY_CONTENTS("treated",AGENTID,record) ;
+                
+                // Extract agentIds with positive result
+                ArrayList<Object> positiveList = EXTRACT_ALL_VALUES(AGENTID,positiveRecord) ;
+                notifications += positiveList.size() ;
+                //notifications += COUNT_VALUE_INCIDENCE("treated","",record,0)[1] ;
+                
+                // Avoid double counting, ACCESS counts unique patient visits
+                if (unique)
+                    positiveList.removeAll(positiveAgents) ;
+                positiveAgents.addAll(positiveList) ;
+            }
+            Number[] entry = new Number[] {notifications/denominator,positiveAgents.size()} ;
+            finalNotifications.put(siteName,entry) ;
+        }
+        notifications = 0 ;
+        //nbTests = 0 ;
+        ArrayList<Object> testedAgents = new ArrayList<Object>() ;
+        ArrayList<Object> positiveAgents = new ArrayList<Object>() ;
+        for (String finalNotificationsRecord : finalNotificationsReport)
+        {
+            notifications += COUNT_VALUE_INCIDENCE("treated","",finalNotificationsRecord,0)[1] ;
+            
+            record = BOUNDED_STRING_BY_CONTENTS("tested",AGENTID,finalNotificationsRecord) ;
+            ArrayList<Object> testedList = EXTRACT_ALL_VALUES(AGENTID,record) ;
+            // Avoid double counting Agents
+            if (unique)
+                    testedList.removeAll(testedAgents) ;
+            testedAgents.addAll(testedList) ;
+            
+            // Positive Agents
+            record = BOUNDED_STRING_BY_CONTENTS("treated",AGENTID,finalNotificationsRecord) ;
+            ArrayList<Object> positiveList = EXTRACT_ALL_VALUES(AGENTID,record) ;
+            // Avoid double counting
+            if (unique)
+                    positiveList.removeAll(positiveAgents) ;
+            positiveAgents.addAll(positiveList) ;
+                
+        }
+        double nbTested = (double) testedAgents.size() ;
+        double nbTreated = (double) positiveAgents.size() ;
+        Number[] entry = new Number[] {notifications/denominator,nbTreated/nbTested} ;
+        finalNotifications.put("all",entry) ;
+        
+        // Correct siteName entries by nbTests
+        for (String siteName : siteNames)
+        {
+            entry = finalNotifications.get(siteName) ;
+            notifications = entry[1].intValue() ;
+            entry[1] = (Integer) notifications/nbTested ;
+            finalNotifications.put(siteName,entry) ;
+        }
+        
+        if (writeReport)
+            WRITE_CSV(finalNotifications, "Site", new String[] {"incidence","positivity"}, "finalNotifications", simName, getFolderPath()) ;
+        return finalNotifications ;
+    }
+    
+    /**
+     * 
+     * @param siteNames
+     * @param backYears
+     * @param endCycle
      * @param backMonths
      * @param backDays
      * @param unique  - Count one positive result per Agent. 
      * @return Records of final notifications for specified siteNames and in total.
      */
-    public HashMap<Object,Number[]> prepareFinalNotificationsRecord(String[] siteNames, boolean unique, int backYears, int backMonths, int backDays, int endCycle)
+    public HashMap<Object,Number[]> prepareFinalNotificationsRecord_Site(String[] siteNames, boolean unique, int backYears, int backMonths, int backDays, int endCycle)
     {
         HashMap<Object,Number[]> finalNotifications = new HashMap<Object,Number[]>() ;
         for (String siteName : siteNames)
@@ -731,6 +831,40 @@ public class ScreeningReporter extends Reporter {
      * by siteName in each report cycle.
      */
     public ArrayList<Object> preparePrevalenceReport(String siteName) 
+    {
+        ArrayList<Object> sitePrevalenceReport = new ArrayList<Object>() ;
+        
+        int population = Integer.valueOf(getMetaDatum("Community.POPULATION")) ;
+        for (boolean nextInput = true ; nextInput ; nextInput = updateReport() )
+        {
+            int[] nbSymptomatic ;
+            String entry ;
+            for (String record : input)
+            {
+                nbSymptomatic = COUNT_VALUE_INCIDENCE(siteName,TRUE,record,0) ;
+
+    //            if (nbSymptomatic[0] == nbSymptomatic[1])
+    //                LOGGER.info(record);
+
+
+                entry = ADD_REPORT_PROPERTY("prevalence",((double) nbSymptomatic[1])/population) ;
+                entry += ADD_REPORT_PROPERTY("symptomatic",((double) nbSymptomatic[0])/population) ;
+                entry += ADD_REPORT_PROPERTY("proportion",((double) nbSymptomatic[0])/nbSymptomatic[1]) ;
+                sitePrevalenceReport.add(entry) ;
+            }
+            
+        }
+        return sitePrevalenceReport ;
+    }
+    
+    /**
+     * 
+     * @param siteName
+     * @return (ArrayList) indicating the total prevalence, prevalence of 
+     * symptomatic infection, and proportion of symptomatic infection at site given 
+     * by siteName in each report cycle.
+     */
+    public ArrayList<Object> preparePrevalenceReport_site(String siteName) 
     {
         ArrayList<Object> sitePrevalenceReport = new ArrayList<Object>() ;
         
