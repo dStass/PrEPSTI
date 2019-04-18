@@ -145,23 +145,23 @@ public class MSM extends Agent {
     private boolean riskyStatus ;
     
     /** Transmission probabilities per sexual contact from Urethra to Rectum */
-    static double URETHRA_TO_RECTUM = 0.030 ;
+    static double URETHRA_TO_RECTUM = 0.050 ;
     /** Transmission probabilities sexual contact from Urethra to Pharynx. */
-    static double URETHRA_TO_PHARYNX = 0.035 ; // 0.035 ; 
+    static double URETHRA_TO_PHARYNX = 0.010 ; // 0.035 ; 
     /** Transmission probabilities sexual contact from Rectum to Urethra. */ 
-    static double RECTUM_TO_URETHRA = 0.015 ; // 0.008 ; 
+    static double RECTUM_TO_URETHRA = 0.005 ; // 0.008 ; 
     /** Transmission probabilities sexual contact from Rectum to Pharynx. */
-    static double RECTUM_TO_PHARYNX = 0.035 ;
+    static double RECTUM_TO_PHARYNX = 0.005 ;
     /** Transmission probabilities sexual contact in Pharynx to Urethra intercourse. */
-    static double PHARYNX_TO_URETHRA = 0.010 ;
+    static double PHARYNX_TO_URETHRA = 0.005 ;
     /** Transmission probabilities sexual contact in Pharynx to Rectum intercourse. */
-    static double PHARYNX_TO_RECTUM = 0.030 ; // 0.030 ; 
+    static double PHARYNX_TO_RECTUM = 0.020 ; // 0.030 ; 
     /** Transmission probabilities sexual contact in Pharynx to Pharynx intercourse (kissing). */
-    static double PHARYNX_TO_PHARYNX = 0.043 ; // 0.052 ; 
+    static double PHARYNX_TO_PHARYNX = 0.010 ; // 0.052 ; 
     /** Transmission probabilities sexual contact in Urethra to Urethra intercourse (docking). */
-    static double URETHRA_TO_URETHRA = 0.005 ; // 0.005 ; 
+    static double URETHRA_TO_URETHRA = 0.002 ; // 0.005 ; 
     /** Transmission probabilities sexual contact in Rectum to Rectum intercourse. */
-    static double RECTUM_TO_RECTUM = 0.0003 ; // 0.003 ; 
+    static double RECTUM_TO_RECTUM = 0.0150 ; // 0.003 ; 
     
     /** The probability of screening in a given cycle with statusHIV true. */
     static double SCREEN_PROBABILITY_HIV_POSITIVE = 0.0029 ;
@@ -872,7 +872,30 @@ public class MSM extends Agent {
      * not every MSM gets screened at the same time.
      */
     @Override
-    protected void initScreenCycle()
+    protected void initScreenCycle(double rescale)
+    {
+        if (getPrepStatus())
+            setScreenCycle(((int) new GammaDistribution(31,1).sample()) + 61) ;
+        else
+        {
+            //int firstScreenCycle = (int) new GammaDistribution(7,55).sample() ; 
+            //setScreenCycle(firstScreenCycle) ;  // 49.9% screen within a year 2016
+            if (statusHIV)
+                setScreenCycle(sampleGamma(6,71,rescale)) ;  // 41% screen within a year
+            else
+                setScreenCycle(sampleGamma(6,85.5,rescale)) ;  // 26% screen within a year
+            
+        }
+        // Randomly set timer for first STI screen 
+        setScreenTime(RAND.nextInt(getScreenCycle()) + 1) ;
+    }
+    
+    /**
+     * Initialises screenCycle from a Gamma distribution to determine how often 
+     * an MSM is screened, and then starts the cycle in a random place so that 
+     * not every MSM gets screened at the same time.
+     */
+    protected void initScreenCycle_Site()
     {
         for (Site site : getSites())
             site.initScreenCycle(statusHIV, prepStatus,1) ;
@@ -887,20 +910,17 @@ public class MSM extends Agent {
     {
         //if (year == 0)
           //  return ;
-        for (Site site : sites)
-            site.reinitScreenCycle(year,statusHIV);
+        
         // Go from 2007
-        // Frequencies, given by per 1000 per year, from 2007-2016
+        // Tests, given by per 1000 per year, from 2007-2016
         // Table 17 ARTB 2016
-        //double[] testRates = new double[] {333,340,398,382,383,382,391,419,445,499} ;
-        //double testBase ;
-        //testBase = testRates[0] ;
-        //else
-          //  testBase = testRates[year - 1] ;
-        /*
+        double[] testRates = new double[] {333,340,398,382,383,382,391,419,445,499} ;
+        double testBase ;
+        testBase = testRates[0] ;
+        
         double ratio = testBase/testRates[year] ;
-        int newScreenCycle = (int) Math.ceil(ratio * getScreenCycle()) ;
-        setScreenCycle(newScreenCycle) ;*/
+        // Do not reinitialise MSM on Prep
+        initScreenCycle(ratio) ;
     }
     
     /**
@@ -968,7 +988,7 @@ public class MSM extends Agent {
     public void setPrepStatus(boolean prep)
     {
         prepStatus = prep && (!statusHIV) ;
-        initScreenCycle() ;
+        initScreenCycle(1) ;
     }
     
     /**
