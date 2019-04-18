@@ -32,8 +32,8 @@ import java.util.logging.Level;
  *
  *******************************************************************/
 public class Community {
-    static final public int POPULATION = 40000 ;
-    static public int MAX_CYCLES = 750 ; 
+    static final public int POPULATION = 4000 ;
+    static public int MAX_CYCLES = 350 ; 
     static public String NAME_ROOT = "" ;
     //static public String NAME_ROOT = "TestUrethraSymp60a2" ;
     //static public String NAME_ROOT = "CorrectedSafe46a" ;
@@ -75,7 +75,7 @@ public class Community {
     //static public String FILE_PATH = "/short/is14/mw7704/prepsti/output/year2007/" ;
     /** Dump reports to disk after this many cycles. */
     /** Whether parameters change throughout simulation. */
-    static boolean DYNAMIC = true ;
+    static boolean DYNAMIC = false ;
     
     static final int DUMP_CYCLE = ((int) Math.pow(10, 7))/POPULATION ;
     /** Whether to dump partial reports during simulation. */
@@ -91,7 +91,7 @@ public class Community {
      * (String) Name of previous simulation to reload.
      * Not reloaded if this is an empty string.
      */
-    static final String RELOAD_SIMULATION = "" ; // "newScreen11bPop40000Cycles1200" ; //  "newSort9aPop40000Cycles1500" ; // 
+    static final String RELOAD_SIMULATION = "test2aPop4000Cycles500" ; // "newScreen11bPop40000Cycles1200" ; //  "newSort9aPop40000Cycles1500" ; // 
     
     static public String getFilePath()
     {
@@ -366,16 +366,20 @@ public class Community {
         }
         
         {
+            HashMap<Object,Number> finalNotificationsRecord = new HashMap<Object,Number>() ;
             for (boolean unique : new boolean[] {false,true})
             {
-                HashMap<Object,Number> finalNotificationsRecord = new HashMap<Object,Number>() ;
+                HashMap<Object,Number> finalPositivityRecord = new HashMap<Object,Number>() ;
                 HashMap<Object,Number[]> notificationsRecord = screeningReporter.prepareFinalNotificationsRecord(new String[] {"Pharynx","Rectum","Urethra"}, unique, 0, Reporter.DAYS_PER_YEAR) ;
                 for (Object key : notificationsRecord.keySet())
                 {
-                    finalNotificationsRecord.put(key, notificationsRecord.get(key)[1]) ;
+                    if (unique)
+                        finalNotificationsRecord.put(key, notificationsRecord.get(key)[0]) ;
+                    finalPositivityRecord.put(key, notificationsRecord.get(key)[1]) ;
                 }
-                LOGGER.log(Level.INFO, "Positivity unique:{0} {1}", new Object[] {unique,finalNotificationsRecord});
+                LOGGER.log(Level.INFO, "Positivity unique:{0} {1}", new Object[] {unique,finalPositivityRecord});
             }
+            LOGGER.log(Level.INFO, "Notification rate {0}", new Object[] {finalNotificationsRecord});
             screeningReporter = new ScreeningReporter(SIM_NAME,FILE_PATH) ;
             String prevalenceReports = "" ;
             ArrayList<Object> prevalenceReport ;
@@ -540,7 +544,7 @@ public class Community {
      */
     private String interveneCommunity(int cycle)
     {
-        int startCycle = 500 ;
+        int startCycle = 1000 ;
         if (cycle < startCycle)
             return "" ;
         
@@ -946,7 +950,7 @@ public class Community {
         return "" ;
     }
 
-    /**
+     /**
      * Progresses course of STI in Agents who have one.
      * Treats Agents who are symptomatic or randomly choose to be treated.
      * Tracks if treatment was successful.
@@ -954,6 +958,78 @@ public class Community {
      * @return (String) record in STIs progress
      */
     private String progressInfection(int cycle)
+    {
+        String record = "" ;
+        boolean infected ;
+        //long startTime = System.nanoTime() ;
+
+        for (Agent agent : agents)
+        {
+            //LOGGER.log(Level.INFO,"infected:{0}",agent.getAgentId());
+            //record += Reporter.ADD_REPORT_PROPERTY("agentId",agent.getAgentId()) ;
+            infected = agent.getInfectedStatus();
+            //record += Reporter.ADD_REPORT_PROPERTY("infected", infected) ;
+            
+            // Due for an STI screen?
+            if (RAND.nextDouble() < agent.getScreenProbability(new String[] {Integer.toString(cycle)})) 
+            {
+                record += Reporter.ADD_REPORT_PROPERTY("agentId",agent.getAgentId()) ;
+                record += Reporter.ADD_REPORT_LABEL("tested") ;
+                if (infected)
+                {
+                    //LOGGER.info("screening agentId:"+String.valueOf(agent.getAgentId())) ;
+                    
+                    for (Site site : agent.getSites())
+                    {
+                        if (site.getInfectedStatus() != 0)
+                            record += Reporter.ADD_REPORT_PROPERTY(site.getSite(), site.getSymptomatic()) ;
+                    }
+                    agent.treat() ;
+                    record += Reporter.ADD_REPORT_LABEL("treated") ;
+                }
+                record += " " ;
+            }
+            else if (infected)
+            {
+                //LOGGER.log(Level.INFO, "infected:{0}", agent.getAgentId());
+                record += Reporter.ADD_REPORT_PROPERTY("agentId",agent.getAgentId()) ;
+                for (Site site : agent.getSites())
+                {
+                    if (site.getInfectedStatus() != 0)
+                        record += Reporter.ADD_REPORT_PROPERTY(site.getSite(), site.getSymptomatic()) ;
+                    //LOGGER.info(site.getSite()) ;
+                }
+                
+                // agent.progressInfection() allow infection to run one cycle of its course
+                // and returns boolean whether agent is cleared (!stillInfected)
+                if (agent.progressInfection())
+                {
+                    record += Reporter.ADD_REPORT_LABEL("cleared") ;
+                    record += " " ;
+                    //LOGGER.info("cleared");
+                }
+                else if (agent.getSymptomatic())
+                    if (agent.treatSymptomatic())  
+                    {
+                        record += Reporter.ADD_REPORT_LABEL("tested") ;
+                        record += Reporter.ADD_REPORT_LABEL("treated") ;
+                        record += " " ;
+                        //LOGGER.info("treated");
+                    }
+            }
+        }
+        //LOGGER.info(record)
+        return record ;
+    }
+
+    /**
+     * Progresses course of STI in Agents who have one.
+     * Treats Agents who are symptomatic or randomly choose to be treated.
+     * Tracks if treatment was successful.
+     * Check if disease has run its course and clears it if so.
+     * @return (String) record in STIs progress
+     */
+    private String progressInfection_Site(int cycle)
     {
         String agentRecord ;
         String record = "" ;
