@@ -32,7 +32,7 @@ import java.util.logging.Level;
  *
  *******************************************************************/
 public class Community {
-    static final public int POPULATION = 4000 ;
+    static final public int POPULATION = 40000 ;
     static public int MAX_CYCLES = 350 ; 
     static public String NAME_ROOT = "" ;
     //static public String NAME_ROOT = "TestUrethraSymp60a2" ;
@@ -91,7 +91,7 @@ public class Community {
      * (String) Name of previous simulation to reload.
      * Not reloaded if this is an empty string.
      */
-    static final String RELOAD_SIMULATION = "test2aPop4000Cycles500" ; // "newScreen11bPop40000Cycles1200" ; //  "newSort9aPop40000Cycles1500" ; // 
+    static final String RELOAD_SIMULATION = "" ; //  "test2aPop4000Cycles500" ; // "newScreen11bPop40000Cycles1200" ; //  "newSort9aPop40000Cycles1500" ; // 
     
     static public String getFilePath()
     {
