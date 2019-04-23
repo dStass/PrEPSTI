@@ -308,7 +308,7 @@ public class Reporter {
      * @param string
      * @return String boundedOutput
      */
-    protected static String BOUNDED_STRING_BY_VALUE(String propertyName, String value, String bound, String string)
+    public static String BOUNDED_STRING_BY_VALUE(String propertyName, String value, String bound, String string)
     {
         String boundedOutput = "" ;
         String boundedString ;
