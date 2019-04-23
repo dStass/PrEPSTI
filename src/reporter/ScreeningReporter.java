@@ -154,7 +154,7 @@ public class ScreeningReporter extends Reporter {
         HashMap<Object,Number[]> finalNotifications = new HashMap<Object,Number[]>() ;
         
         endCycle -= backYears * DAYS_PER_YEAR ;
-        
+        //double daysBetweenTests = 505 ;    // PROPORTION_HIV * 6 * 71 + (1-PROPORTION_HIV) * 6 * 85.5
         int notifications ;
         //double nbTests ;
         String record ;
@@ -162,7 +162,7 @@ public class ScreeningReporter extends Reporter {
         //String finalIncidenceRecord ; // getFinalRecord() ;
         ArrayList<String> finalNotificationsReport = getBackCyclesReport(0, backMonths, backDays, endCycle) ;
         
-        double population = getPopulation() ; // Double.valueOf(getMetaDatum("Community.POPULATION")) ;
+        double population = 3500000 ; // getPopulation() ; // 15-64yo NSW males 
         /**Sorting by statusHIV
         PopulationReporter populationReporter = new PopulationReporter(getMetaDatum("Community.NAME_ROOT"), getFolderPath()); 
         HashMap<Object,ArrayList<Object>> sortingReport = populationReporter.sortStatusHIV() ;
@@ -171,7 +171,7 @@ public class ScreeningReporter extends Reporter {
         */
         
         // Adjust for portion of year sampled //! and units of 100 person-years
-        double denominator = ((double) getBackCycles(0,backMonths,backDays)*population)/(100*DAYS_PER_YEAR) ; // *population/100000
+        double denominator = ((double) getBackCycles(0,backMonths,backDays)*population)/(100000*DAYS_PER_YEAR) ; // daysBetweenTests) ; //DAYS_PER_YEAR) ; // *population/100000
         for (String siteName : siteNames)
         {
             notifications = 0 ;
