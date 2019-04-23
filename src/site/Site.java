@@ -273,6 +273,10 @@ abstract public class Site {
         infectionTime = time ;
     }
     
+    /**
+     * Adjusts infectionTime and incubationTime by one day
+     * @return true if infection has cleared and false otherwise
+     */
     public boolean progressInfection()
     {
         infectionTime-- ;
@@ -396,10 +400,11 @@ abstract public class Site {
      */
     public String getCensusReport()
     {
-        String censusReport = Reporter.ADD_REPORT_LABEL(getSite()) ;
+        String censusReport = Reporter.ADD_REPORT_PROPERTY("Site",getSite()) ;
         censusReport += Reporter.ADD_REPORT_PROPERTY("screenCycle",getScreenCycle()) ;
         censusReport += Reporter.ADD_REPORT_PROPERTY("screenTime",getScreenTime()) ;
         censusReport += Reporter.ADD_REPORT_PROPERTY("infectionTime",infectionTime) ;
+        censusReport += Reporter.ADD_REPORT_PROPERTY("incubationTime",incubationTime) ;
         
         return censusReport ;
     }
