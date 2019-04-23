@@ -80,8 +80,8 @@ public class RelationshipTest {
             if (!result.contains(checkSiteName))    // checkSiteName not mentioned in result
                 assertEquals(-1,result.indexOf("transmission:")) ;    // implies no transmission
             else    // Urethra is mentioned in result
-                assert(!Reporter.extractAllValues(checkSiteName, result, 0).contains("0")) ;    // checkSiteName must be infected
-            //assertEquals(expResult, result);
+                assert(!Reporter.EXTRACT_ALL_VALUES(checkSiteName, result, 0).contains("0")) : "checkSiteName must be infected" ;
+            assertEquals(expResult, result);
         }
     }
         
