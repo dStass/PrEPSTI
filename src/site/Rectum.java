@@ -22,7 +22,7 @@ public class Rectum extends Site {
     /**
      * Duration of gonorrhoea infection in rectum, 6 months.
      */
-    static int INFECTION_DURATION = 183 ; // 365 ; // 
+    static int INFECTION_DURATION = 365 ; // 
     
     static int SYMPTOMATIC_DURATION = 5 ;
     
