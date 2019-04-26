@@ -132,6 +132,15 @@ abstract public class Site {
     
     abstract public void initScreenCycle(boolean statusHIV, boolean prepStatus, double rescale) ;
     
+    /**
+     * Returns a sample from a Gamma Distribution specified by the parameters shape
+     * and scale * rescale. The rescale parameter allows easy adjustment of the 
+     * distribution from year-to-year.
+     * @param shape
+     * @param scale
+     * @param rescale
+     * @return 
+     */
     protected int sampleGamma(double shape, double scale, double rescale)
     {
         return (int) new GammaDistribution(shape,scale * rescale).sample() ;
@@ -162,9 +171,10 @@ abstract public class Site {
             infectedStatus = 1 ;
             infectionTime = getInfectionDuration() ;
             
-            // Select whether symptomatic
-            if (chooseSymptomatic())
-                chooseIncubationTime() ;
+            // Select whether symptomatic an set incubationTime if so.
+            chooseSymptomatic() ;
+            //if ()
+              //  chooseIncubationTime() ;
             return true ;
         }
         return false ;
@@ -187,8 +197,7 @@ abstract public class Site {
      */
     public boolean chooseSymptomatic(double symptomaticProbability)
     {
-        symptomatic = (RAND.nextDouble() < symptomaticProbability) ;
-        return symptomatic ;
+        return setSymptomatic(RAND.nextDouble() < symptomaticProbability) ;
     }
     
     /**
@@ -199,6 +208,8 @@ abstract public class Site {
     public boolean setSymptomatic(boolean siteSymptomatic)
     {
         symptomatic = siteSymptomatic ;
+        if (symptomatic)
+            chooseIncubationTime() ;
         return symptomatic ;
     }
     
@@ -250,7 +261,7 @@ abstract public class Site {
         symptomatic = false ;
         infectionTime = 0 ;
         incubationTime = 0 ;
-        resetScreenTime() ;
+        //resetScreenTime() ;
     }
 
     public int getInfectedStatus()
@@ -325,7 +336,7 @@ abstract public class Site {
      * @return for PrEP users, 1.0 if cycle multiple of screenCycle, 0.0 otherwise
      *     for non-PrEP users, random double between 0.0 and 1.0 .
      */    
-    public double getScreenProbability(String[] args)
+    public double getScreenProbability(Object[] args)
     {
             // Find current cycle
         //    int cycle = Integer.valueOf(args[0]) ;
@@ -338,10 +349,10 @@ abstract public class Site {
         {
             //LOGGER.log(Level.INFO,"{0} {1}", new Object[] {getScreenTime(),getScreenCycle()}) ;
             setScreenTime(getScreenCycle()) ;
-            return 1.0 ;
+            return 1.1 ;
         }
         else
-            return 0.0 ;
+            return -0.1 ;
     }
     
     /**
@@ -401,8 +412,8 @@ abstract public class Site {
     public String getCensusReport()
     {
         String censusReport = Reporter.ADD_REPORT_PROPERTY("Site",getSite()) ;
-        censusReport += Reporter.ADD_REPORT_PROPERTY("screenCycle",getScreenCycle()) ;
-        censusReport += Reporter.ADD_REPORT_PROPERTY("screenTime",getScreenTime()) ;
+        //censusReport += Reporter.ADD_REPORT_PROPERTY("screenCycle",getScreenCycle()) ;
+        //censusReport += Reporter.ADD_REPORT_PROPERTY("screenTime",getScreenTime()) ;
         censusReport += Reporter.ADD_REPORT_PROPERTY("infectionTime",infectionTime) ;
         censusReport += Reporter.ADD_REPORT_PROPERTY("incubationTime",incubationTime) ;
         
