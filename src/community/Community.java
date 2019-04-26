@@ -91,7 +91,7 @@ public class Community {
      * (String) Name of previous simulation to reload.
      * Not reloaded if this is an empty string.
      */
-    static final String RELOAD_SIMULATION = "" ; //  "test2aPop4000Cycles500" ; // "newScreen11bPop40000Cycles1200" ; //  "newSort9aPop40000Cycles1500" ; // 
+    static final String RELOAD_SIMULATION = "" ; // "test2aPop4000Cycles500" ; // "agentScreen26bPop40000Cycles1500" ; //  "newScreen11bPop40000Cycles1200" ; //  "newSort9aPop40000Cycles1500" ; // 
     
     static public String getFilePath()
     {
@@ -345,7 +345,7 @@ public class Community {
           //      = relationshipReporter.prepareCumulativeRelationshipRecord(-1, relationshipClassNames, 0, 6, 0) ;
         //HashMap<Object,Number[]> plotReport = Reporter.INVERT_HASHMAP_LIST(relationshipReport, relationshipClassNames) ;
         //Reporter.WRITE_CSV(plotReport, "Number of Relationships", relationshipClassNames, "cumulativeRelationship", SIM_NAME, "output/test/") ;
-        
+        LOGGER.info(FILE_PATH +"//" + SIM_NAME);
         ScreeningReporter screeningReporter = 
                 //new ScreeningReporter("prevalence",community.infectionReport) ;
                 new ScreeningReporter(SIM_NAME,FILE_PATH) ;
@@ -548,11 +548,12 @@ public class Community {
         if (cycle < startCycle)
             return "" ;
         
-        String report = "" ;
-        
         int year = (cycle - startCycle)/365 ;
         if (year == 0)
             return "" ;
+        
+        String report = "" ;
+        
         if (year * 365 == (cycle - startCycle))
         {
             for (Agent agent : agents)
@@ -950,7 +951,7 @@ public class Community {
         return "" ;
     }
 
-     /**
+    /**
      * Progresses course of STI in Agents who have one.
      * Treats Agents who are symptomatic or randomly choose to be treated.
      * Tracks if treatment was successful.
@@ -959,19 +960,32 @@ public class Community {
      */
     private String progressInfection(int cycle)
     {
+        return progressInfection(new Object[] {cycle}) ;
+    }
+
+    /**
+     * Progresses course of STI in Agents who have one.
+     * Treats Agents who are symptomatic or randomly choose to be treated.
+     * Tracks if treatment was successful.
+     * Check if disease has run its course and clears it if so.
+     * @return (String) record in STIs progress
+     */
+    private String progressInfection(Object[] args)
+    {
         String record = "" ;
         boolean infected ;
         //long startTime = System.nanoTime() ;
 
         for (Agent agent : agents)
         {
+            // record += agent.progressSitesInfection(cycle)
             //LOGGER.log(Level.INFO,"infected:{0}",agent.getAgentId());
             //record += Reporter.ADD_REPORT_PROPERTY("agentId",agent.getAgentId()) ;
             infected = agent.getInfectedStatus();
             //record += Reporter.ADD_REPORT_PROPERTY("infected", infected) ;
             
             // Due for an STI screen?
-            if (RAND.nextDouble() < agent.getScreenProbability(new String[] {Integer.toString(cycle)})) 
+            if (RAND.nextDouble() < agent.getScreenProbability(args)) 
             {
                 record += Reporter.ADD_REPORT_PROPERTY("agentId",agent.getAgentId()) ;
                 record += Reporter.ADD_REPORT_LABEL("tested") ;
@@ -981,8 +995,8 @@ public class Community {
                     
                     for (Site site : agent.getSites())
                     {
-                        if (site.getInfectedStatus() != 0)
-                            record += Reporter.ADD_REPORT_PROPERTY(site.getSite(), site.getSymptomatic()) ;
+                        if (agent.getInfectedStatus(site) != 0)
+                            record += Reporter.ADD_REPORT_PROPERTY(site.getSite(), agent.getSymptomatic(site)) ;
                     }
                     agent.treat() ;
                     record += Reporter.ADD_REPORT_LABEL("treated") ;
@@ -995,14 +1009,14 @@ public class Community {
                 record += Reporter.ADD_REPORT_PROPERTY("agentId",agent.getAgentId()) ;
                 for (Site site : agent.getSites())
                 {
-                    if (site.getInfectedStatus() != 0)
-                        record += Reporter.ADD_REPORT_PROPERTY(site.getSite(), site.getSymptomatic()) ;
+                    if (agent.getInfectedStatus(site) != 0)
+                        record += Reporter.ADD_REPORT_PROPERTY(site.getSite(), agent.getSymptomatic(site)) ;
                     //LOGGER.info(site.getSite()) ;
                 }
                 
-                // agent.progressInfection() allow infection to run one cycle of its course
+                // agent.progressSitesInfection() allow infection to run one cycle of its course
                 // and returns boolean whether agent is cleared (!stillInfected)
-                if (agent.progressInfection())
+                if (agent.progressSitesInfection())
                 {
                     record += Reporter.ADD_REPORT_LABEL("cleared") ;
                     record += " " ;
@@ -1011,9 +1025,8 @@ public class Community {
                 else if (agent.getSymptomatic())
                     if (agent.treatSymptomatic())  
                     {
-                        record += Reporter.ADD_REPORT_LABEL("tested") ;
-                        record += Reporter.ADD_REPORT_LABEL("treated") ;
-                        record += " " ;
+                        //record += Reporter.ADD_REPORT_LABEL("tested") ;
+                        record += Reporter.ADD_REPORT_PROPERTY("tested","treated") ;
                         //LOGGER.info("treated");
                     }
             }
@@ -1075,9 +1088,9 @@ public class Community {
                 {
                     agentRecord += Reporter.ADD_REPORT_PROPERTY(site.getSite(), site.getSymptomatic()) ;
 
-                    // agent.progressInfection() allow infection to run one cycle of its course
+                    // agent.progressSitesInfection() allow infection to run one cycle of its course
                     // and returns boolean whether agent is cleared (!stillInfected)
-                    //if (agent.progressInfection())
+                    //if (agent.progressSitesInfection())
                     if (site.progressInfection())    // STI has run its course and clears naturally
                     {
                         agentRecord += Reporter.ADD_REPORT_PROPERTY("cleared") ;
