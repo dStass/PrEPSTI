@@ -363,27 +363,38 @@ public abstract class Agent {
                     //LOGGER.info(infectionString);
                     sites = newAgent.getSites();
                     
-                    String stringSite = birthRecord.substring(birthRecord.indexOf(siteString)) ;
+                    String stringSite = infectionString.substring(infectionString.indexOf(siteString)) ;
+                    LOGGER.info(stringSite);
                     String propertySite ; // = birthRecord.substring(birthRecord.indexOf(siteString)) ;
                     ArrayList<String> siteProperties ;
+                    String valueString ;
                     for (Site site : sites)
                     {
-                        propertySite = Reporter.BOUNDED_STRING_BY_VALUE(siteString,site.getSite(),siteString, stringSite) ;
+                        propertySite = Reporter.BOUNDED_STRING_BY_VALUE("Site",site.getSite(),"Site", stringSite) ;
+                        LOGGER.info(propertySite);
                         siteProperties = Reporter.IDENTIFY_PROPERTIES(propertySite) ;
+                        siteProperties.remove("Site") ;
+                        LOGGER.log(Level.INFO,"{2} {0} properties:{1}", new Object[] {propertySite,siteProperties,site.getSite()}) ;
                         try
                         {
                             for (String property : siteProperties)
                             {
                                 //LOGGER.info(testProperty) ;
-                                String valueString = Reporter.EXTRACT_VALUE(property, propertySite) ;
+                                valueString = Reporter.EXTRACT_VALUE(property, propertySite);
                                 //if (property.equals("screenInterval"))
                                 //  property = "screenCycle" ;
                                 Class valueOfClazz ;
                                 Field[] siteFields = Site.class.getDeclaredFields() ;
-                                for (Field field : siteFields)
-                                    if (field.getName().equals(property))
-                                    {
-                                        Class propertyClazz = Site.class.getDeclaredField(property).getType() ;
+                                
+                                String getterName = "get" + property.substring(0,1).toUpperCase() 
+                                                + property.substring(1) ;
+                                Method getMethod = Site.class.getDeclaredMethod(getterName) ;
+                                Class propertyClazz = getMethod.getReturnType() ;
+                                        
+                                //for (Field field : siteFields)
+                                  //  if (field.getName().equals(property))
+                                    //{
+                                        //Class propertyClazz = Site.class.getDeclaredField(property).getType() ;
                                         if (propertyClazz.equals(int.class))
                                             valueOfClazz = Integer.class ;
                                         else if (propertyClazz.equals(double.class))
@@ -395,6 +406,7 @@ public abstract class Agent {
                                             //LOGGER.info(property) ;
                                             valueOfClazz = propertyClazz ;
                                         }
+                                  
                                         Method valueOfMethod = valueOfClazz.getMethod("valueOf", String.class) ;
                                         //LOGGER.log(Level.INFO,"{1} {0}", new Object[] {valueOfMethod.invoke(null,valueString),property});
 
@@ -403,7 +415,7 @@ public abstract class Agent {
                                         Method setMethod = Site.class.getDeclaredMethod(setterName, propertyClazz) ;
                                         setMethod.invoke(newAgent, valueOfMethod.invoke(null,valueString)) ;
                                         break ;
-                                    }
+                                    //}
                             }
                         }
                         catch (Exception e)
@@ -412,8 +424,12 @@ public abstract class Agent {
                             //LOGGER.log(Level.SEVERE, "{0} {1} {2}", new Object[] {propertyClazz, valueString}) ;
                         }
         
+                        /*valueString = Reporter.EXTRACT_VALUE(site.getSite(), propertySite);
+                        if (!Reporter.CLEAR.equals(valueString))
+                            newAgent.setSymptomatic(Boolean.valueOf(valueString),site) ;*/
+                        
                         // siteName: indicates infected site
-                        siteIndex = infectionString.substring(infectionString.indexOf(siteString)).indexOf(site.getSite()+":") ;
+                        /*siteIndex = infectionString.substring(infectionString.indexOf(siteString)).indexOf(site.getSite()+":") ;
                         if (siteIndex > 0)    // (infectionString.contains(site.getSite()))
                         {
                             Boolean symptoms = Boolean.valueOf(Reporter.EXTRACT_VALUE(site.getSite(),infectionString,siteIndex));
@@ -430,15 +446,15 @@ public abstract class Agent {
                                 //newAgent.chooseSymptomatic(site) ;
                                 
                                 // Set remaining infectionTime
-                                infectionTime = Reporter.EXTRACT_VALUE("screenTime", infectionString, siteIndex) ;
-                                site.setInfectionTime(Integer.valueOf(infectionTime)) ;
+                                //infectionTime = Reporter.EXTRACT_VALUE("screenTime", infectionString, siteIndex) ;
+                                //site.setInfectionTime(Integer.valueOf(infectionTime)) ;
                             }
                             else
                             {
                                 newAgent.reinitInfectedStatus(symptoms, site) ;
                             }
                         //uninfected = false ;
-                        }
+                        }*/
                     }
                     //if (uninfected)
                       //  LOGGER.info(infectionString) ; // (String.valueOf(newAgent.getInfectedStatus()));
@@ -1013,6 +1029,15 @@ public abstract class Agent {
     }
 
     /**
+     * Whether the Agent is infected and symptomatic at given Site site with any STI
+     * @return site.symptomatic
+     */
+    public boolean getSymptomatic(Site site)
+    {
+            return site.getSymptomatic() ;
+    }
+
+    /**
      * The Agent becomes symptomatic if and only if the newly infected Site is.
      * @param site
      * @return 
@@ -1075,9 +1100,71 @@ public abstract class Agent {
      * parameters
      * @return Probability of screening when symptomatic is false
      */
-    public double getScreenProbability(String[] args)
+    public double getScreenProbability(Object[] args)
     {
             return SCREEN_PROBABILITY ;
+    }
+
+    /**
+     * Progresses course of STI in Agents who have one.
+     * Treats Agents who are symptomatic or randomly choose to be treated.
+     * Tracks if treatment was successful.
+     * Check if disease has run its course and clears it if so.
+     * @return (String) record in STIs progress
+     */
+    private String progressInfection(String[] args)
+    {
+        String record = "" ;
+        boolean infected ;
+        //long startTime = System.nanoTime() ;
+
+        {
+            //LOGGER.log(Level.INFO,"infected:{0}",agent.getAgentId());
+            //record += Reporter.ADD_REPORT_PROPERTY("agentId",agent.getAgentId()) ;
+            infected = getInfectedStatus();
+            //record += Reporter.ADD_REPORT_PROPERTY("infected", infected) ;
+            
+            // Due for an STI screen?
+            if (RAND.nextDouble() < getScreenProbability(args)) 
+            {
+                record += Reporter.ADD_REPORT_PROPERTY("agentId",agentId) ;
+                record += Reporter.ADD_REPORT_LABEL("tested") ;
+                if (infected)
+                {
+                    //LOGGER.info("screening agentId:"+String.valueOf(agent.getAgentId())) ;
+                    
+                    for (Site site : getSites())
+                    {
+                        if (getInfectedStatus(site) != 0)
+                            record += Reporter.ADD_REPORT_PROPERTY(site.getSite(), getSymptomatic(site)) ;
+                    }
+                    treat() ;
+                    record += Reporter.ADD_REPORT_LABEL("treated") ;
+                }
+                record += " " ;
+            }
+            else if (infected)
+            {
+                //LOGGER.log(Level.INFO, "infected:{0}", agent.getAgentId());
+                record += Reporter.ADD_REPORT_PROPERTY("agentId",agentId) ;
+                for (Site site : getSites())
+                {
+                    if (getInfectedStatus(site) != 0)
+                        record += Reporter.ADD_REPORT_PROPERTY(site.getSite(), getSymptomatic(site)) ;
+                    //LOGGER.info(site.getSite()) ;
+                }
+                
+                // agent.progressSitesInfection() allow infection to run one cycle of its course
+                // and returns boolean whether agent is cleared (!stillInfected)
+                if (progressSitesInfection())
+                    record += Reporter.ADD_REPORT_PROPERTY("cleared") ;
+                else if (symptomatic)
+                    if (treatSymptomatic())  
+                        record += Reporter.ADD_REPORT_PROPERTY("tested","treated") ;
+            }
+        }
+        //LOGGER.info(record)
+        return record ;
     }
 
     /**
@@ -1172,6 +1259,15 @@ public abstract class Agent {
     }
 
     /**
+     * Getter for site.infectedStatus
+     * @return site.infectedStatus
+     */
+    public int getInfectedStatus(Site site)
+    {
+        return site.getInfectedStatus() ;
+    }
+
+    /**
      * Setter of infectedStatus, and also ensures that symptomatic is
      * false if infectedStatus is false.
      * @param infected 
@@ -1199,11 +1295,11 @@ public abstract class Agent {
     }
     
     /**
-     * Progress infection, invoking each site.progressInfection and 
-     * keeping track of whether the Agent is still infected.
+     * Progress infection, invoking each site.progressSitesInfection and 
+ keeping track of whether the Agent is still infected.
      * @return (boolean) whether the infection was cleared
      */
-    public boolean progressInfection()
+    public boolean progressSitesInfection()
     {
         Site[] sites = getSites() ;
         boolean stillInfected = false ;
