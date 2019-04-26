@@ -145,11 +145,11 @@ public class MSM extends Agent {
     private boolean riskyStatus ;
     
     /** Transmission probabilities per sexual contact from Urethra to Rectum */
-    static double URETHRA_TO_RECTUM = 0.050 ;
+    static double URETHRA_TO_RECTUM = 0.070 ;
     /** Transmission probabilities sexual contact from Urethra to Pharynx. */
     static double URETHRA_TO_PHARYNX = 0.010 ; // 0.035 ; 
     /** Transmission probabilities sexual contact from Rectum to Urethra. */ 
-    static double RECTUM_TO_URETHRA = 0.002 ; // 0.008 ; 
+    static double RECTUM_TO_URETHRA = 0.005 ; // 0.008 ; 
     /** Transmission probabilities sexual contact from Rectum to Pharynx. */
     static double RECTUM_TO_PHARYNX = 0.005 ;
     /** Transmission probabilities sexual contact in Pharynx to Urethra intercourse. */
@@ -439,10 +439,10 @@ public class MSM extends Agent {
         discloseStatusHIV = (RAND.nextDouble() < probabilityDiscloseHIV) ;
         if (discloseStatusHIV)
         {
-            seroSortCasual = ((RAND.nextDouble() < getProbabilitySeroSortCasual(statusHIV)) && discloseStatusHIV) ;
-            seroSortRegular = ((RAND.nextDouble() < getProbabilitySeroSortRegular(statusHIV)) && discloseStatusHIV) ;
-            seroSortMonogomous = ((RAND.nextDouble() < getProbabilitySeroSortMonogomous(statusHIV)) && discloseStatusHIV) ;
-            seroPosition = ((RAND.nextDouble() < getProbabilitySeroPosition(statusHIV)) && discloseStatusHIV) ;
+            seroSortCasual = (RAND.nextDouble() < getProbabilitySeroSortCasual(statusHIV)) ;
+            seroSortRegular = (RAND.nextDouble() < getProbabilitySeroSortRegular(statusHIV)) ;
+            seroSortMonogomous = (RAND.nextDouble() < getProbabilitySeroSortMonogomous(statusHIV)) ;
+            seroPosition = (RAND.nextDouble() < getProbabilitySeroPosition(statusHIV)) ;
         }
         else    // Cannot seroSort or SeroPosition without disclosing statusHIV
         {
@@ -461,7 +461,7 @@ public class MSM extends Agent {
      *   0        1        2-5      6-10    11-20    21-50    51-100     100+ 
      * 0.00311  0.02715  0.31857  0.30353  0.22172  0.10170  0.019716  0.00450
      * 
-     * We taken the weighted mean of the first two columns, and use a Poisson 
+     * We take the weighted mean of the first two columns, and use a Poisson 
      * distribution to choose in the 100+ range. Otherwise find the daily probability 
      * associated with the extrema of each range and choose with a Uniform distribution.
      */
@@ -487,7 +487,7 @@ public class MSM extends Agent {
             }
         }
         
-        if (rangeIndex < 2) // 
+        if (rangeIndex < 2) // 0 or 1 partners
         {
             consentProbability = Math.max(0.0,RAND.nextDouble() * proportions[1] 
                     - RAND.nextDouble() * proportions[0])/92.0 ;
@@ -1204,7 +1204,7 @@ public class MSM extends Agent {
      *     for non-PrEP users, random double between 0.0 and 1.0 .
      */    
     @Override
-    public double getScreenProbability(String[] args)
+    public double getScreenProbability(Object[] args)
     {
             // Find current cycle
         //    int cycle = Integer.valueOf(args[0]) ;
@@ -1216,13 +1216,20 @@ public class MSM extends Agent {
         if ( getScreenTime() < 0)
         {
             setScreenTime(getScreenCycle()) ;
-            return 1.0 ;
+            return 1.1 ;
         }
         else
-            return 0.0 ;
+            return -0.1 ;
     }
     
-    public double chooseScreen(String[] args)
+    /**
+     * Call getScreenProbability for each Site and choose to screen if 
+     * any Site call chooses to screen. 
+     * @param args
+     * @return Probability of screening. Values outside of range 0 - 1 used 
+     * to protect against roundoff error.
+     */
+    public double chooseScreen(Object[] args)
     {
         for (Site site : getSites())
         {
