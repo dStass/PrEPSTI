@@ -38,7 +38,7 @@ public class MSM extends Agent {
     static String PHARYNX = "Pharynx" ;
     
     /** Names of Sites for MSM */ 
-    static public String[] SITE_NAMES = new String[] {"rectum","urethra","pharynx"} ;
+    static public String[] SITE_NAMES = new String[] {"Rectum","Urethra","Pharynx"} ;
     
     /** The maximum number of Regular Relationships an agent may be willing to sustain. */
     static int MAX_RELATIONSHIPS = 3 ;
@@ -145,15 +145,15 @@ public class MSM extends Agent {
     private boolean riskyStatus ;
     
     /** Transmission probabilities per sexual contact from Urethra to Rectum */
-    static double URETHRA_TO_RECTUM = 0.070 ;
+    static double URETHRA_TO_RECTUM = 0.050 ;
     /** Transmission probabilities sexual contact from Urethra to Pharynx. */
     static double URETHRA_TO_PHARYNX = 0.010 ; // 0.035 ; 
     /** Transmission probabilities sexual contact from Rectum to Urethra. */ 
-    static double RECTUM_TO_URETHRA = 0.005 ; // 0.008 ; 
+    static double RECTUM_TO_URETHRA = 0.002 ; // 0.008 ; 
     /** Transmission probabilities sexual contact from Rectum to Pharynx. */
     static double RECTUM_TO_PHARYNX = 0.005 ;
     /** Transmission probabilities sexual contact in Pharynx to Urethra intercourse. */
-    static double PHARYNX_TO_URETHRA = 0.001 ;
+    static double PHARYNX_TO_URETHRA = 0.002 ;
     /** Transmission probabilities sexual contact in Pharynx to Rectum intercourse. */
     static double PHARYNX_TO_RECTUM = 0.015 ; // 0.030 ; 
     /** Transmission probabilities sexual contact in Pharynx to Pharynx intercourse (kissing). */
@@ -906,21 +906,28 @@ public class MSM extends Agent {
      * @param year
      * @throws Exception 
      */
+    @Override
     public void reinitScreenCycle(int year) throws Exception
     {
-        //if (year == 0)
-          //  return ;
+        if (year == 0)
+            return ;
         
         // Go from 2007
         // Tests, given by per 1000 per year, from 2007-2016
         // Table 17 ARTB 2016
         double[] testRates = new double[] {333,340,398,382,383,382,391,419,445,499} ;
         double testBase ;
-        testBase = testRates[0] ;
+        //testBase = testRates[0] ;
+        testBase = testRates[year-1] ;
         
         double ratio = testBase/testRates[year] ;
+        int newScreenCycle = (int) Math.ceil(ratio * getScreenCycle()) ;
+        setScreenCycle(newScreenCycle) ;
+
+        /*double ratio = testBase/testRates[year] ;
+        
         // Do not reinitialise MSM on Prep
-        initScreenCycle(ratio) ;
+        initScreenCycle(ratio) ;*/
     }
     
     /**
@@ -929,6 +936,8 @@ public class MSM extends Agent {
      */
     public void reinitRiskOdds(int year) throws Exception
     {
+        if (year == 0)
+            return ;
         // Go from 2007, ARTB (Table 9, 2014) (Table 11, 2017)
         // Year-by-year rates of UAIC 
         int[] riskyOdds = new int[] {321,327,378,361,337,360,357,375,388,482,482} ;
@@ -936,12 +945,46 @@ public class MSM extends Agent {
         // 2013- Table 11 2017, 2007-2012 Table 9 2014 * .7
         //int[] safeOdds = new int[] {679,673,622,639,663,640,643,625,622,518,518} ;
         int[] safeOdds = new int[] {475,471,435,447,464,448,443,445,421,398,398} ;
-        
+        // Ratios .676 , .694 , .868 , .808 , .726 , .804 , .806 , .843 , .922 , 1.21
         SAFE_ODDS = safeOdds[year] ;
         RISKY_ODDS = riskyOdds[year] ;
-        
-        initRiskyStatus() ;
-        
+        //else
+        {
+            int totalOdds = SAFE_ODDS + RISKY_ODDS ;
+            int lastRisky = riskyOdds[year-1] ;
+            int lastOdds = safeOdds[year-1] + lastRisky ;
+            double riskyProbability = RISKY_ODDS/totalOdds ;
+            double lastProbability = lastRisky/lastOdds ;
+            double changeProbability ;
+            
+            if (lastProbability < riskyProbability) 
+            {
+                if (!getRiskyStatus())
+                {
+                    changeProbability = (riskyProbability - lastProbability)/(1-lastProbability) ;
+                    riskyProbability *= changeProbability ;
+                }
+                else    // if risky already
+                    return ;
+            }
+            else    // riskyProbability has gone down
+            {
+                if (getRiskyStatus())
+                {
+                    changeProbability = (lastProbability - riskyProbability)/lastProbability ;
+                    riskyProbability *= changeProbability ;
+                }
+                else 
+                    return ;
+            }
+
+            if (statusHIV)
+                riskyProbability *= HIV_RISKY_CORRELATION ;
+            else
+                riskyProbability *= (1.0 - PROPORTION_HIV * HIV_RISKY_CORRELATION)/(1.0 - PROPORTION_HIV) ;
+
+            riskyStatus = (RAND.nextDouble() < riskyProbability) ;
+        }
     }
     
     /**
@@ -963,6 +1006,8 @@ public class MSM extends Agent {
      */
     public void reinitProbablityDiscloseHIV(int year) throws Exception
     {
+        if (year == 0)
+            return ;
         // Go from 2007
         double[] discloseProbability ;
         if (statusHIV)
@@ -971,13 +1016,54 @@ public class MSM extends Agent {
             discloseProbability = new double[] {0.175,0.205,0.218,0.239,0.229,0.249,0.236,0.295,0.286,0.352} ;
         
         double newDiscloseProbability = discloseProbability[year] ;
-        initSeroStatus(newDiscloseProbability) ;
+        double oldDiscloseProbability = discloseProbability[year-1] ;
+        double changeProbability ;
+        if (newDiscloseProbability > oldDiscloseProbability)
+        {
+            if (!discloseStatusHIV)
+                return ;
+            changeProbability = (newDiscloseProbability - oldDiscloseProbability)/(1 - oldDiscloseProbability) ;
+        }
+        else    // if less likely to disclose
+        {
+            if (discloseStatusHIV)
+                return ;
+            changeProbability = (oldDiscloseProbability - newDiscloseProbability)/oldDiscloseProbability ;
+        }
+        initSeroStatus(newDiscloseProbability * changeProbability) ;
     }
     
+    /**
+     * Alters the probability of being on antiViral medication with undetectable
+     * virus blood concentration from year to year. If the probability increases 
+     * then only MSM not on antiviral medication will change, and vice versa if the probability
+     * decreases.
+     * @param year 
+     */
     public void reinitProbabilityAntiViral(int year) 
     {
+        if (year == 0)
+            return ;
+        
         double[] probabilityAntiViral = new double[] {0.532, 0.706, 0.735, 0.689, 0.706, 0.802, 0.766, 0.830, 0.818, 0.854} ;
-        setAntiViralStatus(RAND.nextDouble() < probabilityAntiViral[year]) ;
+        double newProbability = probabilityAntiViral[year] ;
+        double oldProbability = probabilityAntiViral[year-1] ;
+        double changeProbability ;
+        if (newProbability > oldProbability)
+        {
+            if (!discloseStatusHIV)
+                return ;
+            changeProbability = (newProbability - oldProbability)/(1 - oldProbability) ;
+        }
+        else    // Probability of being on antiViral medication decreases.
+        {
+            if (discloseStatusHIV)
+                return ;
+            changeProbability = (oldProbability - newProbability)/oldProbability ;
+        }
+        newProbability *= changeProbability ;
+        
+        setAntiViralStatus(RAND.nextDouble() < newProbability) ;
     }
     
     /**
