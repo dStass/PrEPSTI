@@ -19,6 +19,7 @@ import java.lang.reflect.*;
 
 
 import java.util.ArrayList;
+import java.util.Set ;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.logging.Level;
@@ -307,6 +308,7 @@ public abstract class Agent {
                         
         String className ;
         Site[] sites ;
+        ArrayList<String> siteNames = new ArrayList<String>(Arrays.asList(MSM.SITE_NAMES)) ;    // TODO: Replace with Agent.SITE_NAMES
         String infectionString ;
         //int daysPerYear = 365 ;
         Class clazz ;
@@ -364,22 +366,24 @@ public abstract class Agent {
                     sites = newAgent.getSites();
                     
                     String stringSite = infectionString.substring(infectionString.indexOf(siteString)) ;
-                    LOGGER.info(stringSite);
+                    //LOGGER.info(stringSite);
                     String propertySite ; // = birthRecord.substring(birthRecord.indexOf(siteString)) ;
                     ArrayList<String> siteProperties ;
                     String valueString ;
                     for (Site site : sites)
                     {
                         propertySite = Reporter.BOUNDED_STRING_BY_VALUE("Site",site.getSite(),"Site", stringSite) ;
-                        LOGGER.info(propertySite);
                         siteProperties = Reporter.IDENTIFY_PROPERTIES(propertySite) ;
                         siteProperties.remove("Site") ;
-                        LOGGER.log(Level.INFO,"{2} {0} properties:{1}", new Object[] {propertySite,siteProperties,site.getSite()}) ;
+                        siteProperties.removeAll(Arrays.asList(siteNames)) ;
                         try
                         {
                             for (String property : siteProperties)
                             {
-                                //LOGGER.info(testProperty) ;
+                                // Finished properties and now reading infected Site status
+                                if (siteNames.contains(property))
+                                    break ;
+                                
                                 valueString = Reporter.EXTRACT_VALUE(property, propertySite);
                                 //if (property.equals("screenInterval"))
                                 //  property = "screenCycle" ;
@@ -388,34 +392,28 @@ public abstract class Agent {
                                 
                                 String getterName = "get" + property.substring(0,1).toUpperCase() 
                                                 + property.substring(1) ;
-                                Method getMethod = Site.class.getDeclaredMethod(getterName) ;
-                                Class propertyClazz = getMethod.getReturnType() ;
+                                Method getterMethod = Site.class.getDeclaredMethod(getterName) ;
+                                Class propertyClazz = getterMethod.getReturnType() ;
                                         
-                                //for (Field field : siteFields)
-                                  //  if (field.getName().equals(property))
-                                    //{
-                                        //Class propertyClazz = Site.class.getDeclaredField(property).getType() ;
-                                        if (propertyClazz.equals(int.class))
-                                            valueOfClazz = Integer.class ;
-                                        else if (propertyClazz.equals(double.class))
-                                            valueOfClazz = Double.class ;
-                                        else if (propertyClazz.equals(boolean.class))
-                                            valueOfClazz = Boolean.class ;
-                                        else
-                                        {
-                                            //LOGGER.info(property) ;
-                                            valueOfClazz = propertyClazz ;
-                                        }
-                                  
-                                        Method valueOfMethod = valueOfClazz.getMethod("valueOf", String.class) ;
-                                        //LOGGER.log(Level.INFO,"{1} {0}", new Object[] {valueOfMethod.invoke(null,valueString),property});
+                                if (propertyClazz.equals(int.class))
+                                    valueOfClazz = Integer.class ;
+                                else if (propertyClazz.equals(double.class))
+                                    valueOfClazz = Double.class ;
+                                else if (propertyClazz.equals(boolean.class))
+                                    valueOfClazz = Boolean.class ;
+                                else
+                                {
+                                    //LOGGER.info(property) ;
+                                    valueOfClazz = propertyClazz ;
+                                }
+                                Method valueOfMethod = valueOfClazz.getMethod("valueOf", String.class) ;
+                                //LOGGER.log(Level.INFO,"{1} {0}", new Object[] {valueOfMethod.invoke(null,valueString),property});
 
-                                        String setterName = "set" + property.substring(0,1).toUpperCase() 
-                                                + property.substring(1) ;
-                                        Method setMethod = Site.class.getDeclaredMethod(setterName, propertyClazz) ;
-                                        setMethod.invoke(newAgent, valueOfMethod.invoke(null,valueString)) ;
-                                        break ;
-                                    //}
+                                String setterName = "set" + property.substring(0,1).toUpperCase() 
+                                        + property.substring(1) ;
+                                Method setMethod = Site.class.getDeclaredMethod(setterName, propertyClazz) ;
+                                setMethod.invoke(site, valueOfMethod.invoke(null,valueString)) ;
+
                             }
                         }
                         catch (Exception e)
@@ -424,9 +422,14 @@ public abstract class Agent {
                             //LOGGER.log(Level.SEVERE, "{0} {1} {2}", new Object[] {propertyClazz, valueString}) ;
                         }
         
-                        /*valueString = Reporter.EXTRACT_VALUE(site.getSite(), propertySite);
-                        if (!Reporter.CLEAR.equals(valueString))
-                            newAgent.setSymptomatic(Boolean.valueOf(valueString),site) ;*/
+                        valueString = Reporter.EXTRACT_VALUE(site.getSite(), propertySite);
+                            //LOGGER.log(Level.INFO,"{0} {1} {2}",new Object[] {site.getSite(),valueString,propertySite});
+                        if (!valueString.isEmpty() && !Reporter.CLEAR.equals(valueString))
+                        {
+                            newAgent.receiveInfection(1.1, site) ;
+                            LOGGER.log(Level.INFO,"{0} {1} {2}",new Object[] {site.getSite(),Boolean.valueOf(valueString),propertySite});
+                            newAgent.setSymptomatic(Boolean.valueOf(valueString),site) ;
+                        }
                         
                         // siteName: indicates infected site
                         /*siteIndex = infectionString.substring(infectionString.indexOf(siteString)).indexOf(site.getSite()+":") ;
