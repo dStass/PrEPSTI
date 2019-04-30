@@ -69,17 +69,18 @@ public class ScreeningPresenter extends Presenter {
 
     public static void main(String[] args)
     {
-        //String simName = "minimum16cPop40000Cycles750" ; 
-        //String simName = "minFrom2007a16Pop40000Cycles2690" ; 
-        //String simName =  "adjustCondom1Y16cPop40000Cycles4420" ;
-        //String simName =  "CorrectedSafe1aRectal30Pop40000Cycles1500" ;
-        //String simName = "condom86stopPrePrep3aPop40000Cycles4650" ;
+        //String simName = "corrP1Screen16ePop40000Cycles4920" ; 
+        //String simName = "test1aPop4000Cycles1500" ; 
+        //String simName =  "agent3screenjPop40000Cycles4000" ;
+        //String simName =  "fixProgress6aPop40000Cycles750" ;
+        //String simName = "sameAntiViral16aPop40000Cycles2000" ;
         //String simName = "Year2007Commence5fPop40000Cycles2500" ;
-        //String simName = "From2007To2016Urethral70b4Pop40000Cycles4650" ;
-        String simName = "newSort3aPop40000Cycles1000" ;
+        String simName = "to2014agent29aPop40000Cycles3920" ;
+        //String simName = "to2012allTest1aPop40000Cycles2690" ;
+        //String simName = "allTest2cPop40000Cycles1500" ;
         
         boolean unique = false ;
-        int notifications = -1 ; 
+        int notifications = 0 ; 
         String chartTitle ;
         if (unique && (notifications == 1))
             chartTitle = "unique " ;
@@ -91,8 +92,8 @@ public class ScreeningPresenter extends Presenter {
             chartTitle += "positivity" ;
         else
         {
-            //chartTitle = "mean_prevalence" ; //  args[1] ;
-            chartTitle += "multi-site prevalence" 
+            chartTitle += "mean_prevalence" 
+            //chartTitle += "multi-site prevalence" 
         
         + "" ;
         }
@@ -100,8 +101,8 @@ public class ScreeningPresenter extends Presenter {
         //String chartTitle = "site-specific symptomatic" ; // args[1] ;
         //String chartTitle = "testing_6_months" ; // args[1] ;
         //String chartTitle = "infections_past_2years_PrEP" ; // args[1] ;
-        //String reportFileName = "output/prePrEP/" ; // args[2] ;
-        String reportFileName = "output/test/" ; // args[2] ;
+        String reportFileName = "output/prePrEP/" ; // args[2] ;
+        //String reportFileName = "output/test/" ; // args[2] ;
         //String reportFileName = "output/reverse/" ; // args[2] ;
         //String reportFileName = "output/year2012/" ; // args[2] ;
         //String reportFileName = "output/year2007/" ; // args[2] ;
@@ -114,16 +115,18 @@ public class ScreeningPresenter extends Presenter {
         //String[] simNames = new String[] {"test2Pop30000Cycles500","test3Pop30000Cycles500","test4Pop30000Cycles500"} ;
         //String[] testArray[] = Arrays.asList(siteNames).subList(0,0)
         
-        String[] simNames = new String[] {"adjustCondom1Y16bPop40000Cycles4420","adjustCondom1Y16cPop40000Cycles4420","adjustCondom1Y16dPop40000Cycles4420","adjustCondom1Y16ePop40000Cycles4420"} ;
+        //String[] simNames = new String[] {"to2014agentScreen29aPop40000Cycles4920","to2014agentScreen29bPop40000Cycles4920","to2014agentScreen29cPop40000Cycles4920","to2014agentScreen29dPop40000Cycles4920","to2014agentScreen29ePop40000Cycles4920","to2014agentScreen29fPop40000Cycles4920","to2014agentScreen29gPop40000Cycles4920",
+            //"to2014agentScreen29hPop40000Cycles4920","to2014agentScreen29iPop40000Cycles4920","to2014agentScreen29jPop40000Cycles4920"} ;
+        //String[] simNames = new String[] {"agent3ScreenaPop40000Cycles4000","agent3ScreenbPop40000Cycles4000","agent3screencPop40000Cycles4000","agent3screendPop40000Cycles4000","agent3screenePop40000Cycles4000","agent3screenfPop40000Cycles4000","agent3screengPop40000Cycles4000","agent3screenhPop40000Cycles4000","agent3screeniPop40000Cycles4000","agent3screenjPop40000Cycles4000"} ;
         //String[] simNames = new String[] {"IntroPrepCalibration74acycle6000Pop40000Cycles12000","IntroPrepCalibration74bcycle6000Pop40000Cycles12000","IntroPrepCalibration74ccycle6000Pop40000Cycles12000"} ;
 
         //screeningPresenter.coplotPrevalence(simNames) ;
+        //screeningPresenter.plotSiteMeanPrevalence(siteNames,simNames) ;
         
         //screeningPresenter.plotNumberAgentTestingReport(0, 6, 0) ;
         //screeningPresenter.plotNumberAgentTreatedReport(2, 0, 0,"prepStatus",5) ;
 
-        //screeningPresenter.multiPlotScreening(new Object[] {SYMPTOMATIC,new String[] {"Pharynx","Rectum","Urethra"}});
-        screeningPresenter.multiPlotScreening(new Object[] {"prevalence","coprevalence",new String[] {"Pharynx","Rectum"},new String[] {"Urethra","Rectum"},"prevalence",new String[] {"Pharynx","Rectum","Urethra"}});
+        //screeningPresenter.multiPlotScreening(new Object[] {"prevalence","coprevalence",new String[] {"Pharynx","Rectum"},new String[] {"Urethra","Rectum"},"prevalence",new String[] {"Pharynx","Rectum","Urethra"}});
         //screeningPresenter.multiPlotScreening(new Object[] {"prevalence","prevalence",new String[] {"Pharynx","Rectum","Urethra"}});
         //screeningPresenter.plotNotificationsPerCycle(siteNames) ;
         //screeningPresenter.plotSitePrevalence(siteNames) ;
@@ -131,8 +134,8 @@ public class ScreeningPresenter extends Presenter {
         //screeningPresenter.plotFinalSymptomatic(new String[] {"Pharynx","Rectum","Urethra"}) ;
         //screeningPresenter.plotFinalPrevalences(new String[] {"Pharynx","Rectum","Urethra"}) ;
         //screeningPresenter.plotFinalNotifications(new String[] {"Pharynx","Rectum","Urethra"}, unique, 0, Reporter.DAYS_PER_YEAR, notifications) ;
-        //screeningPresenter.plotNotificationsYears(new String[] {"all"},6,2012) ;
-        //screeningPresenter.plotPositivityYears(new String[] {siteNames[2]}, unique, 4, 2010) ;
+        screeningPresenter.plotNotificationsYears(new String[] {"all"},8,2014) ;
+        //screeningPresenter.plotPositivityYears(siteNames, unique, 8, 2014) ;
         //screeningPresenter.plotNotificationPerCycle() ;    
         //screeningPresenter.plotSiteProportionSymptomatic(siteNames) ;
 
@@ -168,7 +171,6 @@ public class ScreeningPresenter extends Presenter {
     public void plotPositivityYears(String[] siteNames, boolean unique, int backYears, int lastYear)
     {
         HashMap<Object,Number[]> positivityRecordYears = reporter.prepareYearsPositivityRecord(siteNames, unique, backYears, lastYear) ;
-        
         plotHashMap("Year", siteNames, positivityRecordYears) ;
     }
     
@@ -663,7 +665,8 @@ public class ScreeningPresenter extends Presenter {
     }
     
     /**
-     * Plots prevalence from different saved simulations on same axes.
+     * Plots prevalence from different saved simulations on same axes together 
+     * with their mean.
      * @param simNames 
      */
     public void coplotPrevalence(String[] simNames)
