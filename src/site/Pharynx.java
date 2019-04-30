@@ -56,7 +56,11 @@ public class Pharynx extends Site {
      * Initialises screenCycle from a Gamma distribution to determine how often 
      * Rectum is screened, and then starts the cycle in a random place so that 
      * not every MSM screens his Rectum at the same time.
+     * @param statusHIV
+     * @param prepStatus
+     * @param rescale
      */
+    @Override
     public void initScreenCycle(boolean statusHIV, boolean prepStatus, double rescale)
     {
         if (prepStatus)
