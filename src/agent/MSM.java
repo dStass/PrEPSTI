@@ -960,24 +960,20 @@ public class MSM extends Agent {
             if (lastProbability < riskyProbability) 
             {
                 if (!getRiskyStatus())
-                {
                     changeProbability = (riskyProbability - lastProbability)/(1-lastProbability) ;
-                    riskyProbability *= changeProbability ;
-                }
                 else    // if risky already
-                    return ;
+                    return ;    // we don't change it
             }
             else    // riskyProbability has gone down
             {
                 if (getRiskyStatus())
-                {
                     changeProbability = (lastProbability - riskyProbability)/lastProbability ;
-                    riskyProbability *= changeProbability ;
-                }
-                else 
-                    return ;
+                else    // if already safe
+                    return ;    // we don't change it
             }
+            riskyProbability *= changeProbability ;
 
+            // Allow for correlation between statusHIV and Risky behaviour
             if (statusHIV)
                 riskyProbability *= HIV_RISKY_CORRELATION ;
             else
@@ -1020,13 +1016,13 @@ public class MSM extends Agent {
         double changeProbability ;
         if (newDiscloseProbability > oldDiscloseProbability)
         {
-            if (!discloseStatusHIV)
+            if (discloseStatusHIV)
                 return ;
             changeProbability = (newDiscloseProbability - oldDiscloseProbability)/(1 - oldDiscloseProbability) ;
         }
         else    // if less likely to disclose
         {
-            if (discloseStatusHIV)
+            if (!discloseStatusHIV)
                 return ;
             changeProbability = (oldDiscloseProbability - newDiscloseProbability)/oldDiscloseProbability ;
         }
@@ -1051,13 +1047,13 @@ public class MSM extends Agent {
         double changeProbability ;
         if (newProbability > oldProbability)
         {
-            if (!discloseStatusHIV)
+            if (discloseStatusHIV)
                 return ;
             changeProbability = (newProbability - oldProbability)/(1 - oldProbability) ;
         }
         else    // Probability of being on antiViral medication decreases.
         {
-            if (discloseStatusHIV)
+            if (!discloseStatusHIV)
                 return ;
             changeProbability = (oldProbability - newProbability)/oldProbability ;
         }
@@ -1235,7 +1231,7 @@ public class MSM extends Agent {
                     return (RAND.nextDouble() < probabilityUseCondom ) ;
             return false ;
         }
-        else
+        else    // if not risky
         {
             if (getStatusHIV())
                 if (!getAntiViralStatus())
@@ -1247,7 +1243,7 @@ public class MSM extends Agent {
                 if (((MSM) partner).getStatusHIV() && !((MSM) partner).getAntiViralStatus()) // Partner HIV +ve without antivirals
                     return true ;
             }
-            return (RAND.nextDouble() > probabilityUseCondom ) ;  //TODO: Should there be subset who always use?
+            return (RAND.nextDouble() < probabilityUseCondom ) ;  //TODO: Should there be subset who always use?
         }
     }
     
