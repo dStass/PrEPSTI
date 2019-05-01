@@ -33,7 +33,7 @@ import java.util.logging.Level;
  *******************************************************************/
 public class Community {
     static final public int POPULATION = 40000 ;
-    static public int MAX_CYCLES = 350 ; 
+    static public int MAX_CYCLES ; // = 350 ; 
     static public String NAME_ROOT = "" ;
     //static public String NAME_ROOT = "TestUrethraSymp60a2" ;
     //static public String NAME_ROOT = "CorrectedSafe46a" ;
@@ -345,7 +345,7 @@ public class Community {
           //      = relationshipReporter.prepareCumulativeRelationshipRecord(-1, relationshipClassNames, 0, 6, 0) ;
         //HashMap<Object,Number[]> plotReport = Reporter.INVERT_HASHMAP_LIST(relationshipReport, relationshipClassNames) ;
         //Reporter.WRITE_CSV(plotReport, "Number of Relationships", relationshipClassNames, "cumulativeRelationship", SIM_NAME, "output/test/") ;
-        LOGGER.info(FILE_PATH +"//" + SIM_NAME);
+        
         ScreeningReporter screeningReporter = 
                 //new ScreeningReporter("prevalence",community.infectionReport) ;
                 new ScreeningReporter(SIM_NAME,FILE_PATH) ;
@@ -569,7 +569,7 @@ public class Community {
                     ((MSM) agent).reinitProbabilityAntiViral(year) ;
                     ((MSM) agent).reinitProbablityDiscloseHIV(year);
                     ((MSM) agent).reinitRiskOdds(year);
-                    //if ((year > 1)) // && (year < 6))
+                    //if ((year > 2)) // && (year < 6))
                       //  agent.adjustProbabilityUseCondom();
                         //agent.scaleProbabilityUseCondom(.075);
                 }
