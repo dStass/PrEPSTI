@@ -122,6 +122,50 @@ public abstract class Agent {
     
     // The maximum number of relationships an agent may be willing to sustain
     //static int MAX_RELATIONSHIPS = 15;
+    
+    static public boolean REINIT(ArrayList<Agent> agentList, int year) 
+    {
+        boolean successful = true ;
+        successful = successful ;
+        try
+        {
+            REINIT_SCREEN_CYCLE(agentList, year) ;
+            MSM.REINIT_PROBABILITY_ANTIVIRAL(agentList, year) ;
+            MSM.REINIT_PROBABILITY_DISCLOSURE_HIV(agentList, year) ;
+        }
+        catch ( Exception e )
+        {
+            LOGGER.severe(e.toString()) ;
+            return false ;
+        }
+        return true ;
+    }
+    /**
+     * Adjusts per year the screening period.
+     * @param year
+     * @throws Exception 
+     */
+    static private void REINIT_SCREEN_CYCLE(ArrayList<Agent> agentList, int year) throws Exception
+    {
+        // Go from 2007
+        // Tests, given by per 1000 per year, from 2007-2016
+        // Table 17 ARTB 2016
+        double[] testRates = new double[] {333,340,398,382,383,382,391,419,445,499} ;
+        double testBase ;
+        //testBase = testRates[0] ;
+        testBase = testRates[year-1] ;
+        
+        double ratio = testBase/testRates[year] ;
+        for (Agent agent : agentList)
+        {
+            int newScreenCycle = (int) Math.ceil(ratio * agent.getScreenCycle()) ;
+            agent.setScreenCycle(newScreenCycle) ;
+        
+            // Do not reinitialise MSM on Prep
+        }
+    }
+    
+    
 
     // number of relationships willing to maintain at once
     private int concurrency ;
@@ -241,7 +285,7 @@ public abstract class Agent {
      * @param relationshipName
      * @return (boolean) whether condom is used in sexual encounter.
      */
-    public static boolean useCondom(Agent agent0, Agent agent1, String relationshipName)
+    public static boolean USE_CONDOM(Agent agent0, Agent agent1, String relationshipName)
     {
         return ((agent0.chooseCondom(relationshipName, agent1)) || (agent1.chooseCondom(relationshipName, agent0))) ;
     }
@@ -319,7 +363,6 @@ public abstract class Agent {
                 deadAgentIds.addAll(agentDeathRecord) ;
         
         // Reboot saved Agent data 
-        String infectionTime ;
         int birthIndex = 0 ;
         for (String birthRecord : birthReport)
         {
@@ -388,7 +431,6 @@ public abstract class Agent {
                                 //if (property.equals("screenInterval"))
                                 //  property = "screenCycle" ;
                                 Class valueOfClazz ;
-                                Field[] siteFields = Site.class.getDeclaredFields() ;
                                 
                                 String getterName = "get" + property.substring(0,1).toUpperCase() 
                                                 + property.substring(1) ;
@@ -413,8 +455,8 @@ public abstract class Agent {
                                         + property.substring(1) ;
                                 Method setMethod = Site.class.getDeclaredMethod(setterName, propertyClazz) ;
                                 setMethod.invoke(site, valueOfMethod.invoke(null,valueString)) ;
-
                             }
+
                         }
                         catch (Exception e)
                         {
@@ -422,12 +464,11 @@ public abstract class Agent {
                             //LOGGER.log(Level.SEVERE, "{0} {1} {2}", new Object[] {propertyClazz, valueString}) ;
                         }
         
-                        valueString = Reporter.EXTRACT_VALUE(site.getSite(), propertySite);
-                            //LOGGER.log(Level.INFO,"{0} {1} {2}",new Object[] {site.getSite(),valueString,propertySite});
+                        // Check infection/symptomatic status of site
+                        valueString = Reporter.EXTRACT_VALUE(site.getSite(), stringSite);
                         if (!valueString.isEmpty() && !Reporter.CLEAR.equals(valueString))
                         {
                             newAgent.receiveInfection(1.1, site) ;
-                            LOGGER.log(Level.INFO,"{0} {1} {2}",new Object[] {site.getSite(),Boolean.valueOf(valueString),propertySite});
                             newAgent.setSymptomatic(Boolean.valueOf(valueString),site) ;
                         }
                         
@@ -460,7 +501,7 @@ public abstract class Agent {
                         }*/
                     }
                     //if (uninfected)
-                      //  LOGGER.info(infectionString) ; // (String.valueOf(newAgent.getInfectedStatus()));
+                    //LOGGER.info(infectionString) ; // (String.valueOf(newAgent.getInfectedStatus()));
                 }
                 catch ( Exception e )
                 {
@@ -774,6 +815,16 @@ public abstract class Agent {
      */
     abstract public void reinitScreenCycle(int year) throws Exception ;
     
+    abstract public void reinitRiskOdds(int year) throws Exception ;
+    
+    abstract public void reinitProbabilityAntiViral(int year) ;
+    
+    abstract public void reinitProbablityDiscloseHIV(int year) throws Exception ;
+    
+    abstract public boolean getRiskyStatus() ;
+    
+    abstract public void setRiskyStatus(boolean risky) ;
+    
     /**
      * Randomly choose the agent's probability of cheating on a monogomous spouse.
      */
@@ -956,6 +1007,11 @@ public abstract class Agent {
     public void setProbabilityUseCondom(double useCondom)
     {
         probabilityUseCondom = useCondom ;
+    }
+    
+    public double getProbabilityUseCondom()
+    {
+        return probabilityUseCondom ;
     }
     
     /**
