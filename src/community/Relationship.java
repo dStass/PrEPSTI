@@ -38,9 +38,9 @@ public class Relationship {
     //static String FOLDER_PATH = "/srv/scratch/z3524276/prepsti/"
     //static String FOLDER_PATH = "/short/is14/mw7704/prepsti/"
     static String FOLDER_PATH = ""
-      +  "output/year2007/" ;
+    // +  "output/year2007/" ;
     // +  "output/year2012/" ;
-    // +  "output/test/" ;
+     +  "output/test/" ;
     // +  "output/prePrEP/" ;
     
     /** Random number generator. */
@@ -102,12 +102,22 @@ public class Relationship {
      */
     static int MAXIMUM_CONTACTS = 5 ;
     
+    static void SET_MAXIMUM_CONTACTS(int contacts)
+    {
+        MAXIMUM_CONTACTS = contacts ;
+    }
+    
     // TODO: Move condom variables to STI
     // Probability of using a condom for couplings with a Site.Urethra
     //static double CONDOM_USE = 0.5;
     
     // Protective effect of condom
-    static final double CONDOM_EFFECT = 0.86 ;
+    static double CONDOM_EFFECT = 0.86 ;
+    
+    static void SET_CONDOM_EFFECT(double effectiveness)
+    {
+        CONDOM_EFFECT = effectiveness ;
+    }
     
     // Number of sexual contacts per cycle ;
     //private int contacts ;
@@ -483,13 +493,16 @@ public class Relationship {
             {
                 report += "condom:" ;
                 
-                if (Agent.useCondom(agent0, agent1, relationship))
+                if (Agent.USE_CONDOM(agent0, agent1, relationship))
                 {
                     infectProbability *= (1.0 - CONDOM_EFFECT) ;
                     report += "true " ;
+                    //LOGGER.severe("condoms used");
                 }
                 else 
+                {
                     report += "false " ;
+                }
             }
 
             //TODO: Generalise to other subclasses of Agent
