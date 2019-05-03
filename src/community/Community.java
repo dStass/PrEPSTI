@@ -47,6 +47,7 @@ public class Community {
     static public String SIM_NAME = NAME_ROOT + NAME_SUFFIX ;
 
     static String COMMENT = ""
+            //+ "Removed extra choice under serosorting for RiskyMSM"
             //+ "Fit sensitivity to ratio of SafeMSM to RiskyMSM"
             //+ "Checking calibration after changing the probability "
             //+ "of accepting Casual Relationships back to EPIC-inspired levels. "
@@ -75,7 +76,7 @@ public class Community {
     //static public String FILE_PATH = "/short/is14/mw7704/prepsti/output/year2007/" ;
     /** Dump reports to disk after this many cycles. */
     /** Whether parameters change throughout simulation. */
-    static boolean DYNAMIC = false ;
+    static boolean DYNAMIC = true ;
     
     static final int DUMP_CYCLE = ((int) Math.pow(10, 7))/POPULATION ;
     /** Whether to dump partial reports during simulation. */
@@ -91,7 +92,7 @@ public class Community {
      * (String) Name of previous simulation to reload.
      * Not reloaded if this is an empty string.
      */
-    static final String RELOAD_SIMULATION = "" ; // "test2aPop4000Cycles500" ; // "agentScreen26bPop40000Cycles1500" ; //  "newScreen11bPop40000Cycles1200" ; //  "newSort9aPop40000Cycles1500" ; // 
+    static final String RELOAD_SIMULATION = "" ; // "test3aPop4000Cycles500" ; // "agentScreen26bPop40000Cycles1500" ;
     
     static public String getFilePath()
     {
@@ -346,9 +347,9 @@ public class Community {
         //HashMap<Object,Number[]> plotReport = Reporter.INVERT_HASHMAP_LIST(relationshipReport, relationshipClassNames) ;
         //Reporter.WRITE_CSV(plotReport, "Number of Relationships", relationshipClassNames, "cumulativeRelationship", SIM_NAME, "output/test/") ;
         
-        ScreeningReporter screeningReporter = 
+        ScreeningReporter screeningReporter = new ScreeningReporter(SIM_NAME,FILE_PATH) ;
                 //new ScreeningReporter("prevalence",community.infectionReport) ;
-                new ScreeningReporter(SIM_NAME,FILE_PATH) ;
+                
         //ArrayList<Object> pharynxPrevalenceReport = screeningReporter.preparePrevalenceReport("Pharynx") ;
         //Reporter.WRITE_CSV(pharynxPrevalenceReport, "Pharynx", SIM_NAME, FILE_PATH);
         //ScreeningPresenter screeningPresenter 
@@ -544,8 +545,15 @@ public class Community {
      */
     private String interveneCommunity(int cycle)
     {
-        int startCycle = 1000 ;
-        if (cycle < startCycle)
+        int startCycle = 500 ;
+        if (cycle != startCycle)
+            return "" ;
+        for (Agent agent : agents)
+        {
+            agent.setProbabilityUseCondom(1.0);
+            agent.setRiskyStatus(false) ;
+        }
+        if (2>0)
             return "" ;
         
         int year = (cycle - startCycle)/365 ;
@@ -554,7 +562,11 @@ public class Community {
         
         String report = "" ;
         
-        if (year * 365 == (cycle - startCycle))
+        if (year * 365 != (cycle - startCycle))
+            return report ;
+        
+        Agent.REINIT(agents, year) ;
+        try
         {
             for (Agent agent : agents)
             {/*
@@ -563,25 +575,22 @@ public class Community {
                 ((MSM) agent).reinitPrepStatus(true) ;
             }
         */
-                try
-                {
-                    ((MSM) agent).reinitScreenCycle(year);
-                    ((MSM) agent).reinitProbabilityAntiViral(year) ;
-                    ((MSM) agent).reinitProbablityDiscloseHIV(year);
-                    ((MSM) agent).reinitRiskOdds(year);
-                    //if ((year > 2)) // && (year < 6))
-                      //  agent.adjustProbabilityUseCondom();
-                        //agent.scaleProbabilityUseCondom(.075);
-                }
-                catch( Exception e ) // cycle extends beyond trend data
-                {
-                    LOGGER.severe(e.toString()) ;
-                    break ;
-                }
+                //agent.reinitScreenCycle(year);
+                //agent.reinitProbabilityAntiViral(year) ;
+                //agent.reinitProbablityDiscloseHIV(year);
+                agent.reinitRiskOdds(year);
+                //if ((year > 2)) // && (year < 6))
+                  //  agent.adjustProbabilityUseCondom();
+                    //agent.scaleProbabilityUseCondom(.075);
+
             }
-            report = "parameters adjusted according to ARTB" ;  // PrEP introduced" ; // gradually" ;
         }
-        
+        catch( Exception e ) // cycle extends beyond trend data
+        {
+            LOGGER.severe(e.toString()) ;
+        }
+        report = "parameters adjusted according to ARTB" ;  // PrEP introduced" ; // gradually" ;
+
 
         /*
         int agentId = 5*(cycle-1000) ;
@@ -602,7 +611,7 @@ public class Community {
         }
         //report = "condom use reduced with increased testing" ;  // PrEP introduced" ; // gradually" ;
         */
-        return report ;
+        return "" ; //report ;
     }
     
     /**
