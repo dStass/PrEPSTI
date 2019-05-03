@@ -74,6 +74,110 @@ public class MSM extends Agent {
     static double PROBABILITY_NEGATIVE_SERO_POSITION = 0.154 ;
     /** The probability of being on antivirals, given positive HIV status */
     static double PROBABILITY_ANTIVIRAL = 0.532 ;
+    
+    /**
+     * Used to change the value of PROBABILITY_ANTIVIRAL
+     * @param antiViral 
+     */
+    static void SET_PROBABILITY_ANTIVIRAL(double antiViral)
+    {
+        PROBABILITY_ANTIVIRAL = antiViral ;
+    }
+    
+    /**
+     * Alters the probability of being on antiViral medication with undetectable
+     * virus blood concentration from year to year. If the probability increases 
+     * then only MSM not on antiviral medication will change, and vice versa if the probability
+     * decreases.
+     * @param year 
+     */
+    static protected void REINIT_PROBABILITY_ANTIVIRAL(ArrayList<Agent> agentList, int year) throws Exception
+    {
+        if (year == 0)
+            return ;
+        
+        double[] probabilityAntiViral = new double[] {0.532, 0.706, 0.735, 0.689, 0.706, 0.802, 0.766, 0.830, 0.818, 0.854} ;
+        double newProbability = probabilityAntiViral[year] ;
+        double oldProbability = probabilityAntiViral[year-1] ;
+        double changeProbability ;
+        MSM msm ;
+        for (Agent agent : agentList)
+        {
+            msm = (MSM) agent ;
+            
+            if (newProbability > oldProbability)
+            {
+                if (msm.discloseStatusHIV)
+                    return ;
+                changeProbability = (newProbability - oldProbability)/(1 - oldProbability) ;
+            }
+            else    // Probability of being on antiViral medication decreases.
+            {
+                if (!msm.discloseStatusHIV)
+                    return ;
+                changeProbability = (oldProbability - newProbability)/oldProbability ;
+            }
+            newProbability *= changeProbability ;
+
+            msm.setAntiViralStatus(RAND.nextDouble() < newProbability) ;
+        }
+    }
+    
+    /**
+     * Resets the probability of adjusting discloseStatusHIV according to changing 
+     * disclose probabilities each year.
+     * Probabilities taken from Table 9 of ARTB 2017.
+     * @param year
+     * @throws Exception 
+     */
+    static protected void REINIT_PROBABILITY_DISCLOSURE_HIV(ArrayList<Agent> agentList, int year) throws Exception
+    {
+        // Go from 2007
+        double newDiscloseProbability ;
+        double oldDiscloseProbability ;
+        double changeProbability ;
+        //if (statusHIV)
+        double[] positiveDiscloseProbability = new double[] {0.201,0.296,0.327,0.286,0.312,0.384,0.349,0.398,0.430,0.395} ;
+        //else
+        double[] negativeDiscloseProbability = new double[] {0.175,0.205,0.218,0.239,0.229,0.249,0.236,0.295,0.286,0.352} ;
+        
+        double positiveNewDiscloseProbability = positiveDiscloseProbability[year] ;
+        double positiveOldDiscloseProbability = positiveDiscloseProbability[year-1] ;
+        
+        double negativeNewDiscloseProbability = negativeDiscloseProbability[year] ;
+        double negativeOldDiscloseProbability = negativeDiscloseProbability[year-1] ;
+        
+        for (Agent agent : agentList)
+        {
+            MSM msm = (MSM) agent ;
+            if (msm.statusHIV)
+            {
+                newDiscloseProbability = positiveNewDiscloseProbability ;
+                oldDiscloseProbability = positiveOldDiscloseProbability ;
+            }
+            else
+            {
+                newDiscloseProbability = negativeNewDiscloseProbability ;
+                oldDiscloseProbability = negativeOldDiscloseProbability ;
+            }
+            
+            // Do not change against the trend
+            if (newDiscloseProbability > oldDiscloseProbability)
+            {
+                if (msm.discloseStatusHIV)
+                    continue ;
+                changeProbability = (newDiscloseProbability - oldDiscloseProbability)/(1 - oldDiscloseProbability) ;
+            }
+            else    // if less likely to disclose
+            {
+                if (!msm.discloseStatusHIV)
+                    continue ;
+                changeProbability = (oldDiscloseProbability - newDiscloseProbability)/oldDiscloseProbability ;
+            }
+            msm.initSeroStatus(newDiscloseProbability * changeProbability) ;
+        }
+    }
+    
     /** The probability of being on PrEP, given negative HIV status */
     static double PROBABILITY_PREP = 0.0 ; // 0.14 ;
     /** Probability of accepting seropositive partner on antiVirals, given 
@@ -335,6 +439,7 @@ public class MSM extends Agent {
      * Must be less than 1/PROPORTION_HIV OR initRiskyStatus() fails.
      */
     static double HIV_RISKY_CORRELATION = 2 ;	
+    
     /**
      * Choose whether MSM is RiskyMSM or SafeMSM
      * @param startAge - age of MSM at sexual 'birth'.
@@ -367,8 +472,6 @@ public class MSM extends Agent {
     public MSM(int startAge) 
     {
         super(startAge) ;
-        // Risky or Safe behaviour
-        riskyStatus = (RAND.nextInt(TOTAL_ODDS) < RISKY_ODDS) ;
         initStatus() ;
         // Cannot be called in super() because sites is not initiated yet.
         initInfectedStatus(startAge) ;
@@ -420,7 +523,7 @@ public class MSM extends Agent {
     final void initRiskyStatus()
     {
         int totalOdds = SAFE_ODDS + RISKY_ODDS ;
-        double riskyProbability = RISKY_ODDS/totalOdds ;
+        double riskyProbability = ((double) RISKY_ODDS)/totalOdds ;
         if (statusHIV)
             riskyProbability *= HIV_RISKY_CORRELATION ;
         else
@@ -737,6 +840,11 @@ public class MSM extends Agent {
             setAntiViralStatus(false) ;
     }
 
+    public void setRiskyStatus(boolean risky)
+    {
+        riskyStatus = risky ;
+    }
+    
     /**
      * Getter of seroSort variables, specific to Class of Relationship.
      * @param relationshipClazzName
@@ -953,7 +1061,7 @@ public class MSM extends Agent {
             int totalOdds = SAFE_ODDS + RISKY_ODDS ;
             int lastRisky = riskyOdds[year-1] ;
             int lastOdds = safeOdds[year-1] + lastRisky ;
-            double riskyProbability = RISKY_ODDS/totalOdds ;
+            double riskyProbability = ((double) RISKY_ODDS)/totalOdds ;
             double lastProbability = lastRisky/lastOdds ;
             double changeProbability ;
             
@@ -1203,12 +1311,13 @@ public class MSM extends Agent {
      * @return true if condom is to be used, false otherwise
      */
     @Override
-    protected boolean chooseCondom(String relationshipClazzName, Agent partner) 
+    protected boolean chooseCondom(String relationshipClazzName, Agent agentPartner) 
     {
+        MSM partner = (MSM) agentPartner ;
         if (riskyStatus)
         {
             String partnerDisclosure = partner.declareStatus() ;
-            //Boolean partnerSeroPosition = ((MSM) partner).getSeroPosition() ;
+            //Boolean partnerSeroPosition = partner.getSeroPosition() ;
 
             // Not if on PrEP
             if (getPrepStatus())
@@ -1220,9 +1329,9 @@ public class MSM extends Agent {
                 {
                     if (RAND.nextDouble() < probabilityUseCondom ) 
                         return true;
-                    if (getStatusHIV() && !((MSM)partner).getPrepStatus()) // !getPrepStatus() || 
+                    if (getStatusHIV() && !(partner.getPrepStatus())) // !getPrepStatus() || 
                         return (RAND.nextDouble() < probabilityUseCondom ) ;
-                    else if (!getStatusHIV() && !((MSM)partner).getAntiViralStatus())
+                    else if (!getStatusHIV() && !partner.getAntiViralStatus())
                         return (RAND.nextDouble() < probabilityUseCondom ) ;
                 }
             }
@@ -1233,14 +1342,15 @@ public class MSM extends Agent {
         }
         else    // if not risky
         {
+            //LOGGER.severe("Safe Agent:" + String.valueOf(getAgentId()));
             if (getStatusHIV())
                 if (!getAntiViralStatus())
                     return true ;
             else if (!getPrepStatus())
             {
-                if (!((MSM) partner).getDiscloseStatusHIV()) // Partner doesn't disclose
+                if (!partner.getDiscloseStatusHIV()) // Partner doesn't disclose
                     return true ; 
-                if (((MSM) partner).getStatusHIV() && !((MSM) partner).getAntiViralStatus()) // Partner HIV +ve without antivirals
+                if (partner.getStatusHIV() && !partner.getAntiViralStatus()) // Partner HIV +ve without antivirals
                     return true ;
             }
             return (RAND.nextDouble() < probabilityUseCondom ) ;  //TODO: Should there be subset who always use?
