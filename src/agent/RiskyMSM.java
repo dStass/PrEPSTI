@@ -28,10 +28,12 @@ public class RiskyMSM extends MSM
      * @return true if condom is to be used, false otherwise
      */
     @Override
-    protected boolean chooseCondom(String relationshipClazzName, Agent partner) 
+    protected boolean chooseCondom(String relationshipClazzName, Agent agentPartner) 
     {
+        MSM partner = (MSM) agentPartner ;
+        LOGGER.severe("RiskyMSM.chooseCondom() called") ;
         String partnerDisclosure = partner.declareStatus() ;
-        //Boolean partnerSeroPosition = ((MSM) partner).getSeroPosition() ;
+        //Boolean partnerSeroPosition = partner.getSeroPosition() ;
         
         // Not if on PrEP
         if (getPrepStatus())
@@ -43,9 +45,9 @@ public class RiskyMSM extends MSM
             {
                 if (RAND.nextDouble() < probabilityUseCondom ) 
                     return true;
-                if (getStatusHIV() && !((MSM)partner).getPrepStatus()) // !getPrepStatus() || 
+                if (getStatusHIV() && !partner.getPrepStatus()) // !getPrepStatus() || 
                     return (RAND.nextDouble() < probabilityUseCondom ) ;
-                else if (!getStatusHIV() && ((MSM)partner).getPrepStatus())
+                else if (!getStatusHIV() && partner.getPrepStatus())
                     return (RAND.nextDouble() < probabilityUseCondom ) ;
             }
         }
