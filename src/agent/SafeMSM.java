@@ -29,16 +29,18 @@ public class SafeMSM extends MSM{
      * @return true if condom is to be used, false otherwise
      */
     @Override
-    protected boolean chooseCondom(String relationshipClazzName, Agent partner) 
+    protected boolean chooseCondom(String relationshipClazzName, Agent agentPartner) 
     {
+        MSM partner = (MSM) agentPartner ;
+        LOGGER.severe("SafeMSM.chooseCondom() called") ;
         if (getStatusHIV())
             if (!getAntiViralStatus())
                 return true ;
         else if (!getPrepStatus())
         {
-            if (!((MSM) partner).getDiscloseStatusHIV()) // Partner doesn't disclose
+            if (!partner.getDiscloseStatusHIV()) // Partner doesn't disclose
                 return true ; 
-            if (((MSM) partner).getStatusHIV() && !((MSM) partner).getAntiViralStatus()) // Partner HIV +ve without antivirals
+            if (partner.getStatusHIV() && !partner.getAntiViralStatus()) // Partner HIV +ve without antivirals
                 return true ;
         }
         return (RAND.nextDouble() < probabilityUseCondom ) ;  //TODO: Should there be subset who always use?
