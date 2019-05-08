@@ -38,9 +38,9 @@ public class Relationship {
     //static String FOLDER_PATH = "/srv/scratch/z3524276/prepsti/"
     //static String FOLDER_PATH = "/short/is14/mw7704/prepsti/"
     static String FOLDER_PATH = ""
-    // +  "output/year2007/" ;
+     +  "output/year2007/" ;
     // +  "output/year2012/" ;
-     +  "output/test/" ;
+    // +  "output/test/" ;
     // +  "output/prePrEP/" ;
     
     /** Random number generator. */
@@ -100,7 +100,7 @@ public class Relationship {
      * The maximum number of contacts allowed in a sexual encounter.
      * Adjusted down from 5 16/1/19 to reduce coprevalence.
      */
-    static int MAXIMUM_CONTACTS = 5 ;
+    static int MAXIMUM_CONTACTS = 3 ; // 5 ;
     
     static void SET_MAXIMUM_CONTACTS(int contacts)
     {
