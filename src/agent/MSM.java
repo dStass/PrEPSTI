@@ -178,6 +178,62 @@ public class MSM extends Agent {
         }
     }
     
+    /**
+     * Resets the probability of Risky vs Safe behaviour according to the year.
+     * Rates taken from GCPS 2011 Table 16, 2014 Table 15, 
+     */
+    static public void REINIT_RISK_ODDS(ArrayList<Agent> agentList, int year) throws Exception
+    {
+        if (year == 0)
+            return ;
+        // Go from 2007, ARTB (Table 9, 2014) (Table 11, 2017)
+        // Year-by-year rates of UAIC 
+        int[] riskyOdds = new int[] {321,327,378,361,337,360,357,375,388,482,482} ;
+        // Year-by-year rates of non-UAIC 
+        // 2013- Table 11 2017, 2007-2012 Table 9 2014 * .7
+        //int[] safeOdds = new int[] {679,673,622,639,663,640,643,625,622,518,518} ;
+        int[] safeOdds = new int[] {475,471,435,447,464,448,443,445,421,398,398} ;
+        // Ratios .403 , .410 , .465 , .447 , .421 , .446 , .446 , .457 , .480 , .548
+        SAFE_ODDS = safeOdds[year] ;
+        RISKY_ODDS = riskyOdds[year] ;
+        
+        int totalOdds = SAFE_ODDS + RISKY_ODDS ;
+        int lastRisky = riskyOdds[year-1] ;
+        int lastOdds = safeOdds[year-1] + lastRisky ;
+        double riskyProbability = ((double) RISKY_ODDS)/totalOdds ;
+        double lastProbability = ((double) lastRisky)/lastOdds ;
+        double changeProbability ;
+
+        MSM msm ;
+        for (Agent agent : agentList)
+        {
+            msm = (MSM) agent ;
+            if (lastProbability < riskyProbability) 
+            {
+                if (!msm.getRiskyStatus())
+                    changeProbability = (riskyProbability - lastProbability)/(1-lastProbability) ;
+                else    // if risky already
+                    return ;    // we don't change it
+            }
+            else    // riskyProbability has gone down
+            {
+                if (msm.getRiskyStatus())
+                    changeProbability = (lastProbability - riskyProbability)/lastProbability ;
+                else    // if already safe
+                    return ;    // we don't change it
+            }
+            riskyProbability *= changeProbability ;
+
+            // Allow for correlation between statusHIV and Risky behaviour
+            if (msm.statusHIV)
+                riskyProbability *= HIV_RISKY_CORRELATION ;
+            else
+                riskyProbability *= (1.0 - PROPORTION_HIV * HIV_RISKY_CORRELATION)/(1.0 - PROPORTION_HIV) ;
+
+            msm.riskyStatus = (RAND.nextDouble() < riskyProbability) ;
+        }
+    }
+    
     /** The probability of being on PrEP, given negative HIV status */
     static double PROBABILITY_PREP = 0.0 ; // 0.14 ;
     /** Probability of accepting seropositive partner on antiVirals, given 
@@ -249,21 +305,21 @@ public class MSM extends Agent {
     private boolean riskyStatus ;
     
     /** Transmission probabilities per sexual contact from Urethra to Rectum */
-    static double URETHRA_TO_RECTUM = 0.050 ;
+    static double URETHRA_TO_RECTUM = 0.150 ;
     /** Transmission probabilities sexual contact from Urethra to Pharynx. */
-    static double URETHRA_TO_PHARYNX = 0.010 ; // 0.035 ; 
+    static double URETHRA_TO_PHARYNX = 0.015 ; // 0.035 ; 
     /** Transmission probabilities sexual contact from Rectum to Urethra. */ 
     static double RECTUM_TO_URETHRA = 0.002 ; // 0.008 ; 
     /** Transmission probabilities sexual contact from Rectum to Pharynx. */
-    static double RECTUM_TO_PHARYNX = 0.005 ;
+    static double RECTUM_TO_PHARYNX = 0.010 ;
     /** Transmission probabilities sexual contact in Pharynx to Urethra intercourse. */
     static double PHARYNX_TO_URETHRA = 0.002 ;
     /** Transmission probabilities sexual contact in Pharynx to Rectum intercourse. */
-    static double PHARYNX_TO_RECTUM = 0.015 ; // 0.030 ; 
+    static double PHARYNX_TO_RECTUM = 0.025 ; // 0.030 ; 
     /** Transmission probabilities sexual contact in Pharynx to Pharynx intercourse (kissing). */
-    static double PHARYNX_TO_PHARYNX = 0.015 ; // 0.052 ; 
+    static double PHARYNX_TO_PHARYNX = 0.020 ; // 0.052 ; 
     /** Transmission probabilities sexual contact in Urethra to Urethra intercourse (docking). */
-    static double URETHRA_TO_URETHRA = 0.002 ; // 0.005 ; 
+    static double URETHRA_TO_URETHRA = 0.001 ; // 0.005 ; 
     /** Transmission probabilities sexual contact in Rectum to Rectum intercourse. */
     static double RECTUM_TO_RECTUM = 0.0003 ; // 0.003 ; 
     
@@ -658,6 +714,7 @@ public class MSM extends Agent {
         censusReport += Reporter.ADD_REPORT_PROPERTY("seroSortRegular", seroSortRegular) ;
         censusReport += Reporter.ADD_REPORT_PROPERTY("seroSortMonogomous", seroSortMonogomous) ;
         censusReport += Reporter.ADD_REPORT_PROPERTY("seroPosition", seroPosition) ;
+        censusReport += Reporter.ADD_REPORT_PROPERTY("riskyStatus", riskyStatus) ;
         
         for (Site site : sites)
             censusReport += site.getCensusReport() ;
@@ -1053,7 +1110,7 @@ public class MSM extends Agent {
         // 2013- Table 11 2017, 2007-2012 Table 9 2014 * .7
         //int[] safeOdds = new int[] {679,673,622,639,663,640,643,625,622,518,518} ;
         int[] safeOdds = new int[] {475,471,435,447,464,448,443,445,421,398,398} ;
-        // Ratios .676 , .694 , .868 , .808 , .726 , .804 , .806 , .843 , .922 , 1.21
+        // Ratios .403 , .410 , .465 , .447 , .421 , .446 , .446 , .457 , .480 , .548
         SAFE_ODDS = safeOdds[year] ;
         RISKY_ODDS = riskyOdds[year] ;
         //else
@@ -1308,6 +1365,7 @@ public class MSM extends Agent {
      * Decides probabilistically whether MSM chooses to use a condom in a given encounter.
      * RiskyMSM choose use strategies other than condoms
      * @param partner
+     * @param agentPartner
      * @return true if condom is to be used, false otherwise
      */
     @Override
