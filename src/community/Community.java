@@ -76,7 +76,7 @@ public class Community {
     //static public String FILE_PATH = "/short/is14/mw7704/prepsti/output/year2007/" ;
     /** Dump reports to disk after this many cycles. */
     /** Whether parameters change throughout simulation. */
-    static boolean DYNAMIC = true ;
+    static boolean DYNAMIC = false ;
     
     static final int DUMP_CYCLE = ((int) Math.pow(10, 7))/POPULATION ;
     /** Whether to dump partial reports during simulation. */
@@ -569,18 +569,13 @@ public class Community {
         try
         {
             for (Agent agent : agents)
-            {/*
-                if ("SafeMSM".equals(agent.getAgent())) 
-                    continue ; 
-                ((MSM) agent).reinitPrepStatus(true) ;
-            }
-        */
+            {
                 //agent.reinitScreenCycle(year);
                 //agent.reinitProbabilityAntiViral(year) ;
                 //agent.reinitProbablityDiscloseHIV(year);
-                agent.reinitRiskOdds(year);
+                //agent.reinitRiskOdds(year);
                 //if ((year > 2)) // && (year < 6))
-                  //  agent.adjustProbabilityUseCondom();
+                    agent.adjustProbabilityUseCondom();
                     //agent.scaleProbabilityUseCondom(.075);
 
             }
