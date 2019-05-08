@@ -97,6 +97,11 @@ public class ScreeningReporter extends Reporter {
         {
             HashMap<Object,Number[]> notificationRecordYears = new HashMap<Object,Number[]>() ;
             
+            // Whether to save this Report to file
+            boolean writeLocal = writeReport ;
+            // Do not save subreports
+            writeReport = false ;
+            
             int maxCycles = getMaxCycles() ;
             
             HashMap<Object,Number[]> notificationsRecord ;
@@ -113,6 +118,9 @@ public class ScreeningReporter extends Reporter {
                 
                 notificationRecordYears.put(lastYear - year, (Number[]) yearlyNotificationsRecord.clone()) ;
             }
+            if (writeLocal)
+                WRITE_CSV(notificationRecordYears, "Year", siteNames, "yearlyNotifications", simName, getFolderPath()) ;
+            writeReport = writeLocal ;
             
             return notificationRecordYears ;
         }
@@ -162,7 +170,7 @@ public class ScreeningReporter extends Reporter {
         //String finalIncidenceRecord ; // getFinalRecord() ;
         ArrayList<String> finalNotificationsReport = getBackCyclesReport(0, backMonths, backDays, endCycle) ;
         
-        double population = 3500000 ; // getPopulation() ; // 15-64yo NSW males 
+        double population = 3600000 ; // getPopulation() ; // 15-64yo NSW males 
         /**Sorting by statusHIV
         PopulationReporter populationReporter = new PopulationReporter(getMetaDatum("Community.NAME_ROOT"), getFolderPath()); 
         HashMap<Object,ArrayList<Object>> sortingReport = populationReporter.sortStatusHIV() ;
