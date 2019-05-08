@@ -51,9 +51,9 @@ public abstract class Agent {
     //static String FOLDER_PATH = "/srv/scratch/z3524276/prepsti/"
     //static String FOLDER_PATH = "/short/is14/mw7704/prepsti/"
     static String FOLDER_PATH = ""
-    //   +  "output/year2007/" ;
+       +  "output/year2007/" ;
     //+  "output/year2012/" ;
-     +  "output/test/" ;
+    // +  "output/test/" ;
     // +  "output/prePrEP/" ;
     
     
@@ -132,6 +132,7 @@ public abstract class Agent {
             REINIT_SCREEN_CYCLE(agentList, year) ;
             MSM.REINIT_PROBABILITY_ANTIVIRAL(agentList, year) ;
             MSM.REINIT_PROBABILITY_DISCLOSURE_HIV(agentList, year) ;
+            MSM.REINIT_RISK_ODDS(agentList, year) ;
         }
         catch ( Exception e )
         {
@@ -385,11 +386,7 @@ public abstract class Agent {
                 try
                 {
                     //clazz = Class.forName(className);
-                    if (className.equals("SafeMSM"))
-                        clazz = SafeMSM.class ;
-                    else 
-                        clazz = RiskyMSM.class ;
-                    MSM newAgent = (MSM) clazz.getConstructor(int.class).newInstance(startAge);
+                    MSM newAgent = new MSM(startAge) ;
                     REBOOT_AGENT(newAgent, birth, properties) ;
                     newAgent.clearInfection();
                     agents.add(newAgent) ;
@@ -470,6 +467,8 @@ public abstract class Agent {
                         {
                             newAgent.receiveInfection(1.1, site) ;
                             newAgent.setSymptomatic(Boolean.valueOf(valueString),site) ;
+                            //TODO: Generalise for multiple arbitrary Site properties, as with newAgent above
+                            newAgent.setInfectionTime(Integer.valueOf(Reporter.EXTRACT_VALUE("infectionTime", stringSite)), site);
                         }
                         
                         // siteName: indicates infected site
@@ -1115,6 +1114,18 @@ public abstract class Agent {
     {
         site.setSymptomatic(symptoms) ;
         return symptomatic = (symptomatic || site.getSymptomatic()) ;
+    }
+    
+    /**
+     * Calls site.infectionTime() to set the number of days left for the 
+     * untreated infection to clear. Used for rebooting Agents from previous 
+     * simulation.
+     * @param infectionTime
+     * @param site 
+     */
+    protected void setInfectionTime(int infectionTime, Site site)
+    {
+        site.setInfectionTime(infectionTime) ;
     }
 
     /** screenTime setter(). */
