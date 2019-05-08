@@ -1188,7 +1188,6 @@ public class Reporter {
         // Find mean of reports
         ArrayList<ArrayList<Object>> meanReport = new ArrayList<ArrayList<Object>>() ;
         
-        
         ArrayList<ArrayList<Object>> firstReport = reportList.get(0) ;
         int nbReports = reportList.size() ;
         int nbCycles = firstReport.size() ;
@@ -1209,6 +1208,44 @@ public class Reporter {
                 meanRecord.add(itemString) ;
             }
             meanReport.add((ArrayList<Object>) meanRecord.clone()) ;
+        }
+        return meanReport ;
+    }
+
+    /**
+     * 
+     * @param propertyName
+     * @param reportList
+     * @return (ArrayList) report with (ArrayList) subreports where the values 
+     * in the subreports are averaged over the innermost ArrayList.
+     */
+    static public HashMap<Object,String> 
+        PREPARE_MEAN_HASHMAP_REPORT(String propertyName, ArrayList<HashMap<Object,Number[]>> reportList)
+    {
+        // Find mean of reports
+        HashMap<Object,String> meanReport = new HashMap<Object,String>() ;
+        
+        HashMap<Object,Number[]> firstReport = reportList.get(0) ;
+        int nbReports = reportList.size() ;
+        int nbCycles = firstReport.size() ;
+        int nbSubReports = firstReport.values().iterator().next().length ;
+        for (Object cycle : firstReport.keySet())
+        {
+            String itemString ;
+            String meanRecord = "" ;
+            //Number[] meanRecord = new Number[nbSubReports] ;
+            for (int itemIndex = 0 ; itemIndex < nbSubReports ; itemIndex++ )
+            {
+                double itemValue = 0.0 ;
+                for (HashMap<Object,Number[]> report : reportList)
+                {
+                    Number[] record = report.get(cycle) ;
+                    itemValue += Double.valueOf(Reporter.EXTRACT_VALUE(propertyName,String.valueOf(record[itemIndex]))) ;
+                }
+                itemString = Reporter.ADD_REPORT_PROPERTY(propertyName, itemValue/nbReports) ;
+                meanRecord.concat(itemString) ;
+            }
+            meanReport.put(cycle,meanRecord) ;
         }
         return meanReport ;
     }
@@ -1328,10 +1365,11 @@ public class Reporter {
     {
         String filePath = folderPath + simName + reportName + ".csv" ;
         String line ;
-        Object value ;
+        Object[] value ;
+        
         int nbProperties = 0 ;
         //Determine if report values are ArrayList<Object>
-        Object firstRecord = report.values().toArray()[0] ;
+        Object[] firstRecord = (Object[]) report.values().toArray()[0] ;
         //LOGGER.log(Level.INFO, "{0}", firstRecord);
 
         String fileHeader = categoryName.concat(COMMA) ;
@@ -1340,11 +1378,12 @@ public class Reporter {
         
         try
         {
-            nbProperties = ((Object[]) firstRecord).length ;
-            fileHeader += COMMA + reportName ;
+            nbProperties = firstRecord.length ;
+            //fileHeader += COMMA + reportName ;
         }
         catch ( Exception e )
         {
+            LOGGER.info("values are not Arrays");
             nbProperties = 1 ;
         }
         //LOGGER.log(Level.INFO, "nbProperties:{1}", new Object[] {nbProperties});
@@ -1360,12 +1399,13 @@ public class Reporter {
                 value = report.get(key) ;
                 line = String.valueOf(key) ;
                 if (nbProperties > 1)
-                    for (Object item : (Object[]) value)
+                    for (Object item : value)
                         line += COMMA + String.valueOf(item) ;
                 else
-                    line += COMMA + String.valueOf(value) ;
+                    line += COMMA + String.valueOf(value[0]) ;
                 fileWriter.write(line) ; 
                 fileWriter.newLine() ;
+                //LOGGER.info(line);
             }
             fileWriter.close() ;
         }
@@ -1957,12 +1997,11 @@ public class Reporter {
         {
             ArrayList<String> nameArray = new ArrayList<String>() ;
             File folder = new File(folderPath) ;
-        
             for (File file : folder.listFiles()) 
                 if (file.isFile()) 
                 {
                     String fileName = file.getName() ;
-                    if (fileName.startsWith(simName) && fileName.endsWith(".txt"))
+                    if (fileName.startsWith(simName) && fileName.endsWith("txt"))
                         nameArray.add(fileName) ;
                 }
             //LOGGER.log(Level.INFO, "{0}", nameArray) ;
