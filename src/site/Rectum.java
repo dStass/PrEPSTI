@@ -22,9 +22,7 @@ public class Rectum extends Site {
     /**
      * Duration of gonorrhoea infection in rectum, 6 months.
      */
-    static int INFECTION_DURATION = 183 ; // 365 ; // 
-    
-    static int SYMPTOMATIC_DURATION = 5 ;
+    static int INFECTION_DURATION = 365 ; // 183
     
     /**
      * Probability of seeking treatment in a given cycle if infected with 
@@ -116,26 +114,6 @@ public class Rectum extends Site {
     protected int getInfectionDuration()
     {
         return INFECTION_DURATION ;
-    }
-    
-    /**
-     * 
-     * @return Mean duration of symptomatic infection (before treatment).
-     */
-    @Override
-    protected int getSymptomaticDuration()
-    {
-        return SYMPTOMATIC_DURATION ;
-    }
-    
-    /**
-     * 
-     * @return Probability of treatment for an STI being sought and successful.
-     */
-    @Override
-    protected double getTreatmentProbability()
-    {
-        return TREATMENT_PROBABILITY ;
     }
     
     /** screenTime setter(). */
