@@ -1259,8 +1259,8 @@ public abstract class Agent {
 //            if ((site.getInfectedStatus()!=0))
 //                successful = (successful && site.treat()) ;
         //if (successful) 
-            infectedStatus = false ;
-            clearSymptomatic();
+        infectedStatus = false ;
+        clearSymptomatic();
         screenTime = screenCycle ;
         return successful ;
     }
