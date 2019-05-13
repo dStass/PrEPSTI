@@ -305,23 +305,23 @@ public class MSM extends Agent {
     private boolean riskyStatus ;
     
     /** Transmission probabilities per sexual contact from Urethra to Rectum */
-    static double URETHRA_TO_RECTUM = 0.025 ;
+    static double URETHRA_TO_RECTUM = 0.050 ;
     /** Transmission probabilities sexual contact from Urethra to Pharynx. */
-    static double URETHRA_TO_PHARYNX = 0.015 ; // 0.035 ; 
+    static double URETHRA_TO_PHARYNX = 0.030 ; // 0.035 ; 
     /** Transmission probabilities sexual contact from Rectum to Urethra. */ 
-    static double RECTUM_TO_URETHRA = 0.010 ; // 0.008 ; 
+    static double RECTUM_TO_URETHRA = 0.0010 ; // 0.008 ; 
     /** Transmission probabilities sexual contact from Rectum to Pharynx. */
     static double RECTUM_TO_PHARYNX = 0.015 ;
     /** Transmission probabilities sexual contact in Pharynx to Urethra intercourse. */
-    static double PHARYNX_TO_URETHRA = 0.005 ;
+    static double PHARYNX_TO_URETHRA = 0.0010 ;
     /** Transmission probabilities sexual contact in Pharynx to Rectum intercourse. */
     static double PHARYNX_TO_RECTUM = 0.015 ; // 0.030 ; 
     /** Transmission probabilities sexual contact in Pharynx to Pharynx intercourse (kissing). */
-    static double PHARYNX_TO_PHARYNX = 0.030 ; // 0.052 ; 
+    static double PHARYNX_TO_PHARYNX = 0.040 ; // 0.052 ; 
     /** Transmission probabilities sexual contact in Urethra to Urethra intercourse (docking). */
-    static double URETHRA_TO_URETHRA = 0.005 ; // 0.005 ; 
+    static double URETHRA_TO_URETHRA = 0.001 ; // 0.005 ; 
     /** Transmission probabilities sexual contact in Rectum to Rectum intercourse. */
-    static double RECTUM_TO_RECTUM = 0.010 ; // 0.003 ; 
+    static double RECTUM_TO_RECTUM = 0.015 ; // 0.003 ; 
     
     /** The probability of screening in a given cycle with statusHIV true. */
     static double SCREEN_PROBABILITY_HIV_POSITIVE = 0.0029 ;
@@ -335,13 +335,13 @@ public class MSM extends Agent {
     //static int SCREENCYCLE = 92 ;
 
     
-    /** The number of msm invited to any given orgy. */
+    /** The number of MSM invited to any given group-sex event. */
     static public int GROUP_SEX_EVENT_SIZE = 7 ;
 
     /** The number of orgies in the community during a given cycle. */
     //int ORGY_NUMBER = 4 ;
     
-    /** Probability of joining an orgy if invited. */
+    /** Probability of joining a group-sex event if invited. */
     static double JOIN_GSE_PROBABILITY = 6.35 * Math.pow(10,-4) ;
     
     
@@ -768,7 +768,7 @@ public class MSM extends Agent {
         }
         else if (site.getSite().equals(PHARYNX))
         {
-            int chooseTotal = chooseUrethra + choosePharynx + 1 ;
+            int chooseTotal = chooseUrethra + choosePharynx + chooseRectum ;
             int index = RAND.nextInt(chooseTotal) ;
             if (index < choosePharynx)    // choosePharynx = 3
                 return pharynx ;
@@ -795,7 +795,7 @@ public class MSM extends Agent {
     protected Site chooseNotRectumSite() 
     {
         int index = RAND.nextInt(4) ;
-        if (index < 3)
+        if (index < 2)
             return urethra ;
         return pharynx ;
     }
