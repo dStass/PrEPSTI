@@ -15,7 +15,7 @@ public class Urethra extends Site {
 
     // Constants that vary according to Site subclass
     /** Probability of initial gonorrhoea infection */
-    static double INITIAL = 0.01 ;
+    static double INITIAL = 0.005 ;
 
     // Probability of positive symptomatic status if infected
     static double SYMPTOMATIC_PROBABILITY = 0.80 ;
@@ -27,14 +27,6 @@ public class Urethra extends Site {
      */
     static int INFECTION_DURATION = 183 ;
     
-    static int SYMPTOMATIC_DURATION = 3 ;
-    
-    /**
-     * Probability of seeking treatment in a given cycle if infected with 
-     * gonorrhoea. This value chosen so 91% probability of treatment within 
-     * 3 days.
-     */
-    static double TREATMENT_PROBABILITY = 0.6 ; // 0.6 ;
     
     /** Days between asymptomatic STI screens . */
     private int screenCycle = 92 ;
@@ -104,25 +96,9 @@ public class Urethra extends Site {
     }
     
     /**
-     * 
-     * @return Mean duration of symptomatic infection (before treatment).
+     * setter for screenTime.
+     * @param time 
      */
-    @Override
-    protected int getSymptomaticDuration()
-    {
-        return SYMPTOMATIC_DURATION ;
-    }
-    
-    /**
-     * 
-     * @return Probability of treatment for an STI being sought and successful.
-     */
-    @Override
-    protected double getTreatmentProbability()
-    {
-        return TREATMENT_PROBABILITY ;
-    }
-
     @Override
     public void setScreenTime(int time) 
     {
