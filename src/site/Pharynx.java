@@ -26,11 +26,6 @@ public class Pharynx extends Site {
     static int INFECTION_DURATION = 12 * 7 ;
     
     /**
-     * Mean duration of symptomatic gonorrhoea infection in Pharynx, 12 days.
-     */
-    static int SYMPTOMATIC_DURATION = 12 ;
-    
-    /**
      * Probability of seeking treatment in a given cycle if infected with 
      * gonorrhoea.
      */
@@ -104,24 +99,9 @@ public class Pharynx extends Site {
     }
     
     /**
-     * 
-     * @return Mean duration of symptomatic infection (before treatment).
+     * setter for screenTime
+     * @param time 
      */
-    protected int getSymptomaticDuration()
-    {
-        return SYMPTOMATIC_DURATION ;
-    }
-    
-    /**
-     * 
-     * @return Probability of treatment for an STI being sought and successful.
-     */
-    @Override
-    protected double getTreatmentProbability()
-    {
-        return TREATMENT_PROBABILITY ;
-    }
-
     @Override
     public void setScreenTime(int time) {
         screenTime = time ;
