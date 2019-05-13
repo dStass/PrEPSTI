@@ -74,11 +74,11 @@ public class Presenter {
     static final String COMMA = Reporter.COMMA ;
 
     // Used for controlling if and what is co-plotted from file.
-    static boolean PLOT_FILE = false ; //true ;    
+    static boolean PLOT_FILE = false ;    
     static String FOLDER_PATH = "data_files/" ;
-    static String FILENAME = "notifications" ;    //  "incidence_kirby2018"
+    static String FILENAME = "meanNotificationRate" ; // "unique_positivity_urethra" ; // "notifications" ;    //  "incidence_kirby2018"
     //static String[] dataScore = new String[] {"hiv_negative","hiv_positive"} ;
-    static String[] dataScore = new String[] {"ACCESS"} ;
+    static String[] dataScore = new String[] {"mean_notification_rate"} ; // {"urethral_positivity"} ;
             
     
     private BarChart_AWT chart_awt ;
@@ -146,11 +146,16 @@ public class Presenter {
                     dataset.addValue( scoreValue, scoreName, String.valueOf(key)) ;
                 }
         }
-        
+        /**
         LOGGER.info("// Remove categories not in report.keySet") ;
+        ArrayList<Object> removeKeys = new ArrayList<Object>() ;
         for (Object key : dataset.getColumnKeys())
             if (!report.containsKey(key))
-                dataset.removeColumn((Comparable) key);
+                removeKeys.add(key);
+        
+        for (Object key : removeKeys)
+            dataset.removeColumn((Comparable) key);
+            */
 
         return dataset ;
     }
@@ -359,15 +364,32 @@ public class Presenter {
     public static void main(String[] args)
     {
         //String simName = "NoPrepCalibration12Pop40000Cycles2000" ;
-        String simName = "RelationshipCalibrationPop40000Cycles200" ; // "testPlotCondomUsePop4000Cycles500" ; // args[0] ;
+        //String simName = "RelationshipCalibrationPop40000Cycles200" ; // "testPlotCondomUsePop4000Cycles500" ; // args[0] ;
         //String folder = "output/test/" ;
         String folder = "data_files/" ;
         String fileName = "incidence" ;
         //String chartTitle = "Pharynx" ;
         //String chartTitle = "meanNb" ;
-        String chartTitle = "incidence" ;
+        String chartTitle = "positivity" ;
         LOGGER.info(chartTitle) ;
         String[] relationshipClassNames = new String[] {"Casual","Regular","Monogomous"} ; // "Casual","Regular","Monogomous"
+        String[] siteNames  = new String[] {"Urethra"} ; // "Pharynx","Rectum","Urethra"} ;
+        String[] simNames = new String[] {"adjustCondom1Y16bPop40000Cycles4420","adjustCondom1Y16cPop40000Cycles4420","adjustCondom1Y16dPop40000Cycles4420","adjustCondom1Y16ePop40000Cycles4420"} ; // 
+        
+        ScreeningPresenter screeningPresenter = new ScreeningPresenter("adjustCondom1Y16bPop40000Cycles4420",chartTitle,"output/test/") ;
+        ScreeningReporter screeningReporter ;
+        ArrayList<HashMap<Object,Number[]>> hashMapList = new ArrayList<HashMap<Object,Number[]>>() ;
+        for (String simName : simNames)
+        {
+            screeningReporter  = new ScreeningReporter(simName,"output/test/") ;
+            hashMapList.add(screeningReporter.prepareYearsPositivityRecord(siteNames, false, 8, 2014)) ;
+        }
+        HashMap<Object,Number[]> averagedHashMap = Reporter.AVERAGED_HASHMAP_REPORT(hashMapList) ;
+        averagedHashMap.remove(2013) ;
+        averagedHashMap.remove(2014) ;
+        for (Object key : averagedHashMap.keySet())
+            LOGGER.log(Level.INFO, "{0} {1}", new Object[] {key,averagedHashMap.get(key)[0]});
+        screeningPresenter.plotHashMap("year", siteNames, averagedHashMap) ;
         /*
         ScreeningReporter screeningReporter = 
                 //new ScreeningReporter("prevalence",community.infectionReport) ;
@@ -398,9 +420,9 @@ public class Presenter {
         */
         
         //presenter.readCSV(simName, chartTitle, folder);
-        HashMap<Object,Number[]> hashMapNumber = READ_HASHMAP_NUMBER_ARRAY_CSV(fileName);
+        //HashMap<Object,Number[]> hashMapNumber = READ_HASHMAP_NUMBER_ARRAY_CSV(fileName);
         //HashMap<Object,Number> HASHMAP_NUMBER = READ_HASHMAP_NUMBER_CSV(fileName);
-        LOGGER.log(Level.INFO, "{0}", hashMapNumber );
+        //LOGGER.log(Level.INFO, "{0}", hashMapNumber );
     }
     
     public Presenter()
@@ -1537,9 +1559,9 @@ public class Presenter {
             {
                 // Data from file
                 HashMap<Object,Number[]> dataReport = READ_HASHMAP_NUMBER_ARRAY_CSV(FILENAME) ;
-                
+                LOGGER.log(Level.INFO, "{0}", dataReport);
                 // Match categories to input file
-                if (categoryList.size() > dataReport.size())
+                if ((1 < 0) && categoryList.size() > dataReport.size())
                 {
                     ArrayList<Object> loseCategories = new ArrayList<Object>() ;
                     for (Object category : categoryList)
@@ -1550,7 +1572,10 @@ public class Presenter {
                 
                 dataset = createDataset(scoreNames, categoryList, scoreLists,bin) ;
 
+                LOGGER.log(Level.INFO, "{0}", dataset);
                 dataset = EXPAND_DATASET(dataset,dataReport,dataScore) ;
+                LOGGER.log(Level.INFO, "{0}", dataset);
+                
 
                 finalNames = new String[scoreNames.length + dataScore.length] ;
                 for (int scoreIndex = 0 ; scoreIndex < scoreNames.length ; scoreIndex++ )
@@ -1687,15 +1712,17 @@ public class Presenter {
 
             //plot.getDomainAxis().getLabelFont().getAttributes().put(TextAttribute.SIZE, TextAttribute.WIDTH_EXTENDED) ;
 
+            plot.setOutlineVisible(false) ;
             plot.setBackgroundPaint(Color.WHITE) ;
             //LegendTitle legend = barChart.getLegend() ;
             //legend.setPosition(RectangleEdge.TOP) ;
             //plot.setFixedLegendItems(createLegendItems());
-            if (String.valueOf(dataset.getColumnKeys().get(0)).length() > 4)
+            /**if (String.valueOf(dataset.getColumnKeys().get(0)).length() > 4)
             {
                 CategoryAxis domainAxis = plot.getDomainAxis();  
                 domainAxis.setCategoryLabelPositions(CategoryLabelPositions.UP_45);
             }
+            */
             
             saveChart(barChart) ;
             displayChart(barChart) ;
@@ -1730,10 +1757,19 @@ public class Presenter {
             
             //lineChart.getXYPlot().setDomainAxis(new LogarithmicAxis(xLabel));
             
-            //NumberAxis domainAxis = (NumberAxis) lineChart.getXYPlot().getDomainAxis() ;
-            //double upperBound = domainAxis.getRange().getUpperBound() ;
+            NumberAxis domainAxis = (NumberAxis) lineChart.getXYPlot().getDomainAxis() ;
+            double upperBound = domainAxis.getRange().getUpperBound() ;
+            if (upperBound > 729)    // more than two years
+            {
+                domainAxis.setTickUnit(new NumberTickUnit(365)) ;
+                if (upperBound < 3650)    // less than ten years
+                {
+                    domainAxis.setMinorTickCount(4);
+                    domainAxis.setMinorTickMarksVisible(true);
+                }
+            }
+            
             //domainAxis.setRange(2.0,upperBound);
-            //domainAxis.setTickUnit(new NumberTickUnit(dataset.getItemCount(0)/20)) ;
             
             // Set unit tick distance if range is integer.
             if (int.class.isInstance(dataset.getX(0,0)) || Integer.class.isInstance(dataset.getX(0, 0)))
@@ -1747,6 +1783,8 @@ public class Presenter {
                 LegendTitle plotLegend = lineChart.getLegend() ;
                 plotLegend.setPosition(RectangleEdge.RIGHT);
             }
+            
+            //lineChart.getPlot().setOutlineVisible(false);
             
             saveChart(lineChart) ;
             displayChart(lineChart) ;
