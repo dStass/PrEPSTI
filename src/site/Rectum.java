@@ -36,7 +36,7 @@ public class Rectum extends Site {
     /** Cycles remaining until next STI screen. */
     private int screenTime ;
 
-    /** Are rectal infections symptomatic. */
+    /** The probability of infections being symptomatic. */
     private double symptomaticProbability ;
     
     /**
