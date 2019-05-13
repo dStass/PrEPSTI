@@ -96,7 +96,7 @@ abstract public class Site {
     //static double RECEIVE = 0.5 ;
     
     /** Probability of treatment being sought and successful if symptomatic */
-    static double TREATMENT_PROBABILITY = 0.5 ;
+    //static double TREATMENT_PROBABILITY = 0.5 ;
     
 	
     /**
@@ -252,7 +252,7 @@ abstract public class Site {
      * 
      * @return Probability of treatment for an STI being successful
      */
-    abstract protected double getTreatmentProbability() ;
+    //abstract protected double getTreatmentProbability() ;
     
 
     public void clearInfection()
@@ -390,12 +390,6 @@ abstract public class Site {
     {
         return incubationTime ;
     }
-    
-    /**
-     * Mean duration of symptomatic infections.
-     * @return 
-     */
-    abstract protected int getSymptomaticDuration() ;
     
     /**
      * Adjusts per year the screening period.
