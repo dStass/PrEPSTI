@@ -26,7 +26,7 @@ public class ScreeningReporter extends Reporter {
     static String TESTED = "tested" ;
     static String TREATED = "treated" ;
     
-    static boolean writeReport = true ;
+    static boolean WRITE_REPORT = false ;
     public ScreeningReporter()
     {
         
@@ -56,9 +56,9 @@ public class ScreeningReporter extends Reporter {
             HashMap<Object,Number[]> positivityRecordYears = new HashMap<Object,Number[]>() ;
             
             // Whether to save this Report to file
-            boolean writeLocal = writeReport ;
+            boolean writeLocal = WRITE_REPORT ;
             // Do not save subreports
-            writeReport = false ;
+            WRITE_REPORT = false ;
             
             //Count from the last cycle of the simulation.
             int maxCycles = getMaxCycles() ;
@@ -79,7 +79,7 @@ public class ScreeningReporter extends Reporter {
             }
             if (writeLocal)
                 WRITE_CSV(positivityRecordYears, "Year", siteNames, "Positivity", simName, getFolderPath()) ;
-            writeReport = writeLocal ;
+            WRITE_REPORT = writeLocal ;
         
             return positivityRecordYears ;
         }
@@ -98,9 +98,9 @@ public class ScreeningReporter extends Reporter {
             HashMap<Object,Number[]> notificationRecordYears = new HashMap<Object,Number[]>() ;
             
             // Whether to save this Report to file
-            boolean writeLocal = writeReport ;
+            boolean writeLocal = WRITE_REPORT ;
             // Do not save subreports
-            writeReport = false ;
+            WRITE_REPORT = false ;
             
             int maxCycles = getMaxCycles() ;
             
@@ -120,7 +120,7 @@ public class ScreeningReporter extends Reporter {
             }
             if (writeLocal)
                 WRITE_CSV(notificationRecordYears, "Year", siteNames, "yearlyNotifications", simName, getFolderPath()) ;
-            writeReport = writeLocal ;
+            WRITE_REPORT = writeLocal ;
             
             return notificationRecordYears ;
         }
@@ -244,7 +244,7 @@ public class ScreeningReporter extends Reporter {
             finalNotifications.put(siteName,entry) ;
         }
         
-        if (writeReport)
+        if (WRITE_REPORT)
             WRITE_CSV(finalNotifications, "Site", new String[] {"incidence","positivity"}, "finalNotifications", simName, getFolderPath()) ;
         return finalNotifications ;
     }
@@ -397,7 +397,7 @@ public class ScreeningReporter extends Reporter {
         Number[] entry = new Number[] {notifications/denominator,nbTreated/nbTested} ;
         finalNotifications.put("all",entry) ;
         
-        if (writeReport)
+        if (WRITE_REPORT)
             WRITE_CSV(finalNotifications, "Site", new String[] {"incidence","positivity"}, "finalNotifications", simName, getFolderPath()) ;
         return finalNotifications ;
     }
