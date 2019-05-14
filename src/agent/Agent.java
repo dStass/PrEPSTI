@@ -465,7 +465,13 @@ public abstract class Agent {
                         valueString = Reporter.EXTRACT_VALUE(site.getSite(), stringSite);
                         if (!valueString.isEmpty() && !Reporter.CLEAR.equals(valueString))
                         {
+                            // Infection status but not symptomatic status
+                            boolean oldSymptomatic = newAgent.getSymptomatic() ;
                             newAgent.receiveInfection(1.1, site) ;
+                            newAgent.setSymptomatic(oldSymptomatic) ;
+                            
+                            // Symptomatic status
+                            newAgent.setSymptomatic(site) ;
                             newAgent.setSymptomatic(Boolean.valueOf(valueString),site) ;
                             //TODO: Generalise for multiple arbitrary Site properties, as with newAgent above
                             newAgent.setInfectionTime(Integer.valueOf(Reporter.EXTRACT_VALUE("infectionTime", stringSite)), site);
@@ -1093,6 +1099,16 @@ public abstract class Agent {
     public boolean getSymptomatic(Site site)
     {
             return site.getSymptomatic() ;
+    }
+
+    /**
+     * Setter for symptomatic. Use with caution as Sites are not tracked.
+     * @param site
+     * @return 
+     */
+    public boolean setSymptomatic(boolean newSymptomatic)
+    {
+        return symptomatic = newSymptomatic ;
     }
 
     /**
