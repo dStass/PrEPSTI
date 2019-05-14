@@ -305,9 +305,9 @@ public class MSM extends Agent {
     private boolean riskyStatus ;
     
     /** Transmission probabilities per sexual contact from Urethra to Rectum */
-    static double URETHRA_TO_RECTUM = 0.050 ;
+    static double URETHRA_TO_RECTUM = 0.100 ;
     /** Transmission probabilities sexual contact from Urethra to Pharynx. */
-    static double URETHRA_TO_PHARYNX = 0.030 ; // 0.035 ; 
+    static double URETHRA_TO_PHARYNX = 0.060 ; // 0.035 ; 
     /** Transmission probabilities sexual contact from Rectum to Urethra. */ 
     static double RECTUM_TO_URETHRA = 0.0010 ; // 0.008 ; 
     /** Transmission probabilities sexual contact from Rectum to Pharynx. */
@@ -355,8 +355,8 @@ public class MSM extends Agent {
         transmissionMap.put(new String[] {URETHRA, PHARYNX},new double[] {0.024,0.024}) ;
         
         int nbKeys = transmissionMap.size() ;
-        int nbValues = transmissionMap.values().toArray().length ;
-        int maxIndex = nbKeys * nbValues ;
+        int nbValues = transmissionMap.values().iterator().next().length ;
+        int maxIndex = (int) Math.pow(nbValues,nbKeys) ;
         index = Math.floorMod(index, maxIndex) ;
         
         int keyIndex = Math.floorDiv(index,nbValues) ;
