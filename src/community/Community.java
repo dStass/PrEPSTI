@@ -76,7 +76,7 @@ public class Community {
     //static public String FILE_PATH = "/short/is14/mw7704/prepsti/output/year2007/" ;
     /** Dump reports to disk after this many cycles. */
     /** Whether parameters change throughout simulation. */
-    static boolean DYNAMIC = false ;
+    static boolean DYNAMIC = true ;
     
     static final int DUMP_CYCLE = ((int) Math.pow(10, 7))/POPULATION ;
     /** Whether to dump partial reports during simulation. */
@@ -92,7 +92,7 @@ public class Community {
      * (String) Name of previous simulation to reload.
      * Not reloaded if this is an empty string.
      */
-    static final String RELOAD_SIMULATION = "" ; // "test3aPop4000Cycles500" ; // "agentScreen26bPop40000Cycles1500" ;
+    static final String RELOAD_SIMULATION = "" ; // "max3contacts54eEXTPop40000Cycles750" ; // "test3aPop4000Cycles500" ; // "agentScreen26bPop40000Cycles1500" ;
     
     static public String getFilePath()
     {
@@ -545,17 +545,18 @@ public class Community {
      */
     private String interveneCommunity(int cycle)
     {
-        int startCycle = 500 ;
+        int startCycle = 1095 ;
         if (cycle != startCycle)
             return "" ;
-        for (Agent agent : agents)
+        if (2<0)
+        {
+            for (Agent agent : agents)
         {
             agent.setProbabilityUseCondom(1.0);
             agent.setRiskyStatus(false) ;
         }
-        if (2>0)
             return "" ;
-        
+        }
         int year = (cycle - startCycle)/365 ;
         if (year == 0)
             return "" ;
@@ -568,17 +569,17 @@ public class Community {
         Agent.REINIT(agents, year) ;
         try
         {
-            for (Agent agent : agents)
-            {
+            if ((year == 2)) // && (year < 6))
+                for (Agent agent : agents)
+                {
                 //agent.reinitScreenCycle(year);
                 //agent.reinitProbabilityAntiViral(year) ;
                 //agent.reinitProbablityDiscloseHIV(year);
                 //agent.reinitRiskOdds(year);
-                //if ((year > 2)) // && (year < 6))
-                    agent.adjustProbabilityUseCondom();
+                    agent.stopCondomUse() ;
                     //agent.scaleProbabilityUseCondom(.075);
-
-            }
+                    //agent.adjustProbabilityUseCondom();
+                }
         }
         catch( Exception e ) // cycle extends beyond trend data
         {
