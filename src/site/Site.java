@@ -409,7 +409,7 @@ abstract public class Site {
         //censusReport += Reporter.ADD_REPORT_PROPERTY("screenCycle",getScreenCycle()) ;
         //censusReport += Reporter.ADD_REPORT_PROPERTY("screenTime",getScreenTime()) ;
         censusReport += Reporter.ADD_REPORT_PROPERTY("infectionTime",infectionTime) ;
-        //censusReport += Reporter.ADD_REPORT_PROPERTY("incubationTime",incubationTime) ;
+        censusReport += Reporter.ADD_REPORT_PROPERTY("incubationTime",incubationTime) ;
         
         return censusReport ;
     }
