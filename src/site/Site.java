@@ -378,7 +378,7 @@ abstract public class Site {
      */
     public int chooseIncubationTime()
     {
-        incubationTime = MIN_INCUBATION + RAND.nextInt(RANGE_INCUBATION) - 1 ; // (int) new GammaDistribution(distributionMean,1).sample()) + distributionMean ;
+        incubationTime = MIN_INCUBATION ; // + RAND.nextInt(RANGE_INCUBATION) - 1 ; // (int) new GammaDistribution(distributionMean,1).sample()) + distributionMean ;
         return incubationTime ;
     }
     
@@ -389,6 +389,15 @@ abstract public class Site {
     public int getIncubationTime()
     {
         return incubationTime ;
+    }
+    
+    /**
+     * Getter for days left in incubation period.
+     * @return incubationTime
+     */
+    public void setIncubationTime(int incubationPeriod)
+    {
+        incubationTime = incubationPeriod ;
     }
     
     /**
