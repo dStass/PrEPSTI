@@ -14,7 +14,7 @@ public class Rectum extends Site {
     // Constants that vary according to Site subclass
     
     /** Probability of Site being infected initially */
-    static double INITIAL = 0.01 ;
+    static double INITIAL = 0.005 ; // 0.01 ;
     
     // Probability of positive symptomatic status if infected
     static double SYMPTOMATIC_PROBABILITY = 0.15 ;
