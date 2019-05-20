@@ -48,10 +48,7 @@ public class Community {
 
     static String COMMENT = ""
             //+ "Removed extra choice under serosorting for RiskyMSM"
-            //+ "Fit sensitivity to ratio of SafeMSM to RiskyMSM"
-            //+ "Checking calibration after changing the probability "
             //+ "of accepting Casual Relationships back to EPIC-inspired levels. "
-            //+ "Calibrate to 2007 data notifications. "
             //+ "probabilityUseCondom becomes zero at cycle 2095. "
             // + "every cycle from 3000 "
             //+ "Agents reduce their chances of choosing condoms by up to 0.5"
@@ -60,14 +57,10 @@ public class Community {
             //+ "five RiskyMSM go on PrEP "
             //+ "Testing rates are altered to compare with long-term data " 
             //+ "and their condom usage rates are multiplied by random fraction between 0 and 1."
-            //+ "MAX_RELATIONSHIPS set to 3 "  // "Uses parameters from NoPrepCalibration53" ;
             //+ "All encounters are recorded in full." 
             //+ "Test of loading burn-in. " // Uses From2007To2011p5v3aAdjust. "
-            // + "Begins by reloading NoPrepCalibration76a"
             //+ "with 500 cycle grace period."
             //+ "Test of Urethra symptomaticProbability 0.75 "
-            //+ "against 2012 values. "
-            //+ "Assumes number of Agents at least N times number of cycles minus 1000." ;*/
             + "" ;
     
     static boolean TO_PLOT ; //= true ;
@@ -76,7 +69,7 @@ public class Community {
     //static public String FILE_PATH = "/short/is14/mw7704/prepsti/output/year2007/" ;
     /** Dump reports to disk after this many cycles. */
     /** Whether parameters change throughout simulation. */
-    static boolean DYNAMIC = true ;
+    static boolean DYNAMIC = false ;
     
     static final int DUMP_CYCLE = ((int) Math.pow(10, 7))/POPULATION ;
     /** Whether to dump partial reports during simulation. */
@@ -92,7 +85,7 @@ public class Community {
      * (String) Name of previous simulation to reload.
      * Not reloaded if this is an empty string.
      */
-    static final String RELOAD_SIMULATION = "" ; // "max3contacts54eEXTPop40000Cycles750" ; // "test3aPop4000Cycles500" ; // "agentScreen26bPop40000Cycles1500" ;
+    static final String RELOAD_SIMULATION = "" ; // "turn40over53aPop40000Cycles2000" ; // "max3contacts54eEXTPop40000Cycles750" ; // "test3aPop4000Cycles500" ; // "agentScreen26bPop40000Cycles1500" ;
     
     static public String getFilePath()
     {
@@ -545,16 +538,16 @@ public class Community {
      */
     private String interveneCommunity(int cycle)
     {
-        int startCycle = 1095 ;
-        if (cycle != startCycle)
+        int startCycle = 365 * 2 ;
+        if (cycle < startCycle)
             return "" ;
         if (2<0)
         {
             for (Agent agent : agents)
-        {
-            agent.setProbabilityUseCondom(1.0);
-            agent.setRiskyStatus(false) ;
-        }
+            {
+                agent.setProbabilityUseCondom(1.0);
+                agent.setRiskyStatus(false) ;
+            }
             return "" ;
         }
         int year = (cycle - startCycle)/365 ;
@@ -565,18 +558,20 @@ public class Community {
         
         if (year * 365 != (cycle - startCycle))
             return report ;
-        
+        LOGGER.info(String.valueOf(year)) ;
         Agent.REINIT(agents, year) ;
+        if (2 > 0)
+            return report;
         try
         {
-            if ((year == 2)) // && (year < 6))
+            if ((year == 0)) // && (year < 6))
                 for (Agent agent : agents)
                 {
                 //agent.reinitScreenCycle(year);
                 //agent.reinitProbabilityAntiViral(year) ;
                 //agent.reinitProbablityDiscloseHIV(year);
                 //agent.reinitRiskOdds(year);
-                    agent.stopCondomUse() ;
+                    //agent.stopCondomUse() ;
                     //agent.scaleProbabilityUseCondom(.075);
                     //agent.adjustProbabilityUseCondom();
                 }
@@ -607,7 +602,7 @@ public class Community {
         }
         //report = "condom use reduced with increased testing" ;  // PrEP introduced" ; // gradually" ;
         */
-        return "" ; //report ;
+        return report ;
     }
     
     /**
