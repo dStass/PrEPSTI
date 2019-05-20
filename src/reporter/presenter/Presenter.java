@@ -1702,27 +1702,28 @@ public class Presenter {
             
             plot.setRenderer(renderer);
             //LOGGER.info(plot.getDomainAxis().getLabelFont().) ;
+            CategoryAxis domainAxis = plot.getDomainAxis();
+            ValueAxis rangeAxis = plot.getRangeAxis();
 
             Font font2 = new Font("Dialog", Font.PLAIN, 20); 
             Font font3 = new Font("Dialog", Font.PLAIN, 25); 
-            plot.getDomainAxis().setLabelFont(font3);
-            plot.getRangeAxis().setLabelFont(font3);
-            plot.getDomainAxis().setTickLabelFont(font2);
-            plot.getRangeAxis().setTickLabelFont(font2);
+            domainAxis.setLabelFont(font2);
+            rangeAxis.setLabelFont(font3);
+            //domainAxis.setTickLabelFont(font2);
+            rangeAxis.setTickLabelFont(font2);
 
-            //plot.getDomainAxis().getLabelFont().getAttributes().put(TextAttribute.SIZE, TextAttribute.WIDTH_EXTENDED) ;
+            //domainAxis.getLabelFont().getAttributes().put(TextAttribute.SIZE, TextAttribute.WIDTH_EXTENDED) ;
 
             plot.setOutlineVisible(false) ;
             plot.setBackgroundPaint(Color.WHITE) ;
             //LegendTitle legend = barChart.getLegend() ;
             //legend.setPosition(RectangleEdge.TOP) ;
             //plot.setFixedLegendItems(createLegendItems());
-            /**if (String.valueOf(dataset.getColumnKeys().get(0)).length() > 4)
-            {
-                CategoryAxis domainAxis = plot.getDomainAxis();  
+            //if (String.valueOf(dataset.getColumnKeys().get(0)).length() > 4)
+            {  
                 domainAxis.setCategoryLabelPositions(CategoryLabelPositions.UP_45);
             }
-            */
+            
             
             saveChart(barChart) ;
             displayChart(barChart) ;
