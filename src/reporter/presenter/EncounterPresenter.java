@@ -23,41 +23,44 @@ import java.util.logging.Level;
 public class EncounterPresenter extends Presenter {
     
     static private String[] simNames 
-            = new String[] {"NoPrepCalibration74aPop40000Cycles5000"} ; //,"NoPrepCalibration74bPop40000Cycles5000","NoPrepCalibration74cPop40000Cycles5000"} ;
+            = new String[] {"to2014agentAdjust29aPop40000Cycles4920","to2014agentAdjust29cPop40000Cycles4920"} ; // "to2012max3same40aPop40000Cycles2920"} ; // "max3contact56aPop40000Cycles2460"} ; // ,"NoPrepCalibration74bPop40000Cycles5000","NoPrepCalibration74cPop40000Cycles5000"} ;
     
     private EncounterReporter reporter ;
     
     public static void main(String[] args)
     {
         //String simName = "TestPop40000Cycles100" ; // Community.SIM_NAME ; // "introPrepCalibration48Pop40000Cycles7000" ; // args[0] ;
-        String simName = "minimum8aPop40000Cycles750" ; 
+        String simName = simNames[0] ; 
         //String simName = "neutral_calibration2Pop40000Cycles4000" ;
         //String simName = "RelationshipCalibrationPop40000Cycles200" ; // "NoPrepCalibration86Pop40000Cycles5000" ; // "introPrepCalibration48Pop40000Cycles7000" ; // args[0] ;
         //String simName = "AllSexualContactsPop40000Cycles1200" ;
         //String chartTitle = "infections_of_PrEP_users" ; // args[1] ;
         //String chartTitle = "proportion_of_Agents_had_CLAI" ; // args[1] ;
-        String chartTitle = "transmissions" ;
+        //String chartTitle = "Transmissions" ;
+        //String chartTitle = "new infections" ;
         //String chartTitle = "incidence_rate" ;
-        //String chartTitle = "condom_use_in_AI" ; // args[1] ;
-        String reportFileName = "output/test/" ; // args[2] ;
+        //String chartTitle = "protection" ; // args[1] ;
+        String chartTitle = "condom_coverage" ; // args[1] ;
+        //String reportFileName = "output/test/" ; // args[2] ;
+        String reportFileName = "output/prePrEP/" ; // args[2] ;
+        //String reportFileName = "output/year2007/" ; // args[2] ;
         LOGGER.info(chartTitle) ;
         String[] siteNames  = new String[] {"Pharynx","Rectum","Urethra"} ;
         
 
         EncounterPresenter encounterPresenter = new EncounterPresenter(simName,chartTitle,reportFileName) ;
-        //encounterPresenter.plotCondomUse();
+        encounterPresenter.plotCondomUse();
         //encounterPresenter.plotProtection() ;
         //encounterPresenter.plotTransmissionsPerCycle(siteNames);
         //encounterPresenter.plotCumulativeAgentTransmissionReport() ;
-        //encounterPresenter.plotTransmissionsPerCycle(siteNames);
-        //encounterPresenter.plotIncidenceYears(siteNames, 5, 2017) ;
+        //encounterPresenter.plotIncidenceYears(siteNames, 6, 2012) ;
         //encounterPresenter.plotNumberCondomlessYears(3, 0, 0, 2017, new String[] {"Casual","Regular","Monogomous"}) ;
         //encounterPresenter.plotNumberCondomlessReport(0, 6, 0, new String[] {"Casual","Regular","Monogomous"}) ;
         //encounterPresenter.plotPercentAgentCondomlessReport(new String[] {"Casual","Regular","Monogomous"}, 0, 6, 0, "", false) ;
         //encounterPresenter.plotPercentAgentCondomlessReport(new String[] {"Casual","Regular","Monogomous"}, 0, 6, 0, "statusHIV", true) ; 
         //encounterPresenter.plotPercentAgentCondomlessYears(new String[] {"Casual","Regular","Monogomous"}, 3, 6, 0, 2017, "", false) ; 
         //encounterPresenter.plotNumberAgentTransmissionReport("statusHIV") ;
-        encounterPresenter.plotFromSiteToSite(new String[] {"Rectum","Urethra","Pharynx"});
+        //encounterPresenter.plotFromSiteToSite(siteNames) ; // (new String[] {"Rectum","Urethra"});
         //encounterPresenter.plotReceiveSortPrepStatusReport("true") ;
 
         //String methodName = args[3] ;
@@ -142,7 +145,7 @@ public class EncounterPresenter extends Presenter {
         // HashMap to be plotted
         // (String) key has format infectedsiteToReceivingsite
         HashMap<Object,Number> fromSiteToSiteReport = reporter.prepareFromSiteToSiteReport(siteNames) ;
-        
+        LOGGER.log(Level.INFO,"{0}",fromSiteToSiteReport) ;
         plotHashMap("Site to Site","transmissions",fromSiteToSiteReport) ;        
     }
     
@@ -307,18 +310,27 @@ public class EncounterPresenter extends Presenter {
      */
     public void plotCondomUse()
     {
-        ArrayList<Object> condomUseReport = reporter.prepareCondomUseReport() ;
-        
-        plotCycleValue("proportion", condomUseReport) ;
+        ArrayList<ArrayList<Object>> condomReports = new ArrayList<ArrayList<Object>>() ;
+        for (String simName : simNames)
+        {
+            EncounterReporter encounterReporter = new EncounterReporter(simName,reporter.getFolderPath()) ;
+            condomReports.add(encounterReporter.prepareCondomUseReport()) ;
+            //coplotNames.add("prevalence") ;
+        }
+        ArrayList<Object> meanCondomReport ;
+        if (simNames.length > 1)
+            meanCondomReport = Reporter.AVERAGED_REPORT(condomReports, PROPORTION) ;
+        else
+            meanCondomReport = condomReports.get(0) ;
+
+        plotCycleValue(PROPORTION, meanCondomReport) ;
     }
-    
     
     public void plotProtection()
     {
-        PopulationReporter populationReporter = new PopulationReporter(applicationTitle,Community.FILE_PATH) ;
-        LOGGER.info("prepareBirthReport()");
+        PopulationReporter populationReporter = new PopulationReporter(applicationTitle,reporter.getFolderPath()) ;
         ArrayList<String> census = populationReporter.prepareBirthReport() ;
-        LOGGER.log(Level.INFO, "{0}", census);
+        //LOGGER.log(Level.INFO, "{0}", census);
         plotProtection(census) ;
     }
     
@@ -346,6 +358,32 @@ public class EncounterPresenter extends Presenter {
         ArrayList<Object> protectionReport = reporter.prepareProtectionReport(census) ;
         
         multiPlotCycleValue(practices, protectionReport) ;
+    }
+    
+    private void plotMeanProtection()
+    {
+        ArrayList<String> practices = new ArrayList<String>() ;
+        practices.add("condomOnly") ;
+        practices.add("onlySeroPosition") ;
+        //practices.add("onlySeroSort") ;
+        practices.add("condomSeroPosition") ;
+        //practices.add("condomSeroSort") ;
+        practices.add("unprotected") ;
+        //LOGGER.log(Level.INFO, "{0}", practices);
+        
+        ArrayList<Object> meanProtectionReport ;
+        ArrayList<ArrayList<Object>> protectionList = new ArrayList<ArrayList<Object>>() ;
+        
+        PopulationReporter populationReporter = new PopulationReporter(applicationTitle,reporter.getFolderPath()) ;
+        ArrayList<String> census = populationReporter.prepareBirthReport() ;
+        protectionList.add(reporter.prepareProtectionReport(census)) ;
+        
+        if (simNames.length > 1)
+            meanProtectionReport = Reporter.AVERAGED_REPORT(protectionList, practices) ;
+        else
+            meanProtectionReport = protectionList.get(0) ;
+
+        multiPlotCycleValue(practices, meanProtectionReport) ;
     }
             
 
