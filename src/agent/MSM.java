@@ -199,38 +199,43 @@ public class MSM extends Agent {
         
         int totalOdds = SAFE_ODDS + RISKY_ODDS ;
         int lastRisky = riskyOdds[year-1] ;
-        int lastOdds = safeOdds[year-1] + lastRisky ;
+        int lastTotal = safeOdds[year-1] + lastRisky ;
         double riskyProbability = ((double) RISKY_ODDS)/totalOdds ;
-        double lastProbability = ((double) lastRisky)/lastOdds ;
+        double lastProbability = ((double) lastRisky)/lastTotal ;
         double changeProbability ;
+        LOGGER.log(Level.INFO,"last:{0} new:{1}", new Object[] {lastProbability,riskyProbability}) ;
 
+        boolean moreRisky = lastProbability < riskyProbability ;
+        
+        if (moreRisky) 
+            changeProbability = (riskyProbability - lastProbability)/(1-lastProbability) ;
+        else
+            changeProbability = (lastProbability - riskyProbability)/lastProbability ;
+        
+        riskyProbability *= changeProbability ;
+        double riskyProbabilityPositive = riskyProbability ; //* HIV_RISKY_CORRELATION ;
+        double riskyProbabilityNegative = riskyProbability ; //* (1.0 - PROPORTION_HIV * HIV_RISKY_CORRELATION)/(1.0 - PROPORTION_HIV) ;
+        
         MSM msm ;
         for (Agent agent : agentList)
         {
             msm = (MSM) agent ;
-            if (lastProbability < riskyProbability) 
+            if (moreRisky) 
             {
-                if (!msm.getRiskyStatus())
-                    changeProbability = (riskyProbability - lastProbability)/(1-lastProbability) ;
-                else    // if risky already
-                    return ;    // we don't change it
+                if (msm.getRiskyStatus()) // if risky already
+                    continue ;    // we don't change it
             }
             else    // riskyProbability has gone down
             {
-                if (msm.getRiskyStatus())
-                    changeProbability = (lastProbability - riskyProbability)/lastProbability ;
-                else    // if already safe
-                    return ;    // we don't change it
+                if (!msm.getRiskyStatus()) // if safe already
+                    continue ;    // we don't change it
             }
-            riskyProbability *= changeProbability ;
 
             // Allow for correlation between statusHIV and Risky behaviour
             if (msm.statusHIV)
-                riskyProbability *= HIV_RISKY_CORRELATION ;
+                msm.setRiskyStatus(RAND.nextDouble() < riskyProbabilityPositive) ;
             else
-                riskyProbability *= (1.0 - PROPORTION_HIV * HIV_RISKY_CORRELATION)/(1.0 - PROPORTION_HIV) ;
-
-            msm.riskyStatus = (RAND.nextDouble() < riskyProbability) ;
+                msm.setRiskyStatus(RAND.nextDouble() < riskyProbabilityNegative) ;
         }
     }
     
@@ -305,23 +310,23 @@ public class MSM extends Agent {
     private boolean riskyStatus ;
     
     /** Transmission probabilities per sexual contact from Urethra to Rectum */
-    static double URETHRA_TO_RECTUM = 0.100 ;
+    static double URETHRA_TO_RECTUM = 0.15 ; // 0.100 ;
     /** Transmission probabilities sexual contact from Urethra to Pharynx. */
-    static double URETHRA_TO_PHARYNX = 0.060 ; // 0.035 ; 
+    static double URETHRA_TO_PHARYNX = 0.06 ; // 0.060 ; // 0.035 ; 
     /** Transmission probabilities sexual contact from Rectum to Urethra. */ 
-    static double RECTUM_TO_URETHRA = 0.0010 ; // 0.008 ; 
+    static double RECTUM_TO_URETHRA = 0.020 ; // 0.008 ; 
     /** Transmission probabilities sexual contact from Rectum to Pharynx. */
-    static double RECTUM_TO_PHARYNX = 0.015 ;
+    static double RECTUM_TO_PHARYNX = 0.010 ;
     /** Transmission probabilities sexual contact in Pharynx to Urethra intercourse. */
-    static double PHARYNX_TO_URETHRA = 0.0010 ;
+    static double PHARYNX_TO_URETHRA = 0.001 ;
     /** Transmission probabilities sexual contact in Pharynx to Rectum intercourse. */
-    static double PHARYNX_TO_RECTUM = 0.015 ; // 0.030 ; 
+    static double PHARYNX_TO_RECTUM = 0.001 ; // 0.030 ; 
     /** Transmission probabilities sexual contact in Pharynx to Pharynx intercourse (kissing). */
-    static double PHARYNX_TO_PHARYNX = 0.040 ; // 0.052 ; 
+    static double PHARYNX_TO_PHARYNX = 0.030 ; // 0.052 ; 
     /** Transmission probabilities sexual contact in Urethra to Urethra intercourse (docking). */
-    static double URETHRA_TO_URETHRA = 0.001 ; // 0.005 ; 
+    static double URETHRA_TO_URETHRA = 0.010 ; // 0.005 ; 
     /** Transmission probabilities sexual contact in Rectum to Rectum intercourse. */
-    static double RECTUM_TO_RECTUM = 0.015 ; // 0.003 ; 
+    static double RECTUM_TO_RECTUM = 0.005 ;
     
     /** The probability of screening in a given cycle with statusHIV true. */
     static double SCREEN_PROBABILITY_HIV_POSITIVE = 0.0029 ;
@@ -897,6 +902,7 @@ public class MSM extends Agent {
             setAntiViralStatus(false) ;
     }
 
+    @Override
     public void setRiskyStatus(boolean risky)
     {
         riskyStatus = risky ;
@@ -1371,6 +1377,8 @@ public class MSM extends Agent {
     @Override
     protected boolean chooseCondom(String relationshipClazzName, Agent agentPartner) 
     {
+        if (2 < 0)
+            return (RAND.nextDouble() < probabilityUseCondom ) ;
         MSM partner = (MSM) agentPartner ;
         if (riskyStatus)
         {
@@ -1400,6 +1408,8 @@ public class MSM extends Agent {
         }
         else    // if not risky
         {
+            //if (2 > 0)
+              //  return true ;
             //LOGGER.severe("Safe Agent:" + String.valueOf(getAgentId()));
             if (getStatusHIV())
                 if (!getAntiViralStatus())
