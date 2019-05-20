@@ -1453,6 +1453,19 @@ public class Reporter {
      */
     static public ArrayList<Object> AVERAGED_REPORT(ArrayList<ArrayList<Object>> reports, String propertyName)
     {
+        String[] propertyNames = new String[1] ;
+        propertyNames[0] = propertyName ;
+        return AVERAGED_REPORT(reports, (ArrayList<String>) Arrays.asList(propertyNames)) ;
+    }
+    
+    /**
+     * Averages value of propertyName over (ArrayList) reports
+     * @param reports
+     * @param propertyNames
+     * @return (ArrayList) AVERAGED_REPORT
+     */
+    static public ArrayList<Object> AVERAGED_REPORT(ArrayList<ArrayList<Object>> reports, ArrayList<String> propertyNames)
+    {
         ArrayList<Object> averagedReport = new ArrayList<Object>() ;
         
         String record ;
@@ -1463,12 +1476,11 @@ public class Reporter {
         int nbReports = reports.size() ;
         
         ArrayList<String> meanProperties ;
-        if (propertyName.isEmpty())
+        if (propertyNames.isEmpty())
             meanProperties = IDENTIFY_PROPERTIES((String) reports.get(0).get(0)) ;
         else
         {
-            meanProperties = new ArrayList<String>() ;
-            meanProperties.add(propertyName) ;
+            meanProperties = propertyNames ;
         }
         
         for (int cycle = 0 ; cycle < nbRecords ; cycle++ )
