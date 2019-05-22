@@ -51,9 +51,9 @@ public abstract class Agent {
     //static String FOLDER_PATH = "/srv/scratch/z3524276/prepsti/"
     //static String FOLDER_PATH = "/short/is14/mw7704/prepsti/"
     static String FOLDER_PATH = ""
-       +  "output/year2007/" ;
+    //   +  "output/year2007/" ;
     //+  "output/year2012/" ;
-    // +  "output/test/" ;
+     +  "output/test/" ;
     // +  "output/prePrEP/" ;
     
     
@@ -125,13 +125,12 @@ public abstract class Agent {
     
     static public boolean REINIT(ArrayList<Agent> agentList, int year) 
     {
-        boolean successful = true ;
-        successful = successful ;
+        //boolean successful = true ;
         try
         {
-            REINIT_SCREEN_CYCLE(agentList, year) ;
-            MSM.REINIT_PROBABILITY_ANTIVIRAL(agentList, year) ;
-            MSM.REINIT_PROBABILITY_DISCLOSURE_HIV(agentList, year) ;
+            //REINIT_SCREEN_CYCLE(agentList, year) ;
+            //MSM.REINIT_PROBABILITY_ANTIVIRAL(agentList, year) ;
+            //MSM.REINIT_PROBABILITY_DISCLOSURE_HIV(agentList, year) ;
             MSM.REINIT_RISK_ODDS(agentList, year) ;
         }
         catch ( Exception e )
@@ -870,6 +869,7 @@ public abstract class Agent {
         censusReport += Reporter.ADD_REPORT_PROPERTY("age",getAge()) ;  // Reporter.ADD_REPORT_PROPERTY("startAge", getAge()) ;
         censusReport += Reporter.ADD_REPORT_PROPERTY("concurrency",concurrency) ;
         censusReport += Reporter.ADD_REPORT_PROPERTY("infidelity",infidelity) ;
+        censusReport += Reporter.ADD_REPORT_PROPERTY("probabilityUseCondom",probabilityUseCondom) ;
         censusReport += Reporter.ADD_REPORT_PROPERTY("screenCycle",getScreenCycle()) ;
         
         /*Class fieldClazz ;
