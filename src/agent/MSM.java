@@ -189,10 +189,12 @@ public class MSM extends Agent {
         // Go from 2007, ARTB (Table 9, 2014) (Table 11, 2017)
         // Year-by-year rates of UAIC 
         int[] riskyOdds = new int[] {321,327,378,361,337,360,357,375,388,482,482} ;
+        //int[] riskyOdds = new int[] {365,360,355,350,345,340,335,330,325,320} ;
         // Year-by-year rates of non-UAIC 
         // 2013- Table 11 2017, 2007-2012 Table 9 2014 * .7
         //int[] safeOdds = new int[] {679,673,622,639,663,640,643,625,622,518,518} ;
         int[] safeOdds = new int[] {475,471,435,447,464,448,443,445,421,398,398} ;
+        //int[] safeOdds = new int[] {430,435,440,445,450,455,460,465,470,475} ;
         // Ratios .403 , .410 , .465 , .447 , .421 , .446 , .446 , .457 , .480 , .548
         SAFE_ODDS = safeOdds[year] ;
         RISKY_ODDS = riskyOdds[year] ;
@@ -205,16 +207,18 @@ public class MSM extends Agent {
         double changeProbability ;
         LOGGER.log(Level.INFO,"last:{0} new:{1}", new Object[] {lastProbability,riskyProbability}) ;
 
-        boolean moreRisky = lastProbability < riskyProbability ;
+        boolean moreRisky = (lastProbability < riskyProbability) ;
         
+        // Compensates for allowing only change in one direction.
         if (moreRisky) 
             changeProbability = (riskyProbability - lastProbability)/(1-lastProbability) ;
         else
-            changeProbability = (lastProbability - riskyProbability)/lastProbability ;
+            changeProbability = riskyProbability/lastProbability ; //(lastProbability - riskyProbability)/lastProbability ;
+        LOGGER.log(Level.INFO, "moreRisky:{0} changeProbability:{1}", new Object[] {moreRisky,changeProbability}) ;
         
-        riskyProbability *= changeProbability ;
-        double riskyProbabilityPositive = riskyProbability ; //* HIV_RISKY_CORRELATION ;
-        double riskyProbabilityNegative = riskyProbability ; //* (1.0 - PROPORTION_HIV * HIV_RISKY_CORRELATION)/(1.0 - PROPORTION_HIV) ;
+        //riskyProbability *= changeProbability ;
+        //double riskyProbabilityPositive = riskyProbability ; //* HIV_RISKY_CORRELATION ;
+        //double riskyProbabilityNegative = riskyProbability ; //* (1.0 - PROPORTION_HIV * HIV_RISKY_CORRELATION)/(1.0 - PROPORTION_HIV) ;
         
         MSM msm ;
         for (Agent agent : agentList)
@@ -233,9 +237,9 @@ public class MSM extends Agent {
 
             // Allow for correlation between statusHIV and Risky behaviour
             if (msm.statusHIV)
-                msm.setRiskyStatus(RAND.nextDouble() < riskyProbabilityPositive) ;
+                msm.setRiskyStatus(RAND.nextDouble() < changeProbability) ;
             else
-                msm.setRiskyStatus(RAND.nextDouble() < riskyProbabilityNegative) ;
+                msm.setRiskyStatus(RAND.nextDouble() < changeProbability) ;
         }
     }
     
@@ -312,7 +316,7 @@ public class MSM extends Agent {
     /** Transmission probabilities per sexual contact from Urethra to Rectum */
     static double URETHRA_TO_RECTUM = 0.15 ; // 0.100 ;
     /** Transmission probabilities sexual contact from Urethra to Pharynx. */
-    static double URETHRA_TO_PHARYNX = 0.06 ; // 0.060 ; // 0.035 ; 
+    static double URETHRA_TO_PHARYNX = 0.15 ; // 0.060 ; // 0.035 ; 
     /** Transmission probabilities sexual contact from Rectum to Urethra. */ 
     static double RECTUM_TO_URETHRA = 0.020 ; // 0.008 ; 
     /** Transmission probabilities sexual contact from Rectum to Pharynx. */
@@ -1377,8 +1381,8 @@ public class MSM extends Agent {
     @Override
     protected boolean chooseCondom(String relationshipClazzName, Agent agentPartner) 
     {
-        if (2 < 0)
-            return (RAND.nextDouble() < probabilityUseCondom ) ;
+        //if (2 < 0)
+          //  return (RAND.nextDouble() < probabilityUseCondom ) ;
         MSM partner = (MSM) agentPartner ;
         if (riskyStatus)
         {
