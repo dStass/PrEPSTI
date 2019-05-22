@@ -23,7 +23,7 @@ import java.util.logging.Level;
 public class EncounterPresenter extends Presenter {
     
     static private String[] simNames 
-            = new String[] {"to2014agentAdjust29aPop40000Cycles4920","to2014agentAdjust29cPop40000Cycles4920"} ; // "to2012max3same40aPop40000Cycles2920"} ; // "max3contact56aPop40000Cycles2460"} ; // ,"NoPrepCalibration74bPop40000Cycles5000","NoPrepCalibration74cPop40000Cycles5000"} ;
+            = new String[] {"to2012linear67cPop40000Cycles3285"} ; // ,"to2014agentAdjust29aPop40000Cycles4920","to2014agentAdjust29cPop40000Cycles4920"} ; // "to2012max3same40aPop40000Cycles2920"} ; // "max3contact56aPop40000Cycles2460"} ; // ,"NoPrepCalibration74bPop40000Cycles5000","NoPrepCalibration74cPop40000Cycles5000"} ;
     
     private EncounterReporter reporter ;
     
@@ -41,8 +41,8 @@ public class EncounterPresenter extends Presenter {
         //String chartTitle = "incidence_rate" ;
         //String chartTitle = "protection" ; // args[1] ;
         String chartTitle = "condom_coverage" ; // args[1] ;
-        //String reportFileName = "output/test/" ; // args[2] ;
-        String reportFileName = "output/prePrEP/" ; // args[2] ;
+        String reportFileName = "output/test/" ; // args[2] ;
+        //String reportFileName = "output/prePrEP/" ; // args[2] ;
         //String reportFileName = "output/year2007/" ; // args[2] ;
         LOGGER.info(chartTitle) ;
         String[] siteNames  = new String[] {"Pharynx","Rectum","Urethra"} ;
@@ -324,6 +324,12 @@ public class EncounterPresenter extends Presenter {
             meanCondomReport = condomReports.get(0) ;
 
         plotCycleValue(PROPORTION, meanCondomReport) ;
+    }
+    
+    private void plotYearsCondomUseRecord(int backYears, int lastYear) 
+    {
+        HashMap<Object,String> yearsCondomUseReport = reporter.prepareYearsCondomUseRecord(backYears, lastYear) ;
+        LOGGER.log(Level.INFO, "{0}", yearsCondomUseReport) ;
     }
     
     public void plotProtection()
