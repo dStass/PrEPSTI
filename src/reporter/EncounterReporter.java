@@ -35,6 +35,8 @@ public class EncounterReporter extends Reporter {
     static String RECTUM = "Rectum" ;
     static String URETHRA = "Urethra" ;
 
+    static boolean WRITE_REPORT = false ;
+    
     public EncounterReporter()
     {
         
@@ -718,6 +720,59 @@ public class EncounterReporter extends Reporter {
         return condomUseReport ;
     }
     
+    public HashMap<Object,String> prepareYearsCondomUseRecord(int backYears, int lastYear) 
+    {
+        HashMap<Object,String> condomUseRecordYears = new HashMap<Object,String>() ;
+
+        // Whether to save this Report to file
+        boolean writeLocal = WRITE_REPORT ;
+        // Do not save subreports
+        WRITE_REPORT = false ;
+
+        //Count from the last cycle of the simulation.
+        int maxCycles = getMaxCycles() ;
+
+        HashMap<Object,Number[]> condomUseRecord ;
+        for (int year = 0 ; year < backYears ; year++ )
+        {
+            condomUseRecordYears.put(lastYear - year, prepareFinalCondomUseRecord(year, 0, DAYS_PER_YEAR, maxCycles)) ;
+        }
+        //if (writeLocal)
+          //  WRITE_CSV(condomUseRecordYears, "Year", "condom_use", simName, getFolderPath()) ;
+        WRITE_REPORT = writeLocal ;
+
+        return condomUseRecordYears ;
+    }
+    
+    public String prepareFinalCondomUseRecord(int backYears, int backMonths, int backDays, int endCycle)
+    {
+        endCycle -= backYears * DAYS_PER_YEAR ;
+        ArrayList<String> finalCondomUseReport = getBackCyclesReport(0, backMonths, backDays, endCycle) ;
+        
+        
+        String reportOutput ;
+        int[] condomData ;
+        int usages = 0;
+        int opportunities = 0 ;
+        double proportion ;
+        
+        for (String finalCondomUseRecord : finalCondomUseReport)
+        {
+            condomData = COUNT_VALUE_INCIDENCE(CONDOM,TRUE,finalCondomUseRecord,0) ;
+            usages += condomData[0] ;
+            opportunities += condomData[1] ;
+        }
+        proportion = ((double) usages)/opportunities ;
+        reportOutput = Reporter.ADD_REPORT_PROPERTY("usages", usages) ;
+        reportOutput += Reporter.ADD_REPORT_PROPERTY("opportunities", opportunities) ;
+        reportOutput += Reporter.ADD_REPORT_PROPERTY("proportion", proportion) ;
+        //finalCondomUseReport.add(reportOutput) ;
+        
+        //if (WRITE_REPORT)
+          //  WRITE_CSV(finalCondomUse, "Site", new String[] {"incidence","positivity"}, "finalNotifications", simName, getFolderPath()) ;
+        return reportOutput ;
+    }
+    
     /**
      * TODO: Implement complete census of Agents.
      * @param census
@@ -764,7 +819,7 @@ public class EncounterReporter extends Reporter {
                 agentIndex = record.indexOf(AGENTID,agentIndex + 1) ;
             }
         }
-        LOGGER.log(Level.INFO, "{0}", census);
+        //LOGGER.log(Level.INFO, "{0}", census);
         for (boolean nextInput = true ; nextInput ; nextInput = updateReport())
         {
             // Check each record.
