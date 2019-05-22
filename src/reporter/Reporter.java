@@ -1453,9 +1453,9 @@ public class Reporter {
      */
     static public ArrayList<Object> AVERAGED_REPORT(ArrayList<ArrayList<Object>> reports, String propertyName)
     {
-        String[] propertyNames = new String[1] ;
-        propertyNames[0] = propertyName ;
-        return AVERAGED_REPORT(reports, (ArrayList<String>) Arrays.asList(propertyNames)) ;
+        ArrayList<String> propertyNames = new ArrayList<String>() ;
+        propertyNames.add(propertyName) ;
+        return AVERAGED_REPORT(reports, propertyNames) ;
     }
     
     /**
