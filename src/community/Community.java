@@ -152,8 +152,12 @@ public class Community {
         if (args.length > 1)
         {
             LOGGER.info(args[1]) ;
-            MAX_CYCLES = Integer.valueOf(args[1]) ;
-            NAME_SUFFIX = "Pop" + String.valueOf(POPULATION) + "Cycles" + args[1] ;
+            int time = Integer.valueOf(args[1]) ;
+            if (time > 99)    // time given assumed to be days
+                MAX_CYCLES = time ;
+            else    // time given assumed to be years
+                MAX_CYCLES = time * Reporter.DAYS_PER_YEAR ;
+            NAME_SUFFIX = "Pop" + String.valueOf(POPULATION) + "Cycles" + MAX_CYCLES ;
             SIM_NAME = NAME_ROOT + NAME_SUFFIX ;
         }
         if (args.length > 2)
@@ -538,7 +542,7 @@ public class Community {
      */
     private String interveneCommunity(int cycle)
     {
-        int startCycle = 365 * 2 ;
+        int startCycle = 365 * 3 ;
         if (cycle < startCycle)
             return "" ;
         if (2<0)
