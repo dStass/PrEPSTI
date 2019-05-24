@@ -100,7 +100,7 @@ public class Relationship {
      * The maximum number of contacts allowed in a sexual encounter.
      * Adjusted down from 5 16/1/19 to reduce coprevalence.
      */
-    static int MAXIMUM_CONTACTS = 5 ; // 3 ; // 5 ;
+    static int MAXIMUM_CONTACTS = 3 ; // 5 ;
     
     static void SET_MAXIMUM_CONTACTS(int contacts)
     {
