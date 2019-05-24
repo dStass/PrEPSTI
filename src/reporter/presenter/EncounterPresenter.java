@@ -22,8 +22,8 @@ import java.util.logging.Level;
 
 public class EncounterPresenter extends Presenter {
     
-    static private String[] simNames 
-            = new String[] {"to2012linear67cPop40000Cycles3285"} ; // ,"to2014agentAdjust29aPop40000Cycles4920","to2014agentAdjust29cPop40000Cycles4920"} ; // "to2012max3same40aPop40000Cycles2920"} ; // "max3contact56aPop40000Cycles2460"} ; // ,"NoPrepCalibration74bPop40000Cycles5000","NoPrepCalibration74cPop40000Cycles5000"} ;
+    static private String[] simNames = new String[] {"fix29ePop40000Cycles2000"} ; //,"fixRisky29bPop40000Cycles2000","fixRisky29cPop40000Cycles2000","fixRisky29dPop40000Cycles2000","fixRisky29ePop40000Cycles2000","fixRisky29fPop40000Cycles2000","fixRisky29gPop40000Cycles2000","fixRisky29hPop40000Cycles2000","fixRisky29iPop40000Cycles2000","fixRisky29jPop40000Cycles2000"} ;
+            //= new String[] {"to2012linear67cPop40000Cycles3285"} ; // ,"to2014agentAdjust29aPop40000Cycles4920","to2014agentAdjust29cPop40000Cycles4920"} ; // "to2012max3same40aPop40000Cycles2920"} ; // "max3contact56aPop40000Cycles2460"} ; // ,"NoPrepCalibration74bPop40000Cycles5000","NoPrepCalibration74cPop40000Cycles5000"} ;
     
     private EncounterReporter reporter ;
     
@@ -36,12 +36,13 @@ public class EncounterPresenter extends Presenter {
         //String simName = "AllSexualContactsPop40000Cycles1200" ;
         //String chartTitle = "infections_of_PrEP_users" ; // args[1] ;
         //String chartTitle = "proportion_of_Agents_had_CLAI" ; // args[1] ;
-        //String chartTitle = "Transmissions" ;
-        //String chartTitle = "new infections" ;
+        //String chartTitle = "transmissions" ;
+        String chartTitle = "new infections" ;
         //String chartTitle = "incidence_rate" ;
         //String chartTitle = "protection" ; // args[1] ;
-        String chartTitle = "condom_coverage" ; // args[1] ;
-        String reportFileName = "output/test/" ; // args[2] ;
+        //String chartTitle = "condom_coverage" ; // args[1] ;
+        String reportFileName = "output/untouchable/" ; // args[2] ;
+        //String reportFileName = "output/test/" ; // args[2] ;
         //String reportFileName = "output/prePrEP/" ; // args[2] ;
         //String reportFileName = "output/year2007/" ; // args[2] ;
         LOGGER.info(chartTitle) ;
@@ -49,11 +50,12 @@ public class EncounterPresenter extends Presenter {
         
 
         EncounterPresenter encounterPresenter = new EncounterPresenter(simName,chartTitle,reportFileName) ;
-        encounterPresenter.plotCondomUse();
+        //encounterPresenter.plotYearsCondomUseReport(6,2012) ;
+        //encounterPresenter.plotCondomUse();
         //encounterPresenter.plotProtection() ;
         //encounterPresenter.plotTransmissionsPerCycle(siteNames);
         //encounterPresenter.plotCumulativeAgentTransmissionReport() ;
-        //encounterPresenter.plotIncidenceYears(siteNames, 6, 2012) ;
+        encounterPresenter.plotIncidenceYears(siteNames, 5, 4) ;    // , 6, 2012) ;
         //encounterPresenter.plotNumberCondomlessYears(3, 0, 0, 2017, new String[] {"Casual","Regular","Monogomous"}) ;
         //encounterPresenter.plotNumberCondomlessReport(0, 6, 0, new String[] {"Casual","Regular","Monogomous"}) ;
         //encounterPresenter.plotPercentAgentCondomlessReport(new String[] {"Casual","Regular","Monogomous"}, 0, 6, 0, "", false) ;
@@ -326,10 +328,16 @@ public class EncounterPresenter extends Presenter {
         plotCycleValue(PROPORTION, meanCondomReport) ;
     }
     
-    private void plotYearsCondomUseRecord(int backYears, int lastYear) 
+    /**
+     * Plots condom use on a year-by-year basis.
+     * @param backYears
+     * @param lastYear 
+     */
+    private void plotYearsCondomUseReport(int backYears, int lastYear) 
     {
-        HashMap<Object,String> yearsCondomUseReport = reporter.prepareYearsCondomUseRecord(backYears, lastYear) ;
+        ArrayList<Object> yearsCondomUseReport = reporter.prepareYearsCondomUseRecord(backYears, lastYear) ;
         LOGGER.log(Level.INFO, "{0}", yearsCondomUseReport) ;
+        multiBarPlotValue(PROPORTION,yearsCondomUseReport) ;
     }
     
     public void plotProtection()
