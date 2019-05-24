@@ -720,9 +720,9 @@ public class EncounterReporter extends Reporter {
         return condomUseReport ;
     }
     
-    public HashMap<Object,String> prepareYearsCondomUseRecord(int backYears, int lastYear) 
+    public ArrayList<Object> prepareYearsCondomUseRecord(int backYears, int lastYear) 
     {
-        HashMap<Object,String> condomUseRecordYears = new HashMap<Object,String>() ;
+        ArrayList<Object> condomUseRecordYears = new ArrayList<Object>() ;
 
         // Whether to save this Report to file
         boolean writeLocal = WRITE_REPORT ;
@@ -732,11 +732,9 @@ public class EncounterReporter extends Reporter {
         //Count from the last cycle of the simulation.
         int maxCycles = getMaxCycles() ;
 
-        HashMap<Object,Number[]> condomUseRecord ;
-        for (int year = 0 ; year < backYears ; year++ )
-        {
-            condomUseRecordYears.put(lastYear - year, prepareFinalCondomUseRecord(year, 0, DAYS_PER_YEAR, maxCycles)) ;
-        }
+        for (int year = 0 ; year < backYears ; year++ )    // year is number of years previously
+            condomUseRecordYears.add(0,prepareFinalCondomUseRecord(year, 0, DAYS_PER_YEAR, maxCycles)) ;
+        
         //if (writeLocal)
           //  WRITE_CSV(condomUseRecordYears, "Year", "condom_use", simName, getFolderPath()) ;
         WRITE_REPORT = writeLocal ;
