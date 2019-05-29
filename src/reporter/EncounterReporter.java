@@ -237,9 +237,17 @@ public class EncounterReporter extends Reporter {
             for (String record : input)
             {
                 //LOGGER.info(record);
+                transmissions = 0 ;
                 if (!siteName.isEmpty())
-                    record = BOUNDED_STRING_BY_VALUE(siteName,"0",RELATIONSHIPID,record) ;
-                transmissions = COUNT_VALUE_INCIDENCE(TRANSMISSION, TRUE, record, 0)[1];
+                {
+                    record = BOUNDED_STRING_BY_VALUE(siteName,"0",CONTACT,record) ;
+                    transmissions = COUNT_VALUE_INCIDENCE(TRANSMISSION, TRUE, record, 0)[0];
+                }
+                else
+                {
+                    record = BOUNDED_STRING_BY_VALUE(TRANSMISSION, TRUE,RELATIONSHIPID,record) ;
+                    transmissions = COUNT_VALUE_INCIDENCE(RELATIONSHIPID, "", record, 0)[1];
+                }
                 incidence = ((double) transmissions)/population;
                 transmissionString = Reporter.ADD_REPORT_PROPERTY(TRANSMISSION, transmissions) ;
                 transmissionString += Reporter.ADD_REPORT_PROPERTY("rate",incidence) ;
@@ -1161,6 +1169,7 @@ public class EncounterReporter extends Reporter {
         // report String
         String report ;
         
+        // Report of encounters showing contacts resulting in transmission.
         ArrayList<String> transmissionReport = prepareTransmissionReport() ;
 
         // Cycle through reports
@@ -1209,7 +1218,7 @@ public class EncounterReporter extends Reporter {
                         
                         break ;
                     }
-                    if ("".equals(toName))  // identical sites in transmission
+                    if (toName.isEmpty())  // matching sites in transmission
                     {
                         toName = name0 ;
                         fromName = name0 ;
@@ -1279,12 +1288,12 @@ public class EncounterReporter extends Reporter {
             encounterOutput += contactString ;
                 
             // Only include encounter in reportOutput if any of its contacts are included 
-            if (encounterOutput.length() > 0)
+            if (!encounterOutput.isEmpty())
                 methodOutput += encounterOpening + encounterOutput ; // Include agentId
 
         }
         // If no positive cases are returned
-        if ("".equals(methodOutput)) 
+        if (methodOutput.isEmpty()) 
             methodOutput = "None" ;
         
         return methodOutput ;
