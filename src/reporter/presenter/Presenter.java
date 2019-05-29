@@ -1011,6 +1011,35 @@ public class Presenter {
     }
     
     /**
+     * Presents reportArray as a bar plot.
+     * @param scoreNames
+     * @param reportArrays 
+     */
+    protected void callMultiBarPlotChart(ArrayList<String> scoreNames, ArrayList<Object> reportArrays)
+    {
+        //LOGGER.info("callPlotChart()") ;
+        // Extract data from reportArray
+        parseReportArray(scoreNames, reportArrays) ;
+        
+        // Generate approriate scoreName from scoreNames with no repetition
+        String[] legend = new String[scoreNames.size()] ;
+        String scoreName = String.join("/", scoreNames) ;
+        /*String name ;
+        for (int scoreIndex = 0 ; scoreIndex < scoreNames.size() ; scoreIndex++ )
+        {
+            name = scoreNames.get(scoreIndex) ;
+            scoreName += "/" + name ;
+            legend[scoreIndex] = name ;
+            //LOGGER.info(name);
+        }*/
+        ArrayList<ArrayList<Number>> scoreNumbers = new ArrayList<ArrayList<Number>>() ;
+        ArrayList<Object> categoryEntry = new ArrayList<Object>() ;
+        
+        //categoryData.add(categoryEntry) ;
+        //chart_awt.callStackedPlotChart(chartTitle,categoryEntry, (ArrayList<ArrayList<Number>>) scoreData, scoreNames.toArray(new String[scoreNames.size()]),"Year") ;
+    }
+    
+    /**
      * Presents scoreName as a function of categoryName after calling prepareReportNameReport()
      * @param categoryName
      * @param scoreName
@@ -1208,28 +1237,72 @@ public class Presenter {
         callPlotChart(scoreName,eventsPerCycle) ;
     }
 
+    /**
+     * Calls callPlotChart
+     * @param scoreNames
+     * @param reportArrays 
+     */
     public void plotCycleValue(String scoreName, ArrayList<Object> reportArray)
     {
         //LOGGER.info("plotCycleValue") ;
         callPlotChart(scoreName,reportArray) ;
     }            
             
+    /**
+     * Calls callMultiPlotChart
+     * @param scoreNames
+     * @param reportArrays 
+     */
     public void multiPlotCycleValue(String scoreName, ArrayList<ArrayList<Object>> reportArrays, String[] legend)
     {
         //LOGGER.info("plotCycleValue") ;
         callMultiPlotChart(scoreName,reportArrays,legend) ;
     }            
             
+    /**
+     * Calls callMultiPlotChart
+     * @param scoreNames
+     * @param reportArrays 
+     */
     public void multiPlotCycleValue(ArrayList<String> scoreNames, ArrayList<ArrayList<Object>> reportArrays, String[] legend)
     {
         //LOGGER.info("plotCycleValue") ;
         callMultiPlotChart(scoreNames,reportArrays,legend) ;
     }            
             
+    /**
+     * Calls callMultiPlotChart
+     * @param scoreNames
+     * @param reportArrays 
+     */
     public void multiPlotCycleValue(ArrayList<String> scoreNames, ArrayList<Object> reportArrays)
     {
         //LOGGER.info("plotCycleValue") ;
         callMultiPlotChart(scoreNames,reportArrays) ;
+    }            
+            
+    /**
+     * Calls callMultiBarPlotChart after converting scoreName to an ArrayList.
+     * @param scoreNames
+     * @param reportArrays 
+     */
+    public void multiBarPlotValue(String scoreName, ArrayList<Object> reportArrays)
+    {
+        ArrayList<String> scoreNames = new ArrayList<String>() ;
+        scoreNames.add(scoreName) ;
+        //LOGGER.info("plotCycleValue") ;
+        callMultiBarPlotChart(scoreNames,reportArrays) ;
+    }            
+            
+    /**
+     * Calls callMultiBarPlotChart
+     * @param scoreNames
+     * @param reportArrays 
+     */
+    public void multiBarPlotValue(ArrayList<String> scoreNames, ArrayList<Object> reportArrays)
+    {
+        //LOGGER.info("plotCycleValue") ;
+        callMultiBarPlotChart(scoreNames,reportArrays) ;
     }            
             
     /**
@@ -1546,7 +1619,14 @@ public class Presenter {
             plotBarChart(chartTitle, dataset, yLabel, xLabel) ;
         }
         
-        
+        /**
+         * Calls plotStackedBarChart() after generating dataset
+         * @param chartTitle
+         * @param categoryList
+         * @param scoreLists
+         * @param scoreNames
+         * @param xLabel 
+         */
         private void callStackedPlotChart(String chartTitle, ArrayList<Object> categoryList, ArrayList<ArrayList<Number>> scoreLists, String[] scoreNames, String xLabel)
         {
             //LOGGER.info("callPlotChartInteger()") ;
@@ -1711,6 +1791,8 @@ public class Presenter {
             rangeAxis.setLabelFont(font3);
             //domainAxis.setTickLabelFont(font2);
             rangeAxis.setTickLabelFont(font2);
+            rangeAxis.setMinorTickCount(4);
+            rangeAxis.setMinorTickMarksVisible(true);
 
             //domainAxis.getLabelFont().getAttributes().put(TextAttribute.SIZE, TextAttribute.WIDTH_EXTENDED) ;
 
@@ -1719,10 +1801,9 @@ public class Presenter {
             //LegendTitle legend = barChart.getLegend() ;
             //legend.setPosition(RectangleEdge.TOP) ;
             //plot.setFixedLegendItems(createLegendItems());
-            //if (String.valueOf(dataset.getColumnKeys().get(0)).length() > 4)
-            {  
+            if (String.valueOf(dataset.getColumnKeys().get(0)).length() > 1)
                 domainAxis.setCategoryLabelPositions(CategoryLabelPositions.UP_45);
-            }
+            
             
             
             saveChart(barChart) ;
@@ -1759,15 +1840,25 @@ public class Presenter {
             //lineChart.getXYPlot().setDomainAxis(new LogarithmicAxis(xLabel));
             
             NumberAxis domainAxis = (NumberAxis) lineChart.getXYPlot().getDomainAxis() ;
-            double upperBound = domainAxis.getRange().getUpperBound() ;
-            if (upperBound > 729)    // more than two years
-            {
-                domainAxis.setTickUnit(new NumberTickUnit(365)) ;
-                if (upperBound < 3650)    // less than ten years
+            double upperBound = dataset.getItemCount(0) ;    // domainAxis.getRange().getUpperBound() ;
+            
+            if ((upperBound % 365) == 0)    // if upperBound a multiple of 365 (days)
+                if (upperBound > 729)    // more than two years
                 {
-                    domainAxis.setMinorTickCount(4);
-                    domainAxis.setMinorTickMarksVisible(true);
+                    domainAxis.setTickUnit(new NumberTickUnit(365)) ;
+                    if (upperBound < 3650)    // less than ten years
+                    {
+                        domainAxis.setMinorTickCount(4);
+                        domainAxis.setMinorTickMarksVisible(true);
+                    }
                 }
+                else
+                {
+                    
+                }
+            else
+            {
+                LOGGER.info(String.valueOf(upperBound)) ;
             }
             
             //domainAxis.setRange(2.0,upperBound);
@@ -1807,7 +1898,6 @@ public class Presenter {
             
             areaChart.getXYPlot().getDomainAxis().setTickLabelsVisible(false);
             areaChart.getXYPlot().getDomainAxis().setTickMarksVisible(false);
-            
             //areaChart.getXYPlot().setRangeAxis(new LogarithmicAxis(yLabel));
         
             
