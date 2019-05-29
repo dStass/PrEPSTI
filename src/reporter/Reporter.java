@@ -617,7 +617,7 @@ public class Reporter {
      * @param value
      * @param string
      * @param startIndex
-     * @return (int[2]) The number of value incidents, number of propertyName incidents.
+     * @return (int[2]) The number of 'propertyName has value' incidents, number of propertyName incidents.
      */
     protected static int[] COUNT_VALUE_INCIDENCE(String propertyName, String value, String string, int startIndex)
     {
