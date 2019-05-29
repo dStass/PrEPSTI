@@ -85,7 +85,7 @@ public class Community {
      * (String) Name of previous simulation to reload.
      * Not reloaded if this is an empty string.
      */
-    static final String RELOAD_SIMULATION = "" ; // "turn40over53aPop40000Cycles2000" ; // "max3contacts54eEXTPop40000Cycles750" ; // "test3aPop4000Cycles500" ; // "agentScreen26bPop40000Cycles1500" ;
+    static final String RELOAD_SIMULATION = "max3contact92cEXTPop40000Cycles2190" ; // "turn40over53aPop40000Cycles2000" ; // "max3contacts54eEXTPop40000Cycles750" ; // "test3aPop4000Cycles500" ; // "agentScreen26bPop40000Cycles1500" ;
     
     static public String getFilePath()
     {
@@ -134,6 +134,8 @@ public class Community {
     // Define Scribe in full in Community() constructor
     //private Scribe scribe = new Scribe(SIM_NAME, new String[] {"relationship","encounter","infection", "population"}) ;
 
+    // output to small file when cycling through parameter values
+    static private String OUTPUT_RETURN = "" ;
 
     // Logger
     static final java.util.logging.Logger LOGGER = java.util.logging.Logger.getLogger("reporter") ;
@@ -159,6 +161,7 @@ public class Community {
                 MAX_CYCLES = time * Reporter.DAYS_PER_YEAR ;
             NAME_SUFFIX = "Pop" + String.valueOf(POPULATION) + "Cycles" + MAX_CYCLES ;
             SIM_NAME = NAME_ROOT + NAME_SUFFIX ;
+            OUTPUT_RETURN += SIM_NAME + " " ;
         }
         if (args.length > 2)
         {
@@ -177,6 +180,19 @@ public class Community {
                 FILE_PATH = "/short/is14/mw7704/prepsti/" + FILE_PATH ;
             else if (args[3].equals("katana"))
                 FILE_PATH = "/srv/scratch/z3524276/prepsti/" + FILE_PATH ;
+        }
+        if (args.length > 4)
+        {
+            int index = 4 ;
+            for (String infected : MSM.SITE_NAMES)
+                for (String clear : MSM.SITE_NAMES)
+                {
+                    MSM.SET_INFECT_PROBABILITY(infected, clear, Double.valueOf(args[index])) ;
+                    OUTPUT_RETURN += args[index] + " " ;
+                    index++ ;
+                }
+            if (index != 12)    // 9 transmissionProbabilities or none
+                LOGGER.severe("Transmission probabilities missing. Only found " + String.valueOf(index) + " out of 9") ;
         }
         // Whether to plot prevalence upon completion.
         // Must be false when run on an HPC cluster.
@@ -376,6 +392,8 @@ public class Community {
                     finalPositivityRecord.put(key, notificationsRecord.get(key)[1]) ;
                 }
                 LOGGER.log(Level.INFO, "Positivity unique:{0} {1}", new Object[] {unique,finalPositivityRecord});
+                OUTPUT_RETURN += notificationsRecord.get("all")[0] + " " ;
+                community.dumpOutputReturn() ;
             }
             LOGGER.log(Level.INFO, "Notification rate {0}", new Object[] {finalNotificationsRecord});
             screeningReporter = new ScreeningReporter(SIM_NAME,FILE_PATH) ;
@@ -389,6 +407,7 @@ public class Community {
             }
             prevalenceReport = screeningReporter.preparePrevalenceReport() ;
             //LOGGER.log(Level.INFO,"{0} {1}", new Object[] {"all", prevalenceReport.get(prevalenceReport.size() - 1)}) ;
+            
     
         }
         //EncounterReporter encounterReporter = new EncounterReporter("Agent to Agent",community.encounterReport) ;
@@ -1176,7 +1195,7 @@ public class Community {
                 //MetaData() ;
         try
         {
-            for (String scribeName : scribe.properties)
+            for (String scribeName : scribe.properties)    // Reset after dump
             {
                 this.getClass().getDeclaredField(scribeName).set(this, (ArrayList<String>) new ArrayList<String>()) ;
             }
@@ -1224,6 +1243,22 @@ public class Community {
         metaData.add(Community.COMMENT) ;
         
         scribe.dumpMetaData(metaLabels,metaData) ;
+    }
+    
+    private void dumpOutputReturn()
+    {
+        String fileName = OUTPUT_RETURN.substring(0, OUTPUT_RETURN.indexOf(" ")) + ".txt" ;
+        try
+        {
+            BufferedWriter metadataWriter = new BufferedWriter(new FileWriter(Community.FILE_PATH + fileName,true)) ;
+            metadataWriter.write(OUTPUT_RETURN) ;
+            metadataWriter.newLine() ;
+            metadataWriter.close() ;
+        }
+        catch ( Exception e )
+        {
+            LOGGER.severe(e.toString()) ;
+        }
     }
     
     /**
