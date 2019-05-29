@@ -318,19 +318,19 @@ public class MSM extends Agent {
     /** Transmission probabilities sexual contact from Urethra to Pharynx. */
     static double URETHRA_TO_PHARYNX = 0.10 ; // 0.15 ; // 0.060 ; // 0.035 ; 
     /** Transmission probabilities sexual contact from Rectum to Urethra. */ 
-    static double RECTUM_TO_URETHRA = 0.03 ; // 0.020 ; // 0.008 ; 
+    static double RECTUM_TO_URETHRA = 0.030 ; // 0.020 ; // 0.008 ; 
     /** Transmission probabilities sexual contact from Rectum to Pharynx. */
-    static double RECTUM_TO_PHARYNX = 0.010 ;
+    static double RECTUM_TO_PHARYNX = 0.001 ;
     /** Transmission probabilities sexual contact in Pharynx to Urethra intercourse. */
     static double PHARYNX_TO_URETHRA = 0.001 ;
     /** Transmission probabilities sexual contact in Pharynx to Rectum intercourse. */
     static double PHARYNX_TO_RECTUM = 0.001 ; // 0.030 ; 
     /** Transmission probabilities sexual contact in Pharynx to Pharynx intercourse (kissing). */
-    static double PHARYNX_TO_PHARYNX = .005 ; // 0.030 ; // 0.052 ; 
+    static double PHARYNX_TO_PHARYNX = 0.017 ; // 0.030 ; // 0.052 ; 
     /** Transmission probabilities sexual contact in Urethra to Urethra intercourse (docking). */
-    static double URETHRA_TO_URETHRA = 0.010 ; // 0.005 ; 
+    static double URETHRA_TO_URETHRA = 0.001 ; // 0.005 ; 
     /** Transmission probabilities sexual contact in Rectum to Rectum intercourse. */
-    static double RECTUM_TO_RECTUM = 0.005 ;
+    static double RECTUM_TO_RECTUM = 0.001 ;
     
     /** The probability of screening in a given cycle with statusHIV true. */
     static double SCREEN_PROBABILITY_HIV_POSITIVE = 0.0029 ;
