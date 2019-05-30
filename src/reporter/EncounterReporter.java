@@ -129,7 +129,6 @@ public class EncounterReporter extends Reporter {
         prepareYearsIncidenceRecord(String[] siteNames, int backYears, int lastYear) 
         {
             HashMap<Object,Number[]> incidenceRecordYears = new HashMap<Object,Number[]>() ;
-            Set reportKeys ;
             
             int maxCycles = getMaxCycles() ;
             
@@ -140,7 +139,7 @@ public class EncounterReporter extends Reporter {
                
                 //endCycle = maxCycles - year * DAYS_PER_YEAR ;
                 incidenceRecord = prepareFinalIncidenceRecord(siteNames, year, 0, DAYS_PER_YEAR, maxCycles);
-                reportKeys = incidenceRecord.keySet() ;
+                
                 for (int siteIndex = 0 ; siteIndex < siteNames.length ; siteIndex++ )
                     yearlyIncidenceRecord[siteIndex] = incidenceRecord.get(siteNames[siteIndex]) ;
                 yearlyIncidenceRecord[siteNames.length] = incidenceRecord.get("all") ;
