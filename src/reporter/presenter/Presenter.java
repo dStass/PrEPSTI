@@ -76,11 +76,11 @@ public class Presenter {
     // Used for controlling if and what is co-plotted from file.
     static boolean PLOT_FILE = false ;    
     static String FOLDER_PATH = "data_files/" ;
-    static String FILENAME = "meanNotificationRate" ; // "unique_positivity_urethra" ; // "notifications" ;    //  "incidence_kirby2018"
-    //static String[] dataScore = new String[] {"hiv_negative","hiv_positive"} ;
-    static String[] dataScore = new String[] {"mean_notification_rate"} ; // {"urethral_positivity"} ;
+    static String FILENAME = "incidence_kirby2018" ; // "gonoGoneWild" ; // "meanNotificationRate" ; // "unique_positivity_urethra" ; // "notifications" ; //  
+    static String[] DATA_SCORE = new String[] {"hiv_negative","hiv_positive"} ;
+    //static String[] DATA_SCORE = new String[] {"data_notifications","data_notification_rate"} ; // {"overall_gone_wild","urethral_gone_wild","rectal_gone_wild","pharyngeal_gone_wild"} ; // {"urethral_positivity"} ;
             
-    
+    private boolean stacked = true ; // false ;
     private BarChart_AWT chart_awt ;
     
     private String folderPath = Community.FILE_PATH ;
@@ -138,9 +138,11 @@ public class Presenter {
         for (Object key : report.keySet())
         {
             scoreValueArray = report.get(key) ;
-            if (dataset.getColumnKeys().contains(String.valueOf(key))) 
+            LOGGER.log(Level.INFO,"{0}",scoreValueArray) ;
+            //if (dataset.getColumnKeys().contains(String.valueOf(key))) 
                 for (int scoreIndex = 0 ; scoreIndex < scoreValueArray.length ; scoreIndex++ )
                 {
+                    //int scoreIndex = 1 ;
                     Number scoreValue = scoreValueArray[scoreIndex] ;
                     String scoreName = readScores[scoreIndex] ;
                     dataset.addValue( scoreValue, scoreName, String.valueOf(key)) ;
@@ -242,7 +244,7 @@ public class Presenter {
         String[] arrayHeader  = new String[] {} ;
         
         // Plotting Integer or Double?
-        Object key ;
+        Object key = 0 ;
         String[] recordArray ;
         Number[] valueArray ;
         int recordLength = 0 ;
@@ -273,20 +275,22 @@ public class Presenter {
                 {
                     key = recordArray[0] ;
                 }
-
-                for (int index = 1 ; index < recordLength ; index++ )
+                if ((Integer) key < 2017)
                 {
-                    try
+                    for (int index = 1 ; index < recordLength ; index++ )
                     {
-                        valueArray[index - 1] = (Number) Integer.valueOf(recordArray[index]) ;
+                        try
+                        {
+                            valueArray[index - 1] = (Number) Integer.valueOf(recordArray[index]) ;
+                        }
+                        catch ( Exception e )
+                        {
+                            valueArray[index - 1] = (Number) Double.valueOf(recordArray[index]) ;
+                        }
+                        //LOGGER.log(Level.INFO, "{0} ",valueArray[index - 1]) ;
                     }
-                    catch ( Exception e )
-                    {
-                        valueArray[index - 1] = (Number) Double.valueOf(recordArray[index]) ;
-                    }
-                    //LOGGER.log(Level.INFO, "{0} ")
+                    hashMapNumberArray.put(key, (Number[]) valueArray.clone()) ;
                 }
-                hashMapNumberArray.put(key, (Number[]) valueArray.clone()) ;
                 record = fileReader.readLine() ;
             }
             fileReader.close() ;
@@ -974,12 +978,12 @@ public class Presenter {
         //LOGGER.info("callPlotChart()") ;
         // Extract data from reportArray
         parseReportArrays(scoreNames, reportArrays) ;
-        
         // Generate approriate scoreName from scoreNames with no repetition
         String scoreName = "" ;
         for (String name : scoreNames)
-            if (scoreName.indexOf(name) >= 0)
+            if (!scoreName.contains(name))
                 scoreName += "/" + name ;
+        scoreName = scoreName.substring(1) ;
         // Send data to be processed and presented
         chart_awt.callPlotChart(chartTitle,scoreData,scoreName,legend) ;
     }
@@ -1444,7 +1448,6 @@ public class Presenter {
         ArrayList<Object> plotArray ;
         String scoreName ;
         ArrayList<Object> report ;
-        
         for (int index = 0 ; index < scoreNames.size() ; index++ )
         {
             plotArray = new ArrayList<Object>() ;
@@ -1652,17 +1655,21 @@ public class Presenter {
                 
                 dataset = createDataset(scoreNames, categoryList, scoreLists,bin) ;
 
-                LOGGER.log(Level.INFO, "{0}", dataset);
-                dataset = EXPAND_DATASET(dataset,dataReport,dataScore) ;
+                //LOGGER.log(Level.INFO, "{0}", dataset);
+                dataset = EXPAND_DATASET(dataset,dataReport, DATA_SCORE) ;
+                //dataset.removeRow(DATA_SCORE[0]) ;
+                //dataset.removeRow(DATA_SCORE[1]) ;
+                //dataset.removeRow(DATA_SCORE[2]) ;
+                //dataset.removeRow(DATA_SCORE[3]) ;
                 LOGGER.log(Level.INFO, "{0}", dataset);
                 
-
-                finalNames = new String[scoreNames.length + dataScore.length] ;
+                finalNames = new String[scoreNames.length + 1] ; // DATA_SCORE.length] ;
                 for (int scoreIndex = 0 ; scoreIndex < scoreNames.length ; scoreIndex++ )
                     finalNames[scoreIndex] = scoreNames[scoreIndex] ;
-
-                for (int dataIndex = 0 ; dataIndex < dataScore.length ; dataIndex++ )
-                    finalNames[scoreNames.length + dataIndex] = dataScore[dataIndex].concat(GROUP).concat("DATA") ;
+                
+                finalNames[scoreNames.length] = DATA_SCORE[1].concat(GROUP).concat("DATA") ;
+                //for (int dataIndex = 0 ; dataIndex < DATA_SCORE.length ; dataIndex++ )
+                  //  finalNames[scoreNames.length + dataIndex] = DATA_SCORE[dataIndex].concat(GROUP).concat("DATA") ;
                 /*if (bin)
                     for (int scoreIndex = 0 ; scoreIndex < scoreNames.length ; scoreIndex++ )
                         scoreNames[scoreIndex] = "Log() ".concat(scoreNames[scoreIndex]) ;*/
@@ -1745,42 +1752,52 @@ public class Presenter {
             //if (grouped)
             String[] nameList ;
             
-            String group = "G1" ;
-            GroupedStackedBarRenderer renderer = new GroupedStackedBarRenderer();
-            KeyToGroupMap map = new KeyToGroupMap(group);
-            for (String name : scoreNames)
-            {
-                if (name.contains(GROUP))
-                {
-                    nameList = name.split(GROUP) ;
-                    if (nameList.length == 1)
-                    {
-                        name = name.substring(0, name.indexOf(GROUP)) ;
-                        group = name ;
-                    }
-                    else
-                    {
-                        name = nameList[0] ;
-                        group = nameList[1] ;
-                    }
-                    //LOGGER.log(Level.INFO, "{0} {1}", new Object[] {name,group});
-                    map.mapKeyToGroup(name, group);
-                }
-                else
-                {
-                    map.mapKeyToGroup(name, "G1") ;
-                } // map.mapKeyToGroup(name, group);
-            }
-            renderer.setSeriesToGroupMap(map);
-            
-
             String scoreName = "" ; // "infections per 100,000 person-years" ; // getYLabel(scoreNames) ;
-            JFreeChart barChart = ChartFactory.createStackedBarChart(chartTitle,xLabel,
-                scoreName,dataset,PlotOrientation.VERTICAL,true, true, false);
+            
+            JFreeChart barChart ;
+            if (stacked)
+                barChart = ChartFactory.createStackedBarChart(chartTitle,xLabel,
+                  scoreName,dataset,PlotOrientation.VERTICAL,true, true, false);    // Stacked
+            else
+                barChart = ChartFactory.createBarChart(chartTitle,xLabel,
+                    scoreName,dataset,PlotOrientation.VERTICAL,true, true, false);    // Stacked
             
             CategoryPlot plot = (CategoryPlot) barChart.getPlot();
             
-            plot.setRenderer(renderer);
+            if (stacked)
+            {
+                String group = "G1" ;
+                GroupedStackedBarRenderer renderer = new GroupedStackedBarRenderer();
+                KeyToGroupMap map = new KeyToGroupMap(group);
+                for (String name : scoreNames)
+                {
+                    if (name.contains(GROUP))
+                    {
+                        nameList = name.split(GROUP) ;
+                        if (nameList.length == 1)
+                        {
+                            name = name.substring(0, name.indexOf(GROUP)) ;
+                            group = name ;
+                        }
+                        else
+                        {
+                            name = nameList[0] ;
+                            group = nameList[1] ;
+                        }
+                        //LOGGER.log(Level.INFO, "{0} {1}", new Object[] {name,group});
+                        map.mapKeyToGroup(name, group);
+                    }
+                    else
+                    {
+                        map.mapKeyToGroup(name, "G1") ;
+                    } // map.mapKeyToGroup(name, group);
+                }
+                renderer.setSeriesToGroupMap(map);
+                plot.setRenderer(renderer);
+            }
+
+            //if (stacked)
+                
             //LOGGER.info(plot.getDomainAxis().getLabelFont().) ;
             CategoryAxis domainAxis = plot.getDomainAxis();
             ValueAxis rangeAxis = plot.getRangeAxis();
@@ -1808,7 +1825,6 @@ public class Presenter {
             
             saveChart(barChart) ;
             displayChart(barChart) ;
-            
         }
         
         private void plotScatterPlot(String chartTitle, XYDataset dataset, String yLabel, String xLabel)
@@ -2230,7 +2246,6 @@ public class Presenter {
             int dataSize ;
             ArrayList<Object> data ;
             int plotTotal ;
-            
             if (legend.length == 0)
                 legend = new String[] {""} ;
             plotTotal = legend.length ;
@@ -2245,6 +2260,7 @@ public class Presenter {
                 for (int index = 0 ; index < dataSize; index++ )
                 {
                     String scoreString = (String) data.get(index) ;
+                    //LOGGER.info(scoreString) ;
                     if (int.class.isInstance(scoreString)) 
                         scoreValue = Integer.valueOf(scoreString) ;
                     else
