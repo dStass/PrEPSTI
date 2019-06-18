@@ -22,29 +22,33 @@ import java.util.logging.Level;
 
 public class EncounterPresenter extends Presenter {
     
-    static private String[] simNames = new String[] {"fix29ePop40000Cycles2000"} ; //,"fixRisky29bPop40000Cycles2000","fixRisky29cPop40000Cycles2000","fixRisky29dPop40000Cycles2000","fixRisky29ePop40000Cycles2000","fixRisky29fPop40000Cycles2000","fixRisky29gPop40000Cycles2000","fixRisky29hPop40000Cycles2000","fixRisky29iPop40000Cycles2000","fixRisky29jPop40000Cycles2000"} ;
+    //static private String[] simNames = new String[] {"to2014max3contact93dPop40000Cycles4380"} ; // "fixPerfectRisky29aPop40000Cycles2000","fixPerfectRisky29bPop40000Cycles2000","fixPerfectRisky29cPop40000Cycles2000","fixPerfectRisky29dPop40000Cycles2000","fixPerfectRisky29ePop40000Cycles2000","fixPerfectRisky29fPop40000Cycles2000","fixPerfectRisky29gPop40000Cycles2000","fixPerfectRisky29hPop40000Cycles2000","fixPerfectRisky29iPop40000Cycles2000","fixPerfectRisky29jPop40000Cycles2000"} ;
             //= new String[] {"to2012linear67cPop40000Cycles3285"} ; // ,"to2014agentAdjust29aPop40000Cycles4920","to2014agentAdjust29cPop40000Cycles4920"} ; // "to2012max3same40aPop40000Cycles2920"} ; // "max3contact56aPop40000Cycles2460"} ; // ,"NoPrepCalibration74bPop40000Cycles5000","NoPrepCalibration74cPop40000Cycles5000"} ;
+    //static private String[] simNames = new String[] {"safeContact99aPop40000Cycles4000"} ; //,"safeContact99bPop40000Cycles4000","safeContact99cPop40000Cycles4000"} ; //"fixPerfectRisky29aPop40000Cycles2000","fixPerfectRisky29bPop40000Cycles2000","fixPerfectRisky29cPop40000Cycles2000","fixPerfectRisky29dPop40000Cycles2000","fixPerfectRisky29ePop40000Cycles2000","fixPerfectRisky29fPop40000Cycles2000","fixPerfectRisky29gPop40000Cycles2000","fixPerfectRisky29hPop40000Cycles2000","fixPerfectRisky29iPop40000Cycles2000","fixPerfectRisky29jPop40000Cycles2000"} ;
+    static private String[] simNames = new String[] {"adjust2009contact96bPop40000Cycles4380"} ;
     
     private EncounterReporter reporter ;
     
     public static void main(String[] args)
     {
         //String simName = "TestPop40000Cycles100" ; // Community.SIM_NAME ; // "introPrepCalibration48Pop40000Cycles7000" ; // args[0] ;
+        //String simName =  "to2014max3contact93dPop40000Cycles4380" ;
         String simName = simNames[0] ; 
         //String simName = "neutral_calibration2Pop40000Cycles4000" ;
         //String simName = "RelationshipCalibrationPop40000Cycles200" ; // "NoPrepCalibration86Pop40000Cycles5000" ; // "introPrepCalibration48Pop40000Cycles7000" ; // args[0] ;
         //String simName = "AllSexualContactsPop40000Cycles1200" ;
         //String chartTitle = "infections_of_PrEP_users" ; // args[1] ;
         //String chartTitle = "proportion_of_Agents_had_CLAI" ; // args[1] ;
-        //String chartTitle = "transmissions" ;
+        //String chartTitle = "condom use universal" ;
         String chartTitle = "new infections" ;
-        //String chartTitle = "incidence_rate" ;
+        //String chartTitle = "incidence_rate (per 100 MSM)" ;
         //String chartTitle = "protection" ; // args[1] ;
         //String chartTitle = "condom_coverage" ; // args[1] ;
-        String reportFileName = "output/untouchable/" ; // args[2] ;
+        //String reportFileName = "output/untouchable/" ; // args[2] ;
         //String reportFileName = "output/test/" ; // args[2] ;
-        //String reportFileName = "output/prePrEP/" ; // args[2] ;
+        String reportFileName = "output/prePrEP/" ; // args[2] ;
         //String reportFileName = "output/year2007/" ; // args[2] ;
+        //String reportFileName = "output/year2010/" ; // args[2] ;
         LOGGER.info(chartTitle) ;
         String[] siteNames  = new String[] {"Pharynx","Rectum","Urethra"} ;
         
@@ -53,9 +57,11 @@ public class EncounterPresenter extends Presenter {
         //encounterPresenter.plotYearsCondomUseReport(6,2012) ;
         //encounterPresenter.plotCondomUse();
         //encounterPresenter.plotProtection() ;
-        //encounterPresenter.plotTransmissionsPerCycle(siteNames);
+        encounterPresenter.plotTransmissionsPerCycle(siteNames);
+        //encounterPresenter.plotFinalTransmissions(siteNames);
+        //encounterPresenter.plotFinalIncidenceRecord(siteNames, 0, Reporter.DAYS_PER_YEAR) ;
         //encounterPresenter.plotCumulativeAgentTransmissionReport() ;
-        encounterPresenter.plotIncidenceYears(siteNames, 5, 4) ;    // , 6, 2012) ;
+        //encounterPresenter.plotIncidenceYears(new String[] {siteNames[2]}, 8, 2014) ;
         //encounterPresenter.plotNumberCondomlessYears(3, 0, 0, 2017, new String[] {"Casual","Regular","Monogomous"}) ;
         //encounterPresenter.plotNumberCondomlessReport(0, 6, 0, new String[] {"Casual","Regular","Monogomous"}) ;
         //encounterPresenter.plotPercentAgentCondomlessReport(new String[] {"Casual","Regular","Monogomous"}, 0, 6, 0, "", false) ;
@@ -196,6 +202,17 @@ public class EncounterPresenter extends Presenter {
         plotSpline("Cumulative number of transmissions","No of agents",cumulativeAgentTransmissionReport) ;
     }
     
+    public void plotFinalIncidenceRecord(String[] siteNames, int backMonths, int backDays)
+    {
+        int endCycle = reporter.getMaxCycles() ;
+        HashMap<Object,Number> finalIncidenceRecord = reporter.prepareFinalIncidenceRecord(siteNames, 0, backMonths, backDays, endCycle) ;
+            
+        LOGGER.log(Level.INFO, "{0}", finalIncidenceRecord);
+        plotHashMap("Sites","incidence",finalIncidenceRecord) ;        
+    }
+    
+    
+    
     /**
      * Plots bar chart showing incidence at each Site for each of the last backYears
      * years counting back from lastYear.
@@ -245,8 +262,8 @@ public class EncounterPresenter extends Presenter {
     public void plotFinalTransmissions(String[] siteNames)
     {
         HashMap<Object,Number> finalTransmissionsRecord = reporter.prepareFinalTransmissionsRecord(siteNames) ;
-        
-        
+            
+        LOGGER.log(Level.INFO, "{0}", finalTransmissionsRecord);
         plotHashMap("Sites","prevalence",finalTransmissionsRecord) ;        
     }
     
