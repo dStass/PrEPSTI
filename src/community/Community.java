@@ -50,7 +50,7 @@ public class Community {
             //+ "Removed extra choice under serosorting for RiskyMSM"
             //+ "of accepting Casual Relationships back to EPIC-inspired levels. "
             //+ "probabilityUseCondom becomes zero at cycle 2095. "
-            // + "every cycle from 3000 "
+            // + "Now trying to reproduce 2010 notifications/incidents from 'gonoGoneWild'"
             //+ "Agents reduce their chances of choosing condoms by up to 0.5"
             //+ "parameters are adjusted according to ARTB data on a yearly basis"
             //+ "Continue From2007To2012NoCondomIII to see if prevalence rises. "
@@ -85,7 +85,7 @@ public class Community {
      * (String) Name of previous simulation to reload.
      * Not reloaded if this is an empty string.
      */
-    static final String RELOAD_SIMULATION = "max3contact92cEXTPop40000Cycles2190" ; // "turn40over53aPop40000Cycles2000" ; // "max3contacts54eEXTPop40000Cycles750" ; // "test3aPop4000Cycles500" ; // "agentScreen26bPop40000Cycles1500" ;
+    static final String RELOAD_SIMULATION = "riskiness8aPop40000Cycles1460" ; // "from2010try18aPop40000Cycles2190" ; // "max3contact95bEXT2Pop40000Cycles2920" ; 
     
     static public String getFilePath()
     {
@@ -192,7 +192,7 @@ public class Community {
                     index++ ;
                 }
             if (index != 12)    // 9 transmissionProbabilities or none
-                LOGGER.severe("Transmission probabilities missing. Only found " + String.valueOf(index) + " out of 9") ;
+                LOGGER.severe("Transmission probabilities missing. Only found " + String.valueOf(index-3) + " out of 9") ;
         }
         // Whether to plot prevalence upon completion.
         // Must be false when run on an HPC cluster.
@@ -378,40 +378,42 @@ public class Community {
                     = new ScreeningPresenter(SIM_NAME,"multi prevalence",screeningReporter) ;
             screeningPresenter3.multiPlotScreening(new Object[] {"prevalence","prevalence",new String[] {"Pharynx","Rectum","Urethra"}}) ;  // ,"coprevalence",new String[] {"Pharynx","Rectum"},new String[] {"Urethra","Rectum"}
         }
+        HashMap<Object,Number> finalNotificationsRecord = new HashMap<Object,Number>() ;
         
+        for (boolean unique : new boolean[] {true})    // false,
         {
-            HashMap<Object,Number> finalNotificationsRecord = new HashMap<Object,Number>() ;
-            for (boolean unique : new boolean[] {false,true})
+            //HashMap<Object,Number> finalPositivityRecord = new HashMap<Object,Number>() ;
+            HashMap<Object,Number[]> notificationsRecord = screeningReporter.prepareFinalNotificationsRecord(new String[] {"Pharynx","Rectum","Urethra"}, unique, 0, Reporter.DAYS_PER_YEAR) ;
+            for (Object key : notificationsRecord.keySet())
             {
-                HashMap<Object,Number> finalPositivityRecord = new HashMap<Object,Number>() ;
-                HashMap<Object,Number[]> notificationsRecord = screeningReporter.prepareFinalNotificationsRecord(new String[] {"Pharynx","Rectum","Urethra"}, unique, 0, Reporter.DAYS_PER_YEAR) ;
-                for (Object key : notificationsRecord.keySet())
-                {
-                    if (unique)
-                        finalNotificationsRecord.put(key, notificationsRecord.get(key)[0]) ;
-                    finalPositivityRecord.put(key, notificationsRecord.get(key)[1]) ;
-                }
-                LOGGER.log(Level.INFO, "Positivity unique:{0} {1}", new Object[] {unique,finalPositivityRecord});
-                OUTPUT_RETURN += notificationsRecord.get("all")[0] + " " ;
-                community.dumpOutputReturn() ;
+                if (unique)
+                    finalNotificationsRecord.put(key, notificationsRecord.get(key)[0]) ;
+                //finalPositivityRecord.put(key, notificationsRecord.get(key)[1]) ;
             }
-            LOGGER.log(Level.INFO, "Notification rate {0}", new Object[] {finalNotificationsRecord});
-            screeningReporter = new ScreeningReporter(SIM_NAME,FILE_PATH) ;
-            String prevalenceReports = "" ;
-            ArrayList<Object> prevalenceReport ;
-            for (String siteName : new String[] {"Pharynx","Rectum","Urethra"})
-            {
-                prevalenceReport = screeningReporter.preparePrevalenceReport(siteName) ;
-                //LOGGER.info(String.valueOf(prevalenceReport.size())) ;
-                //LOGGER.log(Level.INFO,"{0} {1}", new Object[] {siteName, prevalenceReport.get(prevalenceReport.size() - 1)}) ;
-            }
-            prevalenceReport = screeningReporter.preparePrevalenceReport() ;
-            //LOGGER.log(Level.INFO,"{0} {1}", new Object[] {"all", prevalenceReport.get(prevalenceReport.size() - 1)}) ;
-            
-    
+            //LOGGER.log(Level.INFO, "Positivity unique:{0} {1}", new Object[] {unique,finalPositivityRecord});
+            OUTPUT_RETURN += notificationsRecord.get("all")[0] + " " ;
+            community.dumpOutputReturn() ;
         }
+        
+        LOGGER.log(Level.INFO, "Notification rate {0}", new Object[] {finalNotificationsRecord});
+        
+        screeningReporter = new ScreeningReporter(SIM_NAME,FILE_PATH) ;
+        String prevalenceReports = "" ;
+        ArrayList<Object> prevalenceReport ;
+        for (String siteName : new String[] {"Pharynx","Rectum","Urethra"})
+        {
+            prevalenceReport = screeningReporter.preparePrevalenceReport(siteName) ;
+            //LOGGER.info(String.valueOf(prevalenceReport.size())) ;
+            //LOGGER.log(Level.INFO,"{0} {1}", new Object[] {siteName, prevalenceReport.get(prevalenceReport.size() - 1)}) ;
+        }
+        prevalenceReport = screeningReporter.preparePrevalenceReport() ;
+        //LOGGER.log(Level.INFO,"{0} {1}", new Object[] {"all", prevalenceReport.get(prevalenceReport.size() - 1)}) ;
+
+    
         //EncounterReporter encounterReporter = new EncounterReporter("Agent to Agent",community.encounterReport) ;
         //EncounterReporter encounterReporter = new EncounterReporter(Community.SIM_NAME,Community.FILE_PATH) ;
+        //HashMap<Object,Number> finalTransmissionsRecord = encounterReporter.prepareFinalIncidenceRecord(new String[] {"Pharynx","Rectum","Urethra"}, 0, Reporter.DAYS_PER_YEAR) ;
+        //LOGGER.log(Level.INFO, "{0}", finalTransmissionsRecord);
 //        EncounterPresenter encounterPresenter = new EncounterPresenter(Community.SIM_NAME,"agent to agent", encounterReporter) ;
 //        encounterPresenter.plotCondomUse();
 //        EncounterPresenter encounterPresenter2 = new EncounterPresenter(Community.SIM_NAME,"agent to agent", encounterReporter) ;
@@ -561,7 +563,7 @@ public class Community {
      */
     private String interveneCommunity(int cycle)
     {
-        int startCycle = 365 * 3 ;
+        int startCycle = 365 * 4 ;
         if (cycle < startCycle)
             return "" ;
         if (2<0)
