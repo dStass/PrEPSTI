@@ -3,6 +3,7 @@
  */
 package reporter ;
 
+import agent.MSM;
 import community.* ;
 
 import java.io.* ;
@@ -10,6 +11,7 @@ import java.io.* ;
 import java.lang.reflect.*;
 import java.util.ArrayList ;
 import java.util.Arrays;
+import java.util.Set ;
 import java.util.Collections;
 import java.util.HashMap ;
 
@@ -1251,6 +1253,87 @@ public class Reporter {
     }
 
     /**
+     * 
+     * @param propertyName
+     * @param reportList
+     * @return (HashMap) report with where the values are averaged reports in reportList.
+     */
+    static public HashMap<Object,Number[]> PREPARE_GRAY_REPORT(String[] simNames, String folderPath, int startYear, int endYear)
+    {
+        HashMap<Object,Number[]> grayReport = new HashMap<Object,Number[]>() ;
+        int nbColumns = 4+4+4+1+1 ;
+        String[] colNames = new String[nbColumns] ;
+        
+        String[] siteNames = MSM.SITE_NAMES ;
+        int arraysLength = siteNames.length + 1 ;
+        String[] arrayNames = new String[arraysLength] ;
+        for (int siteIndex = 0 ; siteIndex < siteNames.length ; siteIndex++ )
+            arrayNames[siteIndex] = siteNames[siteIndex] ;
+        arrayNames[siteNames.length] = "all" ;
+        
+        ArrayList<Object> sortedYears = new ArrayList<Object>() ;
+        
+        int backYears = 1 + endYear - startYear ;
+        
+        ArrayList<HashMap<Object,Number[]>> prevalenceReports = new ArrayList<HashMap<Object,Number[]>>() ;  
+        ArrayList<HashMap<Object,Number[]>> notificationReports = new ArrayList<HashMap<Object,Number[]>>() ;
+        ArrayList<HashMap<Object,Number>> beenTestedReports = new ArrayList<HashMap<Object,Number>>() ;
+        
+        ArrayList<HashMap<Object,Number[]>> incidenceReports = new ArrayList<HashMap<Object,Number[]>>() ;  
+        ArrayList<ArrayList<Object>> condomUseReports = new ArrayList<ArrayList<Object>>() ;
+        for (String simulation : simNames)
+        {
+            ScreeningReporter screeningReporter = new ScreeningReporter(simulation, folderPath);
+            prevalenceReports.add(screeningReporter.prepareYearsPrevalenceRecord(siteNames, backYears, endYear)) ;
+            notificationReports.add(screeningReporter.prepareYearsNotificationsRecord(siteNames, backYears, endYear)) ;
+            beenTestedReports.add(screeningReporter.prepareYearsBeenTestedReport(backYears, 0, 0, endYear)) ;
+             
+            EncounterReporter encounterReporter = new EncounterReporter(simulation, folderPath) ;
+            incidenceReports.add(encounterReporter.prepareYearsIncidenceRecord(siteNames, backYears, endYear)) ;
+            condomUseReports.add(encounterReporter.prepareYearsCondomUseRecord(backYears, endYear)) ;
+        }
+        HashMap<Object,Number[]> prevalenceRecordYears = AVERAGED_HASHMAP_REPORT(prevalenceReports) ;
+        HashMap<Object,Number[]> notificationsRecordYears = AVERAGED_HASHMAP_REPORT(notificationReports) ;
+        HashMap<Object,Number> beenTestedReportYears = MEAN_HASHMAP_REPORT(beenTestedReports) ;
+        
+        HashMap<Object,Number[]> incidenceReportYears = AVERAGED_HASHMAP_REPORT(incidenceReports) ;
+        ArrayList<Object> condomUseYears = AVERAGED_REPORT(condomUseReports,"proportion") ;
+        
+        // Construct Gray report
+        for (int year = startYear ; year <= endYear ; year++)
+        {
+            Number[] values = new Number[nbColumns] ;
+            //LOGGER.log(Level.INFO, "{0}", prevalenceRecordYears.get(year));
+            for (int index = 0 ; index < arraysLength ; index++ )    // 
+            {
+                values[index] = prevalenceRecordYears.get(year)[index] ;
+                values[arraysLength + index] = incidenceReportYears.get(year)[index] ;
+                values[2*arraysLength + index] = notificationsRecordYears.get(year)[index] ;
+            }
+            //LOGGER.log(Level.INFO, "condom:{0}|", condomUseYears.get(year - startYear).toString());
+            String condomValue = condomUseYears.get(year - startYear).toString() ;
+            values[3*arraysLength] = Double.valueOf(EXTRACT_VALUE("proportion",condomValue)) ;
+            values[3*arraysLength + 1] = beenTestedReportYears.get(year) ;
+            
+            grayReport.put(year, values) ;
+            sortedYears.add(year) ;
+        }
+        
+        // Set up column names in report
+        for (int index = 0 ; index < arraysLength ; index++ )    // 
+        {
+            colNames[index] = "prevalence_" + arrayNames[index] ;
+            colNames[arraysLength + index] = "incidence_" + arrayNames[index] ;
+            colNames[2*arraysLength + index] = "notifications_" + arrayNames[index] ;
+        }
+        colNames[3*arraysLength] = "condom_use" ;
+        colNames[3*arraysLength + 1] = "testing_coverage" ;
+        
+        WRITE_CSV(grayReport,"year",colNames,sortedYears,"Gray_report",simNames[0],"C:\\Users\\MichaelWalker\\UNSW\\NSW PSRP - Documents\\Model development\\output\\") ;
+        return grayReport ;
+    }
+    
+    /**
      * Stores an ArrayList (String) report as a csv file for other packages to read.
      * @param report 
      * @param reportName 
@@ -1363,6 +1446,20 @@ public class Reporter {
      */
     static public void WRITE_CSV(HashMap<Object,Number[]> report, String categoryName, String[] scoreNames, String reportName, String simName, String folderPath)
     {
+        WRITE_CSV(report, categoryName, scoreNames, new ArrayList<Object>(), reportName, simName, folderPath) ;
+    }
+    
+    /**
+     * Stores a (HashMap of ArrayList or Object) report as a csv file for other packages to read.
+     * @param report 
+     * @param categoryName 
+     * @param scoreNames 
+     * @param reportName 
+     * @param simName 
+     * @param folderPath 
+     */
+    static public void WRITE_CSV(HashMap<Object,Number[]> report, String categoryName, String[] scoreNames, ArrayList<Object> categoryList, String reportName, String simName, String folderPath)
+    {
         String filePath = folderPath + simName + reportName + ".csv" ;
         String line ;
         Object[] value ;
@@ -1376,6 +1473,7 @@ public class Reporter {
         fileHeader += String.join(COMMA, scoreNames)  ;
         //LOGGER.info(fileHeader) ;
         
+        //HashMap<Object,Number[]> writeReport = report.size()
         try
         {
             nbProperties = firstRecord.length ;
@@ -1387,14 +1485,15 @@ public class Reporter {
             nbProperties = 1 ;
         }
         //LOGGER.log(Level.INFO, "nbProperties:{1}", new Object[] {nbProperties});
-        
+        if (categoryList.isEmpty())
+            categoryList = new ArrayList<Object>(report.keySet()) ;
         
         try
         {
             BufferedWriter fileWriter = new BufferedWriter(new FileWriter(filePath,false));
             fileWriter.write(fileHeader) ;
             fileWriter.newLine() ;
-            for (Object key : report.keySet())
+            for (Object key : categoryList)
             {
                 value = report.get(key) ;
                 line = String.valueOf(key) ;
@@ -1480,10 +1579,11 @@ public class Reporter {
             meanProperties = IDENTIFY_PROPERTIES((String) reports.get(0).get(0)) ;
         else
         {
+            LOGGER.info("Correctly identified propertyName 'proportion'") ;
             meanProperties = propertyNames ;
         }
         
-        for (int cycle = 0 ; cycle < nbRecords ; cycle++ )
+        for (int cycle = 0 ; cycle < (nbRecords) ; cycle++ )
         {
             meanRecord = "" ;
             for (String property : meanProperties)
@@ -1499,6 +1599,7 @@ public class Reporter {
             }
             averagedReport.add(meanRecord) ;
         }
+        LOGGER.log(Level.INFO, "{0}", averagedReport);
         return averagedReport ;
     }
 
@@ -1529,6 +1630,39 @@ public class Reporter {
                 meanRecord[entry] = meanValue/nbReports ;
             }
             averagedReport.put(key,(Number[]) meanRecord.clone()) ;
+        }
+        
+        return averagedReport ;
+    }
+
+    /**
+     * Averages over (Number) entries in (ArrayList) reports
+     * @param reports 
+     * @return (HashMap) AVERAGED_REPORT
+     */
+    static public HashMap<Object,Number> MEAN_HASHMAP_REPORT(ArrayList<HashMap<Object,Number>> reports)
+    {
+        HashMap<Object,Number> averagedReport = new HashMap<Object,Number>() ;
+        
+        double nbReports = reports.size() ;
+        double meanValue ;
+        
+        //HashMap<Object,Number> sampleReport = reports.get(0) ;
+        
+        ArrayList<Object> keyList = new ArrayList<Object>() ;
+        for (HashMap<Object,Number> report : reports)
+            for (Object key : report.keySet())
+                if (!keyList.contains(key))
+                    keyList.add(key) ;
+        
+        
+        for (Object key : keyList)
+        {
+            meanValue = 0.0 ;
+            for (HashMap<Object,Number> report : reports)
+                if (report.containsKey(key) && report.get(key) != null)
+                    meanValue += report.get(key).doubleValue() ;
+            averagedReport.put(key,meanValue/nbReports) ;
         }
         return averagedReport ;
     }
@@ -1914,6 +2048,18 @@ public class Reporter {
     public String getSimName()
     {
         return simName ;
+    }
+    
+    /**
+     * 
+     * @param args 
+     */
+    public static void main(String[] args)
+    {
+        String folderPath = "output/prePrEP/" ;
+        String[] simNames = new String[] {"to2014contact96dPop40000Cycles4380","to2014contact96cPop40000Cycles4380","to2014contact96bPop40000Cycles4380","to2014contact96aPop40000Cycles4380"} ;
+        
+        PREPARE_GRAY_REPORT(simNames,folderPath,2007,2016) ;
     }
 
     /**
