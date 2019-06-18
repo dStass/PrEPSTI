@@ -122,6 +122,38 @@ public class PopulationReporter extends Reporter {
     }
     
     /**
+     * 
+     * @param sortingProperty
+     * @return HashMap of sortingProperty's values to ArrayList of agentIds with
+     * the appropriate sortingProperty value. 
+     */
+    protected HashMap<Object,ArrayList<Object>> agentIdSorted(String sortingProperty)
+    {
+        HashMap<Object,ArrayList<Object>> sortedHashMap = new HashMap<Object,ArrayList<Object>>() ;
+        
+        ArrayList<String> birthReport = prepareBirthReport() ;
+        
+        for (String record : birthReport)
+        {
+            ArrayList<String> censusArray = EXTRACT_ARRAYLIST(record,AGENTID) ;
+            for (String birth : censusArray)
+            {
+                //LOGGER.info(birth);
+                String agentId = EXTRACT_VALUE(AGENTID,birth) ;
+                String sortingValue = EXTRACT_VALUE(sortingProperty,birth) ;
+                if (!sortedHashMap.containsKey(sortingValue))
+                    sortedHashMap.put(sortingValue, new ArrayList<Object>()) ;
+                ArrayList<Object> agentIdList = sortedHashMap.get(sortingValue) ;
+                agentIdList.add(agentId) ;
+                sortedHashMap.put(sortingValue, (ArrayList<Object>) agentIdList.clone()) ;
+                //break ;
+            }
+            //break ;
+        }
+        return sortedHashMap ;
+    }
+    
+    /**
      * FIXME: Only works for final record.
      * @param recordNb
      * @return List of agentIds of Agents living at recordNb.
