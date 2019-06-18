@@ -153,6 +153,8 @@ public class EncounterReporter extends Reporter {
     /**
      * 
      * @param siteNames
+     * @param backMonths
+     * @param backDays
      * @return Records of final incidence for specified siteNames and in total.
      */
     public HashMap<Object,Number> prepareFinalIncidenceRecord(String[] siteNames, int backMonths, int backDays)
@@ -166,10 +168,29 @@ public class EncounterReporter extends Reporter {
      * 
      * @param siteNames
      * @param backYears
+     * @param backMonths
+     * @param backDays
      * @param endCycle
      * @return Records of final incidence for specified siteNames and in total.
      */
     public HashMap<Object,Number> prepareFinalIncidenceRecord(String[] siteNames, int backYears, int backMonths, int backDays, int endCycle)
+    {
+        return prepareFinalIncidenceRecord(siteNames, backYears, backMonths, backDays, endCycle, new ArrayList<Object>()) ;
+    }
+    
+    /**
+     * 
+     * @param siteNames
+     * @param backYears
+     * @param backMonths
+     * @param backDays
+     * @param endCycle
+     * @param sortedAgents - ArrayList of agentIds for which the incidence is to be calculated. 
+     * If empty then all Agents are considered. Calling method is expected to choose Agents 
+     * according to some criteria as HIV status.
+     * @return Records of final incidence for specified siteNames and in total.
+     */
+    public HashMap<Object,Number> prepareFinalIncidenceRecord(String[] siteNames, int backYears, int backMonths, int backDays, int endCycle, ArrayList<Object> sortedAgents)
     {
         HashMap<Object,Number> finalIncidence = new HashMap<Object,Number>() ;
         
@@ -213,9 +234,28 @@ public class EncounterReporter extends Reporter {
             incidents += COUNT_VALUE_INCIDENCE(RELATIONSHIPID,"",record,0)[1] ;
         }
         finalIncidence.put("all",incidents/denominator) ;
-        LOGGER.log(Level.INFO, "{0}", finalIncidence);
         
         return finalIncidence ;
+    }
+    
+    
+    public HashMap<Object,HashMap<Object,Number>> prepareSortedFinalIncidenceRecord(String[] siteNames, int backYears, int backMonths, int backDays, int endCycle, String sortingProperty) 
+    {
+        HashMap<Object,HashMap<Object,Number>> sortedFinalIncidenceRecord = new HashMap<Object,HashMap<Object,Number>>() ;
+        
+        // Get Report of sortingValue mapping to agentIds
+        PopulationReporter populationReporter = new PopulationReporter(simName,getFolderPath()) ;
+        HashMap<Object,ArrayList<Object>> sortedAgentReport = populationReporter.agentIdSorted(sortingProperty) ;
+        
+        for (Object sortingValue : sortedAgentReport.keySet())
+        {
+            HashMap<Object,Number> finalIncidenceRecord = new HashMap<Object,Number>() ;
+            finalIncidenceRecord = prepareFinalIncidenceRecord(siteNames, backYears, backMonths, backDays, endCycle, sortedAgentReport.get(sortingValue)) ;
+            
+            sortedFinalIncidenceRecord.put(sortingValue, (HashMap<Object,Number>) finalIncidenceRecord.clone()) ;
+        }
+    
+        return sortedFinalIncidenceRecord ;
     }
  
     /**
@@ -727,6 +767,16 @@ public class EncounterReporter extends Reporter {
         return condomUseReport ;
     }
     
+    /**
+     * WARNING: If this quantity is of particular importance then consider rerunning
+     * the simulation including sexual encounters in which no transmission can take place.
+     * @param backYears
+     * @param backMonths
+     * @param backDays
+     * @param endCycle
+     * @return Year-by-year records of how many times a condom was used, how many opportunities 
+     * there were to use one, and their ratio.
+     */
     public ArrayList<Object> prepareYearsCondomUseRecord(int backYears, int lastYear) 
     {
         ArrayList<Object> condomUseRecordYears = new ArrayList<Object>() ;
@@ -749,6 +799,16 @@ public class EncounterReporter extends Reporter {
         return condomUseRecordYears ;
     }
     
+    /**
+     * WARNING: If this quantity is of particular importance then consider rerunning
+     * the simulation including sexual encounters in which no transmission can take place.
+     * @param backYears
+     * @param backMonths
+     * @param backDays
+     * @param endCycle
+     * @return (String) report of how many times a condom was used, how many opportunities 
+     * there were to use one, and their ratio.
+     */
     public String prepareFinalCondomUseRecord(int backYears, int backMonths, int backDays, int endCycle)
     {
         endCycle -= backYears * DAYS_PER_YEAR ;
