@@ -229,18 +229,15 @@ public class MSM extends Agent {
             {
                 if (msm.getRiskyStatus()) // if risky already
                     continue ;    // we don't change it
+                msm.setRiskyStatus(RAND.nextDouble() < changeProbability) ;
             }
             else    // riskyProbability has gone down
             {
                 if (!msm.getRiskyStatus()) // if safe already
                     continue ;    // we don't change it
+                // change is to NOT risky, hence '>'
+                msm.setRiskyStatus(RAND.nextDouble() > changeProbability) ; 
             }
-
-            // Allow for correlation between statusHIV and Risky behaviour
-            if (msm.statusHIV)
-                msm.setRiskyStatus(RAND.nextDouble() < changeProbability) ;
-            else
-                msm.setRiskyStatus(RAND.nextDouble() < changeProbability) ;
         }
     }
     
@@ -315,11 +312,11 @@ public class MSM extends Agent {
     private boolean riskyStatus ;
     
     /** Transmission probabilities per sexual contact from Urethra to Rectum */
-    static double URETHRA_TO_RECTUM = 0.17 ; // 0.100 ;  0.25 ; // 
+    static double URETHRA_TO_RECTUM = 0.15 ; // 0.100 ;  0.25 ; // 
     /** Transmission probabilities sexual contact from Urethra to Pharynx. */
     static double URETHRA_TO_PHARYNX = 0.10 ; // 0.060 ; // 0.035 ; // 0.15 ; 
     /** Transmission probabilities sexual contact from Rectum to Urethra. */ 
-    static double RECTUM_TO_URETHRA = 0.036 ; // 0.020 ; // 0.008 ; 0.010 ; // 
+    static double RECTUM_TO_URETHRA = 0.030 ; // 0.020 ; // 0.008 ; 0.010 ; // 
     /** Transmission probabilities sexual contact from Rectum to Pharynx. */
     static double RECTUM_TO_PHARYNX = 0.0001 ;
     /** Transmission probabilities sexual contact in Pharynx to Urethra intercourse. */
@@ -504,7 +501,7 @@ public class MSM extends Agent {
      * Describes correlation between statusHIV and riskyStatus.
      * Must be less than 1/PROPORTION_HIV OR initRiskiness() fails.
      */
-    static double HIV_RISKY_CORRELATION = 2 ;	
+    static double HIV_RISKY_CORRELATION = 2.0 ;	
     
     /**
      * Choose whether MSM is RiskyMSM or SafeMSM
