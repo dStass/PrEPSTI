@@ -312,7 +312,7 @@ public class MSM extends Agent {
     private boolean riskyStatus ;
     
     /** Transmission probabilities per sexual contact from Urethra to Rectum */
-    static double URETHRA_TO_RECTUM = 0.15 ; // 0.100 ;  0.25 ; // 
+    static double URETHRA_TO_RECTUM = 0.20 ; // 0.100 ;  0.25 ; // 
     /** Transmission probabilities sexual contact from Urethra to Pharynx. */
     static double URETHRA_TO_PHARYNX = 0.10 ; // 0.060 ; // 0.035 ; // 0.15 ; 
     /** Transmission probabilities sexual contact from Rectum to Urethra. */ 
@@ -501,7 +501,7 @@ public class MSM extends Agent {
      * Describes correlation between statusHIV and riskyStatus.
      * Must be less than 1/PROPORTION_HIV OR initRiskiness() fails.
      */
-    static double HIV_RISKY_CORRELATION = 2.0 ;	
+    static double HIV_RISKY_CORRELATION = 1.0 ;	
     
     /**
      * Choose whether MSM is RiskyMSM or SafeMSM
@@ -1267,6 +1267,11 @@ public class MSM extends Agent {
         return super.consent(relationshipClazzName, partner) ;
     }
     
+    /**
+     * 
+     * @param partner
+     * @return (boolean) whether to enter proposed Casual Relationship.
+     */
     @Override
     protected boolean consentCasual(Agent partner)
     {
@@ -1392,24 +1397,27 @@ public class MSM extends Agent {
 
             // Not if on PrEP
             if (getPrepStatus())
-                return false ;
+                if (RAND.nextDouble() > probabilityUseCondom)    // '>' intended
+                    return false ;
 
             if (getSeroSort(relationshipClazzName))    // might use condom when serodiscordance or nondisclosure
             {
-                if (!(String.valueOf(getStatusHIV()).equals(partnerDisclosure))) 
+                if (String.valueOf(getStatusHIV()).equals(partnerDisclosure)) 
+                    return false ;
+                /*
                 {
                     if (RAND.nextDouble() < probabilityUseCondom ) 
                         return true;
-                    if (getStatusHIV() && !(partner.getPrepStatus())) // !getPrepStatus() || 
+                    if (!(getStatusHIV()) || (partner.getPrepStatus())) // !getPrepStatus() || 
                         return (RAND.nextDouble() < probabilityUseCondom ) ;
                     else if (!getStatusHIV() && !partner.getAntiViralStatus())
                         return (RAND.nextDouble() < probabilityUseCondom ) ;
-                }
+                }*/
             }
-            else if (getSeroPosition())
-                if (NONE.equals(partnerDisclosure))  // maybe if partner does not disclose
-                    return (RAND.nextDouble() < probabilityUseCondom ) ;
-            return false ;
+            if (getSeroPosition())
+                if (!(NONE.equals(partnerDisclosure)))  // maybe if partner does not disclose
+                    return false; // (RAND.nextDouble() < probabilityUseCondom ) ;
+            return (RAND.nextDouble() < probabilityUseCondom ) ;
         }
         else    // if not risky
         {
