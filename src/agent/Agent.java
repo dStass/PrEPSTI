@@ -51,7 +51,8 @@ public abstract class Agent {
     //static String FOLDER_PATH = "/srv/scratch/z3524276/prepsti/"
     //static String FOLDER_PATH = "/short/is14/mw7704/prepsti/"
     static String FOLDER_PATH = ""
-    //   +  "output/year2007/" ;
+    //+  "output/year2007/" ;
+    //   +  "output/year2010/" ;
     //+  "output/year2012/" ;
      +  "output/test/" ;
     // +  "output/prePrEP/" ;
@@ -1658,7 +1659,7 @@ public abstract class Agent {
         currentPartnerIds.remove(partnerIndex) ;
         int relationshipIndex = currentRelationships.indexOf(relationship) ;
         currentRelationships.remove(relationshipIndex) ;
-        Relationship.diminishNbRelationships() ;
+        Relationship.DIMINISH_NB_RELATIONSHIPS() ;
         nbRelationships-- ;
         
     }
