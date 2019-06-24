@@ -39,6 +39,7 @@ public class Relationship {
     //static String FOLDER_PATH = "/short/is14/mw7704/prepsti/"
     static String FOLDER_PATH = ""
     // +  "output/year2007/" ;
+    //+  "output/year2010/" ;
     // +  "output/year2012/" ;
      +  "output/test/" ;
     // +  "output/prePrEP/" ;
@@ -308,7 +309,7 @@ public class Relationship {
     /**
      * Decrements NB_RELATIONSHIPS by one. Called by Agent.leaveRelationship().
      */
-    static public void diminishNbRelationships()
+    static public void DIMINISH_NB_RELATIONSHIPS()
     {
         NB_RELATIONSHIPS-- ;
     }
