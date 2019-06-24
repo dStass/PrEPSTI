@@ -26,6 +26,7 @@ import org.jfree.chart.plot.PlotOrientation ;
 import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.chart.ChartUtils ;
 import org.jfree.chart.renderer.category.GroupedStackedBarRenderer ;
+import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer ;
 import org.jfree.chart.annotations.XYTextAnnotation ;
 import org.jfree.data.KeyToGroupMap;
 import org.jfree.data.category.* ;
@@ -386,14 +387,14 @@ public class Presenter {
         for (String simName : simNames)
         {
             screeningReporter  = new ScreeningReporter(simName,"output/test/") ;
-            hashMapList.add(screeningReporter.prepareYearsPositivityRecord(siteNames, false, 8, 2014)) ;
+            //hashMapList.add(screeningReporter.prepareYearsPositivityRecord(siteNames, false, 8, 2014)) ;
         }
-        HashMap<Object,Number[]> averagedHashMap = Reporter.AVERAGED_HASHMAP_REPORT(hashMapList) ;
-        averagedHashMap.remove(2013) ;
-        averagedHashMap.remove(2014) ;
-        for (Object key : averagedHashMap.keySet())
-            LOGGER.log(Level.INFO, "{0} {1}", new Object[] {key,averagedHashMap.get(key)[0]});
-        screeningPresenter.plotHashMap("year", siteNames, averagedHashMap) ;
+//        HashMap<Object,Number[]> averagedHashMap = Reporter.AVERAGED_HASHMAP_REPORT(hashMapList) ;
+//        averagedHashMap.remove(2013) ;
+//        averagedHashMap.remove(2014) ;
+//        for (Object key : averagedHashMap.keySet())
+//            LOGGER.log(Level.INFO, "{0} {1}", new Object[] {key,averagedHashMap.get(key)[0]});
+        //screeningPresenter.plotHashMap("year", siteNames, averagedHashMap) ;
         /*
         ScreeningReporter screeningReporter = 
                 //new ScreeningReporter("prevalence",community.infectionReport) ;
@@ -1133,6 +1134,22 @@ public class Presenter {
         chart_awt.callStackedPlotChart(chartTitle,categoryEntry,scoreNumbers,scoreNames,categoryName) ;
     }
     
+    /**
+     * Plots values contained in a HashMap of Object to String. The keys are usually 
+     * years while the String contains the properties and their values.
+     * @param report
+     * @param yLabel
+     * @param xLabel
+     * @param legend 
+     */
+    protected void plotHashMapString(HashMap<Object,String> report, String yLabel, String xLabel, String[] legend)
+    {
+        // Extract data from reportArray
+        XYSeriesCollection xySeriesCollection = parseReportHashMap(report, legend) ;
+        
+        // Send data to be processed and presented
+        chart_awt.plotLineChart(chartTitle,xySeriesCollection, yLabel, xLabel, legend) ;
+    }
     
     protected void plotHashMapArea(String categoryName, String scoreName, HashMap<Object,Number[]> hashMapReport )
     {
@@ -1233,6 +1250,18 @@ public class Presenter {
         return eventsPerCycle ;
         
     }
+    
+    /**
+     * Calls plotCycleValue
+     * @param scoreNames
+     * @param record
+     */
+    public void plotValues(String scoreName, String record)
+    {
+        ArrayList<Object> recordList = new ArrayList<Object>() ;
+        recordList.add(record) ;
+        callPlotChart(scoreName,recordList) ;
+    }            
     
     public void plotEventsPerCycle(String scoreName, ArrayList<ArrayList<Object>> reportArray)
     {
@@ -1466,6 +1495,72 @@ public class Presenter {
             }
             scoreData.add(plotArray) ;
         }
+    }
+    
+    /**
+     * Extracts plottable values from report and puts in XYSeriesCollection format.
+     * @param report
+     * @param legend
+     * @return 
+     */
+    private XYSeriesCollection parseReportHashMap(HashMap<Object,String> report, String[] legend)  // 
+    {       
+        XYSeriesCollection xySeriesCollection = new XYSeriesCollection() ;
+        String property ;
+        
+        // Sorted ArrayList of HashMap keys
+        ArrayList<Object> categoryEntry = new ArrayList<Object>() ;
+        for (Object key : report.keySet()) 
+            categoryEntry.add(key) ;
+        categoryEntry.sort(null) ;
+        
+        // ArrayList<String> categoryData = data.get(0) ;
+        // ArrayList<String> scoreData = data.get(1) ;
+        Number scoreValue ;
+        Number categoryValue ;
+        
+        int plotTotal ;
+        if (legend.length == 0)
+            legend = new String[] {""} ;
+        plotTotal = legend.length ;
+
+        for (int plotIndex = 0 ; plotIndex < plotTotal ; plotIndex++ )
+        {
+            property = legend[plotIndex] ;
+            XYSeries xySeries = new XYSeries(property) ;
+
+            for (Object category : categoryEntry)
+            {
+
+                String scoreString = Reporter.EXTRACT_VALUE(legend[plotIndex],report.get(category)) ;
+                if (int.class.isInstance(scoreString) || Integer.class.isInstance(scoreString)) 
+                    scoreValue = Integer.valueOf(scoreString) ;
+                else
+                    scoreValue = Double.valueOf(scoreString) ;
+
+                if (int.class.isInstance(category) || Integer.class.isInstance(category)) 
+                {
+                    categoryValue = Integer.valueOf(category.toString()) ;
+                    xySeries.add((Integer) categoryValue, scoreValue, false);
+                }
+                else
+                {
+                    categoryValue = Double.valueOf(category.toString()) ;
+                    xySeries.add((Double) categoryValue, scoreValue, false);
+                }
+            }
+            try
+            {
+                xySeriesCollection.addSeries((XYSeries) xySeries.clone()) ;
+            }
+            catch ( CloneNotSupportedException cnse )
+            {
+                LOGGER.log(Level.SEVERE, cnse.toString());
+            }
+
+        }
+        
+        return xySeriesCollection ;
     }
 
     /**
@@ -1859,6 +1954,7 @@ public class Presenter {
             double upperBound = dataset.getItemCount(0) ;    // domainAxis.getRange().getUpperBound() ;
             
             if ((upperBound % 365) == 0)    // if upperBound a multiple of 365 (days)
+            {
                 if (upperBound > 729)    // more than two years
                 {
                     domainAxis.setTickUnit(new NumberTickUnit(365)) ;
@@ -1868,22 +1964,26 @@ public class Presenter {
                         domainAxis.setMinorTickMarksVisible(true);
                     }
                 }
-                else
-                {
-                    
-                }
+            }
             else
             {
-                LOGGER.info(String.valueOf(upperBound)) ;
+                //LOGGER.info(String.valueOf(upperBound)) ;
+                domainAxis.setMinorTickMarksVisible(true);
             }
+            
+            // Put shapes at plotted points
+            if (upperBound < 100)
+                lineChart.getXYPlot().setRenderer(new XYLineAndShapeRenderer()) ; 
             
             //domainAxis.setRange(2.0,upperBound);
             
             // Set unit tick distance if range is integer.
             if (int.class.isInstance(dataset.getX(0,0)) || Integer.class.isInstance(dataset.getX(0, 0)))
             {
+                LOGGER.info("integer domain") ;
                 NumberAxis rangeAxis = (NumberAxis) lineChart.getXYPlot().getRangeAxis() ;
                 rangeAxis.setTickUnit(new NumberTickUnit(1)) ;
+                domainAxis.setTickUnit(new NumberTickUnit(1)) ;
             }
             lineChart.getPlot().setBackgroundPaint(Color.WHITE) ;
             if (!legend[0].isEmpty())
