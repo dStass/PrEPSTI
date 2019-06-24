@@ -34,7 +34,9 @@ public class ScreeningPresenter extends Presenter {
     static public String URETHRA = "Urethra" ;
     static public String RECTUM = "Rectum" ;
     static public String PHARYNX = "Pharynx" ;
+    static public String ALL = "all" ;
     static public String NOTIFICATION = "notification" ;  // "treated" ;
+    static public String POSITIVITY = "positivity" ;  // "treated" ;
     
     public ScreeningPresenter()
     {
@@ -69,10 +71,11 @@ public class ScreeningPresenter extends Presenter {
         this.reporter = reporter ;
     }
 
-    //static private String[] simNames = new String[] {"adjust2009contact96bPop40000Cycles4380"} ;
-    static private String[] simNames = new String[] {"to2016contact96aPop40000Cycles5110","to2016contact96bPop40000Cycles5110","to2016contact96cPop40000Cycles5110"} ;
+    static private String[] simNames = new String[] {"adjust2009riskiness1bPop40000Cycles4380"} ;
+    //static private String[] simNames = new String[] {"riskiness2a5Pop40000Cycles1460"} ;
+    //static private String[] simNames = new String[] {"to2016contact96aPop40000Cycles5110","to2016contact96bPop40000Cycles5110","to2016contact96cPop40000Cycles5110"} ;
     //static private String[] simNames = new String[] {"max3contact96ePop40000Cycles7300","max3contact96bPop40000Cycles7300",
-        //"max3contact96cPop40000Cycles7300"} ; //,"max3contact96dPop40000Cycles7300","max3contact96aPop40000Cycles7300"} ;
+      //  "max3contact96cPop40000Cycles7300"} ; //,"max3contact96dPop40000Cycles7300","max3contact96aPop40000Cycles7300"} ;
     //static private String[] simNames = new String[] {"safeContact99cPop40000Cycles4000"} ; //,"safeContact99bPop40000Cycles4000","safeContact99cPop40000Cycles4000"} ;
     //static private String[] simNames = new String[] {"adjust2009contact96aPop40000Cycles5475","adjust2009contact96bPop40000Cycles5475","adjust2009contact96cPop40000Cycles5475",
         //"adjust2009contact96dPop40000Cycles5475","adjust2009contact96ePop40000Cycles5475","adjust2009contact96fPop40000Cycles5475","adjust2009contact96gPop40000Cycles5475",
@@ -126,9 +129,9 @@ public class ScreeningPresenter extends Presenter {
         //String chartTitle = "infections_past_2years_PrEP" ; // args[1] ;
         //String reportFileName = "output/untouchable/" ; // args[2] ;
         //String reportFileName = "output/prePrEP/" ; // args[2] ;
-        //String reportFileName = "output/test/" ; // args[2] ;
+        String reportFileName = "output/test/" ; // args[2] ;
         //String reportFileName = "output/reverse/" ; // args[2] ;
-        String reportFileName = "output/year2012/" ; // args[2] ;
+        //String reportFileName = "output/year2012/" ; // args[2] ;
         //String reportFileName = "output/year2010/" ; // args[2] ;
         //String reportFileName = "output/year2007/" ; // args[2] ;
 
@@ -162,8 +165,9 @@ public class ScreeningPresenter extends Presenter {
         //screeningPresenter.plotFinalSymptomatic(new String[] {"Pharynx","Rectum","Urethra"}) ;
         //screeningPresenter.plotFinalPrevalences(new String[] {"Pharynx","Rectum","Urethra"}) ;
         //screeningPresenter.plotFinalNotifications(new String[] {"Pharynx","Rectum","Urethra"}, unique, 0, Reporter.DAYS_PER_YEAR, notifications) ;
-        screeningPresenter.plotSortedFinalNotifications(new String[] {"Pharynx","Rectum","Urethra"}, unique, 0, 0, Reporter.DAYS_PER_YEAR, "statusHIV") ; 
-        //screeningPresenter.plotNotificationsYears(new String[] {"all"},10,2016) ;    // siteNames,5,4) ;    // new String[] {"all"} 
+        //screeningPresenter.plotSortedFinalNotifications(new String[] {"Pharynx","Rectum","Urethra"}, unique, 0, 0, Reporter.DAYS_PER_YEAR, "statusHIV") ; 
+        //screeningPresenter.plotSortedNotificationsYears(siteNames, unique, 3, 2009, "statusHIV") ;
+        screeningPresenter.plotNotificationsYears(siteNames,8,2014) ;    // siteNames,5,4) ;    // new String[] {"all"} 
         //screeningPresenter.plotPositivityYears(siteNames, unique, 8, 2014) ;
         //screeningPresenter.plotNotificationPerCycle() ;    
         //screeningPresenter.plotSiteProportionSymptomatic(siteNames) ;
@@ -177,6 +181,64 @@ public class ScreeningPresenter extends Presenter {
     }
     
     /**
+     * Plots year-by-year report with Agents sorted according to sortingProperty.
+     * @param siteNames
+     * @param unique
+     * @param backYears
+     * @param lastYear
+     * @param sortingProperty 
+     */
+    public void plotSortedNotificationsYears(String[] siteNames, boolean unique, int backYears, int lastYear, String sortingProperty)
+    {
+        HashMap<Object,String> plotSortedNotifications = new HashMap<Object,String>() ;
+        
+        String[] siteAllNames = new String[siteNames.length+1] ;
+        siteAllNames[0] = "all" ;
+        // = Arrays.copyOf(siteNames, siteNames.length + 1) ;
+        for (int siteIndex = 0 ; siteIndex < siteNames.length ; siteIndex++)
+            siteAllNames[siteIndex + 1] = siteNames[siteIndex] ;
+        
+        
+        // Get sorted Report
+        HashMap<Object,HashMap<Object,String>> sortedNotificationsYears = reporter.prepareSortedYearsNotificationsRecord(siteNames, backYears, lastYear, sortingProperty) ;
+        
+        // Generate legend and multiPlotNames
+        String[] legend = new String[siteAllNames.length * sortedNotificationsYears.size()] ;
+        ArrayList<String> multiPlotNames = new ArrayList<String>() ;
+        int legendIndex = 0 ;
+        for (Object sortingValue : sortedNotificationsYears.keySet())
+        {
+            multiPlotNames.add(sortingValue.toString()) ;
+            for (String site : siteAllNames)
+            {
+                legend[legendIndex] = site.concat(GROUP).concat(sortingValue.toString()) ;
+                legendIndex++ ;
+            }
+        }
+        
+        // Put report in appropriate, text-based form
+        String yearlyEntry = "" ;
+        String newSiteName ;
+        int firstYear = 1 + lastYear - backYears ;
+        for (int year = firstYear ; year <= lastYear ; year++)
+        {
+            for (Object sortingValue : multiPlotNames)
+            {
+                String notifications = sortedNotificationsYears.get(sortingValue).get(year) ;
+                for (String siteName : siteAllNames)
+                {
+                    newSiteName = siteName.concat(GROUP).concat(sortingValue.toString()) ;
+                    yearlyEntry += Reporter.ADD_REPORT_PROPERTY(newSiteName, Reporter.EXTRACT_VALUE(siteName,notifications)) ;
+                }
+            }
+            plotSortedNotifications.put(year, yearlyEntry) ;
+            // Reset for next year
+            yearlyEntry = "" ;
+        }
+        plotHashMapString(plotSortedNotifications,NOTIFICATION,"year",legend) ;
+    }
+    
+    /**
      * Plots bar chart showing incidence at each Site for each of the last backYears
      * years counting back from lastYear.
      * @param siteNames
@@ -185,17 +247,45 @@ public class ScreeningPresenter extends Presenter {
      */
     public void plotNotificationsYears(String[] siteNames, int backYears, int lastYear)
     {
-        HashMap<Object,Number[]> notificationsRecordYears = reporter.prepareYearsNotificationsRecord(siteNames, backYears, lastYear) ;
+        //HashMap<Object,Number[]> notificationsRecordYears = reporter.prepareYearsNotificationsRecord(siteNames, backYears, lastYear) ;
+        HashMap<Object,String> notificationsYearsPlot = new HashMap<Object,String>() ;
         
-        ArrayList<HashMap<Object,Number[]>> reports = new ArrayList<HashMap<Object,Number[]>>() ;
+        String[] siteAllNames = new String[siteNames.length+1] ;
+        siteAllNames[0] = "all" ;
+        // = Arrays.copyOf(siteNames, siteNames.length + 1) ;
+        for (int siteIndex = 0 ; siteIndex < siteNames.length ; siteIndex++)
+            siteAllNames[siteIndex + 1] = siteNames[siteIndex] ;
+        
+        ArrayList<HashMap<Object,String>> reports = new ArrayList<HashMap<Object,String>>() ;
         for (String simulation : simNames)
         {
             ScreeningReporter screeningReporter = new ScreeningReporter(simulation,reporter.getFolderPath()) ;
             reports.add(screeningReporter.prepareYearsNotificationsRecord(siteNames, backYears, lastYear)) ;
         }
-        notificationsRecordYears = Reporter.AVERAGED_HASHMAP_REPORT(reports) ;
+        LOGGER.log(Level.INFO, "{0}", reports);
+        notificationsYearsPlot = Reporter.PREPARE_MEAN_HASHMAP_REPORT(reports) ;
+        LOGGER.log(Level.INFO, "{0}", notificationsYearsPlot);
+        //notificationsRecordYears = Reporter.AVERAGED_HASHMAP_REPORT(reports) ;
         
-        plotHashMap("Year", siteNames, notificationsRecordYears) ;
+        //LOGGER.log(Level.INFO, "{0},{1},{2}", new Object[] {notificationsRecordYears.get(2007)[0],notificationsRecordYears.get(2007)[1],notificationsRecordYears.get(2007)[2]});
+        /**
+        // Put report in appropriate, text-based form
+        String yearlyEntry = "" ;
+        int firstYear = lastYear - backYears + 1 ;
+        for (int year = firstYear ; year <= lastYear ; year++)
+        {
+            //Number[] notifications = notificationsRecordYears.get(year) ;
+            for (int siteIndex = 0 ; siteIndex < siteAllNames.length ; siteIndex++ )
+            {
+                String siteName = siteAllNames[siteIndex] ;
+                yearlyEntry += Reporter.ADD_REPORT_PROPERTY(siteName, notifications[siteIndex]) ;
+            }
+            notificationsYearsPlot.put(year,yearlyEntry) ;
+            // Reset for next year
+            yearlyEntry = "" ;
+        }*/
+        plotHashMapString(notificationsYearsPlot,NOTIFICATION,"year",siteAllNames) ;
+        //plotHashMap("Year", siteAllNames, notificationsRecordYears) ;
     }
     
     /**
@@ -207,8 +297,15 @@ public class ScreeningPresenter extends Presenter {
      */
     public void plotPositivityYears(String[] siteNames, boolean unique, int backYears, int lastYear)
     {
-        HashMap<Object,Number[]> positivityRecordYears = reporter.prepareYearsPositivityRecord(siteNames, unique, backYears, lastYear) ;
-        plotHashMap("Year", siteNames, positivityRecordYears) ;
+        HashMap<Object,String> positivityRecordYears = reporter.prepareYearsPositivityRecord(siteNames, unique, backYears, lastYear) ;    // Number[]
+        
+        String[] siteAllNames = new String[siteNames.length+1] ;
+        siteAllNames[0] = "all" ;
+        // = Arrays.copyOf(siteNames, siteNames.length + 1) ;
+        for (int siteIndex = 0 ; siteIndex < siteNames.length ; siteIndex++)
+            siteAllNames[siteIndex + 1] = siteNames[siteIndex] ;
+        
+        plotHashMapString(positivityRecordYears, "Notification-rate", "Year", siteAllNames) ;
     }
     
     /**
@@ -234,15 +331,35 @@ public class ScreeningPresenter extends Presenter {
     public void plotFinalNotifications(String[] siteNames, boolean unique, int backMonths, int backDays, int outcome)
     {
         // [0] for positivity
-        HashMap<Object,Number> finalNotificationsRecord = new HashMap<Object,Number>() ;
-        HashMap<Object,Number[]> notificationsRecord = reporter.prepareFinalNotificationsRecord(siteNames, unique, backMonths, backDays) ;
-        for (Object key : notificationsRecord.keySet())
+        //HashMap<Object,Number> finalNotificationsRecord = new HashMap<Object,Number>() ;
+        String finalNotificationsRecord = "" ;
+        //HashMap<Object,Number[]> notificationsRecord = reporter.prepareFinalNotificationsRecord(siteNames, unique, backMonths, backDays) ;
+        String notificationsRecord = reporter.prepareFinalNotificationsRecord(siteNames, unique, backMonths, backDays) ;
+        String scoreName = "" ;
+        
+        int posIndex = notificationsRecord.indexOf(POSITIVITY.length()) + 1 ;
+        if (outcome == 0)
         {
-            finalNotificationsRecord.put(key, notificationsRecord.get(key)[outcome]) ;
+            int notLength = NOTIFICATION.length() + 1 ;
+            finalNotificationsRecord = notificationsRecord.substring(notLength, posIndex) ;
+            scoreName = NOTIFICATION ;
         }
-        LOGGER.log(Level.INFO, "{0}", finalNotificationsRecord);
+        else //    outcome == 1
+        {
+            int posLength = POSITIVITY.length() + 1 ;
+            finalNotificationsRecord = notificationsRecord.substring(posIndex + posLength) ;
+            scoreName = POSITIVITY ;
+        }
+        /**
+        for (String property : Reporter.IDENTIFY_PROPERTIES(notificationsRecord))
+        {
+            finalNotificationsRecord.put(property, Double.valueOf(Reporter.EXTRACT_VALUE(property, notificationsRecord))) ;
+            TODO: sEPARATE NOTIFICATION FROM POSITIVITY ;
+        }
+        LOGGER.log(Level.INFO, "{0}", finalNotificationsRecord); */
         String[] yLabels = new String[] {"incidence","positivity"} ;
-        plotHashMap("Sites",yLabels[outcome],finalNotificationsRecord) ;        
+        plotValues(scoreName,finalNotificationsRecord) ;
+        //plotHashMap("Sites",yLabels[outcome],finalNotificationsRecord) ;        
     }
     
     /**
@@ -258,22 +375,31 @@ public class ScreeningPresenter extends Presenter {
      */
     public void plotSortedFinalNotifications(String[] siteNames, boolean unique, int backYears, int backMonths, int backDays, String sortingProperty)
     {
-        HashMap<Object,Number[]> finalNotificationsRecord = new HashMap<Object,Number[]>() ;
-        HashMap<Object,HashMap<Object,Number>> notificationsRecord = reporter.prepareSortedFinalNotificationsRecord(siteNames, unique, backYears, backMonths, backDays, 0, sortingProperty) ;
+        String finalNotificationsRecord = "" ;
+        HashMap<Object,String> notificationsRecord = reporter.prepareSortedFinalNotificationsRecord(siteNames, unique, backYears, backMonths, backDays, 0, sortingProperty) ;
+        //HashMap<Object,Number[]> finalNotificationsRecord = new HashMap<Object,Number[]>() ;
+        //HashMap<Object,HashMap<Object,Number>> notificationsRecord = reporter.prepareSortedFinalNotificationsRecord(siteNames, unique, backYears, backMonths, backDays, 0, sortingProperty) ;
         
         int nbSortingValues = notificationsRecord.keySet().size() ;
         String[] scoreNames = new String[nbSortingValues] ;
         ArrayList<String> scoreNamesList = new ArrayList<String>() ;
         
-        for (Object key : notificationsRecord.values().iterator().next().keySet())
+        ArrayList<String> propertiesList = Reporter.IDENTIFY_PROPERTIES(notificationsRecord.values().iterator().next()) ;
+        String newSiteName ;
+        String siteValue ;
+        for (String siteName : propertiesList )
         {
-            Number[] sortedNotifications = new Number[nbSortingValues] ;
+            //String sortedNotifications = "" ; // Reporter.ADD_REPORT_LABEL(siteName) ; // new Number[nbSortingValues] ;
+            //Number[] sortedNotifications = new Number[nbSortingValues] ;
             int sortedIndex = 0 ;
             boolean scoreNamesConstructed = !scoreNamesList.isEmpty() ;
             //for (int sortedIndex = 0 ; sortedIndex < nbSortingValues ; sortedIndex++ )
             for (Object sortingValue : notificationsRecord.keySet())
             {
-                sortedNotifications[sortedIndex] = notificationsRecord.get(sortingValue).get(key) ;
+                // Combine siteName with sorting value
+                newSiteName = siteName.concat(GROUP).concat(sortingValue.toString()) ;
+                siteValue = Reporter.EXTRACT_VALUE(siteName, notificationsRecord.get(sortingValue)) ;
+                finalNotificationsRecord += Reporter.ADD_REPORT_PROPERTY(newSiteName, siteValue) ;
                 if (!scoreNamesConstructed)
                 {
                     scoreNames[sortedIndex] = String.valueOf(sortingValue).concat(GROUP).concat(sortingValue.toString()) ; // concat(sortingProperty) ; // 
@@ -281,10 +407,11 @@ public class ScreeningPresenter extends Presenter {
                 }
                 sortedIndex++ ;
             }
-            finalNotificationsRecord.put(key, (Number[]) sortedNotifications.clone()) ;
+            //finalNotificationsRecord.put(key, sortedNotifications) ;
         }
         LOGGER.log(Level.INFO, "{0}", finalNotificationsRecord);
-        plotHashMap("Sites",scoreNames,finalNotificationsRecord) ;        
+        plotValues(NOTIFICATION,finalNotificationsRecord) ;
+        //plotHashMap("Sites",scoreNames,finalNotificationsRecord) ;        
         
         /**
         HashMap<Object,HashMap<Object,Number>> sortedFinalNotificationsRecord = reporter.prepareSortedFinalNotificationsRecord(siteNames, unique, backYears, backMonths, backDays, 0, sortingProperty) ;
@@ -331,9 +458,12 @@ public class ScreeningPresenter extends Presenter {
      */
     public void plotPrevalenceYears(String[] siteNames, int backYears, int lastYear)
     {
-        HashMap<Object,Number[]> prevalenceRecordYears = reporter.prepareYearsPrevalenceRecord(siteNames, backYears, lastYear) ;
+        //HashMap<Object,Number[]> 
+        HashMap<Object,String>  prevalenceRecordYears = reporter.prepareYearsPrevalenceRecord(siteNames, backYears, lastYear) ;
+        String[] siteAllNames = Arrays.copyOf(siteNames, siteNames.length + 1) ;
+        siteAllNames[siteNames.length] = "all" ;
         
-        plotHashMap("Year", siteNames, prevalenceRecordYears) ;
+        plotHashMapString(prevalenceRecordYears,PREVALENCE,"Year", siteNames) ;
     }
     
     /**
@@ -353,10 +483,11 @@ public class ScreeningPresenter extends Presenter {
      */
     public void plotFinalPrevalences(String[] siteNames)
     {
-        HashMap<Object,Number> finalPrevalencesRecord = reporter.prepareFinalPrevalencesRecord(siteNames) ;
+        //HashMap<Object,Number> 
+        String finalPrevalencesRecord = reporter.prepareFinalPrevalencesRecord(siteNames) ;
         
         
-        plotHashMap("Sites","prevalence",finalPrevalencesRecord) ;        
+        plotValues(PREVALENCE,finalPrevalencesRecord) ;        
     }
     
     /**
@@ -669,8 +800,8 @@ public class ScreeningPresenter extends Presenter {
                 if (argIndex == options.length-1 || options[argIndex + 1].getClass().getSimpleName().equals("String"))
                 {
                     multiPlotReports.add(reporter.preparePrevalenceReport()) ;
-                    multiPlotNames.add((String) option) ;
-                    legend.add("all" + "_" + ((String) option)) ;  
+                    multiPlotNames.add(option.toString()) ;
+                    legend.add("all" + "_" + option.toString()) ;  
                 }
                 else // if siteNames specified by following argument(s)
                 {
@@ -681,8 +812,8 @@ public class ScreeningPresenter extends Presenter {
                         for (String siteName : siteNames)
                         {
                             multiPlotReports.add(reporter.preparePrevalenceReport(siteName)) ;
-                            multiPlotNames.add((String) option) ;
-                            legend.add(((String) option) + "_" + siteName) ;  
+                            multiPlotNames.add(option.toString()) ;
+                            legend.add(siteName + "_" + option.toString()) ;  
                         }
                         argIndex++ ;
                         if (argIndex == options.length - 1)
