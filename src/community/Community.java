@@ -85,7 +85,7 @@ public class Community {
      * (String) Name of previous simulation to reload.
      * Not reloaded if this is an empty string.
      */
-    static final String RELOAD_SIMULATION = "riskiness8aPop40000Cycles1460" ; // "from2010try18aPop40000Cycles2190" ; // "max3contact95bEXT2Pop40000Cycles2920" ; 
+    static final String RELOAD_SIMULATION = "" ; // "test2HR1aPop40000Cycles2190" ; // "riskiness1bPop40000Cycles1095" ; // "from2010try18aPop40000Cycles2190" ; // "max3contact95bEXT2Pop40000Cycles2920" ; 
     
     static public String getFilePath()
     {
@@ -383,15 +383,16 @@ public class Community {
         for (boolean unique : new boolean[] {true})    // false,
         {
             //HashMap<Object,Number> finalPositivityRecord = new HashMap<Object,Number>() ;
-            HashMap<Object,Number[]> notificationsRecord = screeningReporter.prepareFinalNotificationsRecord(new String[] {"Pharynx","Rectum","Urethra"}, unique, 0, Reporter.DAYS_PER_YEAR) ;
-            for (Object key : notificationsRecord.keySet())
+            String notificationsRecord = screeningReporter.prepareFinalNotificationsRecord(new String[] {"Pharynx","Rectum","Urethra"}, unique, 0, Reporter.DAYS_PER_YEAR) ;
+            //HashMap<Object,Number[]> notificationsRecord = screeningReporter.prepareFinalNotificationsRecord(new String[] {"Pharynx","Rectum","Urethra"}, unique, 0, Reporter.DAYS_PER_YEAR) ;
+            for (Object key : new String[] {"Pharynx","Rectum","Urethra","all"})
             {
                 if (unique)
-                    finalNotificationsRecord.put(key, notificationsRecord.get(key)[0]) ;
+                    finalNotificationsRecord.put(key, Double.valueOf(Reporter.EXTRACT_VALUE(key.toString(), notificationsRecord))) ; //.get(key)[0]) ;
                 //finalPositivityRecord.put(key, notificationsRecord.get(key)[1]) ;
             }
             //LOGGER.log(Level.INFO, "Positivity unique:{0} {1}", new Object[] {unique,finalPositivityRecord});
-            OUTPUT_RETURN += notificationsRecord.get("all")[0] + " " ;
+            OUTPUT_RETURN += Reporter.EXTRACT_VALUE("all",notificationsRecord) ; //.("all")[0] + " " ;
             community.dumpOutputReturn() ;
         }
         
@@ -563,10 +564,10 @@ public class Community {
      */
     private String interveneCommunity(int cycle)
     {
-        int startCycle = 365 * 4 ;
+        int startCycle = 365 ;
         if (cycle < startCycle)
             return "" ;
-        if (2<0)
+        if (2<0) // true or false
         {
             for (Agent agent : agents)
             {
@@ -673,7 +674,7 @@ public class Community {
 
                 // Tell Agents which type of Relationship is being proposed.
                 Class<?> relationshipClazz = Relationship.chooseRelationship(agent0, agent1) ;
-                if (burnin)
+                if (burnin)    // Casual Relationships will dissolve before burn-in anyway, and take lots of time
                     if (Casual.class.equals(relationshipClazz))
                         continue ;
                 String relationshipClazzName = relationshipClazz.getSimpleName() ;
