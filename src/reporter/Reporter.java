@@ -1222,32 +1222,72 @@ public class Reporter {
      * in the subreports are averaged over the innermost ArrayList.
      */
     static public HashMap<Object,String> 
-        PREPARE_MEAN_HASHMAP_REPORT(String propertyName, ArrayList<HashMap<Object,Number[]>> reportList)
+        PREPARE_MEAN_HASHMAP_REPORT(String propertyName, ArrayList<HashMap<Object,String>> reportList)
     {
         // Find mean of reports
         HashMap<Object,String> meanReport = new HashMap<Object,String>() ;
         
-        HashMap<Object,Number[]> firstReport = reportList.get(0) ;
+        HashMap<Object,String> firstReport = reportList.get(0) ;
         int nbReports = reportList.size() ;
-        int nbCycles = firstReport.size() ;
-        int nbSubReports = firstReport.values().iterator().next().length ;
+        String firstReportString = firstReport.values().iterator().next() ;
+        ArrayList<String> reportProperties = IDENTIFY_PROPERTIES(firstReportString) ;
         for (Object cycle : firstReport.keySet())
         {
             String itemString ;
             String meanRecord = "" ;
             //Number[] meanRecord = new Number[nbSubReports] ;
-            for (int itemIndex = 0 ; itemIndex < nbSubReports ; itemIndex++ )
+            //for (int itemIndex = 0 ; itemIndex < reportProperties.size() ; itemIndex++ );
             {
                 double itemValue = 0.0 ;
-                for (HashMap<Object,Number[]> report : reportList)
+                for (HashMap<Object,String> report : reportList)
                 {
-                    Number[] record = report.get(cycle) ;
-                    itemValue += Double.valueOf(Reporter.EXTRACT_VALUE(propertyName,String.valueOf(record[itemIndex]))) ;
+                    String record = report.get(cycle) ;
+                    itemValue += Double.valueOf(Reporter.EXTRACT_VALUE(propertyName,record)) ;
                 }
                 itemString = Reporter.ADD_REPORT_PROPERTY(propertyName, itemValue/nbReports) ;
                 meanRecord.concat(itemString) ;
             }
             meanReport.put(cycle,meanRecord) ;
+        }
+        return meanReport ;
+    }
+
+    /**
+     * 
+     * @param propertyName
+     * @param reportList
+     * @return (ArrayList) report with (ArrayList) subreports where the values 
+     * in the subreports are averaged over the innermost ArrayList.
+     */
+    static public HashMap<Object,String> 
+        PREPARE_MEAN_HASHMAP_REPORT(ArrayList<HashMap<Object,String>> reportList)
+    {
+        // Find mean of reports
+        HashMap<Object,String> meanReport = new HashMap<Object,String>() ;
+        
+        HashMap<Object,String> firstReport = reportList.get(0) ;
+        
+        String firstReportString = firstReport.values().iterator().next() ;
+        String meanRecord = "" ;
+        ArrayList<String> reportProperties = IDENTIFY_PROPERTIES(firstReportString) ;
+        
+        
+        for (Object key : firstReport.keySet())
+        {
+            for (String propertyName : reportProperties)
+            {
+                double itemValue = 0.0 ;
+                for (HashMap<Object,String> report : reportList)
+                {
+                    String record = report.get(key) ;
+                    itemValue += Double.valueOf(Reporter.EXTRACT_VALUE(propertyName,record)) ;
+                }
+                meanRecord += ADD_REPORT_PROPERTY(propertyName,itemValue) ;
+            }
+            meanReport.put(key,meanRecord) ;
+            
+            // Prepare for next key
+            meanRecord = "" ;
         }
         return meanReport ;
     }
@@ -1275,11 +1315,11 @@ public class Reporter {
         
         int backYears = 1 + endYear - startYear ;
         
-        ArrayList<HashMap<Object,Number[]>> prevalenceReports = new ArrayList<HashMap<Object,Number[]>>() ;  
-        ArrayList<HashMap<Object,Number[]>> notificationReports = new ArrayList<HashMap<Object,Number[]>>() ;
+        ArrayList<HashMap<Object,String>> prevalenceReports = new ArrayList<HashMap<Object,String>>() ;  
+        ArrayList<HashMap<Object,String>> notificationReports = new ArrayList<HashMap<Object,String>>() ;
         ArrayList<HashMap<Object,Number>> beenTestedReports = new ArrayList<HashMap<Object,Number>>() ;
         
-        ArrayList<HashMap<Object,Number[]>> incidenceReports = new ArrayList<HashMap<Object,Number[]>>() ;  
+        ArrayList<HashMap<Object,String>> incidenceReports = new ArrayList<HashMap<Object,String>>() ;  
         ArrayList<ArrayList<Object>> condomUseReports = new ArrayList<ArrayList<Object>>() ;
         for (String simulation : simNames)
         {
@@ -1292,11 +1332,11 @@ public class Reporter {
             incidenceReports.add(encounterReporter.prepareYearsIncidenceRecord(siteNames, backYears, endYear)) ;
             condomUseReports.add(encounterReporter.prepareYearsCondomUseRecord(backYears, endYear)) ;
         }
-        HashMap<Object,Number[]> prevalenceRecordYears = AVERAGED_HASHMAP_REPORT(prevalenceReports) ;
-        HashMap<Object,Number[]> notificationsRecordYears = AVERAGED_HASHMAP_REPORT(notificationReports) ;
+        HashMap<Object,String> prevalenceRecordYears = PREPARE_MEAN_HASHMAP_REPORT(prevalenceReports) ;
+        HashMap<Object,String> notificationsRecordYears = PREPARE_MEAN_HASHMAP_REPORT(notificationReports) ;
         HashMap<Object,Number> beenTestedReportYears = MEAN_HASHMAP_REPORT(beenTestedReports) ;
         
-        HashMap<Object,Number[]> incidenceReportYears = AVERAGED_HASHMAP_REPORT(incidenceReports) ;
+        HashMap<Object,String> incidenceReportYears = PREPARE_MEAN_HASHMAP_REPORT(incidenceReports) ;
         ArrayList<Object> condomUseYears = AVERAGED_REPORT(condomUseReports,"proportion") ;
         
         // Construct Gray report
@@ -1306,9 +1346,9 @@ public class Reporter {
             //LOGGER.log(Level.INFO, "{0}", prevalenceRecordYears.get(year));
             for (int index = 0 ; index < arraysLength ; index++ )    // 
             {
-                values[index] = prevalenceRecordYears.get(year)[index] ;
-                values[arraysLength + index] = incidenceReportYears.get(year)[index] ;
-                values[2*arraysLength + index] = notificationsRecordYears.get(year)[index] ;
+                values[index] = Double.valueOf(EXTRACT_VALUE(arrayNames[index],prevalenceRecordYears.get(year))) ;
+                values[arraysLength + index] = Double.valueOf(EXTRACT_VALUE(arrayNames[index],incidenceReportYears.get(year))) ;
+                values[2*arraysLength + index] = Double.valueOf(EXTRACT_VALUE(arrayNames[index],notificationsRecordYears.get(year))) ;
             }
             //LOGGER.log(Level.INFO, "condom:{0}|", condomUseYears.get(year - startYear).toString());
             String condomValue = condomUseYears.get(year - startYear).toString() ;
@@ -1324,7 +1364,7 @@ public class Reporter {
         {
             colNames[index] = "prevalence_" + arrayNames[index] ;
             colNames[arraysLength + index] = "incidence_" + arrayNames[index] ;
-            colNames[2*arraysLength + index] = "notifications_" + arrayNames[index] ;
+            colNames[2*arraysLength + index] = "notification_" + arrayNames[index] ;
         }
         colNames[3*arraysLength] = "condom_use" ;
         colNames[3*arraysLength + 1] = "testing_coverage" ;
@@ -1458,7 +1498,7 @@ public class Reporter {
      * @param simName 
      * @param folderPath 
      */
-    static public void WRITE_CSV(HashMap<Object,Number[]> report, String categoryName, String[] scoreNames, ArrayList<Object> categoryList, String reportName, String simName, String folderPath)
+    static public boolean WRITE_CSV(HashMap<Object,Number[]> report, String categoryName, String[] scoreNames, ArrayList<Object> categoryList, String reportName, String simName, String folderPath)
     {
         String filePath = folderPath + simName + reportName + ".csv" ;
         String line ;
@@ -1511,9 +1551,67 @@ public class Reporter {
         catch( Exception e )
         {
             LOGGER.info(e.toString()) ;
+            return false ;
         }
+        return true ;
+    }
+    
+    /**
+     * Stores a (HashMap of ArrayList or Object) report as a csv file for other packages to read.
+     * @param report
+     * @param categoryName
+     * @param categoryList
+     * @param reportName
+     * @param simName
+     * @param folderPath 
+     */
+    static public boolean WRITE_CSV_STRING(HashMap<Object,String> report, String categoryName, ArrayList<Object> categoryList, String reportName, String simName, String folderPath)
+    {
+        HashMap<Object,Number[]> newReport = new HashMap<Object,Number[]>() ;
+        
+        String scoreString ;
+        String reportValue ;
+        Number scoreValue ;
+        ArrayList<String> propertyList = IDENTIFY_PROPERTIES(report.values().iterator().next()) ;
+        String[] propertyArray = new String[propertyList.size()] ;
+        boolean propertyConstructed = false ;
+        for (Object key : report.keySet())
+        {
+            reportValue = report.get(key) ;
+            
+            Number[] numberArray = new Number[propertyList.size()] ;
+            for (int propertyIndex = 0 ; propertyIndex < numberArray.length ; propertyIndex++ )
+            {
+                scoreString = EXTRACT_VALUE(propertyList.get(propertyIndex),reportValue) ;
+                if (int.class.isInstance(scoreString) || Integer.class.isInstance(scoreString)) 
+                    scoreValue = Integer.valueOf(scoreString) ;
+                else
+                    scoreValue = Double.valueOf(scoreString) ;
+                numberArray[propertyIndex] = scoreValue ;
+                
+                if (!propertyConstructed)
+                    propertyArray[propertyIndex] = propertyList.get(propertyIndex) ;
+            }
+            newReport.put(key, numberArray) ;
+        }
+        
+        return WRITE_CSV(newReport, categoryName, propertyArray, categoryList, reportName, simName, folderPath) ;
     }
 
+    /**
+     * Stores a (HashMap of ArrayList or Object) report as a csv file for other packages to read.
+     * @param report
+     * @param categoryName
+     * @param categoryList
+     * @param reportName
+     * @param simName
+     * @param folderPath 
+     */
+    static public boolean WRITE_CSV_STRING(HashMap<Object,String> report, String categoryName, String reportName, String simName, String folderPath)
+    {
+        return WRITE_CSV_STRING(report, categoryName, new ArrayList<Object>(), reportName, simName, folderPath) ;
+    }
+    
     /**
      * TODO: Unit test
      * @param record
