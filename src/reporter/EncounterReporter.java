@@ -125,25 +125,26 @@ public class EncounterReporter extends Reporter {
      * @return Year-by-year report for backYears years OF INCIDENTS on last day
      * of each year ending lastYear.
      */
-    public HashMap<Object,Number[]> 
+    public HashMap<Object,String> 
         prepareYearsIncidenceRecord(String[] siteNames, int backYears, int lastYear) 
         {
-            HashMap<Object,Number[]> incidenceRecordYears = new HashMap<Object,Number[]>() ;
+            HashMap<Object,String> incidenceRecordYears = new HashMap<Object,String>() ;
+            //HashMap<Object,Number[]> incidenceRecordYears = new HashMap<Object,Number[]>() ;
             
             int maxCycles = getMaxCycles() ;
             
-            HashMap<Object,Number> incidenceRecord ;
+            String incidenceRecord ;
             for (int year = 0 ; year < backYears ; year++ )
             {
-                Number[] yearlyIncidenceRecord = new Number[siteNames.length + 1] ;
+                //Number[] yearlyIncidenceRecord = new Number[siteNames.length + 1] ;
                
                 //endCycle = maxCycles - year * DAYS_PER_YEAR ;
                 incidenceRecord = prepareFinalIncidenceRecord(siteNames, year, 0, DAYS_PER_YEAR, maxCycles);
                 
-                for (int siteIndex = 0 ; siteIndex < siteNames.length ; siteIndex++ )
-                    yearlyIncidenceRecord[siteIndex] = incidenceRecord.get(siteNames[siteIndex]) ;
-                yearlyIncidenceRecord[siteNames.length] = incidenceRecord.get("all") ;
-                incidenceRecordYears.put(lastYear - year, (Number[]) yearlyIncidenceRecord.clone()) ;
+                //for (int siteIndex = 0 ; siteIndex < siteNames.length ; siteIndex++ )
+                  //  yearlyIncidenceRecord[siteIndex] = incidenceRecord.get(siteNames[siteIndex]) ;
+                //yearlyIncidenceRecord[siteNames.length] = incidenceRecord.get("all") ;
+                incidenceRecordYears.put(lastYear - year, incidenceRecord) ;
             }
             
             return incidenceRecordYears ;
@@ -157,8 +158,9 @@ public class EncounterReporter extends Reporter {
      * @param backDays
      * @return Records of final incidence for specified siteNames and in total.
      */
-    public HashMap<Object,Number> prepareFinalIncidenceRecord(String[] siteNames, int backMonths, int backDays)
+    public String prepareFinalIncidenceRecord(String[] siteNames, int backMonths, int backDays)
     {
+        //HashMap<Object,Number>
         int endCycle = getMaxCycles() ;
         
         return prepareFinalIncidenceRecord(siteNames, 0, backMonths, backDays, endCycle) ;
@@ -173,8 +175,10 @@ public class EncounterReporter extends Reporter {
      * @param endCycle
      * @return Records of final incidence for specified siteNames and in total.
      */
-    public HashMap<Object,Number> prepareFinalIncidenceRecord(String[] siteNames, int backYears, int backMonths, int backDays, int endCycle)
+    public String prepareFinalIncidenceRecord(String[] siteNames, int backYears, int backMonths, int backDays, int endCycle)
     {
+        //HashMap<Object,Number>
+        
         return prepareFinalIncidenceRecord(siteNames, backYears, backMonths, backDays, endCycle, new ArrayList<Object>()) ;
     }
     
@@ -190,9 +194,10 @@ public class EncounterReporter extends Reporter {
      * according to some criteria as HIV status.
      * @return Records of final incidence for specified siteNames and in total.
      */
-    public HashMap<Object,Number> prepareFinalIncidenceRecord(String[] siteNames, int backYears, int backMonths, int backDays, int endCycle, ArrayList<Object> sortedAgents)
+    public String prepareFinalIncidenceRecord(String[] siteNames, int backYears, int backMonths, int backDays, int endCycle, ArrayList<Object> sortedAgents)
     {
-        HashMap<Object,Number> finalIncidence = new HashMap<Object,Number>() ;
+        String finalIncidence = "" ; // new HashMap<Object,Number>() ;
+        //HashMap<Object,Number> finalIncidence = new HashMap<Object,Number>() ;
         
         endCycle = endCycle - (backYears * DAYS_PER_YEAR) ;
         
@@ -219,7 +224,7 @@ public class EncounterReporter extends Reporter {
                 incidents += COUNT_VALUE_INCIDENCE(TRANSMISSION,TRUE,record,0)[0] ;
                 
             }
-            finalIncidence.put(siteName,incidents/denominator) ;
+            finalIncidence += ADD_REPORT_PROPERTY(siteName,incidents/denominator) ;
         }
         incidents = 0 ;
         for (String finalIncidentsRecord : finalIncidentsReport)
@@ -233,26 +238,27 @@ public class EncounterReporter extends Reporter {
             // Count them
             incidents += COUNT_VALUE_INCIDENCE(RELATIONSHIPID,"",record,0)[1] ;
         }
-        finalIncidence.put("all",incidents/denominator) ;
+        finalIncidence += ADD_REPORT_PROPERTY("all",incidents/denominator) ;
         
         return finalIncidence ;
     }
     
     
-    public HashMap<Object,HashMap<Object,Number>> prepareSortedFinalIncidenceRecord(String[] siteNames, int backYears, int backMonths, int backDays, int endCycle, String sortingProperty) 
+    public HashMap<Object,String> prepareSortedFinalIncidenceRecord(String[] siteNames, int backYears, int backMonths, int backDays, int endCycle, String sortingProperty) 
     {
-        HashMap<Object,HashMap<Object,Number>> sortedFinalIncidenceRecord = new HashMap<Object,HashMap<Object,Number>>() ;
+        HashMap<Object,String> sortedFinalIncidenceRecord = new HashMap<Object,String>() ;
+        //HashMap<Object,HashMap<Object,Number>> sortedFinalIncidenceRecord = new HashMap<Object,HashMap<Object,Number>>() ;
         
         // Get Report of sortingValue mapping to agentIds
         PopulationReporter populationReporter = new PopulationReporter(simName,getFolderPath()) ;
         HashMap<Object,ArrayList<Object>> sortedAgentReport = populationReporter.agentIdSorted(sortingProperty) ;
-        
+        String finalIncidenceRecord ; // = new HashMap<Object,Number>() ;
         for (Object sortingValue : sortedAgentReport.keySet())
         {
-            HashMap<Object,Number> finalIncidenceRecord = new HashMap<Object,Number>() ;
+            //HashMap<Object,Number> finalIncidenceRecord = new HashMap<Object,Number>() ;
             finalIncidenceRecord = prepareFinalIncidenceRecord(siteNames, backYears, backMonths, backDays, endCycle, sortedAgentReport.get(sortingValue)) ;
             
-            sortedFinalIncidenceRecord.put(sortingValue, (HashMap<Object,Number>) finalIncidenceRecord.clone()) ;
+            sortedFinalIncidenceRecord.put(sortingValue, finalIncidenceRecord) ;
         }
     
         return sortedFinalIncidenceRecord ;
