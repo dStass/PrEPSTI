@@ -312,17 +312,17 @@ public class MSM extends Agent {
     private boolean riskyStatus ;
     
     /** Transmission probabilities per sexual contact from Urethra to Rectum */
-    static double URETHRA_TO_RECTUM = 0.40 ; // 0.100 ;  0.25 ; // 
+    static double URETHRA_TO_RECTUM = 0.80 ; // 0.100 ;  0.25 ; // 
     /** Transmission probabilities sexual contact from Urethra to Pharynx. */
     static double URETHRA_TO_PHARYNX = 0.10 ; // 0.060 ; // 0.035 ; // 0.15 ; 
     /** Transmission probabilities sexual contact from Rectum to Urethra. */ 
-    static double RECTUM_TO_URETHRA = 0.04 ; // 0.020 ; // 0.008 ; 0.010 ; // 
+    static double RECTUM_TO_URETHRA = 0.1 ; // 0.020 ; // 0.008 ; 0.010 ; // 
     /** Transmission probabilities sexual contact from Rectum to Pharynx. */
-    static double RECTUM_TO_PHARYNX = 0.001 ;
+    static double RECTUM_TO_PHARYNX = 0.0005 ;
     /** Transmission probabilities sexual contact in Pharynx to Urethra intercourse. */
-    static double PHARYNX_TO_URETHRA = 0.001 ; // 0.001 ;
+    static double PHARYNX_TO_URETHRA = 0.0005 ; // 0.001 ;
     /** Transmission probabilities sexual contact in Pharynx to Rectum intercourse. */
-    static double PHARYNX_TO_RECTUM = 0.001 ; // 0.030 ; // 0.0100 ; 
+    static double PHARYNX_TO_RECTUM = 0.0005 ; // 0.030 ; // 0.0100 ; 
     /** Transmission probabilities sexual contact in Pharynx to Pharynx intercourse (kissing). */
     static double PHARYNX_TO_PHARYNX = 0.020 ; // 0.030 ; // 0.052 ; 
     /** Transmission probabilities sexual contact in Urethra to Urethra intercourse (docking). */
@@ -501,7 +501,7 @@ public class MSM extends Agent {
      * Describes correlation between statusHIV and riskyStatus.
      * Must be less than 1/PROPORTION_HIV OR initRiskiness() fails.
      */
-    static double HIV_RISKY_CORRELATION = 1.0 ;	
+    static double HIV_RISKY_CORRELATION = 2.0 ; // 1.0 ;	
     
     /**
      * Choose whether MSM is RiskyMSM or SafeMSM
@@ -592,7 +592,9 @@ public class MSM extends Agent {
         else
             riskyProbability *= (1.0 - PROPORTION_HIV * HIV_RISKY_CORRELATION)/(1.0 - PROPORTION_HIV) ;
         
-        probabilityUseCondom = 2 * (1 - riskyProbability) * RAND.nextDouble() ;
+        probabilityUseCondom = 1 - sampleGamma(4, 0.1, 1) ; // Gamma2 * (1 - riskyProbability) * RAND.nextDouble() ;
+        if (probabilityUseCondom < 0)
+            probabilityUseCondom = 0 ;
         
         riskyStatus = (RAND.nextDouble() < riskyProbability) ;
     } 
