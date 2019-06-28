@@ -214,6 +214,7 @@ public class MSM extends Agent {
             changeProbability = (riskyProbability - lastProbability)/(1-lastProbability) ;
         else
             changeProbability = riskyProbability/lastProbability ; //(lastProbability - riskyProbability)/lastProbability ;
+                                                                    // see below
         
         //riskyProbability *= changeProbability ;
         //double riskyProbabilityPositive = riskyProbability ; //* HIV_RISKY_CORRELATION ;
@@ -235,8 +236,8 @@ public class MSM extends Agent {
             {
                 if (!msm.getRiskyStatus()) // if safe already
                     continue ;    // we don't change it
-                // change is to NOT risky, hence '>'
-                msm.setRiskyStatus(RAND.nextDouble() > changeProbability) ; 
+                // equivalent to correct calculation: RAND > (1 - changeProbability)
+                msm.setRiskyStatus(RAND.nextDouble() < changeProbability) ; 
             }
         }
     }
@@ -312,19 +313,19 @@ public class MSM extends Agent {
     private boolean riskyStatus ;
     
     /** Transmission probabilities per sexual contact from Urethra to Rectum */
-    static double URETHRA_TO_RECTUM = 0.80 ; // 0.100 ;  0.25 ; // 
+    static double URETHRA_TO_RECTUM = 0.15 ; // 0.100 ;  0.25 ; // 
     /** Transmission probabilities sexual contact from Urethra to Pharynx. */
-    static double URETHRA_TO_PHARYNX = 0.10 ; // 0.060 ; // 0.035 ; // 0.15 ; 
+    static double URETHRA_TO_PHARYNX = 0.02 ; // 0.060 ; // 0.035 ; // 0.15 ; 
     /** Transmission probabilities sexual contact from Rectum to Urethra. */ 
-    static double RECTUM_TO_URETHRA = 0.1 ; // 0.020 ; // 0.008 ; 0.010 ; // 
+    static double RECTUM_TO_URETHRA = 0.005 ; // 0.020 ; // 0.008 ; 0.010 ; // 
     /** Transmission probabilities sexual contact from Rectum to Pharynx. */
-    static double RECTUM_TO_PHARYNX = 0.0005 ;
+    static double RECTUM_TO_PHARYNX = 0.0010 ;
     /** Transmission probabilities sexual contact in Pharynx to Urethra intercourse. */
     static double PHARYNX_TO_URETHRA = 0.0005 ; // 0.001 ;
     /** Transmission probabilities sexual contact in Pharynx to Rectum intercourse. */
-    static double PHARYNX_TO_RECTUM = 0.0005 ; // 0.030 ; // 0.0100 ; 
+    static double PHARYNX_TO_RECTUM = 0.0010 ; // 0.030 ; // 0.0100 ; 
     /** Transmission probabilities sexual contact in Pharynx to Pharynx intercourse (kissing). */
-    static double PHARYNX_TO_PHARYNX = 0.020 ; // 0.030 ; // 0.052 ; 
+    static double PHARYNX_TO_PHARYNX = 0.030 ; // 0.030 ; // 0.052 ; 
     /** Transmission probabilities sexual contact in Urethra to Urethra intercourse (docking). */
     static double URETHRA_TO_URETHRA = 0.001 ; // 0.0001 ; // 0.005 ; 
     /** Transmission probabilities sexual contact in Rectum to Rectum intercourse. */
@@ -592,9 +593,9 @@ public class MSM extends Agent {
         else
             riskyProbability *= (1.0 - PROPORTION_HIV * HIV_RISKY_CORRELATION)/(1.0 - PROPORTION_HIV) ;
         
-        probabilityUseCondom = 1 - sampleGamma(4, 0.1, 1) ; // Gamma2 * (1 - riskyProbability) * RAND.nextDouble() ;
-        if (probabilityUseCondom < 0)
-            probabilityUseCondom = 0 ;
+        probabilityUseCondom = sampleGamma(4, 0.1, 1) ; // Gamma2 * (1 - riskyProbability) * RAND.nextDouble() ;
+        if (probabilityUseCondom > 1)
+            probabilityUseCondom = 1 ;
         
         riskyStatus = (RAND.nextDouble() < riskyProbability) ;
     } 
@@ -1433,7 +1434,7 @@ public class MSM extends Agent {
             {
                 if (!partner.getDiscloseStatusHIV()) // Partner doesn't disclose
                     return true ; 
-                if (partner.getStatusHIV() && !partner.getAntiViralStatus()) // Partner HIV +ve without antivirals
+                if (partner.getStatusHIV() && !partner.getAntiViralStatus()) // Partner HIV +ve without supressed viral load
                     return true ;
             }
             return (RAND.nextDouble() < probabilityUseCondom ) ;  //TODO: Should there be subset who always use?
