@@ -378,26 +378,28 @@ public class EncounterReporter extends Reporter {
      * @return Year-by-year report of the number of Agents who have (not) always
      * used condoms for anal intercourse, or never had it.
      */
-    public HashMap<Object,HashMap<Object,Number[]>> 
+    public HashMap<Object,HashMap<Object,String>> 
     prepareNumberCondomlessYears(String[] relationshipClassNames, int backYears, int backMonths, int backDays, int lastYear)
     {
-        HashMap<Object,HashMap<Object,Number[]>> numberCondomlessYears = new HashMap<Object,HashMap<Object,Number[]>>() ;
+        HashMap<Object,HashMap<Object,String>> numberCondomlessYears = new HashMap<Object,HashMap<Object,String>>();
+        // HashMap<Object,HashMap<Object,Number[]>>() ;
 
         int maxCycles = getMaxCycles() ;
 
         int endCycle ;
-        HashMap<Object,Number[]> numberCondomlessRelationship ;
+        HashMap<Object,String> numberCondomlessRelationship ;
+        //HashMap<Object,Number[]> numberCondomlessRelationship ;
         for (int year = 0 ; year < backYears ; year++ )
         {
             endCycle = maxCycles - year * DAYS_PER_YEAR ;
             numberCondomlessRelationship = prepareNumberCondomlessReport(0, backMonths, backDays, endCycle, relationshipClassNames);
 
-            HashMap<Object,Number[]> yearlyNumberCondomlessRelationship = new HashMap<Object,Number[]>() ;
+            //HashMap<Object,Number[]> yearlyNumberCondomlessRelationship = new HashMap<Object,Number[]>() ;
 
-            for (Object relationshipClassName : relationshipClassNames)
-                yearlyNumberCondomlessRelationship.put(relationshipClassName, numberCondomlessRelationship.get(relationshipClassName)) ;
+            //for (Object relationshipClassName : relationshipClassNames)
+              //  yearlyNumberCondomlessRelationship.put(relationshipClassName, numberCondomlessRelationship.get(relationshipClassName)) ;
 
-            numberCondomlessYears.put(lastYear - year, (HashMap<Object,Number[]>) yearlyNumberCondomlessRelationship.clone()) ;
+            numberCondomlessYears.put(lastYear - year, numberCondomlessRelationship) ;
         }
 
         return numberCondomlessYears ;
@@ -413,8 +415,10 @@ public class EncounterReporter extends Reporter {
      * @param relationshipClazzNames
      * @return 
      */
-    public HashMap<Object,Number[]> prepareNumberCondomlessReport(int backYears, int backMonths, int backDays, String[] relationshipClazzNames)
+    public HashMap<Object,String> prepareNumberCondomlessReport(int backYears, int backMonths, int backDays, String[] relationshipClazzNames)
     {
+        // HashMap<Object,Number[]>
+        
         return prepareNumberCondomlessReport(backYears, backMonths, backDays, getMaxCycles(), relationshipClazzNames) ;
     }
     
@@ -429,13 +433,15 @@ public class EncounterReporter extends Reporter {
      * @param relationshipClazzNames
      * @return 
      */
-    public HashMap<Object,Number[]> prepareNumberCondomlessReport(int backYears, int backMonths, int backDays, int endCycle, String[] relationshipClazzNames)
+    public HashMap<Object,String> prepareNumberCondomlessReport(int backYears, int backMonths, int backDays, int endCycle, String[] relationshipClazzNames)
     {
-        HashMap<Object,Number[]> numberCondomlessReport = new HashMap<Object,Number[]>() ;
+        //String numberCondomlessReport = "" ; 
+        HashMap<Object,String> numberCondomlessReport = new HashMap<Object,String>() ;
+        //new HashMap<Object,Number[]>() ;
         String[] condomStati = new String[] {"always","not_always","no_AI"} ;
-        for (String status : condomStati)
-            numberCondomlessReport.put(status, new Number[relationshipClazzNames.length]) ;
-        
+        //for (String status : condomStati)
+          //  numberCondomlessReport.put(status, "") ; // new Number[relationshipClazzNames.length]) ;
+        String reportEntry ;
         int statusIndex ;
         
         HashMap<String,HashMap<Object,ArrayList<Object>>> agentAnalIntercourseReport ;
@@ -448,12 +454,14 @@ public class EncounterReporter extends Reporter {
           //      = (HashMap<Object,HashMap<Object,ArrayList<Object>>>) getRecord("agentRelationships",relationshipReporter,parameterClazzes,parameters) ;
             = relationshipReporter.prepareAgentRelationshipsRecord(relationshipClazzNames, backYears, backMonths, backDays, endCycle) ;
         
-        String relationshipClazz ;
-        String condomStatus ;
+        //String relationshipClazz ;
+        //String condomStatus ;
         double agentsInvolved ;
-        for (int relationshipClazzIndex = 0 ; relationshipClazzIndex < relationshipClazzNames.length ; relationshipClazzIndex++ )
+        //String numberReportEntry = "" ;
+        //for (int relationshipClazzIndex = 0 ; relationshipClazzIndex < relationshipClazzNames.length ; relationshipClazzIndex++ );
+        for (String relationshipClazz : relationshipClazzNames)
         {
-            relationshipClazz = relationshipClazzNames[relationshipClazzIndex] ;
+            //relationshipClazz = relationshipClazzNames[relationshipClazzIndex] ;
             agentsInvolved = (double) agentRelationshipsRecord.get(relationshipClazz).keySet().size() ;
             agentAnalIntercourseReport 
                 = prepareAgentAnalIntercourseReport(backYears, backMonths, backDays, relationshipClazz) ;
@@ -468,26 +476,26 @@ public class EncounterReporter extends Reporter {
             
             // Proportion always using condom for anal sex
             statusIndex = 0 ;
-            condomStatus = condomStati[statusIndex] ;
-            Number[] numberReportEntries 
-                = numberCondomlessReport.get(condomStatus) ;
-            numberReportEntries[relationshipClazzIndex] = withCondom/agentsInvolved ;
-            numberCondomlessReport.put(condomStatus, (Number[]) numberReportEntries.clone()) ;
+            //numberCondomlessReport += ADD_REPORT_LABEL(relationshipClazz) ;
+            reportEntry = ADD_REPORT_PROPERTY(condomStati[statusIndex],withCondom/agentsInvolved) ;
+            //Number[] numberReportEntries   = numberCondomlessReport.get(condomStatus) ;
+            //numberReportEntries[relationshipClazzIndex] = withCondom/agentsInvolved ;
+            //numberCondomlessReport.put(condomStatus, (Number[]) numberReportEntries.clone()) ;
+            
             // Proportion sometimes having condomless anal sex
             statusIndex = 1 ;
-            condomStatus = condomStati[statusIndex] ;
-            numberReportEntries 
-                = numberCondomlessReport.get(condomStatus) ;
-            numberReportEntries[relationshipClazzIndex] = withoutCondom/agentsInvolved ;
-            numberCondomlessReport.put(condomStatus, (Number[]) numberReportEntries.clone()) ;
+            reportEntry += ADD_REPORT_PROPERTY(condomStati[statusIndex],withoutCondom/agentsInvolved) ;
+            //numberReportEntries = numberCondomlessReport.get(condomStatus) ;
+            //numberReportEntries[relationshipClazzIndex] = withoutCondom/agentsInvolved ;
+            //numberCondomlessReport.put(condomStatus, (Number[]) numberReportEntries.clone()) ;
+            
             // Proportion who never had anal sex
             statusIndex = 2 ;
-            condomStatus = condomStati[statusIndex] ;
-            numberReportEntries 
-                = numberCondomlessReport.get(condomStatus) ;
-            numberReportEntries[relationshipClazzIndex] = (agentsInvolved - withCondom - withoutCondom)/agentsInvolved ;
-            numberCondomlessReport.put(condomStatus, (Number[]) numberReportEntries.clone()) ;
-            
+            reportEntry += ADD_REPORT_PROPERTY(condomStati[statusIndex],(agentsInvolved - withCondom - withoutCondom)/agentsInvolved) ;
+            //numberReportEntries = numberCondomlessReport.get(condomStatus) ;
+            //numberReportEntries[relationshipClazzIndex] = (agentsInvolved - withCondom - withoutCondom)/agentsInvolved ;
+            //numberCondomlessReport.put(condomStatus, (Number[]) numberReportEntries.clone()) ;
+            numberCondomlessReport.put(relationshipClazz, reportEntry) ;
         }
         
         return numberCondomlessReport ;
