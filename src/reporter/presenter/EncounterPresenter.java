@@ -9,6 +9,7 @@ import reporter.* ;
 import community.Community ;
 
 import java.util.ArrayList ;
+import java.util.Arrays;
 import java.util.HashMap;
 //import java.lang.reflect.*;
 //import java.util.Arrays;
@@ -486,9 +487,13 @@ public class EncounterPresenter extends Presenter {
      */
     public void plotNumberCondomlessReport(int backYears, int backMonths, int backDays, String[] relationshipClazzNames)
     {
-        HashMap<Object,Number[]> numberCondomlessReport 
+        HashMap<Object,String> numberCondomlessReport 
                 = reporter.prepareNumberCondomlessReport(backYears, backMonths, backDays, relationshipClazzNames) ;
-        plotHashMap("condom use",relationshipClazzNames,numberCondomlessReport) ;
+        // HashMap<Object,Number[]> 
+        //ArrayList<String> legend = Reporter.IDENTIFY_PROPERTIES(numberCondomlessReport.values().iterator().next()) ;
+        //plotHashMapString("condom use",relationshipClazzNames,numberCondomlessReport) ;
+        
+        plotHashMapString(numberCondomlessReport,"condom_use","",relationshipClazzNames) ;
     }
     
     /**
@@ -502,7 +507,8 @@ public class EncounterPresenter extends Presenter {
      */
     public void plotNumberCondomlessYears(int backYears, int backMonths, int backDays, int lastYear, String[] relationshipClazzNames)
     {
-        HashMap<Object,HashMap<Object,Number[]>> 
+        //HashMap<Object,HashMap<Object,Number[]>> 
+        HashMap<Object,HashMap<Object,String>> 
     numberCondomlessYears = reporter.prepareNumberCondomlessYears(relationshipClazzNames, backYears, backMonths, backDays, lastYear) ;
         
         HashMap<Object,Number[]> yearlyReport = new HashMap<Object,Number[]>() ;
@@ -513,23 +519,32 @@ public class EncounterPresenter extends Presenter {
         
         for (Object yearKey : numberCondomlessYears.keySet())
         {
+            HashMap<Object,String> numberCondomlessRelationship = numberCondomlessYears.get(yearKey) ;
             Number[] scores = new Number[scoreNames.length] ;
             for (int relationshipIndex = 0 ; relationshipIndex < relationshipClazzNames.length ; relationshipIndex++ )
             {
                 String relationshipClazz = relationshipClazzNames[relationshipIndex] ;
+                String condomlessRecord = numberCondomlessRelationship.get(relationshipClazz) ;
+                for (int statusIndex = 0 ; statusIndex < condomStati.length ; statusIndex++ )
+                {
+                    String status = condomStati[statusIndex] ;
+                    scores[statusIndex] = Double.valueOf(Reporter.EXTRACT_VALUE(status, condomlessRecord)) ;
+                }
                 // Copy Number[] from numberCondomlessYears.get(yearKey).get(relationshipClazz) to scores
-                System.arraycopy(numberCondomlessYears.get(yearKey).get(relationshipClazz), 0, scores, 3 * relationshipIndex, condomStati.length);
+                // System.arraycopy(numberCondomlessYears.get(yearKey).get(relationshipClazz), 0, scores, 3 * relationshipIndex, condomStati.length);
             }
             yearlyReport.put(yearKey, (Number[]) scores.clone()) ;    
         }
         
         int index = 0 ;
         for (String relationshipClazz : relationshipClazzNames)
+        {
             for (String status : condomStati)
             {
                 scoreNames[index] = relationshipClazz + GROUP + status ;
                 index++ ;
             }
+        }
         
         plotHashMap("Year", scoreNames, yearlyReport) ;
     }
