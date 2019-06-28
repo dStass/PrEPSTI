@@ -10,6 +10,8 @@ import reporter.* ;
 //import community.Community ;
 
 import java.util.ArrayList ;
+import java.util.Collections;
+import java.util.HashSet ;
 //import java.util.Arrays;
 import java.util.HashMap;
 import java.util.logging.Level;
@@ -25,23 +27,24 @@ public class RelationshipPresenter extends Presenter{
     
     public static void main(String[] args)
     {
-        //String simName = "NoPrepCalibration22Pop40000Cycles500" ; // "NoPrepCalibration86Pop40000Cycles5000" ; // "introPrepCalibration49Pop40000Cycles5000" ; // "NoPrepSetting01Pop40000Cycles5000" ; // 
-        //String simName = "NoBurninPop40000Cycles8000" ;
-        String simName = "TestPop40000Cycles100" ; // "testPlotCondomUsePop4000Cycles500" ; // args[0] ;
+        String simName = "gammaFlip2HR3aPop40000Cycles1095" ; // "testPlotCondomUsePop4000Cycles500" ; // args[0] ;
         //String simName = "RelationshipCalibration74Pop40000Cycles100" ; // "testPlotCondomUsePop4000Cycles500" ; // args[0] ;
         //String chartTitle = "Nb_Agents_had_given_relationships" ; // args[1] ;
         //String chartTitle = "cumulative_relationships" ; // args[1] ;
-        //String chartTitle = "mean_nb_relationships" ;
-        String chartTitle = "breakups" ;
+        String chartTitle = "mean_nb_relationships" ;
+        //String chartTitle = "breakups" ;
         //String chartTitle = "agents_entered_relationships" ;
-        String reportFileName = "output/test/" ; // args[2] ;
+        
+        //String reportFileName = "output/test/" ; // args[2] ;
+        String reportFileName = "output/year2007/" ; // args[2] ;
         
         LOGGER.info(chartTitle) ;
         LOGGER.info(simName) ;
         String[] relationshipClazzNames = new String[] {"Regular","Monogomous","Casual"} ; // "Casual","Regular","Monogomous"
         RelationshipPresenter relationshipPresenter = new RelationshipPresenter(simName,chartTitle,reportFileName) ;
-        relationshipPresenter.plotBreakupsPerCycle() ;
+        //relationshipPresenter.plotBreakupsPerCycle() ;
         //relationshipPresenter.plotCumulativeRelationshipGaps() ;
+        //relationshipPresenter.plotCumulativeRelationships(new String[] {"Casual","Regular","Monogomous"}, 0, 6, 0) ;
         //relationshipPresenter.plotCumulativeRelationships(10, new String[] {"Casual","Regular","Monogomous"}, 0, 6, 0) ;
         //relationshipPresenter.plotCumulativeRelationshipLengths() ;
         //relationshipPresenter.plotRelationshipCumulativeTransmissions() ;
@@ -204,7 +207,9 @@ public class RelationshipPresenter extends Presenter{
         HashMap<Object,Number> relationshipLengthReport = reporter.prepareLengthAtBreakupReport() ;
         
         // Comment out if Casual Relationships are to be included
-        // relationshipLengthReport.remove(1) ;
+        relationshipLengthReport.remove(1) ;
+        
+        //Object maxSize = Collections.max(new HashSet(relationshipLengthReport.keySet())) ;
         
         plotHashMap("Length", "Length of relationships", relationshipLengthReport ) ;
     }
@@ -265,9 +270,9 @@ public class RelationshipPresenter extends Presenter{
         HashMap<Object,Number[]> invertedHashMap 
                 = Reporter.INVERT_HASHMAP_LIST(recentRelationshipsReport,relationshipClassNames) ;
         
-        String timePeriod = String.valueOf(backYears) + "Y" 
-                + String.valueOf(backMonths) + "M" 
-                + String.valueOf(backDays) + "D" ;
+        String timePeriod = String.valueOf(backYears) + " years " 
+                + String.valueOf(backMonths) + " months " 
+                + String.valueOf(backDays) + " days " ;
         
         plotSpline("partners in " + timePeriod,"Number of Agents",invertedHashMap, relationshipClassNames) ;
     }
@@ -329,6 +334,8 @@ public class RelationshipPresenter extends Presenter{
                 = new EncounterReporter(reporter.getSimName(), reporter.getFolderPath()) ;
         HashMap<Object,Number> relationshipCumulativeTransmissionReport
         = reporter.prepareRelationshipCumulativeTransmissionReport(encounterReporter) ;
+        
+        LOGGER.log(Level.INFO, "{0}", relationshipCumulativeTransmissionReport) ;
         
         plotSpline("Number of Transmissions","Cumulative relationships",relationshipCumulativeTransmissionReport) ;
     }
