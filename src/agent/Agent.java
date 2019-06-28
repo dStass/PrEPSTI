@@ -51,10 +51,10 @@ public abstract class Agent {
     //static String FOLDER_PATH = "/srv/scratch/z3524276/prepsti/"
     //static String FOLDER_PATH = "/short/is14/mw7704/prepsti/"
     static String FOLDER_PATH = ""
-    //+  "output/year2007/" ;
+    +  "output/year2007/" ;
     //   +  "output/year2010/" ;
     //+  "output/year2012/" ;
-     +  "output/test/" ;
+    // +  "output/test/" ;
     // +  "output/prePrEP/" ;
     
     
@@ -117,7 +117,7 @@ public abstract class Agent {
      */
     static double INFIDELITY_FRACTION = 0.5 ;
     
-    // Standard String null response 
+    /** Standard String null response */
     static String NONE = "none" ;
     
     
@@ -130,8 +130,8 @@ public abstract class Agent {
         try
         {
             //REINIT_SCREEN_CYCLE(agentList, year) ;
-            //MSM.REINIT_PROBABILITY_ANTIVIRAL(agentList, year) ;
-            //MSM.REINIT_PROBABILITY_DISCLOSURE_HIV(agentList, year) ;
+            MSM.REINIT_PROBABILITY_ANTIVIRAL(agentList, year) ;
+            MSM.REINIT_PROBABILITY_DISCLOSURE_HIV(agentList, year) ;
             MSM.REINIT_RISK_ODDS(agentList, year) ;
         }
         catch ( Exception e )
