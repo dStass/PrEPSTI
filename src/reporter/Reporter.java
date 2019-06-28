@@ -559,9 +559,9 @@ public class Reporter {
      * @param record
      * @return String[] pairs of agentIds corresponding to relationships described in record
      */
-    protected String[] EXTRACTAGENTIDS(String record)
+    protected String[] EXTRACT_AGENTIDS(String record)
     {
-        return EXTRACT_AGENTIDS(record, 0) ;
+        return Reporter.this.EXTRACT_AGENTIDS(record, 0) ;
     }
     
     /**
@@ -675,9 +675,10 @@ public class Reporter {
     /**
      * Puts entries into HashMap whose keys are the agentIds
      * and values are arrays of their partners Ids. 
-     * Creates key and associated int[] if necessary.
+     * Creates key and associated Object[] if necessary.
+     * 
      * @param key - usually agentId but need not be.
-     * @param entry - int to go into int[] at key. 
+     * @param entry - Object to go into Object[] at key. 
      * @param valueMap - Adding boundValue and sometimes key to this HashMap
      * @return partnerMap - HashMap indicating partnerIds of each agent (key: agentId)
      */
@@ -1252,6 +1253,25 @@ public class Reporter {
         return meanReport ;
     }
 
+    static public String 
+        PREPARE_MEAN_REPORT(ArrayList<String> reportList)
+    {
+        // Find mean of reports
+        String meanReport = "" ; 
+        
+        String firstReport = reportList.get(0) ;
+        int nbReports = reportList.size() ;
+        ArrayList<String> reportProperties = IDENTIFY_PROPERTIES(firstReport) ;
+        for (String propertyName : reportProperties)
+        {
+            double itemValue = 0.0 ;
+            for (String record : reportList)
+                itemValue += Double.valueOf(Reporter.EXTRACT_VALUE(propertyName,record)) ;
+            meanReport += Reporter.ADD_REPORT_PROPERTY(propertyName, itemValue/nbReports) ;
+        }
+        return meanReport ;
+    }
+
     /**
      * 
      * @param propertyName
@@ -1266,7 +1286,7 @@ public class Reporter {
         HashMap<Object,String> meanReport = new HashMap<Object,String>() ;
         
         HashMap<Object,String> firstReport = reportList.get(0) ;
-        
+        int nbReports = reportList.size() ;
         String firstReportString = firstReport.values().iterator().next() ;
         String meanRecord = "" ;
         ArrayList<String> reportProperties = IDENTIFY_PROPERTIES(firstReportString) ;
@@ -1282,7 +1302,7 @@ public class Reporter {
                     String record = report.get(key) ;
                     itemValue += Double.valueOf(Reporter.EXTRACT_VALUE(propertyName,record)) ;
                 }
-                meanRecord += ADD_REPORT_PROPERTY(propertyName,itemValue) ;
+                meanRecord += ADD_REPORT_PROPERTY(propertyName,itemValue/nbReports) ;
             }
             meanReport.put(key,meanRecord) ;
             
@@ -1640,6 +1660,38 @@ public class Reporter {
             colonIndex = nextColonIndex ;
         }
         return propertyArray ;
+    }
+    
+    /**
+     * TODO: Unit test
+     * @param record
+     * @return (ArrayList) String names of labels without given values in record.
+     */
+    static public ArrayList<String> IDENTIFY_LABELS(String record)
+    {
+        ArrayList<String> labelArray = new ArrayList<String>() ;
+        
+        int colonIndex = record.indexOf(":") ;
+        int spaceIndex ;
+        int nextColonIndex ;
+        int propertyIndex = 0 ;
+        
+        while (colonIndex > 0)
+        {
+            nextColonIndex = record.indexOf(":",colonIndex+1) ;
+            spaceIndex = record.indexOf(" ",colonIndex) ;
+            if  (spaceIndex < nextColonIndex || nextColonIndex < 0)
+            {
+                propertyIndex = spaceIndex + 1 ;
+            }
+            else
+            {
+                labelArray.add(record.substring(propertyIndex, colonIndex)) ;
+                propertyIndex = colonIndex + 1 ;
+            }
+            colonIndex = nextColonIndex ;
+        }
+        return labelArray ;
     }
     
     /**
@@ -2155,8 +2207,9 @@ public class Reporter {
     public static void main(String[] args)
     {
         String folderPath = "output/prePrEP/" ;
-        String[] simNames = new String[] {"to2014contact96dPop40000Cycles4380","to2014contact96cPop40000Cycles4380","to2014contact96bPop40000Cycles4380","to2014contact96aPop40000Cycles4380"} ;
-        
+        //String[] simNames = new String[] {"to2014contact96dPop40000Cycles4380","to2014contact96cPop40000Cycles4380","to2014contact96bPop40000Cycles4380","to2014contact96aPop40000Cycles4380"} ;
+        String[] simNames = new String[] {"gamma4bbPop40000Cycles4380","gamma4bcPop40000Cycles4380","gamma4bdPop40000Cycles4380","gamma4bePop40000Cycles4380","gamma4bfPop40000Cycles4380"} ; 
+       
         PREPARE_GRAY_REPORT(simNames,folderPath,2007,2016) ;
     }
 
