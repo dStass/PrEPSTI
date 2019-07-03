@@ -28,6 +28,7 @@ public class RelationshipPresenter extends Presenter{
     public static void main(String[] args)
     {
         String simName = "gammaFlip2HR3aPop40000Cycles1095" ; // "testPlotCondomUsePop4000Cycles500" ; // args[0] ;
+        //String simName = "doubleCasual4aPop40000Cycles1095" ; // "testPlotCondomUsePop4000Cycles500" ; // args[0] ;
         //String simName = "RelationshipCalibration74Pop40000Cycles100" ; // "testPlotCondomUsePop4000Cycles500" ; // args[0] ;
         //String chartTitle = "Nb_Agents_had_given_relationships" ; // args[1] ;
         //String chartTitle = "cumulative_relationships" ; // args[1] ;
@@ -45,7 +46,7 @@ public class RelationshipPresenter extends Presenter{
         //relationshipPresenter.plotBreakupsPerCycle() ;
         //relationshipPresenter.plotCumulativeRelationshipGaps() ;
         //relationshipPresenter.plotCumulativeRelationships(new String[] {"Casual","Regular","Monogomous"}, 0, 6, 0) ;
-        //relationshipPresenter.plotCumulativeRelationships(10, new String[] {"Casual","Regular","Monogomous"}, 0, 6, 0) ;
+        relationshipPresenter.plotCumulativeRelationships(3, new String[] {"Casual","Regular","Monogomous"}, 0, 6, 0) ;
         //relationshipPresenter.plotCumulativeRelationshipLengths() ;
         //relationshipPresenter.plotRelationshipCumulativeTransmissions() ;
         //relationshipPresenter.plotMeanNumberRelationshipsReport(relationshipClazzNames);
@@ -222,7 +223,7 @@ public class RelationshipPresenter extends Presenter{
     }
     
     /**
-     * Plot how many agentIds have more had how many or more Relationships
+     * Plot the proportion of agentIds who have had how many or more Relationships
      * @param relationshipClassNames 
      */
     public void plotCumulativeRelationships(int nbRelationships, String[] relationshipClassNames, int backYears, int backMonths, int backDays)
@@ -233,8 +234,16 @@ public class RelationshipPresenter extends Presenter{
         HashMap<Object,HashMap<Object,Number>> cumulativeRelationshipRecord 
                 = reporter.prepareCumulativeRelationshipRecord(nbRelationships, relationshipClassNames, backYears, backMonths, backDays) ;
         
+        Number outputEntry ;
         for (Object className : cumulativeRelationshipRecord.keySet())
-            output.put(className, cumulativeRelationshipRecord.get(className).get(nbRelationships)) ;
+        {
+            outputEntry = cumulativeRelationshipRecord.get(className).get(nbRelationships) ;
+            if (outputEntry == null)
+                outputEntry = 0 ;
+            output.put(className, outputEntry) ;
+        }
+        
+        LOGGER.log(Level.INFO, "{0}", output) ;
         
         plotHashMap("Class of Relationships","Number of Agents",output) ;
     }
