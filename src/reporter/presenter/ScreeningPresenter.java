@@ -71,16 +71,17 @@ public class ScreeningPresenter extends Presenter {
         this.reporter = reporter ;
     }
 
-    //static private String[] simNames = new String[] {"to2012gammaScreen3aPop40000Cycles3285"} ;
+    //static private String[] simNames = new String[] {"to2016breakScreen050up1cPop40000Cycles5475"} ;
+    //static private String[] simNames = new String[] {"to2016gammaScreen3aPop40000Cycles3285"} ;
     //static private String[] simNames = new String[] {"gamma7aPop40000Cycles1460"} ; //,"gamma4bcPop40000Cycles4380","gamma4bdPop40000Cycles4380","gamma4bePop40000Cycles4380","gamma4bfPop40000Cycles4380"} ; 
     //static private String[] simNames = new String[] {"to2016gamma7aPop40000Cycles5110"} ; //,"to2014gamma4bPop40000Cycles5110","to2014gamma4cPop40000Cycles5110","to2014gamma4dPop40000Cycles5110","to2014gamma4ePop40000Cycles5110","to2014gamma4fPop40000Cycles5110"} ; 
-    static private String[] simNames = new String[] {"goneWild2aPop40000Cycles1095"} ; //,"max3contact96bPop40000Cycles7300",
+    static private String[] simNames = new String[] {"goneWild8bPop40000Cycles1095"} ; //,"max3contact96bPop40000Cycles7300",
       //  "max3contact96cPop40000Cycles7300"} ; //,"max3contact96dPop40000Cycles7300","max3contact96aPop40000Cycles7300"} ;
-    //static private String[] simNames = new String[] {"safeContact99cPop40000Cycles4000"} ; //,"safeContact99bPop40000Cycles4000","safeContact99cPop40000Cycles4000"} ;
-    //static private String[] simNames = new String[] {"adjust2009contact96aPop40000Cycles5475","adjust2009contact96bPop40000Cycles5475","adjust2009contact96cPop40000Cycles5475",
+    //static private String[] simNames = new String[] {"gamma7R4M17bPop40000Cycles2920"} ; //
+    //static private String[] simNames = new String[] {"break050up1ePop40000Cycles2920"} ;
         //"adjust2009contact96dPop40000Cycles5475","adjust2009contact96ePop40000Cycles5475","adjust2009contact96fPop40000Cycles5475","adjust2009contact96gPop40000Cycles5475",
         //"adjust2009contact96hPop40000Cycles5475","adjust2009contact96iPop40000Cycles5475","adjust2009contact96jPop40000Cycles5475"} ;
-    //static private String[] simNames = new String[] {"adjust2009contact96aPop40000Cycles4380","adjust2009contact96ePop40000Cycles4380","adjust2009contact96iPop40000Cycles4380"} ; //,
+    //static private String[] simNames = new String[] {"to2014doubleCasual8aPop40000Cycles4745"} ; //,"adjust2009contact96ePop40000Cycles4380","adjust2009contact96iPop40000Cycles4380"} ; //,
         //"adjust2009contact96dPop40000Cycles4380","adjust2009contact96ePop40000Cycles4380","adjust2009contact96fPop40000Cycles4380","adjust2009contact96gPop40000Cycles4380",
         //"adjust2009contact96hPop40000Cycles4380","adjust2009contact96iPop40000Cycles4380","adjust2009contact96jPop40000Cycles4380"} ;
     //static private String[] simNames = new String[] {"adjust2009contact96aPop40000Cycles7300","adjust2009contact96bPop40000Cycles7300","adjust2009contact96cPop40000Cycles7300",
@@ -102,7 +103,7 @@ public class ScreeningPresenter extends Presenter {
         String simName = simNames[0] ;
         
         boolean unique = false ;
-        int notifications = -1 ; 
+        int notifications = 0 ; 
         String chartTitle ;
         if (unique && (notifications == 1))
             chartTitle = "unique " ;
@@ -159,12 +160,12 @@ public class ScreeningPresenter extends Presenter {
         //screeningPresenter.plotNumberAgentTreatedReport(2, 0, 0,"prepStatus",5) ;
 
         //screeningPresenter.multiPlotScreening(new Object[] {"prevalence","coprevalence",new String[] {"Pharynx","Rectum"},new String[] {"Urethra","Rectum"},"prevalence",new String[] {"Pharynx","Rectum","Urethra"}});
-        screeningPresenter.multiPlotScreening(new Object[] {"prevalence","prevalence",new String[] {"Pharynx","Rectum","Urethra"}});
+        //screeningPresenter.multiPlotScreening(new Object[] {"prevalence","prevalence",new String[] {"Pharynx","Rectum","Urethra"}});
         //screeningPresenter.plotNotificationsPerCycle(siteNames) ;
         //screeningPresenter.plotSitePrevalence(siteNames) ;
         //screeningPresenter.plotFinalSymptomatic(new String[] {"Pharynx","Rectum","Urethra"}) ;
         //screeningPresenter.plotFinalPrevalences(new String[] {"Pharynx","Rectum","Urethra"}) ;
-        //screeningPresenter.plotFinalNotifications(new String[] {"Pharynx","Rectum","Urethra"}, unique, 0, Reporter.DAYS_PER_YEAR, notifications) ;
+        screeningPresenter.plotFinalNotifications(new String[] {"Pharynx","Rectum","Urethra"}, unique, 0, Reporter.DAYS_PER_YEAR, notifications) ;
         //screeningPresenter.plotSortedFinalNotifications(new String[] {"Pharynx","Rectum","Urethra"}, unique, 0, 0, Reporter.DAYS_PER_YEAR, "statusHIV") ; 
         //screeningPresenter.plotSortedNotificationsYears(siteNames, unique, 3, 2009, "statusHIV") ;
         //screeningPresenter.plotNotificationsYears(siteNames,6,2012) ;    // siteNames,5,4) ;    // new String[] {"all"} 
