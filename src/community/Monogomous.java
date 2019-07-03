@@ -20,7 +20,7 @@ public class Monogomous extends Relationship {
     
 
     // Part of how the number of sexual encounters is determined.
-    static double ENCOUNTER_PROBABILITY = 0.4 ; // 0.2 ; // 0.6 ;
+    static double ENCOUNTER_PROBABILITY = 0.2 ; // 0.6 ;
 
 
     // Logger
