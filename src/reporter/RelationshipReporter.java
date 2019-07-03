@@ -694,7 +694,9 @@ public class RelationshipReporter extends Reporter {
     }
     
     /**
-     * @return A snapshot of how many agentIds have more had how many or more Relationships
+     * @return A snapshot of what proportion of agentIds have more had how many 
+     * or more Relationships, where each Relationship is assumed to be with a different 
+     * partner.
      */
     public HashMap<Object,HashMap<Object,Number>> prepareCumulativeRelationshipRecord(int nbRelationships, String[] relationshipClassNames, int backYears, int backMonths, int backDays)
     {
@@ -703,27 +705,39 @@ public class RelationshipReporter extends Reporter {
         for (String relationshipClassName : relationshipClassNames)
             cumulativeRelationshipRecord.put(relationshipClassName, new HashMap<Object,Number>()) ;
         
+        double population = getPopulation() ;
         //TODO: Separate out action on individual RECORD
-        LOGGER.info("agentsCumulativeRelationshipReport");
         ArrayList<HashMap<Object,HashMap<Object,Integer>>> agentsCumulativeRelationshipReport 
                 = prepareAgentsCumulativeRelationshipReport(relationshipClassNames, backYears, backMonths, backDays, getMaxCycles()) ;
         
         HashMap<Object,HashMap<Object,Integer>> agentsCumulativeRelationshipRecord 
                 = agentsCumulativeRelationshipReport.get(agentsCumulativeRelationshipReport.size()-1) ;
-            LOGGER.log(Level.INFO, "{0}", agentsCumulativeRelationshipRecord) ;
         
+        // Find cumulative number of all relationships. 
+        HashMap<Object,Integer> totalRelationships = new HashMap<Object,Integer>() ;
+        for (Object relationshipId : agentsCumulativeRelationshipRecord.keySet())
+        {
+            HashMap<Object,Integer> agentCumulativeRecord = agentsCumulativeRelationshipRecord.get(relationshipId) ;
+            for (Object agentId : agentCumulativeRecord.keySet())
+                totalRelationships = UPDATE_HASHMAP(agentId,agentCumulativeRecord.get(agentId),totalRelationships) ;
+        }
+        agentsCumulativeRelationshipRecord.put("total",totalRelationships) ;
+        cumulativeRelationshipRecord.put("total", new HashMap<Object,Number>()) ;
+            
         int minValue ;
         if (nbRelationships < 0)
             minValue = 1 ;
         else
             minValue = nbRelationships ;
 
-        for (Object relationshipClassName : relationshipClassNames)
+        for (Object relationshipClassName : agentsCumulativeRelationshipRecord.keySet())
         {
             Collection<Integer> agentsCumulativeRelationshipValues 
                     = agentsCumulativeRelationshipRecord.get(relationshipClassName).values() ;
 
-            int maxValue = Collections.max(agentsCumulativeRelationshipValues);
+            Integer maxValue = Collections.max(agentsCumulativeRelationshipValues);
+            if (maxValue == null)
+                maxValue = 0 ;
             // To track how agentIds have had more than given Relationships
             int agentsOver = 0 ;
             LOGGER.log(Level.INFO, "min:{0} max:{1}", new Object[] {minValue, maxValue});
@@ -731,10 +745,10 @@ public class RelationshipReporter extends Reporter {
             for (int key = maxValue ; key >= minValue ; key-- )
             {
                 agentsOver += Collections.frequency(agentsCumulativeRelationshipValues,key) ;
-                cumulativeRelationshipRecord.get(relationshipClassName).put(key, agentsOver) ;
-                LOGGER.log(Level.INFO, "{0} {1}", new Object[] {relationshipClassName,cumulativeRelationshipRecord});
+                cumulativeRelationshipRecord.get(relationshipClassName).put(key, agentsOver/population) ;
             }
         }
+        LOGGER.log(Level.INFO, "{0}", cumulativeRelationshipRecord);
         return cumulativeRelationshipRecord ;
     }
     
