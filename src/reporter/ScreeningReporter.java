@@ -72,7 +72,7 @@ public class ScreeningReporter extends Reporter {
             String positivityRecord = "" ;
             for (int year = 0 ; year < backYears ; year++ )
             {
-                Number[] yearlyPositivityRecord = new Number[siteNames.length] ;
+                //Number[] yearlyPositivityRecord = new Number[siteNames.length] ;
                
                 //endCycle = maxCycles - year * DAYS_PER_YEAR ;
                 positivityRecord = prepareFinalNotificationsRecord(siteNames, unique, year, 0, DAYS_PER_YEAR, maxCycles);
@@ -138,7 +138,7 @@ public class ScreeningReporter extends Reporter {
             for (int year = 0 ; year < backYears ; year++ )
             {
                 //Number[] yearlyNotificationsRecord = new Number[siteNames.length + 1] ;
-                String yearlyNotificationsString = "" ;
+                //String yearlyNotificationsString = "" ;
                 //endCycle = maxCycles - year * DAYS_PER_YEAR ;
                 notificationsRecord = prepareFinalNotificationsRecord(siteNames, false, year, 0, DAYS_PER_YEAR, maxCycles, sortedAgents);
                 // [0] for positivity
