@@ -1263,6 +1263,19 @@ public class Presenter {
         callPlotChart(scoreName,recordList) ;
     }            
     
+    /**
+     * Calls plotCycleValue
+     * @param scoreNames
+     * @param record
+     */
+    public void multiPlotValues(String record, String yLabel, String xLabel)
+    {
+        ArrayList<Object> recordList = new ArrayList<Object>() ;
+        recordList.add(record) ;
+        DefaultCategoryDataset dataset = parseSortedRecord(record) ;
+        chart_awt.plotBarChart(chartTitle, dataset, yLabel, xLabel) ;
+    }            
+    
     public void plotEventsPerCycle(String scoreName, ArrayList<ArrayList<Object>> reportArray)
     {
         ArrayList<Object> eventsPerCycle = prepareEventsPerCycle(scoreName,reportArray) ;
@@ -1425,6 +1438,30 @@ public class Presenter {
             categoryData.add(Reporter.EXTRACT_ALL_VALUES(categoryNames[plotIndex], report, categoryIndex)) ;
             scoreData.add(Reporter.EXTRACT_ALL_VALUES(scoreName, report, categoryIndex)) ;
         }
+    }
+    
+    private DefaultCategoryDataset parseSortedRecord(String record)
+    {
+        DefaultCategoryDataset categoryDataset = new DefaultCategoryDataset() ;
+        Number scoreValue ;
+        
+        ArrayList<String> sortedNames = Reporter.IDENTIFY_PROPERTIES(record) ;
+        for (String name : sortedNames)
+        {
+            String[] nameParts = name.split(GROUP) ;
+            String property = nameParts[0] ;
+            
+            String scoreString = Reporter.EXTRACT_VALUE(name,record) ;
+            if (int.class.isInstance(scoreString) || Integer.class.isInstance(scoreString)) 
+                scoreValue = Integer.valueOf(scoreString) ;
+            else
+                scoreValue = Double.valueOf(scoreString) ;
+
+            categoryDataset.addValue( scoreValue, "", property ) ;
+
+        }
+        
+        return categoryDataset ;
     }
 
     /**
@@ -1827,7 +1864,7 @@ public class Presenter {
             
             barChart.getPlot().setBackgroundPaint(Color.WHITE) ;
             //barChart.getXYPlot().getDomainAxis().set.setTickUnit(new NumberTickUnit(dataset.getColumnCount()/20)) ;
-            saveChart(barChart) ;
+            //saveChart(barChart) ;
             displayChart(barChart) ;
             
         }
@@ -1916,9 +1953,7 @@ public class Presenter {
             if (String.valueOf(dataset.getColumnKeys().get(0)).length() > 1)
                 domainAxis.setCategoryLabelPositions(CategoryLabelPositions.UP_45);
             
-            
-            
-            saveChart(barChart) ;
+            //saveChart(barChart) ;
             displayChart(barChart) ;
         }
         
@@ -1930,7 +1965,7 @@ public class Presenter {
             NumberAxis rangeAxis = (NumberAxis) scatterPlot.getXYPlot().getRangeAxis() ;
             rangeAxis.setTickUnit(new NumberTickUnit(1)) ;
             scatterPlot.setBackgroundPaint(Color.WHITE) ;
-            saveChart(scatterPlot) ;
+            //saveChart(scatterPlot) ;
             displayChart(scatterPlot) ;
             
         }
@@ -1981,8 +2016,8 @@ public class Presenter {
             if (int.class.isInstance(dataset.getX(0,0)) || Integer.class.isInstance(dataset.getX(0, 0)))
             {
                 LOGGER.info("integer domain") ;
-                NumberAxis rangeAxis = (NumberAxis) lineChart.getXYPlot().getRangeAxis() ;
-                rangeAxis.setTickUnit(new NumberTickUnit(1)) ;
+                //NumberAxis rangeAxis = (NumberAxis) lineChart.getXYPlot().getRangeAxis() ;
+                //rangeAxis.setTickUnit(new NumberTickUnit(1)) ;
                 domainAxis.setTickUnit(new NumberTickUnit(1)) ;
             }
             lineChart.getPlot().setBackgroundPaint(Color.WHITE) ;
@@ -1994,7 +2029,7 @@ public class Presenter {
             
             //lineChart.getPlot().setOutlineVisible(false);
             
-            saveChart(lineChart) ;
+            //saveChart(lineChart) ;
             displayChart(lineChart) ;
         }
         
@@ -2037,7 +2072,7 @@ public class Presenter {
                 xPos += 5 ;
             }
             areaChart.getPlot().setBackgroundPaint(Color.WHITE) ;
-            saveChart(areaChart) ;
+            //saveChart(areaChart) ;
             displayChart(areaChart) ;
         }
         
@@ -2053,6 +2088,10 @@ public class Presenter {
             //LOGGER.info(System.getProperty("os.name")) ;
         }
         
+        /**
+         * Saves the plot to a .jpg file
+         * @param barChart 
+         */
         private void saveChart(JFreeChart barChart)
         {
             String directory = folderPath ;
@@ -2360,7 +2399,6 @@ public class Presenter {
                 for (int index = 0 ; index < dataSize; index++ )
                 {
                     String scoreString = (String) data.get(index) ;
-                    //LOGGER.info(scoreString) ;
                     if (int.class.isInstance(scoreString)) 
                         scoreValue = Integer.valueOf(scoreString) ;
                     else
