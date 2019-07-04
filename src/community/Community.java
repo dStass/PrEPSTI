@@ -67,10 +67,11 @@ public class Community {
     static public String FILE_PATH = "output/" ;
     //static public String FILE_PATH = "/srv/scratch/z3524276/prepsti/output/test/" ;
     //static public String FILE_PATH = "/short/is14/mw7704/prepsti/output/year2007/" ;
-    /** Dump reports to disk after this many cycles. */
-    /** Whether parameters change throughout simulation. */
-    static boolean DYNAMIC = false ;
     
+    /** Whether parameters change throughout simulation. */
+    static boolean DYNAMIC = true ;
+    
+    /** Dump reports to disk after this many cycles. */
     static final int DUMP_CYCLE = ((int) Math.pow(10, 7))/POPULATION ;
     /** Whether to dump partial reports during simulation. */
     static final boolean PARTIAL_DUMP = (DUMP_CYCLE > 0) ;
@@ -85,7 +86,7 @@ public class Community {
      * (String) Name of previous simulation to reload.
      * Not reloaded if this is an empty string.
      */
-    static final String RELOAD_SIMULATION = "" ; // "test2HR1aPop40000Cycles2190" ; // "riskiness1bPop40000Cycles1095" ; // "from2010try18aPop40000Cycles2190" ; // "max3contact95bEXT2Pop40000Cycles2920" ; 
+    static final String RELOAD_SIMULATION = "halfCasual10bPop40000Cycles2190" ; // "gamma2HR4aEXTPop40000Cycles730" ; // "riskiness1bPop40000Cycles1095" ; // "from2010try18aPop40000Cycles2190" ; // "max3contact95bEXT2Pop40000Cycles2920" ; 
     
     static public String getFilePath()
     {
@@ -144,17 +145,19 @@ public class Community {
     {
         //String infectedSiteName ;
         //double urethralTransmission ;
-        if (args.length > 0)
+        int argIndex = 0 ;
+        if (args.length > argIndex)
         {
             LOGGER.info(args[0]);
             NAME_ROOT = args[0] ;
             SIM_NAME = NAME_ROOT + NAME_SUFFIX ;
+            argIndex++ ;
         }
         //MAX_CYCLES = Integer.valueOf(args[1]) ;
-        if (args.length > 1)
+        if (args.length > argIndex)
         {
-            LOGGER.info(args[1]) ;
-            int time = Integer.valueOf(args[1]) ;
+            LOGGER.info(args[argIndex]) ;
+            int time = Integer.valueOf(args[argIndex]) ;
             if (time > 99)    // time given assumed to be days
                 MAX_CYCLES = time ;
             else    // time given assumed to be years
@@ -162,37 +165,44 @@ public class Community {
             NAME_SUFFIX = "Pop" + String.valueOf(POPULATION) + "Cycles" + MAX_CYCLES ;
             SIM_NAME = NAME_ROOT + NAME_SUFFIX ;
             OUTPUT_RETURN += SIM_NAME + " " ;
+            argIndex++ ;
         }
-        if (args.length > 2)
+        if (args.length > argIndex)
         {
-            LOGGER.info(args[2]) ;
-            FILE_PATH += args[2] ;
+            LOGGER.info(args[argIndex]) ;
+            FILE_PATH += args[argIndex] ;
             /*
-            urethralTransmission = Double.valueOf(args[1]) ;
+            urethralTransmission = Double.valueOf(args[argIndex]) ;
             MSM.SET_INFECT_PROBABILITY("URETHRA","RECTUM",urethralTransmission) ;
             MSM.SET_INFECT_PROBABILITY("RECTUM","URETHRA",urethralTransmission) ;
             */
+            argIndex++ ;
         }
-        if (args.length > 3)
+        if (args.length > argIndex)
         {
-            LOGGER.info(args[3]);
-            if (args[3].equals("raijin"))
+            LOGGER.info(args[argIndex]);
+            if (args[argIndex].equals("raijin"))
                 FILE_PATH = "/short/is14/mw7704/prepsti/" + FILE_PATH ;
-            else if (args[3].equals("katana"))
+            else if (args[argIndex].equals("katana"))
                 FILE_PATH = "/srv/scratch/z3524276/prepsti/" + FILE_PATH ;
+            argIndex++ ;
         }
-        if (args.length > 4)
+        if (args.length > argIndex)
         {
-            int index = 4 ;
+            MSM.SET_ADJUST_CASUAL_CONSENT(Double.valueOf(args[argIndex]));
+            argIndex++ ;
+        }
+        if (args.length > argIndex)
+        {
             for (String infected : MSM.SITE_NAMES)
                 for (String clear : MSM.SITE_NAMES)
                 {
-                    MSM.SET_INFECT_PROBABILITY(infected, clear, Double.valueOf(args[index])) ;
-                    OUTPUT_RETURN += args[index] + " " ;
-                    index++ ;
+                    MSM.SET_INFECT_PROBABILITY(infected, clear, Double.valueOf(args[argIndex])) ;
+                    OUTPUT_RETURN += args[argIndex] + " " ;
+                    argIndex++ ;
                 }
-            if (index != 12)    // 9 transmissionProbabilities or none
-                LOGGER.severe("Transmission probabilities missing. Only found " + String.valueOf(index-3) + " out of 9") ;
+            if (argIndex != 12)    // 9 transmissionProbabilities or none
+                LOGGER.severe("Transmission probabilities missing. Only found " + String.valueOf(argIndex-3) + " out of 9") ;
         }
         // Whether to plot prevalence upon completion.
         // Must be false when run on an HPC cluster.
@@ -564,17 +574,18 @@ public class Community {
      */
     private String interveneCommunity(int cycle)
     {
-        int startCycle = 365 ;
-        if (cycle < startCycle)
+        int startCycle = 365 * 2 ;
+        if ((cycle < startCycle))
             return "" ;
         if (2<0) // true or false
         {
+            LOGGER.info("set riskyStatus") ;
             for (Agent agent : agents)
             {
                 agent.setProbabilityUseCondom(1.0);
                 agent.setRiskyStatus(false) ;
             }
-            return "" ;
+            return "set riskyStatus" ;
         }
         int year = (cycle - startCycle)/365 ;
         if (year == 0)
