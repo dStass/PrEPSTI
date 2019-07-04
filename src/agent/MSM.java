@@ -214,7 +214,7 @@ public class MSM extends Agent {
             changeProbability = (riskyProbability - lastProbability)/(1-lastProbability) ;
         else
             changeProbability = riskyProbability/lastProbability ; //(lastProbability - riskyProbability)/lastProbability ;
-                                                                    // see below
+                                                                    // see comments below
         
         //riskyProbability *= changeProbability ;
         //double riskyProbabilityPositive = riskyProbability ; //* HIV_RISKY_CORRELATION ;
@@ -313,21 +313,21 @@ public class MSM extends Agent {
     private boolean riskyStatus ;
     
     /** Transmission probabilities per sexual contact from Urethra to Rectum */
-    static double URETHRA_TO_RECTUM = 0.15 ; // 0.100 ;  0.25 ; // 
+    static double URETHRA_TO_RECTUM = 0.95 ; // 0.100 ;  0.25 ; // 
     /** Transmission probabilities sexual contact from Urethra to Pharynx. */
-    static double URETHRA_TO_PHARYNX = 0.02 ; // 0.060 ; // 0.035 ; // 0.15 ; 
+    static double URETHRA_TO_PHARYNX = 0.05 ; // 0.060 ; // 0.035 ; // 0.15 ; 
     /** Transmission probabilities sexual contact from Rectum to Urethra. */ 
-    static double RECTUM_TO_URETHRA = 0.005 ; // 0.020 ; // 0.008 ; 0.010 ; // 
+    static double RECTUM_TO_URETHRA = 0.005 ; 
     /** Transmission probabilities sexual contact from Rectum to Pharynx. */
-    static double RECTUM_TO_PHARYNX = 0.0010 ;
+    static double RECTUM_TO_PHARYNX = 0.0050 ;
     /** Transmission probabilities sexual contact in Pharynx to Urethra intercourse. */
     static double PHARYNX_TO_URETHRA = 0.0005 ; // 0.001 ;
     /** Transmission probabilities sexual contact in Pharynx to Rectum intercourse. */
-    static double PHARYNX_TO_RECTUM = 0.0010 ; // 0.030 ; // 0.0100 ; 
+    static double PHARYNX_TO_RECTUM = 0.020 ; // 0.030 ; // 0.0100 ; 
     /** Transmission probabilities sexual contact in Pharynx to Pharynx intercourse (kissing). */
-    static double PHARYNX_TO_PHARYNX = 0.030 ; // 0.030 ; // 0.052 ; 
+    static double PHARYNX_TO_PHARYNX = 0.05 ; // 0.030 ; // 0.052 ; 
     /** Transmission probabilities sexual contact in Urethra to Urethra intercourse (docking). */
-    static double URETHRA_TO_URETHRA = 0.001 ; // 0.0001 ; // 0.005 ; 
+    static double URETHRA_TO_URETHRA = 0.005 ; // 0.0001 ; // 0.005 ; 
     /** Transmission probabilities sexual contact in Rectum to Rectum intercourse. */
     static double RECTUM_TO_RECTUM = 0.001 ;
     
@@ -642,6 +642,7 @@ public class MSM extends Agent {
         int[] lowerBounds = new int[] {0,1,2,6,11,21,51,100} ;
         double[] proportions = new double[] {0.00311, 0.02715, 0.31857, 0.30353, 0.22172, 0.10170, 0.01972, 0.00450} ;
         double[] cumulative = new double[] {0.00311, 0.00311, 0.00311, 0.00311, 0.00311, 0.00311, 0.00311, 0.00311} ;
+        // Now loop over proportions at each cumulIndex to fill out cumulative Array.
         for (int cumulIndex = 1 ; cumulIndex < cumulative.length ; cumulIndex++ )
             for (int propIndex = 1 ; propIndex <= cumulIndex ; propIndex++ )
                 cumulative[cumulIndex] += proportions[propIndex] ;
@@ -666,8 +667,9 @@ public class MSM extends Agent {
         else if (rangeIndex == (proportions.length - 1)) // 100+ partners
         {
             // Poisson distribution
-            int nbPartners = 100 + ((int) new PoissonDistribution(10.0).sample()) ;
-            consentProbability = nbPartners/92.0 ;
+            //int nbPartners = 100 + ((int) new PoissonDistribution(10.0).sample()) ;
+            //consentProbability = nbPartners/92.0 ;
+            consentProbability = 1.0 ;
         }
         else
         {
@@ -676,7 +678,8 @@ public class MSM extends Agent {
             double upperProb = (lowerBounds[rangeIndex+1] - 1)/92.0 ;
             consentProbability = RAND.doubles(lowerProb, upperProb).iterator().nextDouble() ;
         }
-        consentCasualProbability = Math.sqrt(consentProbability) ;
+        double adjustConsent = 0.8 ;
+        consentCasualProbability = Math.sqrt(adjustConsent * consentProbability/2.0) ;
     }
     
     /**
