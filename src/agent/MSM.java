@@ -74,6 +74,11 @@ public class MSM extends Agent {
     static double PROBABILITY_NEGATIVE_SERO_POSITION = 0.154 ;
     /** The probability of being on antivirals, given positive HIV status */
     static double PROBABILITY_ANTIVIRAL = 0.532 ; // 0.689 ; // 2010 value // 
+    /** 
+     * Adjusts the probability of accepting a Casual relationship.
+     * Value chosen to match the GCPS.
+     */
+    static double ADJUST_CASUAL_CONSENT = 0.8 ;
     
     /**
      * Used to change the value of PROBABILITY_ANTIVIRAL
@@ -678,8 +683,8 @@ public class MSM extends Agent {
             double upperProb = (lowerBounds[rangeIndex+1] - 1)/92.0 ;
             consentProbability = RAND.doubles(lowerProb, upperProb).iterator().nextDouble() ;
         }
-        double adjustConsent = 0.8 ;
-        consentCasualProbability = Math.sqrt(adjustConsent * consentProbability/2.0) ;
+        //double adjustConsent = 0.8 ;
+        consentCasualProbability = Math.sqrt(ADJUST_CASUAL_CONSENT * consentProbability/2.0) ;
     }
     
     /**
@@ -1572,6 +1577,11 @@ public class MSM extends Agent {
         report += Reporter.ADD_REPORT_PROPERTY("consentCasualProbability", consentCasualProbability) ;
         return super.ageEffects() + report ;
     }*/
+    
+    static public void SET_ADJUST_CASUAL_CONSENT(double adjustCasual)
+    {
+        ADJUST_CASUAL_CONSENT = adjustCasual ;
+    }
     
     static public void TEST_SET_INFECT_PROBABILITY()
     {
