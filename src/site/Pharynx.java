@@ -15,7 +15,7 @@ public class Pharynx extends Site {
 
     // Constants that vary according to Site subclass
     /** Probability of initial gonorrhoea infection */
-    static double INITIAL = 0.004 ; // 0.01 ; // 0.015 ;
+    static double INITIAL = 0.005 ; 
 
     /** Probability of positive symptomatic status if infected */
     static double SYMPTOMATIC_PROBABILITY = 0.0 ; // 0.40 ;
