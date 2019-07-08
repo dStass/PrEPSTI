@@ -47,9 +47,9 @@ public class MSM extends Agent {
     static double PROPORTION_HIV = 0.092 ;
     
     /** The probability of disclosing HIV status if HIV positive */
-    static double PROBABILITY_DISCLOSE_POSITIVE_HIV =  0.2 ; // 0.286 ; // 2010 VALUE //
+    static double PROBABILITY_DISCLOSE_POSITIVE_HIV =  0.286 ; // 2010 VALUE // 0.2 ; // 
     /** The probability of disclosing HIV status if HIV negative */
-    static double PROBABILITY_DISCLOSE_NEGATIVE_HIV = 0.18 ; // 0.239 ; // 2010 VALUE // 
+    static double PROBABILITY_DISCLOSE_NEGATIVE_HIV = 0.239 ; // 2010 VALUE // 0.18 ; // 
     /** Probability of serosorting if HIV positive (2017) */
     static double PROBABILITY_POSITIVE_SERO_SORT = 0.59 ;
     /** Probability of serosorting if HIV negative (2017) */
@@ -73,7 +73,7 @@ public class MSM extends Agent {
     /** Probability of sero-positioning if HIV negative */
     static double PROBABILITY_NEGATIVE_SERO_POSITION = 0.154 ;
     /** The probability of being on antivirals, given positive HIV status */
-    static double PROBABILITY_ANTIVIRAL = 0.532 ; // 0.689 ; // 2010 value // 
+    static double PROBABILITY_ANTIVIRAL = 0.689 ; // 2010 value // 0.532 ; // 
     /** 
      * Adjusts the probability of accepting a Casual relationship.
      * Value chosen to match the GCPS.
@@ -318,23 +318,43 @@ public class MSM extends Agent {
     private boolean riskyStatus ;
     
     /** Transmission probabilities per sexual contact from Urethra to Rectum */
-    static double URETHRA_TO_RECTUM = 0.95 ; // 0.100 ;  0.25 ; // 
+    static double URETHRA_TO_RECTUM = 0.95 ; // 0.100 ;  0.25 ; //
     /** Transmission probabilities sexual contact from Urethra to Pharynx. */
-    static double URETHRA_TO_PHARYNX = 0.05 ; // 0.060 ; // 0.035 ; // 0.15 ; 
-    /** Transmission probabilities sexual contact from Rectum to Urethra. */ 
-    static double RECTUM_TO_URETHRA = 0.005 ; 
+    static double URETHRA_TO_PHARYNX = 0.20 ; // 0.060 ; // 0.035 ; // 0.15 ;
+    /** Transmission probabilities sexual contact from Rectum to Urethra. */
+    static double RECTUM_TO_URETHRA = 0.005 ; // 0.020 ; // 0.008 ; 0.010 ; //
     /** Transmission probabilities sexual contact from Rectum to Pharynx. */
-    static double RECTUM_TO_PHARYNX = 0.0050 ;
+    static double RECTUM_TO_PHARYNX = 0.030 ;
     /** Transmission probabilities sexual contact in Pharynx to Urethra intercourse. */
     static double PHARYNX_TO_URETHRA = 0.0005 ; // 0.001 ;
     /** Transmission probabilities sexual contact in Pharynx to Rectum intercourse. */
-    static double PHARYNX_TO_RECTUM = 0.020 ; // 0.030 ; // 0.0100 ; 
+    static double PHARYNX_TO_RECTUM = 0.040 ; // 0.030 ; // 0.0100 ;
     /** Transmission probabilities sexual contact in Pharynx to Pharynx intercourse (kissing). */
-    static double PHARYNX_TO_PHARYNX = 0.05 ; // 0.030 ; // 0.052 ; 
+    static double PHARYNX_TO_PHARYNX = 0.030 ; // 0.030 ; // 0.052 ;
     /** Transmission probabilities sexual contact in Urethra to Urethra intercourse (docking). */
-    static double URETHRA_TO_URETHRA = 0.005 ; // 0.0001 ; // 0.005 ; 
+    static double URETHRA_TO_URETHRA = 0.0001 ; // 0.0001 ; // 0.005 ;
     /** Transmission probabilities sexual contact in Rectum to Rectum intercourse. */
     static double RECTUM_TO_RECTUM = 0.001 ;
+
+    
+    /** Transmission probabilities per sexual contact from Urethra to Rectum */
+    //static double URETHRA_TO_RECTUM = 0.95 ; // 0.100 ;  0.25 ; // 
+    /** Transmission probabilities sexual contact from Urethra to Pharynx. */
+    //static double URETHRA_TO_PHARYNX = 0.05 ; // 0.060 ; // 0.035 ; // 0.15 ; 
+    /** Transmission probabilities sexual contact from Rectum to Urethra. */ 
+    //static double RECTUM_TO_URETHRA = 0.005 ; 
+    /** Transmission probabilities sexual contact from Rectum to Pharynx. */
+    //static double RECTUM_TO_PHARYNX = 0.0050 ;
+    /** Transmission probabilities sexual contact in Pharynx to Urethra intercourse. */
+    //static double PHARYNX_TO_URETHRA = 0.0005 ; // 0.001 ;
+    /** Transmission probabilities sexual contact in Pharynx to Rectum intercourse. */
+    //static double PHARYNX_TO_RECTUM = 0.020 ; // 0.030 ; // 0.0100 ; 
+    /** Transmission probabilities sexual contact in Pharynx to Pharynx intercourse (kissing). */
+    //static double PHARYNX_TO_PHARYNX = 0.05 ; // 0.030 ; // 0.052 ; 
+    /** Transmission probabilities sexual contact in Urethra to Urethra intercourse (docking). */
+    //static double URETHRA_TO_URETHRA = 0.005 ; // 0.0001 ; // 0.005 ; 
+    /** Transmission probabilities sexual contact in Rectum to Rectum intercourse. */
+    //static double RECTUM_TO_RECTUM = 0.001 ;
     
     /** The probability of screening in a given cycle with statusHIV true. */
     static double SCREEN_PROBABILITY_HIV_POSITIVE = 0.0029 ;
@@ -495,9 +515,9 @@ public class MSM extends Agent {
     
     	
     // Odds of a MSM having anal intercourse safely (consistent condom use)
-    static int SAFE_ODDS = 475 ;    // 64 ; // 398 ; // 464 ; // 447 ; // 
+    static int SAFE_ODDS = 447 ; // 475 ; // 
     // Odds of an MSM being riskyMSM
-    static int RISKY_ODDS = 321 ; // 482 ; // 337; // 361 ; // 
+    static int RISKY_ODDS = 361 ; //  321 ; // 
     // Sum of safeOdds and riskyOdds
     static int TOTAL_ODDS = RISKY_ODDS + SAFE_ODDS ;
 //        int[] safeOdds = new int[] {475,471,435,447,464,448,443,445,421,398,398} ;
@@ -730,11 +750,14 @@ public class MSM extends Agent {
         String censusReport = super.getCensusReport() ;
         censusReport += Reporter.ADD_REPORT_PROPERTY("prepStatus", prepStatus) ;
         censusReport += Reporter.ADD_REPORT_PROPERTY("statusHIV", statusHIV) ;
+        censusReport += Reporter.ADD_REPORT_PROPERTY("discloseStatusHIV", discloseStatusHIV) ;
         censusReport += Reporter.ADD_REPORT_PROPERTY("seroSortCasual", seroSortCasual) ;
         censusReport += Reporter.ADD_REPORT_PROPERTY("seroSortRegular", seroSortRegular) ;
         censusReport += Reporter.ADD_REPORT_PROPERTY("seroSortMonogomous", seroSortMonogomous) ;
         censusReport += Reporter.ADD_REPORT_PROPERTY("seroPosition", seroPosition) ;
         censusReport += Reporter.ADD_REPORT_PROPERTY("riskyStatus", riskyStatus) ;
+        censusReport += Reporter.ADD_REPORT_PROPERTY("antiViralStatus", antiViralStatus) ;
+        censusReport += Reporter.ADD_REPORT_PROPERTY("consentCasualProbability", consentCasualProbability) ;
         
         for (Site site : sites)
             censusReport += site.getCensusReport() ;
@@ -994,6 +1017,15 @@ public class MSM extends Agent {
     {
         discloseStatusHIV = (discloseStatusHIV || position) ;
         seroPosition = position ;
+    }
+    
+    /**
+     * Setter of consentCasualProbability.
+     * @param casualProbability 
+     */
+    public void setConsentCasualProbability(double casualProbability)
+    {
+        consentCasualProbability = casualProbability ;
     }
 
     public boolean getAntiViralStatus()
@@ -1257,7 +1289,7 @@ public class MSM extends Agent {
     public void setPrepStatus(boolean prep)
     {
         prepStatus = prep && (!statusHIV) ;
-        initScreenCycle(1) ; // (382.0/333.0) ;    // Rescale for 2010
+        initScreenCycle(382.0/333.0) ;    // Rescale for 2010
     }
     
     /**
