@@ -31,6 +31,7 @@ public class RelationshipReporter extends Reporter {
     static String RELATIONSHIP = "relationship" ;
     //static String RELATIONSHIP_ID = Relationship.RELATIONSHIP_ID ;
     static String TRANSMISSION = "transmission" ;
+    static String TOTAL = "total" ;
     
     static protected HashMap<String,Object> REPORTS = new HashMap<String,Object>() ;
     
@@ -1750,6 +1751,7 @@ public class RelationshipReporter extends Reporter {
         HashMap<Object,HashMap<Object,Number>> recentRelationshipsReport = new HashMap<Object,HashMap<Object,Number>>() ; 
         for (String relationshipClass : relationshipClassNames)
             recentRelationshipsReport.put(relationshipClass, new HashMap<Object,Number>()) ;
+        recentRelationshipsReport.put("total", new HashMap<Object,Number>()) ;
          
         // (HashMap) agentIds maps to number of new Relationships in given time.
         HashMap<Object,HashMap<Object,Integer>> numberRecentRelationshipsReport 
@@ -1803,6 +1805,7 @@ public class RelationshipReporter extends Reporter {
         HashMap<Object,HashMap<Object,Integer>> numberRecentRelationshipsReport = new HashMap<Object,HashMap<Object,Integer>>() ;
         for (String relationshipClassName : relationshipClassNames)
             numberRecentRelationshipsReport.put(relationshipClassName, new HashMap<Object,Integer>()) ;
+        numberRecentRelationshipsReport.put(TOTAL, new HashMap<Object,Integer>()) ;
         
         // Each relationshipId is a HashMap indicating new relationshipIds for relevant (key) Agents
         ArrayList<HashMap<Object,HashMap<Object,ArrayList<Object>>>> agentsEnteredRelationshipReport 
@@ -1816,6 +1819,8 @@ public class RelationshipReporter extends Reporter {
                     newRelationships = record.get(relationshipClassName).get(agentId).size();
                     numberRecentRelationshipsReport.put(relationshipClassName,
                             UPDATE_HASHMAP(agentId,newRelationships,numberRecentRelationshipsReport.get(relationshipClassName))) ;
+                    numberRecentRelationshipsReport.put(TOTAL,
+                            UPDATE_HASHMAP(agentId,newRelationships,numberRecentRelationshipsReport.get(TOTAL))) ;
                 }
             
         return numberRecentRelationshipsReport ;
