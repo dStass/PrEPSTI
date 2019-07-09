@@ -3,6 +3,7 @@
  */
 package reporter ;
 
+import agent.MSM;
 import community.* ;
 import site.* ;
 /**
@@ -56,6 +57,44 @@ public class EncounterReporter extends Reporter {
         //java.util.logging.Logger logger = java.util.logging.Logger.getLogger("reporter") ;
 
     /**
+     * Extract site names involved in a sexual contact, ordered to correspond with the 
+     * Agents involved.
+     * @param contactString
+     * @return (String[]) Names of Sites, ordered to correspond with the involved Agents.
+     */
+    static String[] EXTRACT_CONTACT_SITES(String contactString)
+    {
+        String[] foundSites = new String[2] ;
+        String[] contactSites = new String[2] ;
+        
+        int index = 0 ;
+        for (String siteName : MSM.SITE_NAMES)
+        {
+            if (contactString.contains(siteName))
+            {
+                foundSites[index] = siteName ;
+                index++ ;
+            }
+        }
+        if (index == 0)
+            LOGGER.severe("No sites found in contactString") ;
+        else if (index == 1)    // Both Agents used same Site
+        {
+            contactSites[0] = foundSites[0] ;
+            contactSites[1] = foundSites[0] ;
+        }
+        else if (contactString.indexOf(foundSites[1]) < contactString.indexOf(foundSites[0]))
+        {
+            contactSites[0] = foundSites[1] ;
+            contactSites[1] = foundSites[0] ;
+        }
+        else
+            contactSites = foundSites ;
+        
+        return contactSites ;
+    }
+    
+    /**
      * 
      * @return String[] report of sexual contacts where STI transmission occurred
      */    
@@ -70,7 +109,7 @@ public class EncounterReporter extends Reporter {
             {
                 record = input.get(reportNb) ;
                 //LOGGER.log(Level.INFO, "prepare: {0}", record) ;
-                transmissionReport.add(encounterByValue("transmission","true",record)) ;
+                transmissionReport.add(encounterByValue(TRANSMISSION,TRUE,record)) ;
             }
             
         return transmissionReport ;
@@ -111,6 +150,7 @@ public class EncounterReporter extends Reporter {
             finalTransmissionsRecord.put(siteName,rate/denominator) ;
         }
         
+        // All encounters with transmission
         rate = COUNT_VALUE_INCIDENCE(RELATIONSHIPID,"",finalRecord,0)[1];
         finalTransmissionsRecord.put("all",rate/denominator) ;
         
@@ -191,7 +231,7 @@ public class EncounterReporter extends Reporter {
      * @param endCycle
      * @param sortedAgents - ArrayList of agentIds for which the incidence is to be calculated. 
      * If empty then all Agents are considered. Calling method is expected to choose Agents 
-     * according to some criteria as HIV status.
+     * according to some criteria such as HIV status.
      * @return Records of final incidence for specified siteNames and in total.
      */
     public String prepareFinalIncidenceRecord(String[] siteNames, int backYears, int backMonths, int backDays, int endCycle, ArrayList<Object> sortedAgents)
@@ -642,6 +682,64 @@ public class EncounterReporter extends Reporter {
                 String[] agentIds = relationshipAgentReport.get(EXTRACT_VALUE(RELATIONSHIPID,encounter)) ;
                 for (String agentId : agentIds)
                     agentCondomlessIntercourse = UPDATE_HASHMAP(agentId,startCycle + recordNb,agentCondomlessIntercourse) ;
+            }
+        }
+        
+        return agentCondomlessIntercourse ;
+    }
+    
+    /**
+     * 
+     * @return (HashMap) agentId maps to the cycles in which they had condomless 
+     * anal intercourse in a (relationshipClazzName) Relationship con/dis-cordant 
+     * according to concordanceName.
+     */
+    private HashMap<Object,ArrayList<Object>> prepareAgentCondomlessPositionReport(int backYears, int backMonths, int backDays, int endCycle, String relationshipClazzName, String concordanceName, boolean concordant, String position)
+    {
+        HashMap<Object,ArrayList<Object>> agentCondomlessIntercourse = new HashMap<Object,ArrayList<Object>>() ;
+        
+        RelationshipReporter relationshipReporter = new RelationshipReporter(simName,getFolderPath()) ;
+        HashMap<Object,String[]> relationshipAgentReport = (HashMap<Object,String[]>) getReport("relationshipAgent",relationshipReporter) ; //  relationshipReporter.prepareRelationshipAgentReport() ;
+        
+        int positionIndex = -1 ;
+        if ("insertive".equals(position))
+            positionIndex = 2 ;
+        else if ("receptive".equals(position))
+            positionIndex = 1 ;
+        
+        int backCycles = GET_BACK_CYCLES(backYears, backMonths, backDays, endCycle) ;
+        int startCycle = endCycle - backCycles ;
+        
+        ArrayList<String> encounterReport = getBackCyclesReport(0, 0, backCycles, endCycle) ;
+        ArrayList<String> condomlessReport = prepareFilteredReport(CONDOM,FALSE,encounterReport) ;
+        ArrayList<String> concordantReport = relationshipReporter.filterByConcordance(concordanceName, concordant, condomlessReport) ;
+        ArrayList<String> finalReport = relationshipReporter.filterRelationshipClazzReport(relationshipClazzName,concordantReport) ;
+        
+        int reportSize = finalReport.size() ;
+        for (int recordNb = 0 ; recordNb < reportSize ; recordNb++ ) 
+        {
+            String record = finalReport.get(recordNb) ;
+            ArrayList<String> encounters = EXTRACT_ARRAYLIST(record,RELATIONSHIPID) ; 
+            for (String encounter : encounters)
+            {
+                String[] agentIds = relationshipAgentReport.get(EXTRACT_VALUE(RELATIONSHIPID,encounter)) ;
+                ArrayList<String> contactList = EXTRACT_ARRAYLIST(encounter,CONTACT,CONDOM) ;
+                // Each Integer encodes positions taken by Agent, 1:receptive 2:insertive 3:both
+                Integer[] agentPositions = new Integer[2] ;
+                for (String contact : contactList)
+                {
+                    String[] contactSites = EXTRACT_CONTACT_SITES(contact) ;
+                    for (int agentIndex = 0 ; agentIndex < 2 ; agentIndex++ )
+                    {
+                        if (contactSites[agentIndex].equals(RECTUM))
+                            agentPositions[agentIndex] = agentPositions[agentIndex] | 1 ;
+                        else if (contactSites[agentIndex].equals(URETHRA))
+                            agentPositions[agentIndex] = agentPositions[agentIndex] | 2 ;
+                    }
+                }
+                for (int agentIndex = 0 ; agentIndex < 2 ; agentIndex++ )
+                    if ((agentPositions[agentIndex] & positionIndex) == positionIndex)
+                        agentCondomlessIntercourse = UPDATE_HASHMAP(agentIds[agentIndex],startCycle + recordNb,agentCondomlessIntercourse) ;
             }
         }
         
