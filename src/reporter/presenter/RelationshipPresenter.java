@@ -6,10 +6,12 @@
 package reporter.presenter;
 
 //import java.lang.reflect.Method;
+import agent.MSM;
 import reporter.* ;
 //import community.Community ;
 
 import java.util.ArrayList ;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet ;
 //import java.util.Arrays;
@@ -27,9 +29,9 @@ public class RelationshipPresenter extends Presenter{
     
     public static void main(String[] args)
     {
-        String simName = "gammaFlip2HR3aPop40000Cycles1095" ; // "testPlotCondomUsePop4000Cycles500" ; // args[0] ;
-        //String simName = "doubleCasual4aPop40000Cycles1095" ; // "testPlotCondomUsePop4000Cycles500" ; // args[0] ;
-        //String simName = "RelationshipCalibration74Pop40000Cycles100" ; // "testPlotCondomUsePop4000Cycles500" ; // args[0] ;
+        //String simName = "gammaFlip2HR3aPop40000Cycles1095" ; // "testPlotCondomUsePop4000Cycles500" ; // args[0] ;
+        //String simName = "halfCasual10aPop40000Cycles1460" ; // "testPlotCondomUsePop4000Cycles500" ; // args[0] ;
+        String simName = "goneWild48aPop40000Cycles730" ; // "testPlotCondomUsePop4000Cycles500" ; // args[0] ;
         //String chartTitle = "Nb_Agents_had_given_relationships" ; // args[1] ;
         //String chartTitle = "cumulative_relationships" ; // args[1] ;
         String chartTitle = "mean_nb_relationships" ;
@@ -45,15 +47,16 @@ public class RelationshipPresenter extends Presenter{
         RelationshipPresenter relationshipPresenter = new RelationshipPresenter(simName,chartTitle,reportFileName) ;
         //relationshipPresenter.plotBreakupsPerCycle() ;
         //relationshipPresenter.plotCumulativeRelationshipGaps() ;
+        //relationshipPresenter.plotCumulativeRelationships("",0, 6, 0) ;
         //relationshipPresenter.plotCumulativeRelationships(new String[] {"Casual","Regular","Monogomous"}, 0, 6, 0) ;
-        relationshipPresenter.plotCumulativeRelationships(3, new String[] {"Casual","Regular","Monogomous"}, 0, 6, 0) ;
+        //relationshipPresenter.plotCumulativeRelationships(10, new String[] {"Casual","Regular","Monogomous"}, 0, 6, 0) ;
         //relationshipPresenter.plotCumulativeRelationshipLengths() ;
         //relationshipPresenter.plotRelationshipCumulativeTransmissions() ;
         //relationshipPresenter.plotMeanNumberRelationshipsReport(relationshipClazzNames);
         //relationshipPresenter.plotAgentRelationshipsMeanYears(relationshipClazzNames, 3, 6, 0, 2017) ;
         //relationshipPresenter.plotAgentRelationshipsMean(new String[] {"Casual","Regular","Monogomous"}, 0, 6, 0) ;
         //relationshipPresenter.plotRelationshipLength() ;
-        //relationshipPresenter.plotRecentRelationshipsReport(relationshipClazzNames,0,6,0) ;
+        relationshipPresenter.plotRecentRelationshipsReport(relationshipClazzNames,0,6,0) ;
         //relationshipPresenter.plotNumberAgentsEnteredRelationship(new String[] {"Casual","Regular","Monogomous"}, 0, 6, 0) ;
         //relationshipPresenter.plotNumberAgentsEnteredRelationshipYears(new String[] {"Casual","Regular","Monogomous"}, 2, 6, 0, 2017) ;
     }
@@ -265,6 +268,33 @@ public class RelationshipPresenter extends Presenter{
     }
     
     /**
+     * Plot how many agentIds have more had how many or more relationshipClassName 
+     * Relationships
+     * @param relationshipClassNames 
+     */
+    public void plotCumulativeRelationships(String relationshipClassName, int backYears, int backMonths, int backDays)
+    {
+        String[] relationshipClassNames ;
+        if (relationshipClassName.isEmpty())
+        {
+            relationshipClassNames = new String[] {"Regular","Monogomous","Casual"} ;
+            relationshipClassName = "total" ;
+        } 
+        else
+            relationshipClassNames = new String[] {relationshipClassName} ;
+        // A snapshot of how many agentIds have more had how many or more Relationships
+        HashMap<Object,HashMap<Object,Number>> cumulativeRelationshipRecord 
+                = reporter.prepareCumulativeRelationshipRecord(-1, relationshipClassNames, backYears, backMonths, backDays) ;
+        
+        //HashMap<Object,Number[]> invertedHashMap 
+          //      = Reporter.INVERT_HASHMAP_LIST(cumulativeRelationshipRecord, new String[] {relationshipClassName}) ;
+        
+        
+        plotHashMap("Cumulative number of partners","Number of agents",
+                binHashMap(cumulativeRelationshipRecord.get(relationshipClassName),"Nb_of_partners")) ; ;
+    }
+    
+    /**
      * Plots how many Agents had how many partners in last given backYears years, 
      * backMonths months and backDays days.
      * @param backYears
@@ -276,14 +306,19 @@ public class RelationshipPresenter extends Presenter{
         HashMap<Object,HashMap<Object,Number>> recentRelationshipsReport 
                 = reporter.prepareRecentRelationshipsReport(relationshipClassNames, backYears, backMonths, backDays) ;
         
+        String[] relationshipClassNewNames = Arrays.copyOf(relationshipClassNames,relationshipClassNames.length + 1) ;
+        relationshipClassNewNames[relationshipClassNames.length] = "total" ;
+        //recentRelationshipsReport.remove("total") ;
+        
         HashMap<Object,Number[]> invertedHashMap 
-                = Reporter.INVERT_HASHMAP_LIST(recentRelationshipsReport,relationshipClassNames) ;
+                = Reporter.INVERT_HASHMAP_LIST(recentRelationshipsReport,relationshipClassNewNames) ;
         
         String timePeriod = String.valueOf(backYears) + " years " 
                 + String.valueOf(backMonths) + " months " 
                 + String.valueOf(backDays) + " days " ;
         
-        plotSpline("partners in " + timePeriod,"Number of Agents",invertedHashMap, relationshipClassNames) ;
+        plotHashMap("partners in " + timePeriod,relationshipClassNewNames,binHashMap(invertedHashMap, relationshipClassNewNames)) ;
+        //plotSpline("partners in " + timePeriod,"Number of Agents",invertedHashMap, relationshipClassNewNames) ;
     }
     
     /**
