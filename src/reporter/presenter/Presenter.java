@@ -651,7 +651,7 @@ public class Presenter {
     /**
      * 
      * @param unbinned
-     * @param scoreName
+     * @param scoreName (redundant)
      * @return HashMap with keyValues() binned.
      */
     protected HashMap<Object,Number> binHashMap(HashMap<Object,Number> unbinned, String scoreName)
@@ -660,7 +660,7 @@ public class Presenter {
         
         // Find keys in order
         ArrayList<Object> categoryEntry = new ArrayList<Object>() ;
-        Number scoreValue ;
+        double scoreValue ;
         int base = 2 ;
         String categoryValue = "" ;
         
@@ -691,7 +691,7 @@ public class Presenter {
             
             // loop through bin
             for (int segmentIndex = openSegmentNb ; segmentIndex < closeSegmentNb ; segmentIndex++ )
-                scoreValue = unbinned.get(categoryEntry.get(segmentIndex)) ;
+                scoreValue += unbinned.get(categoryEntry.get(segmentIndex)).doubleValue() ;
                     
             // Add bin to dataset
             binned.put(categoryValue, scoreValue) ;
@@ -770,9 +770,10 @@ public class Presenter {
             // prepare for next bin
             openSegmentNb = closeSegmentNb ;    // (int) Math.pow(base, binIndex) - 1 ;    // -1 java counts from 0
             closeSegmentNb = (closeSegmentNb + 1) * base - 1  ;    // (int) Math.pow(base, nextIndex) - 1 ;    // -1 include closeSegmentNB in for-loop
+            categoryValue = "-" + String.valueOf(categoryEntry.get(closeSegmentNb-1)) ;
             if (closeSegmentNb > dataSize) 
                 closeSegmentNb = dataSize ;
-            categoryValue = "-" + String.valueOf(categoryEntry.get(closeSegmentNb-1)) ;
+            //categoryValue = "-" + String.valueOf(categoryEntry.get(closeSegmentNb-1)) ;
                     
         }
 
