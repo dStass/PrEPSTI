@@ -70,9 +70,9 @@ public class PopulationReporter extends Reporter {
                 for (Object agentId : birthRecordObject)
                     birthRecord.add((String) agentId) ;
             
-                // +1 Allows for numbering from 0
                 maxBirthId = Integer.valueOf(Collections.max(birthRecord));
             }
+            // +1 Allows for numbering from 0
             countBirthReport.add(maxBirthId+1) ;
         }
         
@@ -93,6 +93,7 @@ public class PopulationReporter extends Reporter {
     @Override
     public String getInitialRecord()
     {
+        // super() extracts first text line in Report
         String initialRecord = super.getInitialRecord() ;
         return initialRecord.substring(0, initialRecord.indexOf(DEATH)) ;
     }
