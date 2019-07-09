@@ -69,7 +69,7 @@ public class Community {
     //static public String FILE_PATH = "/short/is14/mw7704/prepsti/output/year2007/" ;
     
     /** Whether parameters change throughout simulation. */
-    static boolean DYNAMIC = true ;
+    static boolean DYNAMIC = false ;
     
     /** Dump reports to disk after this many cycles. */
     static final int DUMP_CYCLE = ((int) Math.pow(10, 7))/POPULATION ;
@@ -86,7 +86,7 @@ public class Community {
      * (String) Name of previous simulation to reload.
      * Not reloaded if this is an empty string.
      */
-    static final String RELOAD_SIMULATION = "halfCasual10bPop40000Cycles2190" ; // "gamma2HR4aEXTPop40000Cycles730" ; // "riskiness1bPop40000Cycles1095" ; // "from2010try18aPop40000Cycles2190" ; // "max3contact95bEXT2Pop40000Cycles2920" ; 
+    static final String RELOAD_SIMULATION = "" ; // "goneWild48aPop40000Cycles730" ; // "halfCasual10bPop40000Cycles2190" ; // "gamma2HR4aEXTPop40000Cycles730" ; // "riskiness1bPop40000Cycles1095" ; // "from2010try18aPop40000Cycles2190" ; // "max3contact95bEXT2Pop40000Cycles2920" ; 
     
     static public String getFilePath()
     {
@@ -187,22 +187,25 @@ public class Community {
                 FILE_PATH = "/srv/scratch/z3524276/prepsti/" + FILE_PATH ;
             argIndex++ ;
         }
+        /*
         if (args.length > argIndex)
         {
             MSM.SET_ADJUST_CASUAL_CONSENT(Double.valueOf(args[argIndex]));
             argIndex++ ;
         }
+        */
         if (args.length > argIndex)
         {
+            int siteIndex = 0 ;
             for (String infected : MSM.SITE_NAMES)
                 for (String clear : MSM.SITE_NAMES)
                 {
-                    MSM.SET_INFECT_PROBABILITY(infected, clear, Double.valueOf(args[argIndex])) ;
-                    OUTPUT_RETURN += args[argIndex] + " " ;
-                    argIndex++ ;
+                    MSM.SET_INFECT_PROBABILITY(infected, clear, Double.valueOf(args[argIndex + siteIndex])) ;
+                    OUTPUT_RETURN += args[argIndex + siteIndex] + " " ;
+                    siteIndex++ ;
                 }
-            if (argIndex != 12)    // 9 transmissionProbabilities or none
-                LOGGER.severe("Transmission probabilities missing. Only found " + String.valueOf(argIndex-3) + " out of 9") ;
+            if (siteIndex != 9)    // 9 transmissionProbabilities or none
+                LOGGER.severe("Transmission probabilities missing. Only found " + String.valueOf(siteIndex-3) + " out of 9") ;
         }
         // Whether to plot prevalence upon completion.
         // Must be false when run on an HPC cluster.
@@ -403,7 +406,7 @@ public class Community {
             }
             //LOGGER.log(Level.INFO, "Positivity unique:{0} {1}", new Object[] {unique,finalPositivityRecord});
             OUTPUT_RETURN += Reporter.EXTRACT_VALUE("all",notificationsRecord) ; //.("all")[0] + " " ;
-            community.dumpOutputReturn() ;
+            //community.dumpOutputReturn() ;
         }
         
         LOGGER.log(Level.INFO, "Notification rate {0}", new Object[] {finalNotificationsRecord});
@@ -415,10 +418,10 @@ public class Community {
         {
             prevalenceReport = screeningReporter.preparePrevalenceReport(siteName) ;
             //LOGGER.info(String.valueOf(prevalenceReport.size())) ;
-            //LOGGER.log(Level.INFO,"{0} {1}", new Object[] {siteName, prevalenceReport.get(prevalenceReport.size() - 1)}) ;
+            LOGGER.log(Level.INFO,"{0} {1}", new Object[] {siteName, prevalenceReport.get(prevalenceReport.size() - 1)}) ;
         }
         prevalenceReport = screeningReporter.preparePrevalenceReport() ;
-        //LOGGER.log(Level.INFO,"{0} {1}", new Object[] {"all", prevalenceReport.get(prevalenceReport.size() - 1)}) ;
+        LOGGER.log(Level.INFO,"{0} {1}", new Object[] {"all", prevalenceReport.get(prevalenceReport.size() - 1)}) ;
 
     
         //EncounterReporter encounterReporter = new EncounterReporter("Agent to Agent",community.encounterReport) ;
