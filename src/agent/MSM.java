@@ -78,7 +78,7 @@ public class MSM extends Agent {
      * Adjusts the probability of accepting a Casual relationship.
      * Value chosen to match the GCPS.
      */
-    static double ADJUST_CASUAL_CONSENT = 0.7 ;
+    static double ADJUST_CASUAL_CONSENT = 1.0 ;
     
     /**
      * Used to change the value of PROBABILITY_ANTIVIRAL
@@ -328,9 +328,9 @@ public class MSM extends Agent {
     /** Transmission probabilities sexual contact in Pharynx to Urethra intercourse. */
     static double PHARYNX_TO_URETHRA = 0.0005 ; // 0.001 ;
     /** Transmission probabilities sexual contact in Pharynx to Rectum intercourse. */
-    static double PHARYNX_TO_RECTUM = 0.045 ; // 0.030 ; // 0.0100 ;
+    static double PHARYNX_TO_RECTUM = 0.035 ; // 0.030 ; // 0.0100 ;
     /** Transmission probabilities sexual contact in Pharynx to Pharynx intercourse (kissing). */
-    static double PHARYNX_TO_PHARYNX = 0.035 ; // 0.030 ; // 0.052 ;
+    static double PHARYNX_TO_PHARYNX = 0.030 ; // 0.030 ; // 0.052 ;
     /** Transmission probabilities sexual contact in Urethra to Urethra intercourse (docking). */
     static double URETHRA_TO_URETHRA = 0.0001 ; // 0.0001 ; // 0.005 ;
     /** Transmission probabilities sexual contact in Rectum to Rectum intercourse. */
@@ -660,13 +660,33 @@ public class MSM extends Agent {
      * We take the weighted mean of the first two columns, and use a Poisson 
      * distribution to choose in the 100+ range. Otherwise find the daily probability 
      * associated with the extrema of each range and choose with a Uniform distribution.
+     * 
+     * For men who are not on PrEP we use the 2005 data from HIM, where the proportions
+     * for each range are
+     *   0       1-9      10+
+     * 0.235    0.374    0.391
      */
     final void initConsentCasualProbability()
     {
+        int[] lowerBounds ; 
+        double[] proportions ;
+        double[] cumulative ; 
         double consentProbability = 0 ;
-        int[] lowerBounds = new int[] {0,1,2,6,11,21,51,100} ;
-        double[] proportions = new double[] {0.00311, 0.02715, 0.31857, 0.30353, 0.22172, 0.10170, 0.01972, 0.00450} ;
-        double[] cumulative = new double[] {0.00311, 0.00311, 0.00311, 0.00311, 0.00311, 0.00311, 0.00311, 0.00311} ;
+        double timeAverage = 1 ;
+        if (prepStatus)
+        {
+            lowerBounds = new int[] {0,1,2,6,11,21,51,100} ;
+            proportions = new double[] {0.00311, 0.02715, 0.31857, 0.30353, 0.22172, 0.10170, 0.01972, 0.00450} ;
+            cumulative = new double[] {0.00311, 0.00311, 0.00311, 0.00311, 0.00311, 0.00311, 0.00311, 0.00311} ;
+            timeAverage = 92.0 ;
+        }
+        else
+        {
+            lowerBounds = new int[] {0,1,10} ;
+            proportions = new double[] {0.235, 0.374, 0.391} ;
+            cumulative = new double[] {0.235, 0.235, 0.235} ;
+            timeAverage = 183.0 ;
+        }
         // Now loop over proportions at each cumulIndex to fill out cumulative Array.
         for (int cumulIndex = 1 ; cumulIndex < cumulative.length ; cumulIndex++ )
             for (int propIndex = 1 ; propIndex <= cumulIndex ; propIndex++ )
@@ -675,7 +695,7 @@ public class MSM extends Agent {
         // Choose range
         double rangeChoice = RAND.nextDouble() ;
         int rangeIndex = 0 ;
-        for (int cumulIndex = 1 ; cumulIndex < cumulative.length ; cumulIndex++ )
+        for (int cumulIndex = 0 ; cumulIndex < cumulative.length ; cumulIndex++ )
         {
             if (rangeChoice < cumulative[cumulIndex])
             {
@@ -683,25 +703,33 @@ public class MSM extends Agent {
                 break ;
             }
         }
-        
-        if (rangeIndex < 2) // 0 or 1 partners
+        /*if (prepStatus || (rangeIndex < 2)) // 0 or 1 partners
         {
             consentProbability = Math.max(0.0,RAND.nextDouble() * proportions[1] 
-                    - RAND.nextDouble() * proportions[0])/92.0 ;
+                    - RAND.nextDouble() * proportions[0])/timeAverage ;
         }
+        else */ 
+        if (rangeIndex == 0)
+            consentProbability = 0.0 ;
         else if (rangeIndex == (proportions.length - 1)) // 100+ partners
         {
             // Poisson distribution
-            //int nbPartners = 100 + ((int) new PoissonDistribution(10.0).sample()) ;
-            //consentProbability = nbPartners/92.0 ;
-            consentProbability = 1.0 ;
+            double maxLowerBound = lowerBounds[lowerBounds.length - 1] ;
+            double nbPartners = maxLowerBound + ((int) new PoissonDistribution(10.0).sample()) ;
+            consentProbability = nbPartners/timeAverage ;
+            //consentProbability = 1.0 ;
         }
         else
         {
             // Choose in range, take 92 days in 3 months
-            double lowerProb = lowerBounds[rangeIndex]/92.0 ;
-            double upperProb = (lowerBounds[rangeIndex+1] - 1)/92.0 ;
-            consentProbability = RAND.doubles(lowerProb, upperProb).iterator().nextDouble() ;
+            double lowerProb = lowerBounds[rangeIndex]/timeAverage ;
+            double upperProb = (lowerBounds[rangeIndex+1] - 1)/timeAverage ;
+            if (upperProb <= lowerProb)    // for bins of width one, assumed to be clustered near zero
+            {
+                consentProbability = Math.max(0.0,(RAND.nextDouble() * 2.0 + lowerBounds[rangeIndex] - 1.0)/timeAverage) ;
+            }
+            else
+                consentProbability = RAND.doubles(lowerProb, upperProb).iterator().nextDouble() ;
         }
         //double adjustConsent = 0.8 ;
         consentCasualProbability = Math.sqrt(ADJUST_CASUAL_CONSENT * consentProbability/2.0) ;
