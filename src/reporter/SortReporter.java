@@ -123,7 +123,7 @@ public class SortReporter extends Reporter {
         for (String relationshipClassName : relationshipClassNames)
             ageEnteredRelationshipRecord.put(relationshipClassName, new HashMap<Object,ArrayList<Object>>()) ;
         
-        //key:agentId value: Age for final record in report
+        //key:agentId value: Age for final record in report or at death
         HashMap<Object,Integer> sortAgeRecord = ((PopulationReporter) sortingReporter).sortAgeRecord() ;
         
         // Each record is a HashMap indicating new relationshipIds for relevant (key) Agents
@@ -322,15 +322,13 @@ public class SortReporter extends Reporter {
     {
         HashMap<Object,Number> agentIncidenceCount = new HashMap<Object,Number>() ;
         
-        int daysPerYear = 365 ;
-        int daysPerMonth = 31 ;
         
         int finalRecordNb = Integer.valueOf(sortingReporter.getMetaDatum("Community.MAX_CYCLES")) - 1 ;
         int recordIndex = finalRecordNb ;    // TODO: Generalize to arbitrary recordIndex.
         
         // transmitting agentId maps to receiving agentId maps to (ArrayList) cycle of infection
         HashMap<Object,HashMap<Object,ArrayList<Object>>> agentToAgentReport = ((EncounterReporter) unsortedReporter).prepareAgentToAgentReport() ;
-        // Inverts to Cycle maps to infecting agentId maps to (ArrayList) receiviing AgentIds
+        // Inverts to Cycle maps to infecting agentId maps to (ArrayList) infected AgentIds
         HashMap<Object,HashMap<Object,ArrayList<Object>>> invertedHashMap = EncounterReporter.INVERT_HASHMAP_HASHMAP(agentToAgentReport) ;
         
         ArrayList<ArrayList<Object>> unsortedReport = ((EncounterReporter) unsortedReporter).prepareReceiveCountReport(invertedHashMap) ;
@@ -338,15 +336,18 @@ public class SortReporter extends Reporter {
         // New partners per agentId
 
         // Modify backYears if necessary so you don't go past beginning of simulation
+        int backCycles = GET_BACK_CYCLES(backYears,backMonths,backDays,finalRecordNb) ;
+        /*
         if (daysPerYear*backYears > recordIndex)
             backYears = recordIndex/daysPerYear ;
-        // Modify backYears if necessary so you don't go past beginning of simulation
+        // Modify Months if necessary so you don't go past beginning of simulation
         if ((daysPerYear*backYears + daysPerMonth*backMonths) > recordIndex)
             backMonths = (recordIndex - daysPerYear*backYears)/daysPerMonth ;
         
         int backCycles = backYears*daysPerYear + backMonths*daysPerMonth + backDays ;
         if (backCycles > recordIndex)
             backCycles = (recordIndex - 1) ;
+        */
         
         // Count new relationships for each Agent over past backYears years
         for (int cycle = 0 ; cycle < backCycles ; cycle++)
@@ -372,7 +373,7 @@ public class SortReporter extends Reporter {
     public ArrayList<String> prepareSortPrevalenceReport(int maxPartnerCount, int binSize, int backYears, int backMonths, int backDays)
     {
         ArrayList<String> prevalenceReport = new ArrayList<String>() ;
-        int finalRecordNb = Integer.valueOf(sortingReporter.getMetaDatum("Community.MAX_CYCLES")) - 1 ;
+        int finalRecordNb = getMaxCycles() ; // Integer.valueOf(sortingReporter.getMetaDatum("Community.MAX_CYCLES")) - 1 ;
         int population ;
         int nbInfected ;
         int nbSymptomatic ;
