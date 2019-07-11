@@ -1236,6 +1236,8 @@ public class Community {
         metaData.add(Community.FILE_PATH) ;
         metaLabels.add("Community.POPULATION") ;
         metaData.add(Community.POPULATION) ;
+        metaLabels.add("total_nb_agents") ;
+        metaData.add(agents.size()) ;
         metaLabels.add("Community.MAX_CYCLES") ;
         metaData.add(Community.MAX_CYCLES) ;
         metaLabels.add("Community.RANDOM_SEED") ;
