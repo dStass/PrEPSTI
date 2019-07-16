@@ -10,7 +10,6 @@ import community.Community ;
 import community.Relationship ;
 
 import java.lang.reflect.*;
-import java.util.List;
 import java.util.ArrayList;
 import java.util.Arrays ;
 import java.util.HashMap ;
@@ -98,6 +97,12 @@ public class RelationshipReporter extends Reporter {
         return prepareRelationshipCommenceReport("") ;
     }
     
+    /**
+     * 
+     * @return ArrayList of ArrayLists of (String) RelationshipIds of relationships
+     * of type relationshipClassName commenced in each cycle. If relationshipClassName 
+     * is an empty String then include all Relationships.
+     */
     public ArrayList<ArrayList<Object>> prepareRelationshipCommenceReport(String relationshipClassName)
     {
         ArrayList<ArrayList<Object>> relationshipCommenceReport = new ArrayList<ArrayList<Object>>() ;
@@ -630,6 +635,11 @@ public class RelationshipReporter extends Reporter {
     
     /**
      * 
+     * @param relationshipClassNames
+     * @param backYears
+     * @param backMonths
+     * @param backDays
+     * @param endCycle
      * @return Report of mean of minimum number of each subclass of Relationship 
      * to date.
      */
@@ -640,7 +650,11 @@ public class RelationshipReporter extends Reporter {
         
         HashMap<Object,Object> meanCumulativeRelationshipClassReport ;
         
-        int population = getPopulation() ; // Integer.valueOf(getMetaDatum("Community.POPULATION")) ;
+        //int population = getPopulation() ; // Integer.valueOf(getMetaDatum("Community.POPULATION")) ;
+        PopulationReporter populationReporter = new PopulationReporter(simName,getFolderPath()) ;
+        int finalMaxAgentId = populationReporter.getMaxAgentId(endCycle) ;
+        int earlyMaxAgentId = populationReporter.getMaxAgentId(endCycle - getBackCycles(backYears, backMonths, backDays)) ;
+        double effectivePopulation = getPopulation() + finalMaxAgentId - earlyMaxAgentId ;
         
         ArrayList<HashMap<Object,HashMap<Object,Integer>>> agentsCumulativeRelationshipReport 
                 = prepareAgentsCumulativeRelationshipReport(relationshipClassNames, backYears, backMonths, backDays, endCycle) ;
@@ -653,7 +667,7 @@ public class RelationshipReporter extends Reporter {
                 int sum = 0 ;
                 for (Object agentId : record.get(relationshipClassName).keySet())
                     sum += record.get(relationshipClassName).get(agentId) ;
-                meanCumulativeRelationshipClassReport.put(relationshipClassName,((double) sum)/population) ; // relationshipId.keySet().size()) ;
+                meanCumulativeRelationshipClassReport.put(relationshipClassName,((double) sum)/effectivePopulation) ; // relationshipId.keySet().size()) ;
             }
             meanCumulativeRelationshipReport.add((HashMap<Object,Object>) meanCumulativeRelationshipClassReport.clone()) ;
         }
@@ -695,6 +709,11 @@ public class RelationshipReporter extends Reporter {
     }
     
     /**
+     * @param nbRelationships
+     * @param relationshipClassNames
+     * @param backYears
+     * @param backMonths
+     * @param backDays
      * @return A snapshot of what proportion of agentIds have more had how many 
      * or more Relationships, where each Relationship is assumed to be with a different 
      * partner.
@@ -706,7 +725,12 @@ public class RelationshipReporter extends Reporter {
         for (String relationshipClassName : relationshipClassNames)
             cumulativeRelationshipRecord.put(relationshipClassName, new HashMap<Object,Number>()) ;
         
-        double population = getPopulation() ;
+        //double population = getPopulation() ;
+        PopulationReporter populationReporter = new PopulationReporter(simName,getFolderPath()) ;
+        int finalMaxAgentId = populationReporter.getMaxAgentId() ;
+        int earlyMaxAgentId = populationReporter.getMaxAgentId(getMaxCycles() - getBackCycles(backYears, backMonths, backDays)) ;
+        double effectivePopulation = getPopulation() + finalMaxAgentId - earlyMaxAgentId ;
+        
         //TODO: Separate out action on individual RECORD
         ArrayList<HashMap<Object,HashMap<Object,Integer>>> agentsCumulativeRelationshipReport 
                 = prepareAgentsCumulativeRelationshipReport(relationshipClassNames, backYears, backMonths, backDays, getMaxCycles()) ;
@@ -741,22 +765,21 @@ public class RelationshipReporter extends Reporter {
                 maxValue = 0 ;
             // To track how agentIds have had more than given Relationships
             int agentsOver = 0 ;
-            LOGGER.log(Level.INFO, "min:{0} max:{1}", new Object[] {minValue, maxValue});
 
             for (int key = maxValue ; key >= minValue ; key-- )
             {
                 agentsOver += Collections.frequency(agentsCumulativeRelationshipValues,key) ;
-                cumulativeRelationshipRecord.get(relationshipClassName).put(key, agentsOver/population) ;
+                cumulativeRelationshipRecord.get(relationshipClassName).put(key, agentsOver/effectivePopulation) ;
             }
         }
-        LOGGER.log(Level.INFO, "{0}", cumulativeRelationshipRecord);
+        //LOGGER.log(Level.INFO, "{0}", cumulativeRelationshipRecord);
         return cumulativeRelationshipRecord ;
     }
     
     /**
      * 
      * @return Report with relationshipClassName maps to 
-     * (HashMap showing how many Relationships each agentId has entered into so far).
+     * (HashMap mapping agentId to the number of Relationships entered into so far).
      */
     private ArrayList<HashMap<Object,HashMap<Object,Integer>>> 
         prepareAgentsCumulativeRelationshipReport(String[] relationshipClassNames, int backYears, int backMonths, int backDays, int endCycle)
@@ -849,6 +872,7 @@ public class RelationshipReporter extends Reporter {
     
     /**
      * 
+     * @param relationshipClassNames
      * @return (ArrayList) records of mean number of each Relationship class per Agent
      */
     public ArrayList<HashMap<Object,String>> prepareMeanNumberRelationshipsReport(String[] relationshipClassNames)
@@ -907,6 +931,7 @@ public class RelationshipReporter extends Reporter {
      * @param backYears
      * @param backMonths
      * @param backDays
+     * @param endCycle
      * @return (HashMap) relationshipClassName maps to mean number of
      * Relationships of given class per agentId involved in during given time period).
      */
@@ -918,7 +943,11 @@ public class RelationshipReporter extends Reporter {
         HashMap<Object,HashMap<Object,Integer>> agentRelationshipsCount 
             = prepareAgentRelationshipsCount(relationshipClassNames, backYears, backMonths, backDays, endCycle) ;
         
-        double population = getPopulation() ; 
+        //double population = getPopulation() ; 
+        PopulationReporter populationReporter = new PopulationReporter(simName,getFolderPath()) ;
+        int finalMaxAgentId = populationReporter.getMaxAgentId(endCycle) ;
+        int earlyMaxAgentId = populationReporter.getMaxAgentId(endCycle - getBackCycles(backYears, backMonths, backDays)) ;
+        double effectivePopulation = getPopulation() + finalMaxAgentId - earlyMaxAgentId ;
         
         HashMap<Object,Integer> relationshipClazzCount ;
         int total ;
@@ -930,7 +959,7 @@ public class RelationshipReporter extends Reporter {
             for (int nbRelationships : relationshipClazzCount.values())
                 total += nbRelationships ;
             
-            agentRelationshipsMean.put(relationshipClazzName, total/population) ;
+            agentRelationshipsMean.put(relationshipClazzName, total/effectivePopulation) ;
         }
         
         return agentRelationshipsMean ;
@@ -1021,7 +1050,7 @@ public class RelationshipReporter extends Reporter {
         
         for (Object relationshipClassName : agentRelationshipsRecord.keySet())
         {
-            if (!Arrays.asList(relationshipClassNames).contains(relationshipClassName))
+            if (!Arrays.asList(relationshipClassNames).contains((String) relationshipClassName))
                 continue ;
             agentRelationships = agentRelationshipsRecord.get(relationshipClassName);
             for (Object agentId : agentRelationships.keySet())
@@ -1139,6 +1168,7 @@ public class RelationshipReporter extends Reporter {
      * @param backYears
      * @param backMonths
      * @param backDays
+     * @param endCycle
      * @return (HashMap) relationshipClassName maps to the number of Agents involved in 
      * given class of Relationship during the specified period.
      */
@@ -1153,15 +1183,53 @@ public class RelationshipReporter extends Reporter {
             = (HashMap<Object,HashMap<Object,ArrayList<Object>>>) getRecord("agentRelationships",this,parameterClazzes,parameters) ;
         //prepareAgentRelationshipsRecord(relationshipClassNames, backYears, backMonths, backDays) ;
         
+        ArrayList<Object> totalAgents = new ArrayList<Object>() ;
+        ArrayList<Object> relationshipClazzAgents ;
         for (String relationshipClassName : relationshipClassNames)
         {
             HashMap<Object,ArrayList<Object>> agentRelationships 
                     = agentRelationshipsRecord.get(relationshipClassName) ;
-            numberRelationshipsReport.put(relationshipClassName, agentRelationships.keySet().size()) ;
+            relationshipClazzAgents = new ArrayList<Object>(agentRelationships.keySet()) ;
+            numberRelationshipsReport.put(relationshipClassName, relationshipClazzAgents.size()) ;
+            
+            relationshipClazzAgents.removeAll(totalAgents) ;
+            totalAgents.addAll(relationshipClazzAgents) ;
         }
+        numberRelationshipsReport.put("total", totalAgents.size()) ;
+        
         return numberRelationshipsReport ;
     }
     
+    /**
+     * 
+     * @param relationshipClassNames
+     * @param backYears
+     * @param backMonths
+     * @param backDays
+     * @param endCycle
+     * @return (HashMap) relationshipClassName maps to the number of Agents involved in 
+     * given class of Relationship during the specified period.
+     */
+    public HashMap<Object,Number> prepareProportionRelationshipsReport(String[] relationshipClassNames, int backYears, int backMonths, int backDays, int endCycle)
+    {
+        HashMap<Object,Number> proportionRelationshipsReport = new HashMap<Object,Number>() ;
+        
+        HashMap<Object,Number> numberRelationshipsReport = prepareNumberRelationshipsReport(relationshipClassNames, backYears, backMonths, backDays, endCycle) ;
+        
+        PopulationReporter populationReporter = new PopulationReporter(simName,getFolderPath()) ;
+        int finalMaxAgentId = populationReporter.getMaxAgentId(endCycle) ;
+        int earlyMaxAgentId = populationReporter.getMaxAgentId(endCycle - getBackCycles(backYears, backMonths, backDays)) ;
+        double effectivePopulation = getPopulation() + finalMaxAgentId - earlyMaxAgentId ;
+        
+        //HashMap<Object,Integer> relationshipClazzCount ;
+        //int total ;
+        for (Object relationshipClazzName : numberRelationshipsReport.keySet())
+        {
+            proportionRelationshipsReport.put(relationshipClazzName,numberRelationshipsReport.get(relationshipClazzName).doubleValue()/effectivePopulation) ;
+        }
+        
+        return proportionRelationshipsReport ;
+    }
     /**
      * First count the number of Relationships each Agent has entered up to now,
      * then subtract those which have broken up.
@@ -1502,10 +1570,13 @@ public class RelationshipReporter extends Reporter {
         HashMap<Object,HashMap<Object,Integer>> numberRecentRelationshipsReport 
                 = prepareNumberRecentRelationshipsReport(relationshipClassNames, backYears, backMonths, backDays, endCycle) ;
         
-        double population = Double.valueOf(getMetaDatum("Community.POPULATION")) ;
+        PopulationReporter populationReporter = new PopulationReporter(simName,getFolderPath()) ;
+        int finalMaxAgentId = populationReporter.getMaxAgentId(endCycle) ;
+        int earlyMaxAgentId = populationReporter.getMaxAgentId(endCycle - getBackCycles(backYears, backMonths, backDays)) ;
+        double effectivePopulation = getPopulation() + finalMaxAgentId - earlyMaxAgentId ;
         
         for (Object relationshipClassName : relationshipClassNames )  // numberRecentRelationshipsReport.keySet())
-            agentsEnteredRelationshipReport.put(relationshipClassName, numberRecentRelationshipsReport.get(relationshipClassName).keySet().size()/population) ;
+            agentsEnteredRelationshipReport.put(relationshipClassName, numberRecentRelationshipsReport.get(relationshipClassName).keySet().size()/effectivePopulation) ;
     
         return agentsEnteredRelationshipReport ;
     }
@@ -1724,7 +1795,8 @@ public class RelationshipReporter extends Reporter {
      * @param backYears
      * @param backMonths
      * @param backDays
-     * @return (HashMap) number of new Relationships in given period maps to number
+     * @return (HashMap) relationshipClassName maps to HashMap where the number 
+     * of new Relationships in given period maps to number
      * of Agents who had that many Relationships during that period.
      */
     public HashMap<Object,HashMap<Object,Number>> 
@@ -1742,7 +1814,8 @@ public class RelationshipReporter extends Reporter {
      * @param backYears
      * @param backMonths
      * @param backDays
-     * @return (HashMap) number of new Relationships in given period maps to number
+     * @return (HashMap) relationshipClassName maps to HashMap where the number 
+     * of new Relationships in given period maps to the number
      * of Agents who had that many Relationships during that period.
      */
     public HashMap<Object,HashMap<Object,Number>> 
