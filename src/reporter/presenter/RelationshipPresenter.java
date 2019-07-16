@@ -6,14 +6,11 @@
 package reporter.presenter;
 
 //import java.lang.reflect.Method;
-import agent.MSM;
 import reporter.* ;
 //import community.Community ;
 
 import java.util.ArrayList ;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet ;
 //import java.util.Arrays;
 import java.util.HashMap;
 import java.util.logging.Level;
@@ -31,15 +28,17 @@ public class RelationshipPresenter extends Presenter{
     {
         //String simName = "gammaFlip2HR3aPop40000Cycles1095" ; // "testPlotCondomUsePop4000Cycles500" ; // args[0] ;
         //String simName = "halfCasual10aPop40000Cycles1460" ; // "testPlotCondomUsePop4000Cycles500" ; // args[0] ;
-        String simName = "goneWild48aPop40000Cycles730" ; // "testPlotCondomUsePop4000Cycles500" ; // args[0] ;
+        String simName = "uniformWild10aPop40000Cycles730" ; // "testPlotCondomUsePop4000Cycles500" ; // args[0] ;
         //String chartTitle = "Nb_Agents_had_given_relationships" ; // args[1] ;
         //String chartTitle = "cumulative_relationships" ; // args[1] ;
-        String chartTitle = "mean_nb_relationships" ;
+        //String chartTitle = "mean_nb_relationships" ;
         //String chartTitle = "breakups" ;
+        String chartTitle = "agents_in_relationships" ;
         //String chartTitle = "agents_entered_relationships" ;
         
         //String reportFileName = "output/test/" ; // args[2] ;
-        String reportFileName = "output/year2007/" ; // args[2] ;
+        //String reportFileName = "output/year2007/" ; // args[2] ;
+        String reportFileName = "output/year2010/" ; // args[2] ;
         
         LOGGER.info(chartTitle) ;
         LOGGER.info(simName) ;
@@ -49,14 +48,15 @@ public class RelationshipPresenter extends Presenter{
         //relationshipPresenter.plotCumulativeRelationshipGaps() ;
         //relationshipPresenter.plotCumulativeRelationships("",0, 6, 0) ;
         //relationshipPresenter.plotCumulativeRelationships(new String[] {"Casual","Regular","Monogomous"}, 0, 6, 0) ;
-        //relationshipPresenter.plotCumulativeRelationships(10, new String[] {"Casual","Regular","Monogomous"}, 0, 6, 0) ;
+        //relationshipPresenter.plotCumulativeRelationships(1, new String[] {"Casual","Regular","Monogomous"}, 0, 6, 0) ;
         //relationshipPresenter.plotCumulativeRelationshipLengths() ;
         //relationshipPresenter.plotRelationshipCumulativeTransmissions() ;
         //relationshipPresenter.plotMeanNumberRelationshipsReport(relationshipClazzNames);
         //relationshipPresenter.plotAgentRelationshipsMeanYears(relationshipClazzNames, 3, 6, 0, 2017) ;
         //relationshipPresenter.plotAgentRelationshipsMean(new String[] {"Casual","Regular","Monogomous"}, 0, 6, 0) ;
         //relationshipPresenter.plotRelationshipLength() ;
-        relationshipPresenter.plotRecentRelationshipsReport(relationshipClazzNames,0,6,0) ;
+        //relationshipPresenter.plotRecentRelationshipsReport(relationshipClazzNames,0,6,0) ;
+        relationshipPresenter.plotNumberRelationships(new String[] {"Casual","Regular","Monogomous"}, 0, 6, 0) ;
         //relationshipPresenter.plotNumberAgentsEnteredRelationship(new String[] {"Casual","Regular","Monogomous"}, 0, 6, 0) ;
         //relationshipPresenter.plotNumberAgentsEnteredRelationshipYears(new String[] {"Casual","Regular","Monogomous"}, 2, 6, 0, 2017) ;
     }
@@ -146,6 +146,40 @@ public class RelationshipPresenter extends Presenter{
         plotHashMap("Year", relationshipClassNames, numberAgentsEnteredRelationshipYears) ;
     }
 
+    /**
+     * Plots the proportion of Agents involved in each of the Relationship classes 
+     * in relationshipClassNames.
+     * @param relationshipClassNames
+     * @param backYears
+     * @param backMonths
+     * @param backDays
+     * @param endCycle 
+     */
+    private void plotNumberRelationships(String[] relationshipClassNames, int backYears, int backMonths, int backDays)
+    {
+        int maxCycles = reporter.getMaxCycles() ;
+        
+        plotNumberRelationships(relationshipClassNames, backYears, backMonths, backDays, maxCycles) ;
+    }
+    
+
+    /**
+     * Plots the proportion of Agents involved in each of the Relationship classes 
+     * in relationshipClassNames.
+     * @param relationshipClassNames
+     * @param backYears
+     * @param backMonths
+     * @param backDays
+     * @param endCycle 
+     */
+    private void plotNumberRelationships(String[] relationshipClassNames, int backYears, int backMonths, int backDays, int endCycle)
+    {
+        HashMap<Object,Number> proportionRelationshipsReport 
+                = reporter.prepareProportionRelationshipsReport(relationshipClassNames, backYears, backMonths, backDays, endCycle) ;
+        
+        plotHashMap("class of relationship","proportion of agents",proportionRelationshipsReport) ;
+    }
+    
     /**
      * Plots how many Agents had entered into each given relationshipClassName during
      * given time. Does not indicate number of relationships per Agent.
@@ -288,10 +322,10 @@ public class RelationshipPresenter extends Presenter{
         
         //HashMap<Object,Number[]> invertedHashMap 
           //      = Reporter.INVERT_HASHMAP_LIST(cumulativeRelationshipRecord, new String[] {relationshipClassName}) ;
-        
+        LOGGER.log(Level.INFO, "{0}", cumulativeRelationshipRecord) ;
         
         plotHashMap("Cumulative number of partners","Number of agents",
-                binHashMap(cumulativeRelationshipRecord.get(relationshipClassName),"Nb_of_partners")) ; ;
+                binHashMap(cumulativeRelationshipRecord.get(relationshipClassName),"Nb_of_partners")) ; 
     }
     
     /**
@@ -312,7 +346,7 @@ public class RelationshipPresenter extends Presenter{
         
         HashMap<Object,Number[]> invertedHashMap 
                 = Reporter.INVERT_HASHMAP_LIST(recentRelationshipsReport,relationshipClassNewNames) ;
-        
+                
         String timePeriod = String.valueOf(backYears) + " years " 
                 + String.valueOf(backMonths) + " months " 
                 + String.valueOf(backDays) + " days " ;
