@@ -26,11 +26,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.math3.distribution.GammaDistribution;
 import static reporter.Reporter.AGENTID;
-import static reporter.Reporter.EXTRACT_ARRAYLIST;
-import static reporter.Reporter.EXTRACT_ARRAYLIST;
-import static reporter.Reporter.IDENTIFY_PROPERTIES;
-import static reporter.Reporter.EXTRACT_VALUE;
-import static reporter.Reporter.EXTRACT_VALUE;
+
 /**
  * @author <a href = "mailto:mlwalker@kirby.unsw.edu.au">Michael Walker</a>
  *
@@ -51,8 +47,8 @@ public abstract class Agent {
     //static String FOLDER_PATH = "/srv/scratch/z3524276/prepsti/"
     //static String FOLDER_PATH = "/short/is14/mw7704/prepsti/"
     static String FOLDER_PATH = ""
-    +  "output/year2007/" ;
-    //   +  "output/year2010/" ;
+    //+  "output/year2007/" ;
+     +  "output/year2010/" ;
     //+  "output/year2012/" ;
     // +  "output/test/" ;
     // +  "output/prePrEP/" ;
@@ -106,7 +102,7 @@ public abstract class Agent {
     static String CASUAL = "Casual" ;
     
     // agentId of next Agent to be created, current number plus one
-    static int NB_AGENTS_CREATED = 0 ;
+    static public int NB_AGENTS_CREATED = 0 ;
 
     /** Probability of screening in a given cycle when symptomatic is false. */
     static double SCREEN_PROBABILITY = 0.001 ;
@@ -814,24 +810,47 @@ public abstract class Agent {
     
     /**
      * Adjusts per year the screening period.
-     * @param year
-     * @param hivStatus
+     * @param year - The year whose parameter values are to be used.
      * @throws Exception 
      */
     abstract public void reinitScreenCycle(int year) throws Exception ;
     
+    /**
+     * Adjusts per year the odds of risky behaviour.
+     * @param year - The year whose parameter values are to be used.
+     * @throws Exception 
+     */
     abstract public void reinitRiskOdds(int year) throws Exception ;
     
+    /**
+     * Adjusts per year the probability of being on anti-retroviral medication 
+     * with undetectable viral load.
+     * @param year - The year whose parameter values are to be used.
+     */
     abstract public void reinitProbabilityAntiViral(int year) ;
     
+    /**
+     * Adjusts per year the probability of disclosing ones HIV status.
+     * @param year - The year whose parameter values are to be used.
+     * @throws Exception 
+     */
     abstract public void reinitProbablityDiscloseHIV(int year) throws Exception ;
     
+    /**
+     * Getter for risky status
+     * @return riskyStatus (boolean) whether the Agent practices risky behaviour 
+     * regarding condom use.
+     */
     abstract public boolean getRiskyStatus() ;
     
+    /**
+     * Setter for riskyStatus.
+     * @param risky (boolean) new value for riskyStatus.
+     */
     abstract public void setRiskyStatus(boolean risky) ;
     
     /**
-     * Randomly choose the agent's probability of cheating on a monogomous spouse.
+     * Randomly choose the agent's probability of cheating on a Monogomous spouse.
      */
     private void initInfidelity()
     {
@@ -841,7 +860,7 @@ public abstract class Agent {
     
     /**
      * Setter for infidelity, probability of cheating on a Monogomous partner.
-     * @param newInfidelity 
+     * @param newInfidelity (double) New value for infidelity.
      */
     public void setInfidelity(double newInfidelity)
     {
@@ -958,8 +977,8 @@ public abstract class Agent {
     abstract Site chooseSite() ;
 
     /**
-     * For when the choice of site depends on already chosen site
-     * @param site
+     * For when the choice of site depends on an already chosen site
+     * @param site (Site) The Site which has already been chosen.
      * @return randomly chosen available Site
      */
     protected Site chooseSite(Site site)
@@ -990,6 +1009,8 @@ public abstract class Agent {
     
     /**
      * Called to adjust condom use to reflect behavioural trends.
+     * @param parameter (double) Factor between zero and one for scaling down
+     * the probability of using a condom.
      */
     public void adjustCondomUse(double parameter) 
     {
@@ -1008,13 +1029,17 @@ public abstract class Agent {
     
     /**
      * Setter for probabilityUseCondom.
-     * @param useCondom 
+     * @param useCondom (double) New probability of using a condom.
      */
     public void setProbabilityUseCondom(double useCondom)
     {
         probabilityUseCondom = useCondom ;
     }
     
+    /**
+     * Getter for probabilityUseCondom.
+     * @return (double) The probably of choosing to use a condom when the choice is made.
+     */
     public double getProbabilityUseCondom()
     {
         return probabilityUseCondom ;
@@ -1095,6 +1120,7 @@ public abstract class Agent {
 
     /**
      * Whether the Agent is infected and symptomatic at given Site site with any STI
+     * @param site
      * @return site.symptomatic
      */
     public boolean getSymptomatic(Site site)
@@ -1104,7 +1130,7 @@ public abstract class Agent {
 
     /**
      * Setter for symptomatic. Use with caution as Sites are not tracked.
-     * @param site
+     * @param newSymptomatic
      * @return 
      */
     public boolean setSymptomatic(boolean newSymptomatic)
@@ -1124,6 +1150,7 @@ public abstract class Agent {
 
     /**
      * The Agent becomes symptomatic if and only if the newly infected Site is.
+     * @param symptoms
      * @param site
      * @return 
      */
@@ -1145,7 +1172,8 @@ public abstract class Agent {
         site.setInfectionTime(infectionTime) ;
     }
 
-    /** screenTime setter(). */
+    /** screenTime setter().
+     * @param time */
     public void setScreenTime(int time)
     {
         screenTime = time ;
@@ -1301,6 +1329,7 @@ public abstract class Agent {
 
     /**
      * Invoked when Agent is asymptomatic. Call site.treat(). If all treatments successful, call clearSymptomatic()
+     * @param site
      * @return true if all sites successfully treated, false otherwise
      */
     public boolean treat(Site site)
@@ -1347,6 +1376,7 @@ public abstract class Agent {
 
     /**
      * Getter for site.infectedStatus
+     * @param site
      * @return site.infectedStatus
      */
     public int getInfectedStatus(Site site)
