@@ -1114,24 +1114,22 @@ public class Reporter {
      */
     static protected int GET_BACK_CYCLES(int backYears, int backMonths, int backDays, int maxCycles)
     {
-        int daysPerYear = 365 ;
-        int daysPerMonth = 31 ;
         int backCycles ;
         
         // Don't go further back than records allow.
-        if ((backYears * daysPerYear) > maxCycles)
+        if ((backYears * DAYS_PER_YEAR) > maxCycles)
         {
-            backYears = maxCycles/daysPerYear ;
+            backYears = maxCycles/DAYS_PER_YEAR ;
             LOGGER.warning("Tried to go back more years than records allow.") ;
         }
-        backCycles = backYears * daysPerYear ;
+        backCycles = backYears * DAYS_PER_YEAR ;
         
-        if ((backMonths * daysPerMonth + backCycles) > maxCycles)
+        if ((backMonths * DAYS_PER_MONTH + backCycles) > maxCycles)
         {
-            backMonths = ((maxCycles - backCycles)/daysPerMonth) ;
+            backMonths = ((maxCycles - backCycles)/DAYS_PER_MONTH) ;
             LOGGER.warning("Tried to go back more months than records allow.") ;
         }
-        backCycles += backMonths * daysPerMonth + backDays ;
+        backCycles += backMonths * DAYS_PER_MONTH + backDays ;
         
         if (backCycles > maxCycles)
         {
@@ -2207,10 +2205,12 @@ public class Reporter {
     public static void main(String[] args)
     {
         String folderPath = "output/prePrEP/" ;
-        //String[] simNames = new String[] {"to2014contact96dPop40000Cycles4380","to2014contact96cPop40000Cycles4380","to2014contact96bPop40000Cycles4380","to2014contact96aPop40000Cycles4380"} ;
-        String[] simNames = new String[] {"gamma4bbPop40000Cycles4380","gamma4bcPop40000Cycles4380","gamma4bdPop40000Cycles4380","gamma4bePop40000Cycles4380","gamma4bfPop40000Cycles4380"} ; 
+        String[] simNames = new String[] {"to2014goneWild50aPop40000Cycles2920","to2014goneWild50bPop40000Cycles2920","to2014goneWild50cPop40000Cycles2920","to2014goneWild50dPop40000Cycles2920",
+            "to2014goneWild50ePop40000Cycles2920"} ; //,"to2014goneWild51fPop40000Cycles3285","to2014goneWild51gPop40000Cycles3285","to2014goneWild51hPop40000Cycles3285","to2014goneWild51iPop40000Cycles3285",
+        //"to2014goneWild51jPop40000Cycles3285"} ;
+        //String[] simNames = new String[] {"gamma4bbPop40000Cycles4380","gamma4bcPop40000Cycles4380","gamma4bdPop40000Cycles4380","gamma4bePop40000Cycles4380","gamma4bfPop40000Cycles4380"} ; 
        
-        PREPARE_GRAY_REPORT(simNames,folderPath,2007,2016) ;
+        PREPARE_GRAY_REPORT(simNames,folderPath,2010,2014) ;
     }
 
     /**
@@ -2464,6 +2464,7 @@ public class Reporter {
                 LOGGER.severe(e.toString());
                 assert(false) ;
             }
+            fileIndex = 0 ;
             return outputList ;
         }
                 
