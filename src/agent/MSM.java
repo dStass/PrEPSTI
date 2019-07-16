@@ -74,6 +74,7 @@ public class MSM extends Agent {
     static double PROBABILITY_NEGATIVE_SERO_POSITION = 0.154 ;
     /** The probability of being on antivirals, given positive HIV status */
     static double PROBABILITY_ANTIVIRAL = 0.689 ; // 2010 value // 0.532 ; // 
+    
     /** 
      * Adjusts the probability of accepting a Casual relationship.
      * Value chosen to match the GCPS.
@@ -318,19 +319,19 @@ public class MSM extends Agent {
     private boolean riskyStatus ;
     
     /** Transmission probabilities per sexual contact from Urethra to Rectum */
-    static double URETHRA_TO_RECTUM = 0.95 ; // 0.95 ; // 0.100 ;  0.25 ; //
+    static double URETHRA_TO_RECTUM = 0.92 ; // 0.95 ; // 0.100 ;  0.25 ; //
     /** Transmission probabilities sexual contact from Urethra to Pharynx. */
     static double URETHRA_TO_PHARYNX = 0.20 ; // 0.060 ; // 0.035 ; // 0.15 ;
     /** Transmission probabilities sexual contact from Rectum to Urethra. */
     static double RECTUM_TO_URETHRA = 0.001 ; // 0.020 ; // 0.008 ; 0.010 ; //
     /** Transmission probabilities sexual contact from Rectum to Pharynx. */
-    static double RECTUM_TO_PHARYNX = 0.020 ;
+    static double RECTUM_TO_PHARYNX = 0.026 ;
     /** Transmission probabilities sexual contact in Pharynx to Urethra intercourse. */
     static double PHARYNX_TO_URETHRA = 0.0005 ; // 0.001 ;
     /** Transmission probabilities sexual contact in Pharynx to Rectum intercourse. */
-    static double PHARYNX_TO_RECTUM = 0.050 ; // 0.035 ; // 0.030 ; // 0.0100 ;
+    static double PHARYNX_TO_RECTUM = 0.060 ; // 0.035 ; // 0.030 ; // 0.0100 ;
     /** Transmission probabilities sexual contact in Pharynx to Pharynx intercourse (kissing). */
-    static double PHARYNX_TO_PHARYNX = 0.04 ; // 0.030 ; // 0.030 ; // 0.052 ;
+    static double PHARYNX_TO_PHARYNX = 0.030 ; // 0.030 ; // 0.030 ; // 0.052 ;
     /** Transmission probabilities sexual contact in Urethra to Urethra intercourse (docking). */
     static double URETHRA_TO_URETHRA = 0.0005 ; // 0.0001 ; // 0.0001 ; // 0.005 ;
     /** Transmission probabilities sexual contact in Rectum to Rectum intercourse. */
@@ -424,10 +425,7 @@ public class MSM extends Agent {
     }
     
     /**
-     * Earlier versions of theis Meth had parameters Agent infectedAgent, Agent clearAgent,
-     * @param infectedAgent
-     * @param clearAgent
-     * @param infectionStatus
+     * 
      * @param infectedSite
      * @param clearSite
      * @return infectProbability (double) the probability of infection of clearSite
@@ -710,7 +708,10 @@ public class MSM extends Agent {
         }
         else */ 
         if (rangeIndex == 0)
-            consentProbability = 0.0 ;
+        {
+            consentCasualProbability = -1.0 ;
+            return ;
+        }
         else if (rangeIndex == (proportions.length - 1)) // 100+ partners
         {
             double lowerProbability = lowerBounds[rangeIndex]/timeAverage ;
@@ -729,7 +730,7 @@ public class MSM extends Agent {
             else
                 consentProbability = RAND.doubles(lowerProb, upperProb).iterator().nextDouble() ;
         }
-        //double adjustConsent = 0.8 ;
+        //double adjustConsent = 0.8 ;    // /2.0 because two Agents in every Relationship
         consentCasualProbability = Math.sqrt(ADJUST_CASUAL_CONSENT * consentProbability/2.0) ;
     }
     
@@ -1320,8 +1321,8 @@ public class MSM extends Agent {
     
     /**
      * Whether to enter a proposed relationship of class relationshipClazz .
-     * Currently according to whether in a monogomous relationship and 
-     * the number of relationships already entered compared to promiscuity.
+     * Currently according to whether in a Monogomous Relationship and 
+     * the number of relationships already entered compared to concurrency.
      * 
      * @param relationshipClazzName - name relationship subclass
      * @param partner - agent for sharing proposed relationship
@@ -1449,7 +1450,7 @@ public class MSM extends Agent {
     /**
      * Decides probabilistically whether MSM chooses to use a condom in a given encounter.
      * RiskyMSM choose use strategies other than condoms
-     * @param partner
+     * @param relationshipClazzName
      * @param agentPartner
      * @return true if condom is to be used, false otherwise
      */
@@ -1630,11 +1631,6 @@ public class MSM extends Agent {
         return "" ;
     
     }
-        /*String report = "" ;
-        consentCasualProbability *= PROMISCUITY_FRACTION ;
-        report += Reporter.ADD_REPORT_PROPERTY("consentCasualProbability", consentCasualProbability) ;
-        return super.ageEffects() + report ;
-    }*/
     
     static public void SET_ADJUST_CASUAL_CONSENT(double adjustCasual)
     {
