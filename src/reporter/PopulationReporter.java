@@ -156,7 +156,7 @@ public class PopulationReporter extends Reporter {
     
     /**
      * FIXME: Only works for final record.
-     * @param recordNb
+     * @param deathRecordNb
      * @return List of agentIds of Agents living at recordNb.
      */
     public ArrayList<Object> prepareAgentsAliveRecord(int recordNb)
@@ -214,22 +214,31 @@ public class PopulationReporter extends Reporter {
         return filteredReport ;
         
     }
+    
     /**
-     * TODO: Extend to allow specification of record number, currently fixed at final record.
+     * 
      * @return (int) agentId of last Agent born.
      */
     public int getMaxAgentId()
     {
-        ArrayList<String> populationReport = getFinalReport() ;
-        
+        return getMaxAgentId(getMaxCycles()) ;
+    }
+    
+    /**
+     * 
+     * @return (int) agentId of last Agent born on or before cycle recordNb.
+     */
+    public int getMaxAgentId(int recordNb)
+    {
         String populationRecord ;
         int deathIndex ;
         String birthRecord = "" ;
         int birthIndex = -1 ;
         //Cycle backwards until final birth is found
-        for( int recordIndex = populationReport.size() -1 ; birthIndex < 0 ; recordIndex-- )
+        for( int recordIndex = recordNb ; birthIndex < 0 ; recordIndex-- )
         {
-            populationRecord = populationReport.get(recordIndex);
+            populationRecord = getBackCyclesReport(0, 0, 1, recordIndex).get(0) ;
+            //populationRecord = populationReport.get(recordIndex);
             deathIndex = populationRecord.indexOf(DEATH);
             birthRecord = populationRecord.substring(0, deathIndex);
             birthIndex = birthRecord.lastIndexOf(AGENTID) ;
@@ -253,7 +262,6 @@ public class PopulationReporter extends Reporter {
         for (int recordIndex = 0 ; recordIndex < recordNb ; recordIndex++ )
         {
             String record = deathReport.get(recordIndex) ;
-            //LOGGER.info(record);
             ArrayList<Object> deadAgentList = EXTRACT_ALL_VALUES(AGENTID, record) ;
             agentsDeadRecord.addAll(deadAgentList) ;
         }
@@ -438,11 +446,9 @@ public class PopulationReporter extends Reporter {
         
         String record ;
         int deathIndex ;
+        //LOGGER.info("preparedDeathReport()");
 
-        boolean nextInput = true ; 
-        
-        while (nextInput)
-        {
+        for (boolean nextInput = true ; nextInput ; nextInput = updateReport() )
             for (int reportNb = 0 ; reportNb < input.size() ; reportNb += outputCycle )
             {
                 record = input.get(reportNb) ;
@@ -452,22 +458,44 @@ public class PopulationReporter extends Reporter {
                     continue ;
                 deathReport.add(record.substring(deathIndex)) ;
             }
-            nextInput = updateReport() ;
-        }
+            
         return deathReport ;
     }
     
+    /**
+     * 
+     * @return (ArrayList(String)) report of which agentIds were born in which cycle
+     */
     public ArrayList<String> prepareBirthReport()
+    {
+        int maxCycles = getMaxCycles() ;
+        
+        return prepareBirthReport(0, 0, maxCycles, maxCycles) ;
+    }
+    
+    /**
+     * 
+     * @param backYears
+     * @param backMonths
+     * @param backDays
+     * @param endCycle
+     * @return (ArrayList(String)) report of which agentIds were born in which cycle
+     * during specified time period.
+     */
+    public ArrayList<String> prepareBirthReport(int backYears, int backMonths, int backDays, int endCycle)
     {
         ArrayList<String> birthReport = new ArrayList<String>() ;
         
         String record ;
         
+        //int backCycles = getBackCycles(backYears, backMonths, backDays) ;
+        ArrayList<String> backCyclesReport = getBackCyclesReport(backYears, backMonths, backDays, endCycle) ;
+        
         for (boolean nextInput = true ; nextInput ; nextInput = updateReport())
         {
-            for (int reportNb = 0 ; reportNb < input.size() ; reportNb += outputCycle )
+            for (int reportNb = 0 ; reportNb < backCyclesReport.size() ; reportNb += outputCycle )
             {
-                record = input.get(reportNb) ;
+                record = backCyclesReport.get(reportNb) ;
                 birthReport.add(record.substring(INDEX_OF_PROPERTY("birth",record),INDEX_OF_PROPERTY("death",record))) ;
             }
         }
