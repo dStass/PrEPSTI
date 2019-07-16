@@ -250,7 +250,8 @@ abstract public class Site {
 
     /**
      * 
-     * @return Probability of treatment for an STI being successful
+     * getter for treatmentProbability, 
+     * the probability of treatment for an STI being successful
      */
     //abstract protected double getTreatmentProbability() ;
     
@@ -393,7 +394,8 @@ abstract public class Site {
     
     /**
      * Getter for days left in incubation period.
-     * @return incubationTime
+     * 
+     * @param incubationPeriod
      */
     public void setIncubationTime(int incubationPeriod)
     {
