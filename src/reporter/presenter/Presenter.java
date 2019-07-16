@@ -30,7 +30,7 @@ import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer ;
 import org.jfree.chart.annotations.XYTextAnnotation ;
 import org.jfree.data.KeyToGroupMap;
 import org.jfree.data.category.* ;
-import org.jfree.data.general.* ;
+//import org.jfree.data.general.* ;
 import org.jfree.data.xy.XYDataset; 
 import org.jfree.data.xy.XYSeries ;  
 import org.jfree.data.xy.XYSeriesCollection ;
@@ -77,9 +77,10 @@ public class Presenter {
     // Used for controlling if and what is co-plotted from file.
     static boolean PLOT_FILE = false ;    
     static String FOLDER_PATH = "data_files/" ;
-    static String FILENAME = "incidence_kirby2018" ; // "gonoGoneWild" ; // "meanNotificationRate" ; // "unique_positivity_urethra" ; // "notifications" ; //  
-    static String[] DATA_SCORE = new String[] {"hiv_negative","hiv_positive"} ;
-    //static String[] DATA_SCORE = new String[] {"data_notifications","data_notification_rate"} ; // {"overall_gone_wild","urethral_gone_wild","rectal_gone_wild","pharyngeal_gone_wild"} ; // {"urethral_positivity"} ;
+    static String FILENAME = "gonoGoneWild" ; // "incidence_kirby2018" ; // "meanNotificationRate" ; // "unique_positivity_urethra" ; // "notifications" ; //  
+    //static String[] DATA_SCORE = new String[] {"hiv_negative","hiv_positive"} ;
+    //static String[] DATA_SCORE = new String[] {"data_notifications","data_notification_rate"} ; // 
+    static String[] DATA_SCORE = new String[] {"overall_gone_wild","urethral_gone_wild","rectal_gone_wild","pharyngeal_gone_wild"} ; // {"urethral_positivity"} ;
             
     private boolean stacked = true ; // false ;
     private BarChart_AWT chart_awt ;
@@ -744,6 +745,7 @@ public class Presenter {
 
         while (closeSegmentNb > openSegmentNb)
         {
+            LOGGER.info(String.valueOf(closeSegmentNb)) ;
             // Initialise scoreValue
             scoreValue = new ArrayList<Number>() ;
             for (String scoreName1 : scoreNames)
@@ -1254,7 +1256,7 @@ public class Presenter {
     
     /**
      * Calls plotCycleValue
-     * @param scoreNames
+     * @param scoreName
      * @param record
      */
     public void plotValues(String scoreName, String record)
@@ -1266,13 +1268,12 @@ public class Presenter {
     
     /**
      * Calls plotCycleValue
-     * @param scoreNames
      * @param record
+     * @param yLabel
+     * @param xLabel
      */
     public void multiPlotValues(String record, String yLabel, String xLabel)
     {
-        ArrayList<Object> recordList = new ArrayList<Object>() ;
-        recordList.add(record) ;
         DefaultCategoryDataset dataset = parseSortedRecord(record) ;
         chart_awt.plotBarChart(chartTitle, dataset, yLabel, xLabel) ;
     }            
@@ -1286,8 +1287,8 @@ public class Presenter {
 
     /**
      * Calls callPlotChart
-     * @param scoreNames
-     * @param reportArrays 
+     * @param scoreName
+     * @param reportArray 
      */
     public void plotCycleValue(String scoreName, ArrayList<Object> reportArray)
     {
@@ -1297,8 +1298,9 @@ public class Presenter {
             
     /**
      * Calls callMultiPlotChart
-     * @param scoreNames
+     * @param scoreName
      * @param reportArrays 
+     * @param legend 
      */
     public void multiPlotCycleValue(String scoreName, ArrayList<ArrayList<Object>> reportArrays, String[] legend)
     {
@@ -1330,7 +1332,7 @@ public class Presenter {
             
     /**
      * Calls callMultiBarPlotChart after converting scoreName to an ArrayList.
-     * @param scoreNames
+     * @param scoreName
      * @param reportArrays 
      */
     public void multiBarPlotValue(String scoreName, ArrayList<Object> reportArrays)
