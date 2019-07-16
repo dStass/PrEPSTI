@@ -875,7 +875,6 @@ public class ScreeningReporter extends Reporter {
      * @param backYears
      * @param backMonths
      * @param backDays
-     * @param endCycle
      * @param lastYear
      * @return HashMap from year to proportion of Agents tested at least once during that year.
      */
