@@ -4,7 +4,7 @@
 package community;
 
 import agent.* ;
-import static community.Community.RAND;
+//import static community.Community.RAND;
 import site.* ;
 import reporter.* ;
         
@@ -80,13 +80,13 @@ public class Community {
      * (String) Name of previous burn-in to reload.
      * Not reloaded if this is an empty string.
      */
-    static final String RELOAD_BURNIN = "" ; // Year2007New8bPop40000Cycles4000" ; // "NoPrepCalibration24Pop40000Cycles8000" ;
+    static final String RELOAD_BURNIN = "" ; // 
     
     /**
      * (String) Name of previous simulation to reload.
      * Not reloaded if this is an empty string.
      */
-    static final String RELOAD_SIMULATION = "" ; // "goneWild48aPop40000Cycles730" ; // "halfCasual10bPop40000Cycles2190" ; // "gamma2HR4aEXTPop40000Cycles730" ; // "riskiness1bPop40000Cycles1095" ; // "from2010try18aPop40000Cycles2190" ; // "max3contact95bEXT2Pop40000Cycles2920" ; 
+    static final String RELOAD_SIMULATION = "" ; // "uniformWild23bPop40000Cycles1095" ; 
     
     static public String getFilePath()
     {
@@ -1379,7 +1379,7 @@ public class Community {
 
 
         // File objects
-        BufferedWriter[] fileWriters ;
+        //BufferedWriter[] fileWriters ;
         /*
         File logFile ;
         File errorFile ;
