@@ -192,6 +192,9 @@ public class MSM extends Agent {
     /**
      * Resets the probability of Risky vs Safe behaviour according to the year.
      * Rates taken from GCPS 2011 Table 16, 2014 Table 15, 
+     * @param agentList
+     * @param year
+     * @throws java.lang.Exception
      */
     static public void REINIT_RISK_ODDS(ArrayList<Agent> agentList, int year) throws Exception
     {
@@ -222,21 +225,27 @@ public class MSM extends Agent {
         boolean moreRisky = (lastProbability < riskyProbability) ;
         double adjustProbabilityUseCondom = lastProbability/riskyProbability ;
         
-        // Compensates for allowing only change in one direction.
-        if (moreRisky) 
-            changeProbability = (riskyProbability - lastProbability)/(1-lastProbability) ;
-        else
-            changeProbability = riskyProbability/lastProbability ; //(lastProbability - riskyProbability)/lastProbability ;
                                                                     // see comments below
         
         //riskyProbability *= changeProbability ;
         //double riskyProbabilityPositive = riskyProbability ; //* HIV_RISKY_CORRELATION ;
         //double riskyProbabilityNegative = riskyProbability ; //* (1.0 - PROPORTION_HIV * HIV_RISKY_CORRELATION)/(1.0 - PROPORTION_HIV) ;
-        
+        double hivFactor ;
         MSM msm ;
         for (Agent agent : agentList)
         {
             msm = (MSM) agent ;
+            
+            // Compensates for allowing only change in one direction.
+            if (moreRisky) 
+            {
+                hivFactor = GET_HIV_RISKY_CORRELATION(msm.statusHIV) ;
+                changeProbability = hivFactor * (riskyProbability - lastProbability)/(1-lastProbability * hivFactor) ;
+            }
+            else
+                changeProbability = riskyProbability/lastProbability ; //(lastProbability - riskyProbability)/lastProbability ;
+
+        
             msm.scaleProbabilityUseCondom(adjustProbabilityUseCondom) ;
             
             if (moreRisky) 
@@ -244,6 +253,8 @@ public class MSM extends Agent {
                 if (msm.getRiskyStatus()) // if risky already
                     continue ;    // we don't change it
                 msm.setRiskyStatus(RAND.nextDouble() < changeProbability) ;
+                hivFactor = GET_HIV_RISKY_CORRELATION(msm.statusHIV) ;
+                //msm.reinitPrepStatus(year, riskyProbability * hivFactor) ;
             }
             else    // riskyProbability has gone down
             {
@@ -251,12 +262,25 @@ public class MSM extends Agent {
                     continue ;    // we don't change it
                 // equivalent to correct calculation: RAND > (1 - changeProbability)
                 msm.setRiskyStatus(RAND.nextDouble() < changeProbability) ; 
+                msm.prepStatus = false ;
             }
         }
     }
     
+    /**
+     * 
+     * @param hivStatus
+     * @return (double) Factor to adjust riskyProbability according to statusHIV.
+     */
+    static double GET_HIV_RISKY_CORRELATION(boolean hivStatus)
+    {
+        if (hivStatus)
+            return HIV_RISKY_CORRELATION ;
+        return (1.0 - PROPORTION_HIV * HIV_RISKY_CORRELATION)/(1.0 - PROPORTION_HIV) ;
+    }
+    
     /** The probability of being on PrEP, given negative HIV status */
-    static double PROBABILITY_PREP = 0.0 ; // 0.14 ;
+    static double PROBABILITY_PREP = 0.14 ;
     /** Probability of accepting seropositive partner on antiVirals, given 
      * seroSort or seroPosition if HIV positive */
     static double PROBABILITY_POSITIVE_ACCEPT_ANTIVIRAL = 0.5 ;
@@ -592,8 +616,9 @@ public class MSM extends Agent {
         // Sets antiViral status, ensuring it is true only if statusHIV is true
         setAntiViralStatus(RAND.nextDouble() < getAntiviralProbability()) ;
 
-        // Randomly set PrEP status, ensuring it is true only if statusHIV is true
-        initPrepStatus(RAND.nextDouble() < getProbabilityPrep()) ;
+        // Randomly set PrEP status, ensuring it is true only if statusHIV is false
+        // Now called within initRiskiness()
+        //initPrepStatus() ;
         
         
         initRiskiness() ;
@@ -618,16 +643,16 @@ public class MSM extends Agent {
     {
         int totalOdds = SAFE_ODDS + RISKY_ODDS ;
         double riskyProbability = ((double) RISKY_ODDS)/totalOdds ;
-        if (statusHIV)
-            riskyProbability *= HIV_RISKY_CORRELATION ;
-        else
-            riskyProbability *= (1.0 - PROPORTION_HIV * HIV_RISKY_CORRELATION)/(1.0 - PROPORTION_HIV) ;
+        riskyProbability *= GET_HIV_RISKY_CORRELATION(statusHIV) ;
         
         probabilityUseCondom = sampleGamma(4, 0.1, 1) ; // Gamma2 * (1 - riskyProbability) * RAND.nextDouble() ;
         if (probabilityUseCondom > 1)
             probabilityUseCondom = 1 ;
         
         riskyStatus = (RAND.nextDouble() < riskyProbability) ;
+        
+        // Initialise PrEP status depending on adjusted riskyProbability.
+        initPrepStatus(riskyProbability) ;
     } 
     
     /**
@@ -1104,6 +1129,7 @@ public class MSM extends Agent {
      * Getter for riskyStatus.
      * @return 
      */
+    @Override
     public boolean getRiskyStatus()
     {
         return riskyStatus ;
@@ -1113,8 +1139,14 @@ public class MSM extends Agent {
      * Initialise prepStatus and set up screenCycle and screenTime accordingly.
      * @param prep 
      */
-    private void initPrepStatus(boolean prep)
+    private void initPrepStatus(double riskyProbability)
     {
+        boolean prep = false ;
+        if (riskyStatus && (!statusHIV))
+        {
+            double prepProbability = getProbabilityPrep() / riskyProbability ;
+            prep = RAND.nextDouble() < prepProbability ;
+        }
         setPrepStatus(prep) ;
     }
     
@@ -1241,9 +1273,16 @@ public class MSM extends Agent {
      * initPrepStatus() remains private.
      * @param prep 
      */
-    public void reinitPrepStatus(boolean prep)
+    public void reinitPrepStatus(int year, double riskyProbability)
     {
-        initPrepStatus(prep) ;
+        double[] prepProbabilityArray = new double[] {0.14,0.15,0.16,0.17,0.18,0.19} ;
+        boolean prep = false ;
+        if (riskyStatus && (!statusHIV))
+        {
+            double prepProbability = prepProbabilityArray[year] / riskyProbability ;
+            prep = RAND.nextDouble() < prepProbability ;
+        }
+        setPrepStatus(prep) ;
     }
     
     /**
