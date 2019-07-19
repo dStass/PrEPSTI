@@ -5,8 +5,6 @@
  */
 package reporter;
 
-import reporter.EncounterReporter ;
-import community.Community ;
 import community.Relationship ;
 
 import java.lang.reflect.*;
@@ -99,6 +97,7 @@ public class RelationshipReporter extends Reporter {
     
     /**
      * 
+     * @param relationshipClassName
      * @return ArrayList of ArrayLists of (String) RelationshipIds of relationships
      * of type relationshipClassName commenced in each cycle. If relationshipClassName 
      * is an empty String then include all Relationships.
@@ -124,6 +123,7 @@ public class RelationshipReporter extends Reporter {
     
     /**
      * 
+     * @param relationshipClazzes
      * @return ArrayList of ArrayLists of (String) RelationshipIds of relationships
      * of class relationshipClazz commenced in each cycle
      */
@@ -158,9 +158,6 @@ public class RelationshipReporter extends Reporter {
     
     /**
      * 
-     * @param backYears
-     * @param backMonths
-     * @param backDays
      * @return (ArrayList) of every Relationship to have ever broken up until backYears, backMonths, backDays
      * before cycle endCycle
      */
@@ -252,7 +249,9 @@ public class RelationshipReporter extends Reporter {
         // When did each Relationship break-up? Used for efficiency.
         ArrayList<ArrayList<Object>> relationshipBreakupReport 
                 = prepareRelationshipBreakupReport() ;
+        
         // relationshipId -> commencement cycle
+        // Use of currentRelationshipIds currently commented out.
         ArrayList<Object> currentRelationshipIds = new ArrayList<Object>() ;
         //for (boolean nextInput = true ; nextInput ; nextInput = updateReport())
         int nbCycles = encounterReport.size() ;
@@ -503,6 +502,7 @@ public class RelationshipReporter extends Reporter {
     
     /**
      * 
+     * @param noBreakups
      * @return (HashMap) relationshipId maps to [agentIds]
      */
     public HashMap<Object,String[]> prepareRelationshipAgentReport(boolean noBreakups)
@@ -616,6 +616,8 @@ public class RelationshipReporter extends Reporter {
         
         // RelationshipLengthMap < 0 for Relationships that are still ongoing at the end of the simulation.
         int nbCycles = Integer.valueOf(getMetaDatum("Community.MAX_CYCLES")) ;
+        
+        // Use of removeRelationships commented out, see below.
         ArrayList<Object> removeRelationships = new ArrayList<Object>() ;
         for (Object relationshipId : relationshipLengthMap.keySet())
             if (!(relationshipLengthMap.get(relationshipId) > 0))
@@ -1027,6 +1029,7 @@ public class RelationshipReporter extends Reporter {
      * @param backYears
      * @param backMonths
      * @param backDays
+     * @param endCycle
      * @return (HashMap) relationshipClassName maps to (agentId maps to number of
      * Relationships of given class involved in during given time period).
      */
@@ -1233,6 +1236,7 @@ public class RelationshipReporter extends Reporter {
     /**
      * First count the number of Relationships each Agent has entered up to now,
      * then subtract those which have broken up.
+     * @param relationshipClassNames
      * @return Each relationshipId gives relationshipClassName maps to 
  (the number of current Relationships for each Agent).
      */
@@ -1463,6 +1467,9 @@ public class RelationshipReporter extends Reporter {
     /**
      * 
      * @param relationshipClassNames
+     * @param backYears
+     * @param backMonths
+     * @param backDays
      * @return Each relationshipId is a HashMap indicating new relationshipIds for relevant (key) Agents
      */
     public ArrayList<HashMap<Object,HashMap<Object,ArrayList<Object>>>> 
@@ -1814,6 +1821,7 @@ public class RelationshipReporter extends Reporter {
      * @param backYears
      * @param backMonths
      * @param backDays
+     * @param endCycle
      * @return (HashMap) relationshipClassName maps to HashMap where the number 
      * of new Relationships in given period maps to the number
      * of Agents who had that many Relationships during that period.
