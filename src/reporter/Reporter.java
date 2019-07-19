@@ -1272,7 +1272,6 @@ public class Reporter {
 
     /**
      * 
-     * @param propertyName
      * @param reportList
      * @return (ArrayList) report with (ArrayList) subreports where the values 
      * in the subreports are averaged over the innermost ArrayList.
@@ -1312,8 +1311,10 @@ public class Reporter {
 
     /**
      * 
-     * @param propertyName
-     * @param reportList
+     * @param simNames
+     * @param folderPath
+     * @param startYear
+     * @param endYear
      * @return (HashMap) report with where the values are averaged reports in reportList.
      */
     static public HashMap<Object,Number[]> PREPARE_GRAY_REPORT(String[] simNames, String folderPath, int startYear, int endYear)
@@ -1456,31 +1457,35 @@ public class Reporter {
      * @param property 
      * @param simName 
      * @param folderPath 
+     * @return (boolean) true if successful but false if an Exception is encountered.
      */
-    static public void WRITE_CSV(ArrayList<ArrayList<Object>> report, String[] scoreNames, String property, String simName, String folderPath)
+    static public boolean WRITE_CSV(ArrayList<ArrayList<Object>> report, String[] scoreNames, String property, String simName, String folderPath)
     {
         String filePath ;
         String line ;
+        int cycle ;
         String fileHeader = "cycle," ;
+        String record ;
         
-        {
-            filePath = folderPath + simName + property + ".csv";
-            fileHeader += String.join(COMMA, scoreNames) ;
-            fileHeader += COMMA + property ;
-        }
+        filePath = folderPath + simName + property + ".csv";
+        fileHeader += String.join(COMMA, scoreNames) ;
+        fileHeader += COMMA + property ;
+            
         try
         {
             BufferedWriter fileWriter = new BufferedWriter(new FileWriter(filePath,false));
             fileWriter.write(fileHeader) ;
             fileWriter.newLine();
-            for (int cycle = 0; cycle < 4000 ; cycle++)
+            
+            int nbCycles = report.get(0).size() ;
+            for (cycle = 0 ; cycle < nbCycles ; cycle++ )
             {
-            line = String.valueOf(cycle) ;
-            for (Object record : report)
-            {
+                line = String.valueOf(cycle) ;
                 //for (String entry : (ArrayList<String>) record)
-                String entry = ((ArrayList<String>) record).get(cycle) ;
-                line += COMMA + EXTRACT_VALUE(property,entry) ;
+                for (int scoreIndex = 0 ; scoreIndex < scoreNames.length ; scoreIndex++ ) 
+                {
+                    record = report.get(scoreIndex).get(cycle).toString() ;
+                    line += COMMA + EXTRACT_VALUE(property, (String) record) ;
             }
                 fileWriter.write(line) ;
                 fileWriter.newLine() ;
@@ -1490,7 +1495,10 @@ public class Reporter {
         catch( Exception e )
         {
             LOGGER.info(e.toString()) ;
+            return false ;
         }
+        
+        return true ;
     }
     
     /**
@@ -1620,10 +1628,10 @@ public class Reporter {
      * Stores a (HashMap of ArrayList or Object) report as a csv file for other packages to read.
      * @param report
      * @param categoryName
-     * @param categoryList
      * @param reportName
      * @param simName
      * @param folderPath 
+     * @return  true if file is written successfully and false otherwise.
      */
     static public boolean WRITE_CSV_STRING(HashMap<Object,String> report, String categoryName, String reportName, String simName, String folderPath)
     {
@@ -1690,6 +1698,42 @@ public class Reporter {
             colonIndex = nextColonIndex ;
         }
         return labelArray ;
+    }
+    
+    /**
+     * 
+     * @param label
+     * @param record
+     * @return (String) Properties and their values under a given label.
+     */
+    static public String EXTRACT_LABEL_STRING(String label, String record)
+    {
+        return  EXTRACT_LABEL_STRING(label, record, IDENTIFY_LABELS(record)) ;
+    }
+    
+    
+    /**
+     * 
+     * @param label
+     * @param record
+     * @param labelList (ArrayList) of possible labels.
+     * @return (String) Properties and their values under a given label.
+     */static public String EXTRACT_LABEL_STRING(String label, String record, ArrayList<String> labelList)
+    {
+        ArrayList<String> loopList = (ArrayList<String>) labelList.clone() ;
+        loopList.remove(label) ;
+        int labelIndex = record.indexOf(label) + label.length() + 1 ;
+        int listIndex = record.length() ;
+        int nextIndex = labelIndex ;
+        
+        for (String otherLabel : loopList)
+        {
+            nextIndex = record.indexOf(otherLabel, labelIndex) ;
+            if ((nextIndex < listIndex) && (nextIndex > 0))
+                listIndex = nextIndex ;
+        }
+        
+        return record.substring(labelIndex, listIndex) ;
     }
     
     /**
@@ -2235,6 +2279,7 @@ public class Reporter {
         {
             this.simName = simName ;
             this.folderPath = filePath ;
+            fileIndex = 0 ;
             if ("screening".equals(reporterName))    // TODO: Remove need for this step
                 reporterName = "infection" ;
             fileNames = initFileNames(simName + reporterName) ;
@@ -2385,20 +2430,6 @@ public class Reporter {
         
         /**
          * 
-         * @param cycle
-         * @return (ArrayList) Report containing the specified (int) cycle
-         */
-        private void getSpecificFile(int cycle)
-        {
-            int divCycle = cycle/cyclesPerFile ;
-            if (cyclesPerFile * divCycle == cycle)
-                fileIndex = divCycle - 1 ;
-            else
-                fileIndex = divCycle ;
-        }
-        
-        /**
-         * 
          * @param backCycles
          * @param endCycle
          * @return Report of backCycles records leading up to endCycle'th
@@ -2410,9 +2441,9 @@ public class Reporter {
             try
             {
                 int startCycle = endCycle - backCycles ;
-                
                 // Open file
-                getSpecificFile(startCycle) ;
+                fileIndex = startCycle/cyclesPerFile ;
+                //getSpecificFile(startCycle) ;
                 BufferedReader fileReader = new BufferedReader(new FileReader(folderPath + fileNames.get(fileIndex))) ;
                         
                 boolean newFile = false ;
@@ -2433,6 +2464,7 @@ public class Reporter {
                     // Open new file if reached end of previous one
                     if (newFile)
                     {
+                        LOGGER.info(TRUE);
                         fileReader = new BufferedReader(new FileReader(folderPath + fileNames.get(fileIndex))) ;
                         newFile = false ;
                     }
@@ -2442,6 +2474,7 @@ public class Reporter {
                     if (pauseLine > cyclesPerFile)
                         pauseLine = cyclesPerFile ;
 
+                    LOGGER.info("pauseLine:" + String.valueOf(pauseLine));
                     for (int lineNb = startLine ; lineNb < pauseLine ; lineNb++ )
                     {
                         outputString = fileReader.readLine() ;
