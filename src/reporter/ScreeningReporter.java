@@ -192,6 +192,9 @@ public class ScreeningReporter extends Reporter {
     /**
      * 
      * @param siteNames
+     * @param unique
+     * @param backMonths
+     * @param backDays
      * @return Records of final incidence for specified siteNames and in total.
      */
     public String prepareFinalNotificationsRecord(String[] siteNames, boolean unique, int backMonths, int backDays)
@@ -206,6 +209,8 @@ public class ScreeningReporter extends Reporter {
      * 
      * @param siteNames
      * @param backYears
+     * @param backMonths
+     * @param backDays
      * @param endCycle
      * @return Records of final notifications for specified siteNames and in total.
      */
@@ -218,9 +223,12 @@ public class ScreeningReporter extends Reporter {
     /**
      * 
      * @param siteNames
-     * @param backYears
-     * @param endCycle
      * @param unique  - Count one positive result per Agent. 
+     * @param backYears
+     * @param backMonths 
+     * @param backDays 
+     * @param notifications 
+     * @param sortingProperty 
      * @return Records of final notifications for specified siteNames and in total.
      */
     //public ArrayList<ArrayList<Number>> prepareSortedFinalNotificationsRecord(String[] siteNames, boolean unique, int backYears, int backMonths, int backDays, int notifications, String sortingProperty)
@@ -740,7 +748,8 @@ public class ScreeningReporter extends Reporter {
     
     /**
      * 
-     * @param siteNames
+     * @param backMonths
+     * @param backDays
      * @param backYears
      * @param lastYear
      * @return Year-by-year Report of the number of tests mapping to the number of Agents
@@ -824,8 +833,9 @@ public class ScreeningReporter extends Reporter {
         
     /**
      * 
-     * @param siteNames
      * @param backYears
+     * @param backMonths
+     * @param backDays
      * @param lastYear
      * @return Year-by-year Report of the number of tests mapping to the number of Agents
      * who have had at least that many tests in each year.
@@ -1309,6 +1319,33 @@ public class ScreeningReporter extends Reporter {
     
     /**
      * 
+     * @param siteNames
+     * @return (ArrayList) Report of (String) records giving prevalence values 
+     * for each given siteName and overall.
+     */
+    public ArrayList<Object> prepareCompletePrevalenceReport(String[] siteNames)
+    {
+        ArrayList<Object> completePrevalenceReport = new ArrayList<Object>() ;
+        
+        int population = getPopulation() ;
+        String entry ;
+        for (boolean nextInput = true ; nextInput ; nextInput = updateReport())
+            for (String record : input)
+            {
+                entry = ADD_REPORT_LABEL("all") ;
+                entry += preparePrevalenceRecord(siteNames, record, population) ;
+                for (String siteName : siteNames)
+                {
+                    entry += ADD_REPORT_LABEL(siteName) ;
+                    entry += preparePrevalenceRecord(siteName, record, population) ;
+                }
+                completePrevalenceReport.add(entry) ;
+            }
+        return completePrevalenceReport ;
+    }
+    
+    /**
+     * 
      * @param siteName
      * @return (ArrayList) indicating the total prevalence, prevalence of 
      * symptomatic infection, and proportion of symptomatic infection at site given 
@@ -1318,27 +1355,66 @@ public class ScreeningReporter extends Reporter {
     {
         ArrayList<Object> sitePrevalenceReport = new ArrayList<Object>() ;
         
-        int population = Integer.valueOf(getMetaDatum("Community.POPULATION")) ;
+        int population = getPopulation() ; // Integer.valueOf(getMetaDatum("Community.POPULATION")) ;
         for (boolean nextInput = true ; nextInput ; nextInput = updateReport() )
-        {
-            int[] nbSymptomatic ;
-            String entry ;
             for (String record : input)
-            {
-                nbSymptomatic = COUNT_VALUE_INCIDENCE(siteName,TRUE,record,0) ;
-
-    //            if (nbSymptomatic[0] == nbSymptomatic[1])
-    //                LOGGER.info(record);
-
-
-                entry = ADD_REPORT_PROPERTY("prevalence",((double) nbSymptomatic[1])/population) ;
-                entry += ADD_REPORT_PROPERTY("symptomatic",((double) nbSymptomatic[0])/population) ;
-                entry += ADD_REPORT_PROPERTY("proportion",((double) nbSymptomatic[0])/nbSymptomatic[1]) ;
-                sitePrevalenceReport.add(entry) ;
-            }
-            
-        }
+                sitePrevalenceReport.add(preparePrevalenceRecord(siteName, record, population)) ;
+         
         return sitePrevalenceReport ;
+    }
+    
+    private String preparePrevalenceRecord(String siteName, String record, double population)
+    {
+        int[] nbSymptomatic = COUNT_VALUE_INCIDENCE(siteName,TRUE,record,0) ;
+
+        String entry = ADD_REPORT_PROPERTY("prevalence",((double) nbSymptomatic[1])/population) ;
+        entry += ADD_REPORT_PROPERTY("symptomatic",((double) nbSymptomatic[0])/population) ;
+        entry += ADD_REPORT_PROPERTY("proportion",((double) nbSymptomatic[0])/nbSymptomatic[1]) ;
+
+        return entry ;
+    }
+    
+    private String preparePrevalenceRecord(String[] siteNames, String record, double population)
+    {
+        boolean agentInfected ;
+        String siteStatus ;
+        String entry = "" ;
+        
+//        for (int siteIndex = 0 ; siteIndex < siteNames.length ; siteIndex++ )
+//            {
+//                String siteName = siteNames[siteIndex] ;
+//                siteNames[siteIndex] = siteName.substring(0,1).toUpperCase() 
+//                        + siteName.substring(1) ;
+//            }
+//        
+        int nbSymptomatic = 0 ;
+        ArrayList<String> infections = EXTRACT_ARRAYLIST(record,AGENTID) ;
+        int nbInfected = 0 ; // infections.size() ;
+        for (String infection : infections)
+        {
+            agentInfected = false ;
+            for (String siteName : siteNames)
+            {
+                siteStatus = EXTRACT_VALUE(siteName,infection) ;
+                if (siteStatus.equals(TRUE))
+                {
+                    agentInfected = true ;
+                    nbSymptomatic++ ;
+                    break ;
+                }
+                else if (siteStatus.equals(FALSE))
+                    agentInfected = true ;
+            }
+            if (agentInfected)
+                nbInfected++ ;
+        }
+
+        //LOGGER.info(record) ;
+        entry = ADD_REPORT_PROPERTY("prevalence",((double) nbInfected)/population) ;
+        entry += ADD_REPORT_PROPERTY("symptomatic",((double) nbSymptomatic)/population) ;
+        entry += ADD_REPORT_PROPERTY("proportion",((double) nbSymptomatic)/nbInfected) ;
+
+        return entry ;
     }
     
     /**
