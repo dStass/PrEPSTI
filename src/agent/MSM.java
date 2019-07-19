@@ -102,7 +102,11 @@ public class MSM extends Agent {
         if (year == 0)
             return ;
         
-        double[] probabilityAntiViral = new double[] {0.532, 0.706, 0.735, 0.689, 0.706, 0.802, 0.766, 0.830, 0.818, 0.854} ;
+        // years 2010 onwards
+        double[] probabilityAntiViral = new double[] {0.689, 0.706, 0.802, 0.766, 0.830, 0.818, 0.854} ;
+        // years 2007-2009
+        // 0.532, 0.706, 0.735, 
+        
         double newProbability = probabilityAntiViral[year] ;
         double oldProbability = probabilityAntiViral[year-1] ;
         double changeProbability ;
@@ -138,15 +142,16 @@ public class MSM extends Agent {
      */
     static protected void REINIT_PROBABILITY_DISCLOSURE_HIV(ArrayList<Agent> agentList, int year) throws Exception
     {
-        // Go from 2007
+        // Go from 2010
         double newDiscloseProbability ;
         double oldDiscloseProbability ;
         double changeProbability ;
         //if (statusHIV)
-        double[] positiveDiscloseProbability = new double[] {0.201,0.296,0.327,0.286,0.312,0.384,0.349,0.398,0.430,0.395} ;
+        double[] positiveDiscloseProbability = new double[] {0.286,0.312,0.384,0.349,0.398,0.430,0.395} ;
         //else
-        double[] negativeDiscloseProbability = new double[] {0.175,0.205,0.218,0.239,0.229,0.249,0.236,0.295,0.286,0.352} ;
-        
+        double[] negativeDiscloseProbability = new double[] {0.239,0.229,0.249,0.236,0.295,0.286,0.352} ;
+        // 2007 - 2009
+        // positive 0.201,0.296,0.327,    negative 0.175,0.205,0.218,
         double positiveNewDiscloseProbability = positiveDiscloseProbability[year] ;
         double positiveOldDiscloseProbability = positiveDiscloseProbability[year-1] ;
         
@@ -192,16 +197,18 @@ public class MSM extends Agent {
     {
         if (year == 0)
             return ;
-        // Go from 2007, ARTB (Table 9, 2014) (Table 11, 2017)
+        // Go from 2010, ARTB (Table 9, 2014) (Table 11, 2017)
         // Year-by-year rates of UAIC 
-        int[] riskyOdds = new int[] {321,327,378,361,337,360,357,375,388,482,482} ;
+        int[] riskyOdds = new int[] {361,337,360,357,375,388,482,482} ;
         //int[] riskyOdds = new int[] {365,360,355,350,345,340,335,330,325,320} ;
         // Year-by-year rates of non-UAIC 
         // 2013- Table 11 2017, 2007-2012 Table 9 2014 * .7
         //int[] safeOdds = new int[] {679,673,622,639,663,640,643,625,622,518,518} ;
-        int[] safeOdds = new int[] {475,471,435,447,464,448,443,445,421,398,398} ;
+        int[] safeOdds = new int[] {447,464,448,443,445,421,398,398} ;
         //int[] safeOdds = new int[] {430,435,440,445,450,455,460,465,470,475} ;
         // Ratios .403 , .410 , .465 , .447 , .421 , .446 , .446 , .457 , .480 , .548
+        // 2007 - 2009 values
+        // riskyOdds 321,327,378,    safeOdds 475,471,435,
         SAFE_ODDS = safeOdds[year] ;
         RISKY_ODDS = riskyOdds[year] ;
         
@@ -319,19 +326,19 @@ public class MSM extends Agent {
     private boolean riskyStatus ;
     
     /** Transmission probabilities per sexual contact from Urethra to Rectum */
-    static double URETHRA_TO_RECTUM = 0.92 ; // 0.95 ; // 0.100 ;  0.25 ; //
+    static double URETHRA_TO_RECTUM = 0.95 ; // 0.100 ;  0.25 ; //
     /** Transmission probabilities sexual contact from Urethra to Pharynx. */
     static double URETHRA_TO_PHARYNX = 0.20 ; // 0.060 ; // 0.035 ; // 0.15 ;
     /** Transmission probabilities sexual contact from Rectum to Urethra. */
     static double RECTUM_TO_URETHRA = 0.001 ; // 0.020 ; // 0.008 ; 0.010 ; //
     /** Transmission probabilities sexual contact from Rectum to Pharynx. */
-    static double RECTUM_TO_PHARYNX = 0.026 ;
+    static double RECTUM_TO_PHARYNX = 0.020 ;
     /** Transmission probabilities sexual contact in Pharynx to Urethra intercourse. */
     static double PHARYNX_TO_URETHRA = 0.0005 ; // 0.001 ;
     /** Transmission probabilities sexual contact in Pharynx to Rectum intercourse. */
     static double PHARYNX_TO_RECTUM = 0.060 ; // 0.035 ; // 0.030 ; // 0.0100 ;
     /** Transmission probabilities sexual contact in Pharynx to Pharynx intercourse (kissing). */
-    static double PHARYNX_TO_PHARYNX = 0.030 ; // 0.030 ; // 0.030 ; // 0.052 ;
+    static double PHARYNX_TO_PHARYNX = 0.035 ; // 0.030 ; // 0.030 ; // 0.052 ;
     /** Transmission probabilities sexual contact in Urethra to Urethra intercourse (docking). */
     static double URETHRA_TO_URETHRA = 0.0005 ; // 0.0001 ; // 0.0001 ; // 0.005 ;
     /** Transmission probabilities sexual contact in Rectum to Rectum intercourse. */
