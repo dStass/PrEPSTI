@@ -747,8 +747,11 @@ public class MSM extends Agent {
         else if (rangeIndex == (proportions.length - 1)) // 100+ partners
         {
             double lowerProbability = lowerBounds[rangeIndex]/timeAverage ;
-            consentProbability = RAND.doubles(lowerProbability, 1).iterator().nextDouble() ;
-            //consentProbability = 1.0 ;
+            if (lowerProbability > 1.0)
+                consentProbability = 1.0 ;
+            else
+                consentProbability = RAND.doubles(lowerProbability, 1).iterator().nextDouble() ;
+            
         }
         else
         {
