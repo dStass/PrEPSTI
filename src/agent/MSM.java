@@ -118,13 +118,13 @@ public class MSM extends Agent {
             if (newProbability > oldProbability)
             {
                 if (msm.discloseStatusHIV)
-                    return ;
+                    continue ;
                 changeProbability = (newProbability - oldProbability)/(1 - oldProbability) ;
             }
             else    // Probability of being on antiViral medication decreases.
             {
                 if (!msm.discloseStatusHIV)
-                    return ;
+                    continue ;
                 changeProbability = (oldProbability - newProbability)/oldProbability ;
             }
             newProbability *= changeProbability ;
@@ -254,7 +254,7 @@ public class MSM extends Agent {
                     continue ;    // we don't change it
                 msm.setRiskyStatus(RAND.nextDouble() < changeProbability) ;
                 hivFactor = GET_HIV_RISKY_CORRELATION(msm.statusHIV) ;
-                //msm.reinitPrepStatus(year, riskyProbability * hivFactor) ;
+                msm.reinitPrepStatus(year, riskyProbability * hivFactor) ;
             }
             else    // riskyProbability has gone down
             {
@@ -280,7 +280,7 @@ public class MSM extends Agent {
     }
     
     /** The probability of being on PrEP, given negative HIV status */
-    static double PROBABILITY_PREP = 0.14 ;
+    static double PROBABILITY_PREP = 0.0 ;
     /** Probability of accepting seropositive partner on antiVirals, given 
      * seroSort or seroPosition if HIV positive */
     static double PROBABILITY_POSITIVE_ACCEPT_ANTIVIRAL = 0.5 ;
@@ -1142,10 +1142,10 @@ public class MSM extends Agent {
     private void initPrepStatus(double riskyProbability)
     {
         boolean prep = false ;
-        if (riskyStatus && (!statusHIV))
+        //if (riskyStatus && (!statusHIV))
         {
-            double prepProbability = getProbabilityPrep() / riskyProbability ;
-            prep = RAND.nextDouble() < prepProbability ;
+          //  double prepProbability = getProbabilityPrep() / riskyProbability ;
+            //prep = RAND.nextDouble() < prepProbability ;
         }
         setPrepStatus(prep) ;
     }
@@ -1275,7 +1275,7 @@ public class MSM extends Agent {
      */
     public void reinitPrepStatus(int year, double riskyProbability)
     {
-        double[] prepProbabilityArray = new double[] {0.14,0.15,0.16,0.17,0.18,0.19} ;
+        double[] prepProbabilityArray = new double[] {0.0,0.0,0.0,0.011,0.014,0.014,0.039,0.139,0.19} ;
         boolean prep = false ;
         if (riskyStatus && (!statusHIV))
         {
@@ -1513,8 +1513,10 @@ public class MSM extends Agent {
 
             // Not if on PrEP
             if (getPrepStatus())
-                if (RAND.nextDouble() > probabilityUseCondom)    // '>' intended
+            {
+                //if (RAND.nextDouble() > probabilityUseCondom)    // '>' intended
                     return false ;
+            }
 
             if (getSeroSort(relationshipClazzName))    // might use condom when serodiscordance or nondisclosure
             {
