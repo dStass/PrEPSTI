@@ -69,7 +69,7 @@ public class Community {
     //static public String FILE_PATH = "/short/is14/mw7704/prepsti/output/year2007/" ;
     
     /** Whether parameters change throughout simulation. */
-    static boolean DYNAMIC = false ;
+    static boolean DYNAMIC = true ;
     
     /** Dump reports to disk after this many cycles. */
     static final int DUMP_CYCLE = ((int) Math.pow(10, 7))/POPULATION ;
@@ -577,19 +577,10 @@ public class Community {
      */
     private String interveneCommunity(int cycle)
     {
-        int startCycle = 365 * 2 ;
+        int startCycle = 365 * 4 ;
         if ((cycle < startCycle))
             return "" ;
-        if (2<0) // true or false
-        {
-            LOGGER.info("set riskyStatus") ;
-            for (Agent agent : agents)
-            {
-                agent.setProbabilityUseCondom(1.0);
-                agent.setRiskyStatus(false) ;
-            }
-            return "set riskyStatus" ;
-        }
+        
         int year = (cycle - startCycle)/365 ;
         if (year == 0)
             return "" ;
