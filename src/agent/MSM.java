@@ -47,9 +47,9 @@ public class MSM extends Agent {
     static double PROPORTION_HIV = 0.092 ;
     
     /** The probability of disclosing HIV status if HIV positive */
-    static double PROBABILITY_DISCLOSE_POSITIVE_HIV =  0.286 ; // 2010 VALUE // 0.2 ; // 
+    static double PROBABILITY_DISCLOSE_POSITIVE_HIV =  0.2 ; // 0.286 ; // 2010 VALUE // 0.2 ; // 
     /** The probability of disclosing HIV status if HIV negative */
-    static double PROBABILITY_DISCLOSE_NEGATIVE_HIV = 0.239 ; // 2010 VALUE // 0.18 ; // 
+    static double PROBABILITY_DISCLOSE_NEGATIVE_HIV = 0.18 ; // 0.239 ; // 2010 VALUE // 
     /** Probability of serosorting if HIV positive (2017) */
     static double PROBABILITY_POSITIVE_SERO_SORT = 0.59 ;
     /** Probability of serosorting if HIV negative (2017) */
@@ -73,7 +73,7 @@ public class MSM extends Agent {
     /** Probability of sero-positioning if HIV negative */
     static double PROBABILITY_NEGATIVE_SERO_POSITION = 0.154 ;
     /** The probability of being on antivirals, given positive HIV status */
-    static double PROBABILITY_ANTIVIRAL = 0.689 ; // 2010 value // 0.532 ; // 
+    static double PROBABILITY_ANTIVIRAL = 0.532 ; // 0.689 ; // 2010 value // 
     
     /** 
      * Adjusts the probability of accepting a Casual relationship.
@@ -103,7 +103,7 @@ public class MSM extends Agent {
             return ;
         
         // years 2010 onwards
-        double[] probabilityAntiViral = new double[] {0.689, 0.706, 0.802, 0.766, 0.830, 0.818, 0.854} ;
+        double[] probabilityAntiViral = new double[] {0.532, 0.706, 0.735, 0.689, 0.706, 0.802, 0.766, 0.830, 0.818, 0.854} ;
         // years 2007-2009
         // 0.532, 0.706, 0.735, 
         
@@ -147,9 +147,9 @@ public class MSM extends Agent {
         double oldDiscloseProbability ;
         double changeProbability ;
         //if (statusHIV)
-        double[] positiveDiscloseProbability = new double[] {0.286,0.312,0.384,0.349,0.398,0.430,0.395} ;
+        double[] positiveDiscloseProbability = new double[] {0.201,0.296,0.327,0.286,0.312,0.384,0.349,0.398,0.430,0.395} ;
         //else
-        double[] negativeDiscloseProbability = new double[] {0.239,0.229,0.249,0.236,0.295,0.286,0.352} ;
+        double[] negativeDiscloseProbability = new double[] {0.175,0.205,0.218,0.239,0.229,0.249,0.236,0.295,0.286,0.352} ;
         // 2007 - 2009
         // positive 0.201,0.296,0.327,    negative 0.175,0.205,0.218,
         double positiveNewDiscloseProbability = positiveDiscloseProbability[year] ;
@@ -202,12 +202,12 @@ public class MSM extends Agent {
             return ;
         // Go from 2010, ARTB (Table 9, 2014) (Table 11, 2017)
         // Year-by-year rates of UAIC 
-        int[] riskyOdds = new int[] {361,337,360,357,375,388,482,482} ;
+        int[] riskyOdds = new int[] {321,327,378,361,337,360,357,375,388,482,482} ;
         //int[] riskyOdds = new int[] {365,360,355,350,345,340,335,330,325,320} ;
         // Year-by-year rates of non-UAIC 
         // 2013- Table 11 2017, 2007-2012 Table 9 2014 * .7
         //int[] safeOdds = new int[] {679,673,622,639,663,640,643,625,622,518,518} ;
-        int[] safeOdds = new int[] {447,464,448,443,445,421,398,398} ;
+        int[] safeOdds = new int[] {475,471,435,447,464,448,443,445,421,398,398} ;
         //int[] safeOdds = new int[] {430,435,440,445,450,455,460,465,470,475} ;
         // Ratios .403 , .410 , .465 , .447 , .421 , .446 , .446 , .457 , .480 , .548
         // 2007 - 2009 values
@@ -354,15 +354,15 @@ public class MSM extends Agent {
     /** Transmission probabilities sexual contact from Urethra to Pharynx. */
     static double URETHRA_TO_PHARYNX = 0.20 ; // 0.060 ; // 0.035 ; // 0.15 ;
     /** Transmission probabilities sexual contact from Rectum to Urethra. */
-    static double RECTUM_TO_URETHRA = 0.001 ; // 0.020 ; // 0.008 ; 0.010 ; //
+    static double RECTUM_TO_URETHRA = 0.003 ; // 0.020 ; // 0.008 ; 0.010 ; //
     /** Transmission probabilities sexual contact from Rectum to Pharynx. */
-    static double RECTUM_TO_PHARYNX = 0.020 ;
+    static double RECTUM_TO_PHARYNX = 0.030 ;
     /** Transmission probabilities sexual contact in Pharynx to Urethra intercourse. */
     static double PHARYNX_TO_URETHRA = 0.0005 ; // 0.001 ;
     /** Transmission probabilities sexual contact in Pharynx to Rectum intercourse. */
-    static double PHARYNX_TO_RECTUM = 0.060 ; // 0.035 ; // 0.030 ; // 0.0100 ;
+    static double PHARYNX_TO_RECTUM = 0.035 ; // 0.035 ; // 0.030 ; // 0.0100 ;
     /** Transmission probabilities sexual contact in Pharynx to Pharynx intercourse (kissing). */
-    static double PHARYNX_TO_PHARYNX = 0.035 ; // 0.030 ; // 0.030 ; // 0.052 ;
+    static double PHARYNX_TO_PHARYNX = 0.030 ; // 0.030 ; // 0.030 ; // 0.052 ;
     /** Transmission probabilities sexual contact in Urethra to Urethra intercourse (docking). */
     static double URETHRA_TO_URETHRA = 0.0005 ; // 0.0001 ; // 0.0001 ; // 0.005 ;
     /** Transmission probabilities sexual contact in Rectum to Rectum intercourse. */
@@ -544,9 +544,9 @@ public class MSM extends Agent {
     
     	
     // Odds of a MSM having anal intercourse safely (consistent condom use)
-    static int SAFE_ODDS = 447 ; // 475 ; // 
+    static int SAFE_ODDS = 475 ; // 447 ; // 2010 value //
     // Odds of an MSM being riskyMSM
-    static int RISKY_ODDS = 361 ; //  321 ; // 
+    static int RISKY_ODDS = 321 ; // 361 ; // 2010 value
     // Sum of safeOdds and riskyOdds
     static int TOTAL_ODDS = RISKY_ODDS + SAFE_ODDS ;
 //        int[] safeOdds = new int[] {475,471,435,447,464,448,443,445,421,398,398} ;
@@ -1365,7 +1365,7 @@ public class MSM extends Agent {
     public void setPrepStatus(boolean prep)
     {
         prepStatus = prep && (!statusHIV) ;
-        initScreenCycle(382.0/333.0) ;    // Rescale for 2010
+        initScreenCycle(1.0) ; // (382.0/333.0) ;    // Rescale for 2010
     }
     
     /**
