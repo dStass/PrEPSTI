@@ -2,7 +2,7 @@ package community;
 
 import agent.* ;
 import java.io.BufferedReader;
-import java.io.File;
+//import java.io.File;
 import java.io.FileReader;
 import site.* ;
 import reporter.Reporter ;
@@ -13,7 +13,7 @@ import java.util.Random ;
 import java.lang.reflect.*;
 import java.util.ArrayList;
 import java.util.HashMap ;
-import java.util.logging.Level;
+//import java.util.logging.Level;
 
 import reporter.RelationshipReporter ;
 
@@ -39,7 +39,7 @@ public class Relationship {
     //static String FOLDER_PATH = "/short/is14/mw7704/prepsti/"
     static String FOLDER_PATH = ""
     // +  "output/year2007/" ;
-    //+  "output/year2010/" ;
+    // +  "output/year2010/" ;
     // +  "output/year2012/" ;
      +  "output/test/" ;
     // +  "output/prePrEP/" ;
