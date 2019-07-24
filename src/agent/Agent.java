@@ -48,9 +48,9 @@ public abstract class Agent {
     //static String FOLDER_PATH = "/short/is14/mw7704/prepsti/"
     static String FOLDER_PATH = ""
     //+  "output/year2007/" ;
-     +  "output/year2010/" ;
+    // +  "output/year2010/" ;
     //+  "output/year2012/" ;
-    // +  "output/test/" ;
+     +  "output/test/" ;
     // +  "output/prePrEP/" ;
     
     
@@ -147,7 +147,7 @@ public abstract class Agent {
         // Go from 2010
         // Tests, given by per 1000 per year, from 2010-2016
         // Table 17 ARTB 2016
-        double[] testRates = new double[] {382,383,382,391,419,445,499} ;
+        double[] testRates = new double[] {333,340,398,382,383,382,391,419,445,499} ;
         // 2007 - 2009
         // 333,340,398,
         
