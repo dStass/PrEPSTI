@@ -1291,6 +1291,7 @@ public class Reporter {
         
         for (Object key : firstReport.keySet())
         {
+            LOGGER.info("year:" + key.toString());
             for (String propertyName : reportProperties)
             {
                 double itemValue = 0.0 ;
@@ -2464,7 +2465,6 @@ public class Reporter {
                     // Open new file if reached end of previous one
                     if (newFile)
                     {
-                        LOGGER.info(TRUE);
                         fileReader = new BufferedReader(new FileReader(folderPath + fileNames.get(fileIndex))) ;
                         newFile = false ;
                     }
@@ -2474,7 +2474,6 @@ public class Reporter {
                     if (pauseLine > cyclesPerFile)
                         pauseLine = cyclesPerFile ;
 
-                    LOGGER.info("pauseLine:" + String.valueOf(pauseLine));
                     for (int lineNb = startLine ; lineNb < pauseLine ; lineNb++ )
                     {
                         outputString = fileReader.readLine() ;
