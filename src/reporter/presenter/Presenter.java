@@ -82,7 +82,7 @@ public class Presenter {
     //static String[] DATA_SCORE = new String[] {"data_notifications","data_notification_rate"} ; // 
     static String[] DATA_SCORE = new String[] {"overall_gone_wild","urethral_gone_wild","rectal_gone_wild","pharyngeal_gone_wild"} ; // {"urethral_positivity"} ;
             
-    private boolean stacked = true ; // false ;
+    private boolean stacked = false ; // true ; // 
     private BarChart_AWT chart_awt ;
     
     private String folderPath = Community.FILE_PATH ;
@@ -968,10 +968,10 @@ public class Presenter {
     {
         //LOGGER.info("callPlotChart()") ;
         // Extract data from reportArray
-        parseReportArrays(scoreName, reportArrays) ;
+        ArrayList<ArrayList<Object>> scoreList = parseReportArrays(scoreName, reportArrays) ;
         
         // Send data to be processed and presented
-        chart_awt.callPlotChart(chartTitle,scoreData,scoreName,legend) ;
+        chart_awt.callPlotChart(chartTitle,scoreList,scoreName,legend) ;
     }
     
     /**
@@ -984,7 +984,7 @@ public class Presenter {
     {
         //LOGGER.info("callPlotChart()") ;
         // Extract data from reportArray
-        parseReportArrays(scoreNames, reportArrays) ;
+        ArrayList<ArrayList<Object>> scoreList = parseReportArrays(scoreNames, reportArrays) ;
         // Generate approriate scoreName from scoreNames with no repetition
         String scoreName = "" ;
         for (String name : scoreNames)
@@ -992,7 +992,7 @@ public class Presenter {
                 scoreName += "/" + name ;
         scoreName = scoreName.substring(1) ;
         // Send data to be processed and presented
-        chart_awt.callPlotChart(chartTitle,scoreData,scoreName,legend) ;
+        chart_awt.callPlotChart(chartTitle,scoreList,scoreName,legend) ;
     }
     
     /**
@@ -1039,7 +1039,7 @@ public class Presenter {
     }
     
     /**
-     * Presents reportArray as a bar plot.
+     * Presents reports in reportArray as a multi-bar plot.
      * @param scoreNames
      * @param reportArrays 
      */
@@ -1260,6 +1260,31 @@ public class Presenter {
     }
     
     /**
+     * Presents scoreName as a function of categoryName from reportArray[cycle]
+     * or HashMap
+     * @param categoryNames
+     * @param scoreName
+     * @param reportArray
+     * @param cycle 
+     */
+    protected void callPlotChartDefault(ArrayList<String> categoryNames, String scoreName, String xLabel, String record)
+    {
+        // Extract data from report
+        ArrayList<ArrayList<Number>> categoryData = parseRecord(categoryNames, record) ;
+        LOGGER.log(Level.INFO, "{0}", categoryData);
+        String[] categoryList = new String[categoryNames.size()] ;
+        for (int index = 0 ; index < categoryNames.size() ; index++ )
+            categoryList[index] = categoryNames.get(index) ;
+        //ArrayList<Object> categoryList = new ArrayList<Object>(Arrays.asList(categoryNames.toArray())) ; 
+        LOGGER.log(Level.INFO, "{0}", categoryList);
+        // Send data to be processed and presented
+        //chart_awt.plotBarChart(chartTitle, categoryData, scoreName, xLabel) ;
+        chart_awt.callStackedPlotChart(chartTitle, new ArrayList<Object>(Arrays.asList(new String[] {scoreName})),categoryData, categoryList,xLabel) ;
+        //callPlotChart(chartTitle,categoryData.get(0),scoreData.get(0),scoreName,categoryNames) ;
+        //chart_awt.callPlotChart(chartTitle,categoryData,scoreName,xLabel,categoryNames) ;
+    }
+    
+    /**
      * 
      * @param scoreName (String) 
      * @param reportArray (ArrayList(ArrayListObject)) 
@@ -1406,26 +1431,54 @@ public class Presenter {
      * @param scoreName
      * @param report 
      */
-    private void parseRecord(String categoryName, String scoreNames, String report)
+    private void parseRecord(String categoryName, String scoreName, String report)
     {
-        parseRecord(new String[] {categoryName}, scoreNames, report) ;
+        parseRecord(new String[] {categoryName}, scoreName, report) ;
     }
     
     /**
      * Extracts category (x) and score (y) data and records in corresponding fields
      * @param categoryName
      * @param scoreName
-     * @param report 
+     * @param record 
      */
-    private void parseRecord(String[] categoryNames, String scoreName, String report)
+    private DefaultCategoryDataset parseRecord(String[] categoryNames, String scoreName, String record)
+    {
+        return parseRecord(categoryNames, new String[] {scoreName}, record) ;
+    }
+    
+    /**
+     * Extracts category (x) and score (y) data and records in corresponding fields
+     * @param categoryName
+     * @param scoreNames
+     * @param record 
+     */
+    private DefaultCategoryDataset parseRecord(String[] categoryNames, String[] scoreNames, String record)
     {        
-        for (int plotIndex = 0 ; plotIndex < categoryNames.length ; plotIndex++ )
-        {
-            int categoryIndex = Reporter.INDEX_OF_PROPERTY(categoryNames[plotIndex],report) ;
+        DefaultCategoryDataset categoryDataset = new DefaultCategoryDataset() ;
+        
+        String categoryValue ;
+        String categoryString ;
+        String scoreValueString ;
+        Number scoreValue = 0 ;
+        
+        ArrayList<String> categoryList = (ArrayList<String>) Arrays.asList(categoryNames) ;
+        for (String categoryName : categoryNames)
+            for (String scoreName : scoreNames)
+            {
+                int categoryIndex = Reporter.INDEX_OF_PROPERTY(categoryName,record) ;
 
-            categoryData.add(Reporter.EXTRACT_ALL_VALUES(categoryNames[plotIndex], report, categoryIndex)) ;
-            scoreData.add(Reporter.EXTRACT_ALL_VALUES(scoreName, report, categoryIndex)) ;
-        }
+                categoryString = Reporter.EXTRACT_LABEL_STRING(categoryName, record, categoryList) ;
+                categoryValue = Reporter.EXTRACT_VALUE(categoryName, record, categoryIndex) ;
+                scoreValueString = Reporter.EXTRACT_VALUE(scoreName, record, categoryIndex) ;
+                if (int.class.isInstance(scoreValueString))
+                    scoreValue = (Integer) Integer.valueOf(scoreValueString) ;
+                else    // scoreValue is double
+                    scoreValue = (Double) Double.valueOf(scoreValueString) ;
+                categoryDataset.addValue( scoreValue, categoryName, categoryValue ) ;
+            }
+        
+        return categoryDataset ;
     }
     
     private DefaultCategoryDataset parseSortedRecord(String record)
@@ -1451,6 +1504,68 @@ public class Presenter {
         
         return categoryDataset ;
     }
+    
+    /**
+     * Extracts one value for scoreName from record.
+     * @param scoreNames
+     * @param record 
+     */
+    private ArrayList<ArrayList<Number>> parseRecord(ArrayList<String> scoreNames, String record)
+    {
+        ArrayList<ArrayList<Number>> scoreList = new ArrayList<ArrayList<Number>>() ;
+        ArrayList<Number> plotList = new ArrayList<Number>() ;
+        
+        String valueString; 
+        Number value ;
+        for (String scoreName : scoreNames)
+        {
+            valueString = Reporter.EXTRACT_VALUE(scoreName,String.valueOf(record)) ;
+            if (Integer.class.isInstance(valueString))
+                value = Integer.valueOf(valueString) ;
+            else    // if Double
+                value = Double.valueOf(valueString) ;
+            plotList.add(value) ;
+        }
+        scoreList.add(plotList) ;
+        
+        return scoreList ;
+    }
+
+    /**
+     * Extracts one value for scoreName from each report cycle.
+     * Intended for plots over time.
+     * @param scoreNames
+     * @param report 
+     */
+    private ArrayList<ArrayList<Object>> parseReportArray(String[] scoreNames, ArrayList<Object> report)
+    {       
+        ArrayList<ArrayList<Object>> scoreList = new ArrayList<ArrayList<Object>>() ;
+        ArrayList<Object> plotList = new ArrayList<Object>() ;
+        
+        String value; 
+        
+        for (Object record : report)
+        {
+            for (String scoreName : scoreNames)
+            {
+                value = Reporter.EXTRACT_VALUE(scoreName,String.valueOf(record)) ;
+                plotList.add(value) ;
+            }
+        }
+        scoreList.add(plotList) ;
+        
+        return scoreList ;
+    }
+
+    /**
+     * Extracts one value for scoreName from record.
+     * @param scoreName
+     * @param record 
+     */
+    private ArrayList<ArrayList<Object>> parseRecord(String scoreName, String record)
+    {
+        return parseReportArray(scoreName, (ArrayList<Object>) Arrays.asList(new Object[] {record})) ;
+    }
 
     /**
      * Extracts one value for scoreName from each report cycle.
@@ -1461,13 +1576,13 @@ public class Presenter {
     private ArrayList<ArrayList<Object>> parseReportArray(String scoreName, ArrayList<Object> report)
     {       
         ArrayList<ArrayList<Object>> scoreList = new ArrayList<ArrayList<Object>>() ;
-        ArrayList<Object> plotArray = new ArrayList<Object>() ;
+        ArrayList<Object> plotList = new ArrayList<Object>() ;
         for (Object record : report)
         {
             String value = Reporter.EXTRACT_VALUE(scoreName,String.valueOf(record)) ;
-            plotArray.add(value) ;
+            plotList.add(value) ;
         }
-        scoreList.add(plotArray) ;
+        scoreList.add(plotList) ;
         
         return scoreList ;
     }
@@ -1478,20 +1593,22 @@ public class Presenter {
      * @param scoreName
      * @param reports 
      */
-    private void parseReportArrays(String scoreName, ArrayList<ArrayList<Object>> reports)
+    private ArrayList<ArrayList<Object>> parseReportArrays(String scoreName, ArrayList<ArrayList<Object>> reports)
     {       
-        ArrayList<Object> plotArray ;
+        ArrayList<ArrayList<Object>> scoreList = new ArrayList<ArrayList<Object>>() ;
+        ArrayList<Object> plotList ;
         
         for (ArrayList<Object> report : reports)
         {
-            plotArray = new ArrayList<Object>() ;
+            plotList = new ArrayList<Object>() ;
             for (Object record : report)
             {
                 String value = Reporter.EXTRACT_VALUE(scoreName,String.valueOf(record)) ;
-                plotArray.add(value) ;
+                plotList.add(value) ;
             }
-            scoreData.add(plotArray) ;
+            scoreList.add(plotList) ;
         }
+        return scoreList ;
     }
 
     /**
@@ -1500,14 +1617,15 @@ public class Presenter {
      * @param scoreName
      * @param reports 
      */
-    private void parseReportArrays(ArrayList<String> scoreNames, ArrayList<ArrayList<Object>> reports)
+    private ArrayList<ArrayList<Object>> parseReportArrays(ArrayList<String> scoreNames, ArrayList<ArrayList<Object>> reports)
     {       
-        ArrayList<Object> plotArray ;
+        ArrayList<ArrayList<Object>> scoreList = new ArrayList<ArrayList<Object>>() ;
+        ArrayList<Object> plotList ;
         String scoreName ;
         ArrayList<Object> report ;
         for (int index = 0 ; index < scoreNames.size() ; index++ )
         {
-            plotArray = new ArrayList<Object>() ;
+            plotList = new ArrayList<Object>() ;
             scoreName = scoreNames.get(index) ;
             report = reports.get(index) ;
             
@@ -1519,10 +1637,11 @@ public class Presenter {
             for (Object record : report)
             {
                 String value = Reporter.EXTRACT_VALUE(scoreName,String.valueOf(record)) ;
-                plotArray.add(value) ;
+                plotList.add(value) ;
             }
-            scoreData.add(plotArray) ;
+            scoreList.add(plotList) ;
         }
+        return scoreList ;
     }
     
     /**
@@ -1831,7 +1950,7 @@ public class Presenter {
             
             DefaultCategoryDataset dataset ;
             
-            String[] finalNames = new String[2] ;
+            String[] finalNames = new String[scoreNames.length + 1] ;
             if (PLOT_FILE)
             {
                 // Data from file
