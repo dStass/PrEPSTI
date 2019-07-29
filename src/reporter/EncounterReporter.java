@@ -31,6 +31,7 @@ public class EncounterReporter extends Reporter {
     static String CONTACT = "contact" ;
 
     static String TRANSMISSION = "transmission" ;
+    static public String INCIDENCE = "incidence" ;
     static String CONDOM = "condom" ;
     static String PHARYNX = "Pharynx" ;
     static String RECTUM = "Rectum" ;
@@ -142,7 +143,8 @@ public class EncounterReporter extends Reporter {
         String finalRecord = encounterByValue(TRANSMISSION,TRUE,finalTransmissionRecord) ;
         
         double population = getPopulation() ;
-        double denominator = population/DAYS_PER_YEAR ;
+        // Rate measured per 100 man-years
+        double denominator = population/(100.0 * DAYS_PER_YEAR) ;
         for (String siteName : siteNames)
         {
             // Count infected siteName
@@ -245,12 +247,28 @@ public class EncounterReporter extends Reporter {
         String record ;
         
         //String finalIncidenceRecord ; // getFinalRecord() ;
+        //LOGGER.log(Level.INFO, "{0} {1} {2}", new Object[] {backMonths, backDays, endCycle});
         ArrayList<String> finalIncidentsReport = getBackCyclesReport(0, backMonths, backDays, endCycle) ;
         
-        double population = Double.valueOf(getPopulation()) ; 
+        double population = getPopulation() ; // Double.valueOf(getPopulation()) ; 
         // Adjust incidence rate for sampling time and days per year
         //* 100 because units  per 100 person years
-        double denominator = population * getBackCycles(0,backMonths,backDays)/(100 * DAYS_PER_YEAR) ;
+        double denominator = population * getBackCycles(0,backMonths,backDays)/(100.0 * DAYS_PER_YEAR) ;
+        
+        incidents = 0 ;
+        for (String finalIncidentsRecord : finalIncidentsReport)
+        {
+            // Select encounters where TRANSMISSION occurred
+            record = encounterByValue(TRANSMISSION,TRUE,finalIncidentsRecord) ;
+            
+            //record = record.substring(record.lastIndexOf(RELATIONSHIPID)) ;
+            //if (COUNT_VALUE_INCIDENCE(RELATIONSHIPID,"",record,0)[1] > 1)
+              //  LOGGER.info(record);
+            // Count them
+            incidents += COUNT_VALUE_INCIDENCE(RELATIONSHIPID,"",record,0)[1] ;
+        }
+        finalIncidence += ADD_REPORT_PROPERTY("all",incidents/denominator) ;
+        
         for (String siteName : siteNames)
         {
             incidents = 0 ;
@@ -266,19 +284,6 @@ public class EncounterReporter extends Reporter {
             }
             finalIncidence += ADD_REPORT_PROPERTY(siteName,incidents/denominator) ;
         }
-        incidents = 0 ;
-        for (String finalIncidentsRecord : finalIncidentsReport)
-        {
-            // Select encounters where TRANSMISSION occurred
-            record = encounterByValue(TRANSMISSION,TRUE,finalIncidentsRecord) ;
-            
-            //record = record.substring(record.lastIndexOf(RELATIONSHIPID)) ;
-            //if (COUNT_VALUE_INCIDENCE(RELATIONSHIPID,"",record,0)[1] > 1)
-              //  LOGGER.info(record);
-            // Count them
-            incidents += COUNT_VALUE_INCIDENCE(RELATIONSHIPID,"",record,0)[1] ;
-        }
-        finalIncidence += ADD_REPORT_PROPERTY("all",incidents/denominator) ;
         
         return finalIncidence ;
     }
@@ -290,8 +295,10 @@ public class EncounterReporter extends Reporter {
         //HashMap<Object,HashMap<Object,Number>> sortedFinalIncidenceRecord = new HashMap<Object,HashMap<Object,Number>>() ;
         
         // Get Report of sortingValue mapping to agentIds
+        LOGGER.info("populationReporter");
         PopulationReporter populationReporter = new PopulationReporter(simName,getFolderPath()) ;
         HashMap<Object,ArrayList<Object>> sortedAgentReport = populationReporter.agentIdSorted(sortingProperty) ;
+        LOGGER.log(Level.INFO,"{0}", sortedAgentReport) ;
         String finalIncidenceRecord ; // = new HashMap<Object,Number>() ;
         for (Object sortingValue : sortedAgentReport.keySet())
         {
@@ -883,9 +890,7 @@ public class EncounterReporter extends Reporter {
      * WARNING: If this quantity is of particular importance then consider rerunning
      * the simulation including sexual encounters in which no transmission can take place.
      * @param backYears
-     * @param backMonths
-     * @param backDays
-     * @param endCycle
+     * @param lastYear
      * @return Year-by-year records of how many times a condom was used, how many opportunities 
      * there were to use one, and their ratio.
      */
