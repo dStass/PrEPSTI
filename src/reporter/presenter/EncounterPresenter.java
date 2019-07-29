@@ -6,13 +6,12 @@
 package reporter.presenter;
 
 import reporter.* ;
-import community.Community ;
+//import community.Community ;
 
 import java.util.ArrayList ;
-import java.util.Arrays;
+//import java.util.Arrays;
 import java.util.HashMap;
 //import java.lang.reflect.*;
-//import java.util.Arrays;
 import java.util.logging.Level;
 
 /**
@@ -25,7 +24,7 @@ public class EncounterPresenter extends Presenter {
     
     //static private String[] simNames = new String[] {"to2014max3contact93dPop40000Cycles4380"} ; // "fixPerfectRisky29aPop40000Cycles2000","fixPerfectRisky29bPop40000Cycles2000","fixPerfectRisky29cPop40000Cycles2000","fixPerfectRisky29dPop40000Cycles2000","fixPerfectRisky29ePop40000Cycles2000","fixPerfectRisky29fPop40000Cycles2000","fixPerfectRisky29gPop40000Cycles2000","fixPerfectRisky29hPop40000Cycles2000","fixPerfectRisky29iPop40000Cycles2000","fixPerfectRisky29jPop40000Cycles2000"} ;
             //= new String[] {"to2012linear67cPop40000Cycles3285"} ; // ,"to2014agentAdjust29aPop40000Cycles4920","to2014agentAdjust29cPop40000Cycles4920"} ; // "to2012max3same40aPop40000Cycles2920"} ; // "max3contact56aPop40000Cycles2460"} ; // ,"NoPrepCalibration74bPop40000Cycles5000","NoPrepCalibration74cPop40000Cycles5000"} ;
-    static private String[] simNames = new String[] {"uniformWild9BaPop40000Cycles1460","uniformWild9BbPop40000Cycles1460","uniformWild9BcPop40000Cycles1460","uniformWild9BdPop40000Cycles1460","uniformWild9BePop40000Cycles1460"} ; 
+    static private String[] simNames = new String[] {"shoot7aPop40000Cycles1460"}; //,"uniformWild9BbPop40000Cycles1460","uniformWild9BcPop40000Cycles1460","uniformWild9BdPop40000Cycles1460","uniformWild9BePop40000Cycles1460"} ; 
     
     private EncounterReporter reporter ;
     
@@ -47,8 +46,8 @@ public class EncounterPresenter extends Presenter {
         //String reportFileName = "output/untouchable/" ; // args[2] ;
         //String reportFileName = "output/test/" ; // args[2] ;
         //String reportFileName = "output/prePrEP/" ; // args[2] ;
-        //String reportFileName = "output/year2007/" ; // args[2] ;
-        String reportFileName = "output/year2010/" ; // args[2] ;
+        String reportFileName = "output/year2007/" ; // args[2] ;
+        //String reportFileName = "output/year2010/" ; // args[2] ;
         //String reportFileName = "output/year2012/" ; // args[2] ;
         LOGGER.info(chartTitle) ;
         String[] siteNames  = new String[] {"Pharynx","Rectum","Urethra"} ;
@@ -60,8 +59,8 @@ public class EncounterPresenter extends Presenter {
         //encounterPresenter.plotProtection() ;
         //encounterPresenter.plotTransmissionsPerCycle(siteNames);
         //encounterPresenter.plotFinalTransmissions(siteNames);
-        //encounterPresenter.plotFinalIncidenceRecord(siteNames, 0, Reporter.DAYS_PER_YEAR) ;
-        encounterPresenter.plotSortedFinalIncidenceRecord(siteNames, 0, Reporter.DAYS_PER_YEAR,"statusHIV") ;
+        encounterPresenter.plotFinalIncidenceRecord(siteNames, 0, Reporter.DAYS_PER_YEAR) ;
+        //encounterPresenter.plotSortedFinalIncidenceRecord(siteNames, 0, Reporter.DAYS_PER_YEAR,"statusHIV") ;
         //encounterPresenter.plotCumulativeAgentTransmissionReport() ;
         //encounterPresenter.plotIncidenceYears(new String[] {siteNames[2]}, 8, 2014) ;
         //encounterPresenter.plotNumberCondomlessYears(3, 0, 0, 2017, new String[] {"Casual","Regular","Monogomous"}) ;
@@ -216,9 +215,14 @@ public class EncounterPresenter extends Presenter {
         int endCycle = reporter.getMaxCycles() ;
         String finalIncidenceRecord = reporter.prepareFinalIncidenceRecord(siteNames, 0, backMonths, backDays, endCycle) ;
         //HashMap<Object,Number> finalIncidenceRecord = reporter.prepareFinalIncidenceRecord(siteNames, 0, backMonths, backDays, endCycle) ;
-            
+        ArrayList<String> siteList = Reporter.IDENTIFY_PROPERTIES(finalIncidenceRecord) ;
+        String[] finalSiteNames = new String[siteList.size()] ;
+        for (int siteIndex = 0 ; siteIndex < finalSiteNames.length ; siteIndex++ )
+            finalSiteNames[siteIndex] = siteList.get(siteIndex) ;
+        
         LOGGER.log(Level.INFO, "{0}", finalIncidenceRecord);
-        plotValues("incidence", finalIncidenceRecord) ;        
+        callPlotChartDefault(siteList, EncounterReporter.INCIDENCE, "Site", finalIncidenceRecord) ;
+        //plotValues("incidence", finalIncidenceRecord) ;        
     }
     
     /**
