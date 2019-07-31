@@ -125,7 +125,7 @@ public abstract class Agent {
         //boolean successful = true ;
         try
         {
-            //REINIT_SCREEN_CYCLE(agentList, year) ;
+            REINIT_SCREEN_CYCLE(agentList, year) ;
             MSM.REINIT_PROBABILITY_ANTIVIRAL(agentList, year) ;
             MSM.REINIT_PROBABILITY_DISCLOSURE_HIV(agentList, year) ;
             MSM.REINIT_RISK_ODDS(agentList, year) ;
