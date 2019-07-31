@@ -4,15 +4,15 @@
 package reporter ;
 
 import agent.MSM;
-import community.* ;
+//import community.* ;
 
 import java.io.* ;
 
 import java.lang.reflect.*;
 import java.util.ArrayList ;
-import java.util.Arrays;
-import java.util.Set ;
-import java.util.Collections;
+//import java.util.Arrays;
+//import java.util.Set ;
+//import java.util.Collections;
 import java.util.HashMap ;
 
 import java.util.logging.Level;
@@ -40,6 +40,12 @@ public class Reporter {
      * reportName maps to report.
      */
     static public HashMap<String,Object> reportList = new HashMap<String,Object>() ;
+    
+    /** Whether to automatically save reports */
+    static boolean WRITE_REPORT = true ;
+    
+    /** Path to folder for saving reports. */
+    static String REPORT_FOLDER = "C:\\Users\\MichaelWalker\\UNSW\\NSW PSRP - Documents\\Model development\\output\\" ;
     
     /** Names of properties for filtering records. */
     private ArrayList<String> filterPropertyNames = new ArrayList<String>() ;
@@ -1271,13 +1277,35 @@ public class Reporter {
     }
 
     /**
-     * 
+     * Finds mean of reports in reportList but never writes it to a .csv file.
      * @param reportList
      * @return (ArrayList) report with (ArrayList) subreports where the values 
      * in the subreports are averaged over the innermost ArrayList.
      */
     static public HashMap<Object,String> 
         PREPARE_MEAN_HASHMAP_REPORT(ArrayList<HashMap<Object,String>> reportList)
+        {
+            boolean writeLocal = WRITE_REPORT ;
+            WRITE_REPORT = false ;
+            HashMap<Object,String> meanReport = PREPARE_MEAN_HASHMAP_REPORT(reportList, "", "", "") ;
+            WRITE_REPORT = writeLocal ;
+            return meanReport ;
+        }
+    
+
+    /**
+     * 
+     * Averages over reports in (ArrayList) reportList and saves it if static variable
+     * WRITE_REPORT is true.
+     * @param reportList
+     * @param categoryName
+     * @param reportName
+     * @param nameSimulation
+     * @return (ArrayList) report with (ArrayList) subreports where the values 
+     * in the subreports are averaged over the innermost ArrayList.
+     */
+    static public HashMap<Object,String> 
+        PREPARE_MEAN_HASHMAP_REPORT(ArrayList<HashMap<Object,String>> reportList, String categoryName, String reportName, String nameSimulation)
     {
         // Find mean of reports
         HashMap<Object,String> meanReport = new HashMap<Object,String>() ;
@@ -1307,6 +1335,10 @@ public class Reporter {
             // Prepare for next key
             meanRecord = "" ;
         }
+        
+        if (WRITE_REPORT)
+            WRITE_CSV_STRING(meanReport, categoryName, reportName, nameSimulation, REPORT_FOLDER) ;
+        
         return meanReport ;
     }
 
@@ -1389,7 +1421,7 @@ public class Reporter {
         colNames[3*arraysLength] = "condom_use" ;
         colNames[3*arraysLength + 1] = "testing_coverage" ;
         
-        WRITE_CSV(grayReport,"year",colNames,sortedYears,"Gray_report",simNames[0],"C:\\Users\\MichaelWalker\\UNSW\\NSW PSRP - Documents\\Model development\\output\\") ;
+        WRITE_CSV(grayReport,"year",colNames,sortedYears,"Gray_report",simNames[0],REPORT_FOLDER) ;
         return grayReport ;
     }
     
@@ -1584,7 +1616,7 @@ public class Reporter {
     }
     
     /**
-     * Stores a (HashMap of ArrayList or Object) report as a csv file for other packages to read.
+     * Stores a (HashMap of String records) report as a csv file for other packages to read.
      * @param report
      * @param categoryName
      * @param categoryList
@@ -1626,7 +1658,7 @@ public class Reporter {
     }
 
     /**
-     * Stores a (HashMap of ArrayList or Object) report as a csv file for other packages to read.
+     * Stores a (HashMap of String records) report as a csv file for other packages to read.
      * @param report
      * @param categoryName
      * @param reportName
@@ -2249,13 +2281,13 @@ public class Reporter {
      */
     public static void main(String[] args)
     {
-        String folderPath = "output/prePrEP/" ;
-        String[] simNames = new String[] {"to2014goneWild50aPop40000Cycles2920","to2014goneWild50bPop40000Cycles2920","to2014goneWild50cPop40000Cycles2920","to2014goneWild50dPop40000Cycles2920",
-            "to2014goneWild50ePop40000Cycles2920"} ; //,"to2014goneWild51fPop40000Cycles3285","to2014goneWild51gPop40000Cycles3285","to2014goneWild51hPop40000Cycles3285","to2014goneWild51iPop40000Cycles3285",
+        String folderPath = "output/prep/" ;
+        String[] simNames = new String[] {"from2007To2016prep9fPop40000Cycles5110","from2007To2016prep9gPop40000Cycles5110"} ; //,"from2007To2016prep9dPop40000Cycles5110","from2007To2016prep9ePop40000Cycles5110",
+          //"from2007To2016prep9fPop40000Cycles5110","from2007To2016prep9gPop40000Cycles5110","from2007To2016prep9hPop40000Cycles5110","from2007To2016prep9iPop40000Cycles5110","from2007To2016prep9jPop40000Cycles5110"} ;
         //"to2014goneWild51jPop40000Cycles3285"} ;
         //String[] simNames = new String[] {"gamma4bbPop40000Cycles4380","gamma4bcPop40000Cycles4380","gamma4bdPop40000Cycles4380","gamma4bePop40000Cycles4380","gamma4bfPop40000Cycles4380"} ; 
        
-        PREPARE_GRAY_REPORT(simNames,folderPath,2010,2014) ;
+        PREPARE_GRAY_REPORT(simNames,folderPath,2007,2016) ;
     }
 
     /**
