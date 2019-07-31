@@ -62,7 +62,7 @@ public class Presenter {
     
     private Reporter reporter ;
     
-    protected ArrayList<ArrayList<Object>> categoryData = new ArrayList<ArrayList<Object>>() ;
+    //protected ArrayList<ArrayList<Object>> categoryData = new ArrayList<ArrayList<Object>>() ;
     protected ArrayList<ArrayList<Object>> scoreData = new ArrayList<ArrayList<Object>>() ;
     protected String applicationTitle ;
     protected String chartTitle ;
@@ -82,7 +82,7 @@ public class Presenter {
     //static String[] DATA_SCORE = new String[] {"data_notifications","data_notification_rate"} ; // 
     static String[] DATA_SCORE = new String[] {"overall_gone_wild","urethral_gone_wild","rectal_gone_wild","pharyngeal_gone_wild"} ; // {"urethral_positivity"} ;
             
-    private boolean stacked = false ; // true ; // 
+    private boolean stacked = true ; // 
     private BarChart_AWT chart_awt ;
     
     private String folderPath = Community.FILE_PATH ;
@@ -1067,21 +1067,6 @@ public class Presenter {
         //chart_awt.callStackedPlotChart(chartTitle,categoryEntry, (ArrayList<ArrayList<Number>>) scoreData, scoreNames.toArray(new String[scoreNames.size()]),"Year") ;
     }
     
-    /**
-     * Presents scoreName as a function of categoryName after calling prepareReportNameReport()
-     * @param categoryName
-     * @param scoreName
-     * @param reportName
-     * @param cycle 
-     */
-    protected void plotChartCategory(String categoryName, String scoreName, String reportName, int cycle)  //  ArrayList<String> reportArray,
-    {
-        // Get report from cycle
-        ArrayList<Object> reportArray = getReportArray(reportName) ;
-        
-        callPlotChartDefault(categoryName, scoreName, reportArray, cycle) ;
-    }
-    
     protected void plotHashMapScatter(String categoryName, String scoreName, HashMap<Object,ArrayList<Object>> hashMapReport )
     {
         chart_awt.callPlotScatterPlot(chartTitle, hashMapReport, scoreName, categoryName) ;
@@ -1136,7 +1121,6 @@ public class Presenter {
         ArrayList<Object> categoryEntry = new ArrayList<Object>() ;
         Number[] hashMapValue ;
         
-        categoryData.clear();
         // Put keys in order
         for (Object key : hashMapReport.keySet())
         {
@@ -1189,7 +1173,6 @@ public class Presenter {
         Number[] hashMapValue ;
         Number[] scoreEntry ;
             
-        categoryData.clear();
         // Put keys in order
         for (Object key : hashMapReport.keySet())
         {
@@ -1243,43 +1226,22 @@ public class Presenter {
     /**
      * Presents scoreName as a function of categoryName from reportArray[cycle]
      * or HashMap
-     * @param categoryName
-     * @param scoreName
-     * @param reportArray
-     * @param cycle 
-     */
-    protected void callPlotChartDefault(String categoryName, String scoreName, ArrayList<Object> reportArray, int cycle)
-    {
-        String record = (String) reportArray.get(cycle) ;
-        
-        // Extract data from report
-        parseRecord(categoryName, scoreName, record) ;
-        
-        // Send data to be processed and presented
-        chart_awt.callPlotChart(chartTitle,categoryData.get(0),scoreData.get(0),scoreName,categoryName) ;
-    }
-    
-    /**
-     * Presents scoreName as a function of categoryName from reportArray[cycle]
-     * or HashMap
      * @param categoryNames
      * @param scoreName
-     * @param reportArray
-     * @param cycle 
+     * @param xLabel
+     * @param record 
      */
-    protected void callPlotChartDefault(ArrayList<String> categoryNames, String scoreName, String xLabel, String record)
+    protected void callPlotChartDefault(String[] categoryNames, String scoreName, String xLabel, String record)
     {
         // Extract data from report
         ArrayList<ArrayList<Number>> categoryData = parseRecord(categoryNames, record) ;
-        LOGGER.log(Level.INFO, "{0}", categoryData);
-        String[] categoryList = new String[categoryNames.size()] ;
-        for (int index = 0 ; index < categoryNames.size() ; index++ )
-            categoryList[index] = categoryNames.get(index) ;
-        //ArrayList<Object> categoryList = new ArrayList<Object>(Arrays.asList(categoryNames.toArray())) ; 
-        LOGGER.log(Level.INFO, "{0}", categoryList);
+        //String[] categoryList = new String[categoryNames.size()] ;
+        ArrayList<Object> categoryList = new ArrayList<Object>() ;
+        categoryList.addAll(Arrays.asList(categoryNames)); // + GROUP + scoreName) ;
+        
         // Send data to be processed and presented
         //chart_awt.plotBarChart(chartTitle, categoryData, scoreName, xLabel) ;
-        chart_awt.callStackedPlotChart(chartTitle, new ArrayList<Object>(Arrays.asList(new String[] {scoreName})),categoryData, categoryList,xLabel) ;
+        chart_awt.callStackedPlotChart(chartTitle, categoryList,categoryData, new String[] {},xLabel) ;
         //callPlotChart(chartTitle,categoryData.get(0),scoreData.get(0),scoreName,categoryNames) ;
         //chart_awt.callPlotChart(chartTitle,categoryData,scoreName,xLabel,categoryNames) ;
     }
@@ -1510,23 +1472,25 @@ public class Presenter {
      * @param scoreNames
      * @param record 
      */
-    private ArrayList<ArrayList<Number>> parseRecord(ArrayList<String> scoreNames, String record)
+    private ArrayList<ArrayList<Number>> parseRecord(String[] scoreNames, String record)
     {
         ArrayList<ArrayList<Number>> scoreList = new ArrayList<ArrayList<Number>>() ;
-        ArrayList<Number> plotList = new ArrayList<Number>() ;
+        ArrayList<Number> plotList  ;
         
         String valueString; 
         Number value ;
         for (String scoreName : scoreNames)
         {
-            valueString = Reporter.EXTRACT_VALUE(scoreName,String.valueOf(record)) ;
+            LOGGER.info(scoreName);
+            plotList = new ArrayList<Number>() ;
+            valueString = Reporter.EXTRACT_VALUE(scoreName,record) ;
             if (Integer.class.isInstance(valueString))
                 value = Integer.valueOf(valueString) ;
             else    // if Double
                 value = Double.valueOf(valueString) ;
             plotList.add(value) ;
+            scoreList.add((ArrayList<Number>) plotList.clone()) ;
         }
-        scoreList.add(plotList) ;
         
         return scoreList ;
     }
@@ -2416,14 +2380,21 @@ public class Presenter {
             {
                 categoryValue = String.valueOf(categoryData.get(index)) ;
                 scoreValueArray = scoreData.get(index) ;
-                for (int scoreIndex = 0 ; scoreIndex < scoreNames.length ; scoreIndex++ ) // scoreValueArray.size() 
+                if (scoreNames.length == 0)
                 {
-                    Number scoreValue = scoreValueArray.get(scoreIndex) ;
-                    String scoreName = scoreNames[scoreIndex] ;
-                    if (scoreName.contains(GROUP))
-                        scoreName = scoreName.substring(0, scoreName.indexOf(GROUP)) ;
+                    Number scoreValue = scoreValueArray.get(0) ;
+                    String scoreName = categoryValue ;
                     categoryDataset.addValue( scoreValue, scoreName, categoryValue ) ;
                 }
+                else
+                    for (int scoreIndex = 0 ; scoreIndex < scoreNames.length ; scoreIndex++ ) // scoreValueArray.size() 
+                    {
+                        Number scoreValue = scoreValueArray.get(scoreIndex) ;
+                        String scoreName = scoreNames[scoreIndex] ;
+                        if (scoreName.contains(GROUP))
+                            scoreName = scoreName.substring(0, scoreName.indexOf(GROUP)) ;
+                        categoryDataset.addValue( scoreValue, scoreName, categoryValue ) ;
+                    }
             }
             return categoryDataset ;
         }
