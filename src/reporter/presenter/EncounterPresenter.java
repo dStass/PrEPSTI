@@ -59,10 +59,10 @@ public class EncounterPresenter extends Presenter {
         //encounterPresenter.plotProtection() ;
         //encounterPresenter.plotTransmissionsPerCycle(siteNames);
         //encounterPresenter.plotFinalTransmissions(siteNames);
-        encounterPresenter.plotFinalIncidenceRecord(siteNames, 0, Reporter.DAYS_PER_YEAR) ;
+        //encounterPresenter.plotFinalIncidenceRecord(siteNames, 0, Reporter.DAYS_PER_YEAR) ;
         //encounterPresenter.plotSortedFinalIncidenceRecord(siteNames, 0, Reporter.DAYS_PER_YEAR,"statusHIV") ;
         //encounterPresenter.plotCumulativeAgentTransmissionReport() ;
-        //encounterPresenter.plotIncidenceYears(new String[] {siteNames[2]}, 8, 2014) ;
+        encounterPresenter.plotIncidenceYears(siteNames, 3, 2014) ;
         //encounterPresenter.plotNumberCondomlessYears(3, 0, 0, 2017, new String[] {"Casual","Regular","Monogomous"}) ;
         //encounterPresenter.plotNumberCondomlessReport(0, 6, 0, new String[] {"Casual","Regular","Monogomous"}) ;
         //encounterPresenter.plotPercentAgentCondomlessReport(new String[] {"Casual","Regular","Monogomous"}, 0, 6, 0, "", false) ;
@@ -216,12 +216,12 @@ public class EncounterPresenter extends Presenter {
         String finalIncidenceRecord = reporter.prepareFinalIncidenceRecord(siteNames, 0, backMonths, backDays, endCycle) ;
         //HashMap<Object,Number> finalIncidenceRecord = reporter.prepareFinalIncidenceRecord(siteNames, 0, backMonths, backDays, endCycle) ;
         ArrayList<String> siteList = Reporter.IDENTIFY_PROPERTIES(finalIncidenceRecord) ;
+        
         String[] finalSiteNames = new String[siteList.size()] ;
-        for (int siteIndex = 0 ; siteIndex < finalSiteNames.length ; siteIndex++ )
+        for (int siteIndex = 0 ; siteIndex < siteList.size() ; siteIndex++ )
             finalSiteNames[siteIndex] = siteList.get(siteIndex) ;
         
-        LOGGER.log(Level.INFO, "{0}", finalIncidenceRecord);
-        callPlotChartDefault(siteList, EncounterReporter.INCIDENCE, "Site", finalIncidenceRecord) ;
+        callPlotChartDefault(finalSiteNames, EncounterReporter.INCIDENCE, "Site", finalIncidenceRecord) ;
         //plotValues("incidence", finalIncidenceRecord) ;        
     }
     
@@ -254,25 +254,25 @@ public class EncounterPresenter extends Presenter {
      */
     public void plotIncidenceYears(String[] siteNames, int backYears, int lastYear)
     {
-        HashMap<Object,Number[]> incidenceRecordYears = new HashMap<Object,Number[]>() ;
+        HashMap<Object,String> incidenceRecordYears = new HashMap<Object,String>() ;
         //reporter.prepareYearsIncidenceRecord(siteNames, backYears, lastYear) ;
-        ArrayList<HashMap<Object,Number[]>> reports = new ArrayList<HashMap<Object,Number[]>>() ;
+        ArrayList<HashMap<Object,String>> reports = new ArrayList<HashMap<Object,String>>() ;
         
         for (String simulation : simNames)
         {
             EncounterReporter encounterReporter = new EncounterReporter(simulation,reporter.getFolderPath()) ;
             //HashMap<Object,Number[]> report 
             HashMap<Object,String> report = encounterReporter.prepareYearsIncidenceRecord(siteNames, backYears, lastYear) ;
-            reports.add((HashMap<Object,Number[]>) report.clone()) ;
+            reports.add((HashMap<Object,String>) report.clone()) ;
         }
-        incidenceRecordYears = Reporter.AVERAGED_HASHMAP_REPORT(reports) ;
-        
+        incidenceRecordYears = Reporter.PREPARE_MEAN_HASHMAP_REPORT(reports) ;
+        LOGGER.log(Level.INFO, "{0}", incidenceRecordYears);
         String[] scoreNames = new String[siteNames.length + 1] ;
         for (int siteIndex = 0 ; siteIndex < siteNames.length ; siteIndex++ )
-            scoreNames[siteIndex] = siteNames[siteIndex] ;
-        scoreNames[siteNames.length] = "all__" ;
+            scoreNames[siteIndex+1] = siteNames[siteIndex] ;
+        scoreNames[0] = "all" ;
         
-        plotHashMap("Year", siteNames, incidenceRecordYears) ;
+        plotHashMapString(incidenceRecordYears,EncounterReporter.INCIDENCE,"year",scoreNames) ;
     }
     
     
