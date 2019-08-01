@@ -145,9 +145,9 @@ public abstract class Agent {
     static private void REINIT_SCREEN_CYCLE(ArrayList<Agent> agentList, int year) throws Exception
     {
         // Go from 2010
-        // Tests, given by per 1000 per year, from 2010-2016
-        // Table 17 ARTB 2016
-        double[] testRates = new double[] {333,340,398,382,383,382,391,419,445,499} ;
+        // Tests, given by per 1000 per year, from 2010-2017
+        // Table 14 ARTB 2018
+        double[] testRates = new double[] {333,340,398,382,383,382,391,419,445,499,488} ;
         // 2007 - 2009
         // 333,340,398,
         
