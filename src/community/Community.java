@@ -33,6 +33,7 @@ import java.util.logging.Level;
  *******************************************************************/
 public class Community {
     static final public int POPULATION = 40000 ;
+    static final int AGENTS_PER_DAY = POPULATION / 365 ;
     static public int MAX_CYCLES ; // = 350 ; 
     static public String NAME_ROOT = "" ;
     //static public String NAME_ROOT = "TestUrethraSymp60a2" ;
@@ -86,7 +87,7 @@ public class Community {
      * (String) Name of previous simulation to reload.
      * Not reloaded if this is an empty string.
      */
-    static final String RELOAD_SIMULATION = "" ; // "uniformWild23bPop40000Cycles1095" ; 
+    static final String RELOAD_SIMULATION = "" ; // "reboot17aPop40000Cycles1460" ; // "uniformLow9bPop40000Cycles1460" ; 
     
     static public String getFilePath()
     {
@@ -97,8 +98,13 @@ public class Community {
     static long RANDOM_SEED = System.nanoTime() ;
     static Random RAND = new Random(RANDOM_SEED) ;
     
-
+    /** Agents in population */
     private ArrayList<Agent> agents = new ArrayList<Agent>() ;
+    
+    /** 
+     * Agents in population who have not yet changed to current yearly parameter settings.
+     */
+    ArrayList<Agent> unchangedAgents ;
     
     /** Total number of agents. */
     private int population = POPULATION ;
@@ -577,62 +583,46 @@ public class Community {
      */
     private String interveneCommunity(int cycle)
     {
-        int startCycle = 365 * 4 ;
+        // When to end burn-in
+        int startCycle = 365 * 5 ;
         if ((cycle < startCycle))
             return "" ;
         
+        // Run through year 0
         int year = (cycle - startCycle)/365 ;
         if (year == 0)
             return "" ;
         
+        // Things to do at the start of each year
         String report = "" ;
-        
-        if (year * 365 != (cycle - startCycle))
+        if (year * 365 == (cycle - startCycle))
+        {
+            Agent.REINIT(agents, year) ;
+            //unchangedAgents = (ArrayList<Agent>) agents.clone() ;
+            //LOGGER.info(String.valueOf(year)) ;
+        }
+        //else
+            //unchangedAgents.retainAll(agents) ;    // Remove dead Agents
+          //  return report ;
+          
+        if (2>0)
             return report ;
-        LOGGER.info(String.valueOf(year)) ;
-        Agent.REINIT(agents, year) ;
-        if (2 > 0)
-            return report;
-        try
+        // Choose Agents to change that day
+        ArrayList<Agent> changeAgents = new ArrayList<Agent>() ;
+        if (unchangedAgents.size() >= AGENTS_PER_DAY)
         {
-            if ((year == 0)) // && (year < 6))
-                for (Agent agent : agents)
-                {
-                //agent.reinitScreenCycle(year);
-                //agent.reinitProbabilityAntiViral(year) ;
-                //agent.reinitProbablityDiscloseHIV(year);
-                //agent.reinitRiskOdds(year);
-                    //agent.stopCondomUse() ;
-                    //agent.scaleProbabilityUseCondom(.075);
-                    //agent.adjustProbabilityUseCondom();
-                }
+            changeAgents = new ArrayList<Agent>(unchangedAgents.subList(0, AGENTS_PER_DAY)) ;
+            unchangedAgents.removeAll(changeAgents) ;
         }
-        catch( Exception e ) // cycle extends beyond trend data
-        {
-            LOGGER.severe(e.toString()) ;
-        }
+        // Clean the leftovers
+        if (unchangedAgents.size() < AGENTS_PER_DAY)
+            changeAgents.addAll(unchangedAgents) ;
+
+        // Make changes
+        Agent.REINIT(changeAgents, year) ;
+        
         report = "parameters adjusted according to ARTB" ;  // PrEP introduced" ; // gradually" ;
 
-
-        /*
-        int agentId = 5*(cycle-1000) ;
-        //for (int index = 0 ; index < 5 ; index++ )
-          //  agents.get(agentId + index).adjustCondomUse() ;
-        int newPrep = 5 ;
-        for (Agent agent : agents)
-        {
-            if ("RiskyMSM".equals(agent.getAgent()) && !((MSM) agent).getPrepStatus())
-            {
-                //double prepProbability = ((MSM) agent).getProbabilityPrep() ;
-                ((MSM) agent).reinitPrepStatus(true) ; // RAND.nextDouble() < prepProbability) ;
-                agent.adjustCondomUse();
-                newPrep-- ;
-                if (newPrep == 0)
-                    break ;
-            }
-        }
-        //report = "condom use reduced with increased testing" ;  // PrEP introduced" ; // gradually" ;
-        */
         return report ;
     }
     
