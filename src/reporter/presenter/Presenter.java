@@ -75,7 +75,7 @@ public class Presenter {
     static final String COMMA = Reporter.COMMA ;
 
     // Used for controlling if and what is co-plotted from file.
-    static boolean PLOT_FILE = false ;    
+    static boolean PLOT_FILE = true ;    
     static String FOLDER_PATH = "data_files/" ;
     static String FILENAME = "gonoGoneWild" ; // "incidence_kirby2018" ; // "meanNotificationRate" ; // "unique_positivity_urethra" ; // "notifications" ; //  
     //static String[] DATA_SCORE = new String[] {"hiv_negative","hiv_positive"} ;
@@ -162,6 +162,55 @@ public class Presenter {
             */
 
         return dataset ;
+    }
+    
+    /**
+     * Adds data from given report to the given dataset
+     * @param dataset
+     * @param report
+     * @param readScores - (String[]) valueTypes given in new report
+     * @return (DefaultCategoryDataset) dataset with new data from report
+     */
+    static public XYSeriesCollection EXPAND_DATASET(XYSeriesCollection xySeriesCollection, HashMap<Object,Number[]> report, String[] readScores)
+    {
+        Number[] scoreValueArray ;
+        Number categoryValue ;
+        Number scoreValue ;
+        Comparable category ;
+        
+        for (int scoreIndex = 0 ; scoreIndex < readScores.length ; scoreIndex++ )
+        {
+            XYSeries xySeries = new XYSeries(readScores[scoreIndex]) ;
+            for (Object key : report.keySet())
+            {
+                category = (Comparable) key ;
+
+                scoreValueArray = report.get(key) ;
+                LOGGER.log(Level.INFO,"{0}",scoreValueArray) ;
+                scoreValue = scoreValueArray[scoreIndex] ;
+                if (int.class.isInstance(category) || Integer.class.isInstance(category)) 
+                {
+                    categoryValue = Integer.valueOf(category.toString()) ;
+                    xySeries.add((Integer) categoryValue, scoreValue, false);
+                }
+                else
+                {
+                    categoryValue = Double.valueOf(category.toString()) ;
+                    xySeries.add((Double) categoryValue, scoreValue, false);
+                }
+            }
+            try
+            {
+                xySeriesCollection.addSeries((XYSeries) xySeries.clone()) ;
+            }
+            catch( Exception e )
+            {
+                LOGGER.severe(e.toString());
+                e.getStackTrace() ;
+            }
+        }
+        
+        return xySeriesCollection ;
     }
     
     /**
@@ -1153,9 +1202,19 @@ public class Presenter {
     {
         // Extract data from reportArray
         XYSeriesCollection xySeriesCollection = parseReportHashMap(report, legend) ;
+        String[] newLegend = legend ;
         
+        if (PLOT_FILE)
+        {
+            HashMap<Object,Number[]> dataReport = READ_HASHMAP_NUMBER_ARRAY_CSV(FILENAME) ;
+            xySeriesCollection = EXPAND_DATASET(xySeriesCollection,dataReport, DATA_SCORE) ;
+            
+        }
+        for (String entry : legend)
+                LOGGER.info(entry);
+            
         // Send data to be processed and presented
-        chart_awt.plotLineChart(chartTitle,xySeriesCollection, yLabel, xLabel, legend) ;
+        chart_awt.plotLineChart(chartTitle,xySeriesCollection, yLabel, xLabel, newLegend) ;
     }
     
     protected void plotSortedHashMap(HashMap<Object,String> report, String yLabel, String xLabel, String[] legend)
@@ -1682,7 +1741,7 @@ public class Presenter {
             for (Object category : categoryEntry)
             {
 
-                String scoreString = Reporter.EXTRACT_VALUE(legend[plotIndex],report.get(category)) ;
+                String scoreString = Reporter.EXTRACT_VALUE(property,report.get(category)) ;
                 if (int.class.isInstance(scoreString) || Integer.class.isInstance(scoreString)) 
                     scoreValue = Integer.valueOf(scoreString) ;
                 else
