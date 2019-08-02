@@ -819,13 +819,6 @@ public abstract class Agent {
     abstract public void reinitScreenCycle(int year) throws Exception ;
     
     /**
-     * Adjusts per year the odds of risky behaviour.
-     * @param year - The year whose parameter values are to be used.
-     * @throws Exception 
-     */
-    abstract public void reinitRiskOdds(int year) throws Exception ;
-    
-    /**
      * Adjusts per year the probability of being on anti-retroviral medication 
      * with undetectable viral load.
      * @param year - The year whose parameter values are to be used.
