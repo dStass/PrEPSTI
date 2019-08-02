@@ -214,9 +214,9 @@ public class MSM extends Agent {
         //int[] safeOdds = new int[] {679,673,622,639,663,640,643,625,622,518,518} ;
         // replaced by        
         //int[] safeOdds = new int[] {679,673,622,639,663,640,625,644,651,586,445} ;
-        //int[] safeOdds = new int[] {475,471,435,447,464,448,443,445,421,398,398} ;
-        // replaced by
-        int[] safeOdds = new int[] {475,471,435,447,464,448,445,451,456,410,312} ;
+        int[] safeOdds = new int[] {475,471,435,447,464,448,443,445,421,398,302} ;
+        // not replaced by
+        //int[] safeOdds = new int[] {475,471,435,447,464,448,445,451,456,410,312} ;
         //int[] safeOdds = new int[] {430,435,440,445,450,455,460,465,470,475} ;
         // Ratios .403 , .410 , .465 , .447 , .421 , .446 , .446 , .457 , .480 , .548
         // 2007 - 2009 values
@@ -232,7 +232,7 @@ public class MSM extends Agent {
         double changeProbability ;
         
         boolean moreRisky = (lastProbability < riskyProbability) ;
-        double adjustProbabilityUseCondom = lastProbability/riskyProbability ;
+        double adjustProbabilityUseCondom = SAFE_ODDS/safeOdds[year-1] ;
         
                                                                     // see comments below
         
@@ -276,12 +276,24 @@ public class MSM extends Agent {
         }
     }
     
-    static double PROPORTION_ANAL_SEX(int year)
+    static double PROPORTION_ANAL_SEX(int year, boolean hivStatus)
     {
-        double[] negativeProportionArray = new double[] {0.189,0.174,0.183,0.200,0.211,
-        0.220,0.212,0.214,0.214} ;
-        //.200,0.180,0.191,0.178,0.172
-        return negativeProportionArray[year] ;
+        double[] proportionAbstain = new double[] {} ;
+        
+        
+        if (hivStatus)
+        {
+            //Assuming undetectable viral load
+            proportionAbstain = new double[] {0.146,0.154,0.177,0.186,0.169,
+            0.179,0.198,0.210,0.204} ;
+        }
+        else
+            proportionAbstain = new double[] {0.179,0.174,0.183,0.200,0.211,
+        0.220,0.212,0.214} ;
+        
+        // from 2013 .200,0.180,0.191,0.178,0.172
+        
+        return 1.0 - proportionAbstain[year] ;
     }
     
     /**
@@ -1213,59 +1225,6 @@ public class MSM extends Agent {
         
         // Do not reinitialise MSM on Prep
         initScreenCycle(ratio) ;*/
-    }
-    
-    /**
-     * Resets the probability of Risky vs Safe behaviour according to the year.
-     * Rates taken from GCPS 2011 Table 16, 2014 Table 15, 
-     */
-    public void reinitRiskOdds(int year) throws Exception
-    {
-        if (year == 0)
-            return ;
-        // Go from 2007, ARTB (Table 9, 2014) (Table 11, 2017)
-        // Year-by-year rates of UAIC 
-        int[] riskyOdds = new int[] {321,327,378,361,337,360,357,375,388,482,482} ;
-        // Year-by-year rates of non-UAIC 
-        // 2013- Table 11 2017, 2007-2012 Table 9 2014 * .7
-        //int[] safeOdds = new int[] {679,673,622,639,663,640,643,625,622,518,518} ;
-        int[] safeOdds = new int[] {475,471,435,447,464,448,443,445,421,398,398} ;
-        // Ratios .403 , .410 , .465 , .447 , .421 , .446 , .446 , .457 , .480 , .548
-        SAFE_ODDS = safeOdds[year] ;
-        RISKY_ODDS = riskyOdds[year] ;
-        //else
-        {
-            int totalOdds = SAFE_ODDS + RISKY_ODDS ;
-            int lastRisky = riskyOdds[year-1] ;
-            int lastOdds = safeOdds[year-1] + lastRisky ;
-            double riskyProbability = ((double) RISKY_ODDS)/totalOdds ;
-            double lastProbability = lastRisky/lastOdds ;
-            double changeProbability ;
-            
-            if (lastProbability < riskyProbability) 
-            {
-                if (!getRiskyStatus())
-                    changeProbability = (riskyProbability - lastProbability)/(1-lastProbability) ;
-                else    // if risky already
-                    return ;    // we don't change it
-            }
-            else    // riskyProbability has gone down
-            {
-                if (getRiskyStatus())
-                    changeProbability = (lastProbability - riskyProbability)/lastProbability ;
-                else    // if already safe
-                    return ;    // we don't change it
-            }
-            riskyProbability *= changeProbability ;
-
-            // Allow for correlation between statusHIV and Risky behaviour
-            if (statusHIV)
-                riskyProbability *= HIV_RISKY_CORRELATION ;
-            else
-                riskyProbability *= (1.0 - PROPORTION_HIV * HIV_RISKY_CORRELATION)/(1.0 - PROPORTION_HIV) ;
-
-            riskyStatus = (RAND.nextDouble() < riskyProbability) ;
-        }
     }
     
     /**
