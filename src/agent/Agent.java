@@ -165,6 +165,14 @@ public abstract class Agent {
         }
     }
     
+    static final void REINIT_NB_RELATIONSHIPS(ArrayList<Agent> agentList, int year)
+    {
+        for (Agent agent : agentList)
+        {
+            // agent.setConcurrency(value)
+        }
+        MSM.REINIT_CONSENT_CASUAL_PROBABILITY(agentList, year);
+    }
     
 
     // number of relationships willing to maintain at once
