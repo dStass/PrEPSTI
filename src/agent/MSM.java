@@ -227,8 +227,8 @@ public class MSM extends Agent {
         RISKY_ODDS = newRiskyOdds[year] ;
         
         int totalOdds = SAFE_ODDS + RISKY_ODDS ;
-        int lastRisky = newRiskyOdds[year-1] ;
-        int lastTotal = newSafeOdds[year-1] + lastRisky ;
+        int lastRisky = 1000 ; // newRiskyOdds[year-1] ;
+        int lastTotal = 1000 ; // newSafeOdds[year-1] + lastRisky ;
         double riskyProbability = ((double) RISKY_ODDS)/totalOdds ;
         double lastProbability = ((double) lastRisky)/lastTotal ;
         double changeProbability ;
@@ -416,19 +416,19 @@ public class MSM extends Agent {
     /** Transmission probabilities per sexual contact from Urethra to Rectum */
     static double URETHRA_TO_RECTUM = 0.95 ; // 0.100 ;  0.25 ; //
     /** Transmission probabilities sexual contact from Urethra to Pharynx. */
-    static double URETHRA_TO_PHARYNX = 0.20 ; // 0.060 ; // 0.035 ; // 0.15 ;
+    static double URETHRA_TO_PHARYNX = 0.95 ; // 0.060 ; // 0.035 ; // 0.15 ;
     /** Transmission probabilities sexual contact from Rectum to Urethra. */
-    static double RECTUM_TO_URETHRA = 0.0040 ; // 0.020 ; // 0.008 ; 0.010 ; //
+    static double RECTUM_TO_URETHRA = 0.020 ; // 0.020 ; // 0.008 ; 0.010 ; //
     /** Transmission probabilities sexual contact from Rectum to Pharynx. */
-    static double RECTUM_TO_PHARYNX = 0.020 ;
+    static double RECTUM_TO_PHARYNX = 0.030 ;
     /** Transmission probabilities sexual contact in Pharynx to Urethra intercourse. */
-    static double PHARYNX_TO_URETHRA = 0.0005 ; // 0.001 ;
+    static double PHARYNX_TO_URETHRA = 0.020 ; // 0.001 ;
     /** Transmission probabilities sexual contact in Pharynx to Rectum intercourse. */
-    static double PHARYNX_TO_RECTUM = 0.025 ; // 0.035 ; // 0.030 ; // 0.0100 ;
+    static double PHARYNX_TO_RECTUM = 0.030 ; // 0.035 ; // 0.030 ; // 0.0100 ;
     /** Transmission probabilities sexual contact in Pharynx to Pharynx intercourse (kissing). */
-    static double PHARYNX_TO_PHARYNX = 0.040 ; // 0.030 ; // 0.052 ;
+    static double PHARYNX_TO_PHARYNX = 0.120 ; // 0.030 ; // 0.052 ;
     /** Transmission probabilities sexual contact in Urethra to Urethra intercourse (docking). */
-    static double URETHRA_TO_URETHRA = 0.0005 ; // 0.0001 ; // 0.0001 ; // 0.005 ;
+    static double URETHRA_TO_URETHRA = 0.005 ; // 0.0001 ; // 0.0001 ; // 0.005 ;
     /** Transmission probabilities sexual contact in Rectum to Rectum intercourse. */
     static double RECTUM_TO_RECTUM = 0.001 ;
 
