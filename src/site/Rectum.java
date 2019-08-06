@@ -28,7 +28,7 @@ public class Rectum extends Site {
      * Probability of seeking treatment in a given cycle if infected with 
      * gonorrhoea.
      */
-    static double TREATMENT_PROBABILITY = 0.4 ; // 0.3 ;
+    //static double TREATMENT_PROBABILITY = 0.4 ; // 0.3 ;
     
     /** Days between asymptomatic STI screens . */
     private int screenCycle ;
