@@ -240,12 +240,10 @@ abstract public class Site {
      */
     public boolean treat()
     {
-            //if (RAND.nextDouble() < getTreatmentProbability() )
-            {
-                clearInfection() ;
-                return true ;
-            }
-            //return false ;
+        //if (RAND.nextDouble() < getTreatmentProbability() )
+        clearInfection() ;
+        return true ;
+        //return false ;
     }
 
     /**
