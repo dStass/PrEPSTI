@@ -688,7 +688,7 @@ public abstract class Agent {
         boolean infected = false ;    //  getInfectedStatus() ;
         for (Site site : getSites())
         {
-            infected = infected || site.initialiseInfection() ;
+            infected = (site.initialiseInfection() || infected)  ;
             setSymptomatic(site) ;
         }
         setInfectedStatus(infected) ;
@@ -702,8 +702,8 @@ public abstract class Agent {
     final protected void reinitInfectedStatus(boolean symptomaticSite, Site site)
     {
         site.receiveInfection(1.1) ;
-        symptomatic = symptomatic || site.setSymptomatic(symptomaticSite) ;
-        infectedStatus = true ; // infectedStatus || (site.getInfectedStatus() > 0) ;
+        symptomatic = ( site.setSymptomatic(symptomaticSite) || symptomatic ) ;
+        infectedStatus = (site.getInfectedStatus() > 0) || infectedStatus ;
     }
     
     /**
@@ -1149,7 +1149,8 @@ public abstract class Agent {
      */
     public boolean setSymptomatic(Site site)
     {
-        return symptomatic = (symptomatic || site.getSymptomatic()) ;
+        symptomatic = (site.getSymptomatic() || symptomatic) ;
+        return symptomatic ;
     }
 
     /**
@@ -1161,7 +1162,8 @@ public abstract class Agent {
     public boolean setSymptomatic(boolean symptoms, Site site)
     {
         site.setSymptomatic(symptoms) ;
-        return symptomatic = (symptomatic || site.getSymptomatic()) ;
+        symptomatic = (site.getSymptomatic() || symptomatic) ;
+        return symptomatic ;
     }
     
     /**
@@ -1297,7 +1299,11 @@ public abstract class Agent {
         // Check incubation period, are symptoms manifest?
         for (Site site : sites)
             if (site.getSymptomatic())
-                successful = successful || (site.getIncubationTime() < 0) ;
+            {
+                successful = (successful || (site.getIncubationTime() < 0)) ;
+                //if (!successful)
+                  //  LOGGER.info(site.getSite() + ":" + String.valueOf(site.getIncubationTime()));
+            }
         
         if (!successful)
             return false ;
@@ -1425,9 +1431,8 @@ public abstract class Agent {
         Site[] sites = getSites() ;
         boolean stillInfected = false ;
         for (Site site : sites)
-        {
-            stillInfected = (stillInfected || !site.progressInfection()) ;
-        }
+            stillInfected = ((!site.progressInfection()) || stillInfected ) ;
+        
         setInfectedStatus(stillInfected) ;
         return !stillInfected ;
     }
