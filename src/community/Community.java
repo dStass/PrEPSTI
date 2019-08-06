@@ -70,7 +70,7 @@ public class Community {
     //static public String FILE_PATH = "/short/is14/mw7704/prepsti/output/year2007/" ;
     
     /** Whether parameters change throughout simulation. */
-    static boolean DYNAMIC = true ;
+    static boolean DYNAMIC = false ;
     
     /** Dump reports to disk after this many cycles. */
     static final int DUMP_CYCLE = ((int) Math.pow(10, 7))/POPULATION ;
@@ -304,8 +304,8 @@ public class Community {
         //outputInterval = 1 ;
         for (int cycle = 0; cycle < MAX_CYCLES; cycle++)
         {	
-            //if (cycle == ((cycle/outputInterval) * outputInterval))
-            //LOGGER.log(Level.INFO, "Cycle no. {0}", cycleString);
+            //if ((cycle % 10) == 0) //((cycle/outputInterval) * outputInterval))
+              //  LOGGER.log(Level.INFO, "Cycle no. {0}", cycleString);
 
             if (DYNAMIC)
                 community.interveneCommunity(cycle) ;
@@ -324,7 +324,7 @@ public class Community {
             // treat symptomatic agents
             
             //LOGGER.info("progress");
-            infectionRecord = cycleString + community.progressInfection(cycle) ;
+            infectionRecord = cycleString + community.progressInfection() ;
             
             //deathRecord = cycleString
             int deltaPopulation = community.agents.size() ;  // Current population
@@ -979,9 +979,9 @@ public class Community {
      * Check if disease has run its course and clears it if so.
      * @return (String) record in STIs progress
      */
-    private String progressInfection(int cycle)
+    private String progressInfection()
     {
-        return progressInfection(new Object[] {cycle}) ;
+        return progressInfection(new Object[] {}) ;
     }
 
     /**
@@ -1013,7 +1013,6 @@ public class Community {
                 if (infected)
                 {
                     //LOGGER.info("screening agentId:"+String.valueOf(agent.getAgentId())) ;
-                    
                     for (Site site : agent.getSites())
                     {
                         if (agent.getInfectedStatus(site) != 0)
@@ -1044,12 +1043,15 @@ public class Community {
                     //LOGGER.info("cleared");
                 }
                 else if (agent.getSymptomatic())
+                {
+                    //LOGGER.info("Symptomatic" + String.valueOf(agent.getAgentId()));
                     if (agent.treatSymptomatic())  
                     {
                         //record += Reporter.ADD_REPORT_LABEL("tested") ;
                         record += Reporter.ADD_REPORT_PROPERTY("tested","treated") ;
                         //LOGGER.info("treated");
                     }
+                }
             }
         }
         //LOGGER.info(record)
