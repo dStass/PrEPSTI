@@ -47,10 +47,10 @@ public abstract class Agent {
     //static String FOLDER_PATH = "/srv/scratch/z3524276/prepsti/"
     //static String FOLDER_PATH = "/short/is14/mw7704/prepsti/"
     static String FOLDER_PATH = ""
-    //+  "output/year2007/" ;
+    +  "output/year2007/" ;
     // +  "output/year2010/" ;
     //+  "output/year2012/" ;
-     +  "output/test/" ;
+    // +  "output/test/" ;
     // +  "output/prePrEP/" ;
     
     
@@ -129,6 +129,7 @@ public abstract class Agent {
             MSM.REINIT_PROBABILITY_ANTIVIRAL(agentList, year) ;
             MSM.REINIT_PROBABILITY_DISCLOSURE_HIV(agentList, year) ;
             MSM.REINIT_RISK_ODDS(agentList, year) ;
+            MSM.REINIT_USE_GSN(agentList, year) ;
         }
         catch ( Exception e )
         {
@@ -227,6 +228,9 @@ public abstract class Agent {
 
     /** probability of using condom even when apparently safe (PrEP, TasP, etc) */
     protected double probabilityUseCondom = RAND.nextDouble() ;
+    
+    /** Does the Agent use a GeoSpatial Network (eg Grindr) */
+    protected boolean useGSN = false ;
 
     // names of fields of interest to the census.
     private String[] censusFieldNames = {"agentId","agent","concurrency","infidelity"} ;
@@ -763,7 +767,7 @@ public abstract class Agent {
     }
     
     /**
-     * concurrency setter
+     * Setter of concurrency.
      * @param newConcurrency 
      */
     public void setConcurrency(int newConcurrency)
@@ -771,6 +775,23 @@ public abstract class Agent {
         concurrency = newConcurrency ;
     }
     
+    /**
+     * Getter of useGSN.
+     * @return (boolean) whether Agent uses a GSN.
+     */
+    public boolean getUseGSN()
+    {
+        return useGSN ;
+    }
+    
+    /**
+     * Setter of useGSN.
+     * @param gsn 
+     */
+    public void setUseGSN(boolean gsn)
+    {
+        useGSN = gsn ;
+    }
     	
     abstract int getMaxRelationships() ;
     
