@@ -206,35 +206,24 @@ public class MSM extends Agent {
         // Go from 2010, ARTB (Table 9, 2014) (Table 11, 2017)
         // Year-by-year rates of UAIC 
         int[] newRiskyOdds = new int[] {297,291,340,345,331,340,364,350,362,409,520} ;
-        // int[] riskyOdds = new int[] {321,327,378,361,337,360,357,375,388,482,482} ;
-        // replaced by
-        //int[] riskyOdds = new int[] {321,327,378,361,337,360,375,356,349,414,555} ;
-        //int[] riskyOdds = new int[] {365,360,355,350,345,340,335,330,325,320} ;
-        // Year-by-year rates of non-UAIC 
-        // 2013- Table 11 2017, 2007-2012 Table 9 2014 * .7
         int[] newSafeOdds = new int[] {484,516,456,501,469,465,444,473,440,424,307} ;
-        //int[] safeOdds = new int[] {679,673,622,639,663,640,643,625,622,518,518} ;
-        // replaced by        
-        //int[] safeOdds = new int[] {679,673,622,639,663,640,625,644,651,586,445} ;
-        //int[] safeOdds = new int[] {475,471,435,447,464,448,443,445,421,398,302} ;
-        // not replaced by
-        //int[] safeOdds = new int[] {475,471,435,447,464,448,445,451,456,410,312} ;
-        //int[] safeOdds = new int[] {430,435,440,445,450,455,460,465,470,475} ;
-        // Ratios .403 , .410 , .465 , .447 , .421 , .446 , .446 , .457 , .480 , .548
-        // 2007 - 2009 values
-        // riskyOdds 321,327,378,    safeOdds 475,471,435,
+        // newRiskyProportions         {.38,.36,.43,.41,.41,.42,.45,.43,.45,.49,.63} ;
+        
         SAFE_ODDS = newSafeOdds[year] ;
         RISKY_ODDS = newRiskyOdds[year] ;
         
         int totalOdds = SAFE_ODDS + RISKY_ODDS ;
-        int lastRisky = 1000 ; // newRiskyOdds[year-1] ;
-        int lastTotal = 1000 ; // newSafeOdds[year-1] + lastRisky ;
-        double riskyProbability = ((double) RISKY_ODDS)/totalOdds ;
-        double lastProbability = ((double) lastRisky)/lastTotal ;
+        int lastRisky = newRiskyOdds[year-1] ;
+        int lastSafe = newSafeOdds[year-1] ;
+        int lastTotal = lastSafe + lastRisky ;
+        double riskyProbability = ((double) RISKY_ODDS)/1000 ; // totalOdds ;
+        double safeProbability = ((double) SAFE_ODDS)/totalOdds ;
+        double lastProbabilityRisk = ((double) lastRisky)/1000 ; // lastTotal ;
+        double lastProbabilitySafe = ((double) lastSafe)/lastTotal ;
         double changeProbability ;
         
-        boolean moreRisky = (lastProbability < riskyProbability) ;
-        double adjustProbabilityUseCondom = SAFE_ODDS/newSafeOdds[year-1] ;
+        boolean moreRisky = (lastProbabilityRisk < riskyProbability) ;
+        double adjustProbabilityUseCondom = safeProbability/lastProbabilitySafe ; // SAFE_ODDS/newSafeOdds[year-1] ;
         
                                                                     // see comments below
         
@@ -251,10 +240,10 @@ public class MSM extends Agent {
             if (moreRisky) 
             {
                 hivFactor = GET_HIV_RISKY_CORRELATION(msm.statusHIV) ;
-                changeProbability = hivFactor * (riskyProbability - lastProbability)/(1-lastProbability * hivFactor) ;
+                changeProbability = hivFactor * (riskyProbability - lastProbabilityRisk)/(1-lastProbabilityRisk * hivFactor) ;
             }
             else
-                changeProbability = riskyProbability/lastProbability ; //(lastProbability - riskyProbability)/lastProbability ;
+                changeProbability = riskyProbability/lastProbabilityRisk ; //(lastProbability - riskyProbability)/lastProbability ;
 
         
             msm.scaleProbabilityUseCondom(adjustProbabilityUseCondom) ;
@@ -279,12 +268,69 @@ public class MSM extends Agent {
     }
     
     /**
+     * Resets the probability of MSM using a GSN year-by-year.
+     * Values taken from GCPS "Where men met their male sex partners in the sox months
+     * prior to the survey. (Table 20 2013, Table 10 2018)
+     * @param agentList
+     * @param year 
+     */
+    static protected void REINIT_USE_GSN(ArrayList<Agent> agentList, int year)
+    {
+        if (year == 0)
+            return ;
+        double[] gsnArray = new double[] {0.0,0.0,0.0,0.0, 22.9, 31.5, 36.1, 41.9, 46.0, 49.5, 48.8, 50.8} ;
+        
+        double probabilityGSN = gsnArray[year] ;
+        if (probabilityGSN == 0.0)
+            return ;
+        double lastProbabilityGSN = gsnArray[year - 1] ;
+        
+        boolean moreGSN = ( lastProbabilityGSN < probabilityGSN ) ;
+        double adjustUseGSN ;
+        if (lastProbabilityGSN == 0.0)
+            adjustUseGSN = 1.0 ;
+        else
+            adjustUseGSN = probabilityGSN/lastProbabilityGSN ; // SAFE_ODDS/newSafeOdds[year-1] ;
+        double changeProbability ;
+        
+        MSM msm ;
+        for (Agent agent : agentList)
+        {
+            msm = (MSM) agent ;
+            
+            // Compensates for allowing only change in one direction.
+            if (moreGSN) 
+            {
+                changeProbability = (probabilityGSN - lastProbabilityGSN)/(1-lastProbabilityGSN) ;
+            }
+            else
+                changeProbability = probabilityGSN/lastProbabilityGSN ;
+
+        
+            msm.scaleProbabilityUseCondom(adjustUseGSN) ;
+            
+            if (moreGSN) 
+            {
+                if (msm.useGSN) // if risky already
+                    continue ;    // we don't change it
+                msm.setUseGSN(RAND.nextDouble() < changeProbability) ;
+            }
+            else    // riskyProbability has gone down
+            {
+                if (!msm.useGSN)// if safe already
+                    continue ;    // we don't change it
+                // equivalent to correct calculation: RAND > (1 - changeProbability)
+                msm.setUseGSN(RAND.nextDouble() < changeProbability) ; 
+            }
+        }
+    }
+    
+    /**
      * Resets the probability of consenting to a Casual relationship according to 
      * the year and the HIV status of each MSM.
      * Rates taken from GCPS 2011 Table 16, 2014 Table 15, 
      * @param agentList
      * @param year
-     * @param hivStatus
      */
     static protected void REINIT_CONSENT_CASUAL_PROBABILITY(ArrayList<Agent> agentList, int year)
     {
@@ -414,21 +460,21 @@ public class MSM extends Agent {
     private boolean riskyStatus ;
     
     /** Transmission probabilities per sexual contact from Urethra to Rectum */
-    static double URETHRA_TO_RECTUM = 0.95 ; // 0.100 ;  0.25 ; //
+    static double URETHRA_TO_RECTUM = 0.85 ; 
     /** Transmission probabilities sexual contact from Urethra to Pharynx. */
-    static double URETHRA_TO_PHARYNX = 0.95 ; // 0.060 ; // 0.035 ; // 0.15 ;
+    static double URETHRA_TO_PHARYNX = 0.80 ; 
     /** Transmission probabilities sexual contact from Rectum to Urethra. */
-    static double RECTUM_TO_URETHRA = 0.020 ; // 0.020 ; // 0.008 ; 0.010 ; //
+    static double RECTUM_TO_URETHRA = 0.015 ;
     /** Transmission probabilities sexual contact from Rectum to Pharynx. */
     static double RECTUM_TO_PHARYNX = 0.030 ;
     /** Transmission probabilities sexual contact in Pharynx to Urethra intercourse. */
-    static double PHARYNX_TO_URETHRA = 0.020 ; // 0.001 ;
+    static double PHARYNX_TO_URETHRA = 0.005 ; 
     /** Transmission probabilities sexual contact in Pharynx to Rectum intercourse. */
-    static double PHARYNX_TO_RECTUM = 0.030 ; // 0.035 ; // 0.030 ; // 0.0100 ;
+    static double PHARYNX_TO_RECTUM = 0.030 ; 
     /** Transmission probabilities sexual contact in Pharynx to Pharynx intercourse (kissing). */
-    static double PHARYNX_TO_PHARYNX = 0.120 ; // 0.030 ; // 0.052 ;
+    static double PHARYNX_TO_PHARYNX = 0.20 ; 
     /** Transmission probabilities sexual contact in Urethra to Urethra intercourse (docking). */
-    static double URETHRA_TO_URETHRA = 0.005 ; // 0.0001 ; // 0.0001 ; // 0.005 ;
+    static double URETHRA_TO_URETHRA = 0.005 ; 
     /** Transmission probabilities sexual contact in Rectum to Rectum intercourse. */
     static double RECTUM_TO_RECTUM = 0.001 ;
 
@@ -591,7 +637,7 @@ public class MSM extends Agent {
     // Odds of an MSM being riskyMSM
     static int RISKY_ODDS = 297 ; // 321 ; // 361 ; // 2010 value
     // Sum of safeOdds and riskyOdds
-    static int TOTAL_ODDS = RISKY_ODDS + SAFE_ODDS ;
+    //static int TOTAL_ODDS = RISKY_ODDS + SAFE_ODDS ;
 //        int[] safeOdds = new int[] {475,471,435,447,464,448,443,445,421,398,398} ;
 //        int[] riskyOdds = new int[] {321,327,378,361,337,360,357,375,388,482,482} ;
 
@@ -609,11 +655,11 @@ public class MSM extends Agent {
     public static MSM BIRTH_MSM(int startAge)
     {
         Class clazz ;
-        int choice = RAND.nextInt(TOTAL_ODDS) ;
-    	if (choice < SAFE_ODDS)
-            clazz = SafeMSM.class ;
-        else 
+        int choice = RAND.nextInt(1000) ; // (TOTAL_ODDS) ;
+    	if (choice < RISKY_ODDS)
             clazz = RiskyMSM.class ;
+        else 
+            clazz = SafeMSM.class ;
         try
         {
             return (MSM) clazz.getConstructor(int.class).newInstance(startAge);
@@ -684,7 +730,7 @@ public class MSM extends Agent {
      */
     final void initRiskiness()
     {
-        int totalOdds = SAFE_ODDS + RISKY_ODDS ;
+        int totalOdds = 1000 ; // SAFE_ODDS + RISKY_ODDS ;
         double riskyProbability = ((double) RISKY_ODDS)/totalOdds ;
         riskyProbability *= GET_HIV_RISKY_CORRELATION(statusHIV) ;
         
@@ -1390,15 +1436,26 @@ public class MSM extends Agent {
     }
     
     /**
-     * 
+     * Method to decide if MSM consents to a proposed Casual Relationship.
+     * Affected by useGFN in such a way that MSM are more likely to accept if 
+     * both partners use a GFN, with more active MSM more strongly affected than 
+     * less active MSM.
      * @param partner
      * @return (boolean) whether to enter proposed Casual Relationship.
      */
     @Override
     protected boolean consentCasual(Agent partner)
     {
-        return (RAND.nextDouble() < consentCasualProbability) ;
+        double consentProbability = RAND.nextDouble() ;
+        if (useGSN && (partner.useGSN && partner.getRiskyStatus()))
+        {
+            double probabilityNotConsent = Math.pow(1 - consentCasualProbability,2) ;
+            return (consentProbability < (1 - probabilityNotConsent)) ;
+        }
+        
+        return (consentProbability < consentCasualProbability) ;
     }
+    
     /**
      * How would the MSM respond if asked to disclose their statusHIV
      * @return String representation of statusHIV if (discloseStatusHIV), otherwise 'none'
@@ -1523,6 +1580,8 @@ public class MSM extends Agent {
                 //if (RAND.nextDouble() > probabilityUseCondom)    // '>' intended
                     return false ;
             }
+            //if (useGSN && partner.useGSN) // && partner.riskyStatus))
+                //return false ;
 
             if (getSeroSort(relationshipClazzName))    // might use condom when serodiscordance or nondisclosure
             {
