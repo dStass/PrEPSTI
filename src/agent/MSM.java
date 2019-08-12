@@ -208,7 +208,7 @@ public class MSM extends Agent {
         int[] newRiskyOdds = new int[] {297,291,340,345,331,340,364,350,362,409,520} ;
         int[] newSafeOdds = new int[] {484,516,456,501,469,465,444,473,440,424,307} ;
         // newRiskyProportions         {.38,.36,.43,.41,.41,.42,.45,.43,.45,.49,.63} ;
-        
+        // total_odds                 {781,807,796,846,800,805,808,823,802,831,827}
         SAFE_ODDS = newSafeOdds[year] ;
         RISKY_ODDS = newRiskyOdds[year] ;
         
@@ -216,9 +216,9 @@ public class MSM extends Agent {
         int lastRisky = newRiskyOdds[year-1] ;
         int lastSafe = newSafeOdds[year-1] ;
         int lastTotal = lastSafe + lastRisky ;
-        double riskyProbability = ((double) RISKY_ODDS)/1000 ; // totalOdds ;
+        double riskyProbability = ((double) RISKY_ODDS)/totalOdds ;
         double safeProbability = ((double) SAFE_ODDS)/totalOdds ;
-        double lastProbabilityRisk = ((double) lastRisky)/1000 ; // lastTotal ;
+        double lastProbabilityRisk = ((double) lastRisky)/lastTotal ;
         double lastProbabilitySafe = ((double) lastSafe)/lastTotal ;
         double changeProbability ;
         
@@ -286,41 +286,37 @@ public class MSM extends Agent {
         double lastProbabilityGSN = gsnArray[year - 1] ;
         
         boolean moreGSN = ( lastProbabilityGSN < probabilityGSN ) ;
-        double adjustUseGSN ;
         if (lastProbabilityGSN == 0.0)
-            adjustUseGSN = 1.0 ;
+            for (Agent agent : agentList)
+                agent.setUseGSN(RAND.nextDouble() < probabilityGSN) ;
         else
-            adjustUseGSN = probabilityGSN/lastProbabilityGSN ; // SAFE_ODDS/newSafeOdds[year-1] ;
-        double changeProbability ;
-        
-        MSM msm ;
-        for (Agent agent : agentList)
         {
-            msm = (MSM) agent ;
-            
-            // Compensates for allowing only change in one direction.
-            if (moreGSN) 
-            {
-                changeProbability = (probabilityGSN - lastProbabilityGSN)/(1-lastProbabilityGSN) ;
-            }
-            else
-                changeProbability = probabilityGSN/lastProbabilityGSN ;
+            double changeProbability ;
 
-        
-            msm.scaleProbabilityUseCondom(adjustUseGSN) ;
-            
-            if (moreGSN) 
+            for (Agent agent : agentList)
             {
-                if (msm.useGSN) // if risky already
-                    continue ;    // we don't change it
-                msm.setUseGSN(RAND.nextDouble() < changeProbability) ;
-            }
-            else    // riskyProbability has gone down
-            {
-                if (!msm.useGSN)// if safe already
-                    continue ;    // we don't change it
-                // equivalent to correct calculation: RAND > (1 - changeProbability)
-                msm.setUseGSN(RAND.nextDouble() < changeProbability) ; 
+                // Compensates for allowing only change in one direction.
+                if (moreGSN) 
+                {
+                    changeProbability = (probabilityGSN - lastProbabilityGSN)/(1-lastProbabilityGSN) ;
+                }
+                else
+                    changeProbability = probabilityGSN/lastProbabilityGSN ;
+
+
+                if (moreGSN) 
+                {
+                    if (agent.useGSN) // if using GSN already
+                        continue ;    // we don't change it
+                    agent.setUseGSN(RAND.nextDouble() < changeProbability) ;
+                }
+                else    // riskyProbability has gone down
+                {
+                    if (!agent.useGSN)// if not using GSN already
+                        continue ;    // we don't change it
+                    // equivalent to correct calculation: RAND > (1 - changeProbability)
+                    agent.setUseGSN(RAND.nextDouble() < changeProbability) ; 
+                }
             }
         }
     }
@@ -334,8 +330,8 @@ public class MSM extends Agent {
      */
     static protected void REINIT_CONSENT_CASUAL_PROBABILITY(ArrayList<Agent> agentList, int year)
     {
-        double[] positiveProbabilities = new double[] {1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0} ;
-        double[] negativeProbabilities = new double[] {1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0} ;
+        double[] positiveProbabilities = new double[] {1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0} ;
+        double[] negativeProbabilities = new double[] {1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0} ;
         
         double consentProbability = 1.0 ;
         for (Agent agent : agentList)
@@ -466,11 +462,11 @@ public class MSM extends Agent {
     /** Transmission probabilities sexual contact from Rectum to Urethra. */
     static double RECTUM_TO_URETHRA = 0.015 ;
     /** Transmission probabilities sexual contact from Rectum to Pharynx. */
-    static double RECTUM_TO_PHARYNX = 0.030 ;
+    static double RECTUM_TO_PHARYNX = 0.025 ;
     /** Transmission probabilities sexual contact in Pharynx to Urethra intercourse. */
     static double PHARYNX_TO_URETHRA = 0.005 ; 
     /** Transmission probabilities sexual contact in Pharynx to Rectum intercourse. */
-    static double PHARYNX_TO_RECTUM = 0.030 ; 
+    static double PHARYNX_TO_RECTUM = 0.035 ; 
     /** Transmission probabilities sexual contact in Pharynx to Pharynx intercourse (kissing). */
     static double PHARYNX_TO_PHARYNX = 0.20 ; 
     /** Transmission probabilities sexual contact in Urethra to Urethra intercourse (docking). */
@@ -637,7 +633,7 @@ public class MSM extends Agent {
     // Odds of an MSM being riskyMSM
     static int RISKY_ODDS = 297 ; // 321 ; // 361 ; // 2010 value
     // Sum of safeOdds and riskyOdds
-    //static int TOTAL_ODDS = RISKY_ODDS + SAFE_ODDS ;
+    static int TOTAL_ODDS = RISKY_ODDS + SAFE_ODDS ;
 //        int[] safeOdds = new int[] {475,471,435,447,464,448,443,445,421,398,398} ;
 //        int[] riskyOdds = new int[] {321,327,378,361,337,360,357,375,388,482,482} ;
 
@@ -655,7 +651,7 @@ public class MSM extends Agent {
     public static MSM BIRTH_MSM(int startAge)
     {
         Class clazz ;
-        int choice = RAND.nextInt(1000) ; // (TOTAL_ODDS) ;
+        int choice = RAND.nextInt(TOTAL_ODDS) ;
     	if (choice < RISKY_ODDS)
             clazz = RiskyMSM.class ;
         else 
@@ -730,7 +726,7 @@ public class MSM extends Agent {
      */
     final void initRiskiness()
     {
-        int totalOdds = 1000 ; // SAFE_ODDS + RISKY_ODDS ;
+        int totalOdds = SAFE_ODDS + RISKY_ODDS ;
         double riskyProbability = ((double) RISKY_ODDS)/totalOdds ;
         riskyProbability *= GET_HIV_RISKY_CORRELATION(statusHIV) ;
         
@@ -1447,7 +1443,7 @@ public class MSM extends Agent {
     protected boolean consentCasual(Agent partner)
     {
         double consentProbability = RAND.nextDouble() ;
-        if (useGSN && (partner.useGSN && partner.getRiskyStatus()))
+        if ((useGSN && riskyStatus) && (partner.useGSN && partner.getRiskyStatus()))
         {
             double probabilityNotConsent = Math.pow(1 - consentCasualProbability,2) ;
             return (consentProbability < (1 - probabilityNotConsent)) ;
