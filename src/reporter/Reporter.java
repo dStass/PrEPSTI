@@ -2282,12 +2282,17 @@ public class Reporter {
     public static void main(String[] args)
     {
         String folderPath = "output/prep/" ;
-        String[] simNames = new String[] {"from2007To2016prep9fPop40000Cycles5110","from2007To2016prep9gPop40000Cycles5110"} ; //,"from2007To2016prep9dPop40000Cycles5110","from2007To2016prep9ePop40000Cycles5110",
+        //String[] simNames = new String[] {"gradualShoot17aPop40000Cycles5475","gradualShoot17bPop40000Cycles5475","gradualShoot17cPop40000Cycles5475","gradualShoot17dPop40000Cycles5475","gradualShoot17ePop40000Cycles5475"} ; 
           //"from2007To2016prep9fPop40000Cycles5110","from2007To2016prep9gPop40000Cycles5110","from2007To2016prep9hPop40000Cycles5110","from2007To2016prep9iPop40000Cycles5110","from2007To2016prep9jPop40000Cycles5110"} ;
-        //"to2014goneWild51jPop40000Cycles3285"} ;
+        //String[] simNames = new String[] {"from2007gsn32aPop40000Cycles5475","from2007gsn32dPop40000Cycles5475"} ; 
+        String[] simNames = new String[] {"from2007calibration32aPop40000Cycles5475","from2007calibration32bPop40000Cycles5475","from2007calibration32cPop40000Cycles5475","from2007calibration32dPop40000Cycles5475","from2007calibration32ePop40000Cycles5475",
+                       "from2007calibration32fPop40000Cycles5475","from2007calibration32gPop40000Cycles5475","from2007calibration32hPop40000Cycles5475","from2007calibration32iPop40000Cycles5475","from2007calibration32jPop40000Cycles5475"} ;
+        //String[] simNames = new String[] {"from2007allSafe17bPop40000Cycles5475","from2007allSafe17cPop40000Cycles5475","from2007allSafe17dPop40000Cycles5475",
+        //"from2007allSafe17fPop40000Cycles5475","from2007allSafe17gPop40000Cycles5475","from2007allSafe17hPop40000Cycles5475"} ;
+            //"to2014goneWild51jPop40000Cycles3285"} ;
         //String[] simNames = new String[] {"gamma4bbPop40000Cycles4380","gamma4bcPop40000Cycles4380","gamma4bdPop40000Cycles4380","gamma4bePop40000Cycles4380","gamma4bfPop40000Cycles4380"} ; 
        
-        PREPARE_GRAY_REPORT(simNames,folderPath,2007,2016) ;
+        PREPARE_GRAY_REPORT(simNames,folderPath,2007,2017) ;
     }
 
     /**
