@@ -87,7 +87,7 @@ public class Community {
      * (String) Name of previous simulation to reload.
      * Not reloaded if this is an empty string.
      */
-    static final String RELOAD_SIMULATION = "" ; // "reboot17aPop40000Cycles1460" ; // "uniformLow9bPop40000Cycles1460" ; 
+    static final String RELOAD_SIMULATION = "" ; // "symptom24aPop40000Cycles1460" ; // "reboot17aPop40000Cycles1460" ; // "uniformLow9bPop40000Cycles1460" ; 
     
     static public String getFilePath()
     {
