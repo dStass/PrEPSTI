@@ -116,22 +116,26 @@ public class MSM extends Agent {
         for (Agent agent : agentList)
         {
             msm = (MSM) agent ;
+            if (!msm.statusHIV)
+                continue ;
             
             if (newProbability > oldProbability)
             {
-                if (msm.discloseStatusHIV)
+                if (msm.antiViralStatus)
                     continue ;
                 changeProbability = (newProbability - oldProbability)/(1 - oldProbability) ;
             }
             else    // Probability of being on antiViral medication decreases.
             {
-                if (!msm.discloseStatusHIV)
+                if (!msm.antiViralStatus)
                     continue ;
                 changeProbability = (oldProbability - newProbability)/oldProbability ;
             }
             newProbability *= changeProbability ;
 
             msm.setAntiViralStatus(RAND.nextDouble() < newProbability) ;
+            if (year > 5)
+                msm.resetChemoProphylaxis(true) ;
         }
     }
     
@@ -452,23 +456,25 @@ public class MSM extends Agent {
     private boolean discloseStatusHIV ;
     /** Whether currently taking PrEP. */
     private boolean prepStatus ;
+    /** Whether uses PrEP or viral suppression as prophylaxis */
+    private boolean chemoProphylaxis ;
     /** Whether MSM is Risky, Safe otherwise. */
     private boolean riskyStatus ;
     
     /** Transmission probabilities per sexual contact from Urethra to Rectum */
     static double URETHRA_TO_RECTUM = 0.95 ; 
     /** Transmission probabilities sexual contact from Urethra to Pharynx. */
-    static double URETHRA_TO_PHARYNX = 0.40 ; 
+    static double URETHRA_TO_PHARYNX = 0.90 ; 
     /** Transmission probabilities sexual contact from Rectum to Urethra. */
-    static double RECTUM_TO_URETHRA = 0.030 ;
+    static double RECTUM_TO_URETHRA = 0.025 ;
     /** Transmission probabilities sexual contact from Rectum to Pharynx. */
-    static double RECTUM_TO_PHARYNX = 0.020 ;
+    static double RECTUM_TO_PHARYNX = 0.030 ;
     /** Transmission probabilities sexual contact in Pharynx to Urethra intercourse. */
     static double PHARYNX_TO_URETHRA = 0.020 ; 
     /** Transmission probabilities sexual contact in Pharynx to Rectum intercourse. */
     static double PHARYNX_TO_RECTUM = 0.025 ; 
     /** Transmission probabilities sexual contact in Pharynx to Pharynx intercourse (kissing). */
-    static double PHARYNX_TO_PHARYNX = 0.03; 
+    static double PHARYNX_TO_PHARYNX = 0.17 ; 
     /** Transmission probabilities sexual contact in Urethra to Urethra intercourse (docking). */
     static double URETHRA_TO_URETHRA = 0.010 ; 
     /** Transmission probabilities sexual contact in Rectum to Rectum intercourse. */
@@ -604,7 +610,7 @@ public class MSM extends Agent {
      */
     public static Site[] CHOOSE_SITES(MSM msm0, MSM msm1, String relationshipClazzName)
     {
-        if (msm0.seroPosition || msm1.seroPosition)
+        if (msm0.seroPosition && msm1.seroPosition)
         {
             if (msm0.statusHIV != msm1.statusHIV)
             {
@@ -707,6 +713,8 @@ public class MSM extends Agent {
         
         
         initRiskiness() ;
+        
+        chemoProphylaxis = false ;
         
         // Initialises infectedStatus at beginning of simulation, 
         //ensuring consistency with Site.infectedStatus
@@ -904,6 +912,7 @@ public class MSM extends Agent {
         censusReport += Reporter.ADD_REPORT_PROPERTY("seroPosition", seroPosition) ;
         censusReport += Reporter.ADD_REPORT_PROPERTY("riskyStatus", riskyStatus) ;
         censusReport += Reporter.ADD_REPORT_PROPERTY("antiViralStatus", antiViralStatus) ;
+        censusReport += Reporter.ADD_REPORT_PROPERTY("chemoProphylaxis", chemoProphylaxis) ;
         censusReport += Reporter.ADD_REPORT_PROPERTY("consentCasualProbability", consentCasualProbability) ;
         
         for (Site site : sites)
@@ -1204,6 +1213,41 @@ public class MSM extends Agent {
     }
 
     /**
+     * Getter for chemoProphylaxis.
+     * @return (boolean) chemoProphylaxis
+     */
+    public boolean getChemoProphylaxis()
+    {
+        return chemoProphylaxis ;
+    }
+    
+    /**
+     * Allows resetting of chemoProphylaxis according to strict rules.
+     * It always equals prepStatus for the HIV negative.
+     * @param antiViral 
+     */
+    private void resetChemoProphylaxis(boolean antiViral)
+    {
+        if (statusHIV)
+        {
+            if (antiViral)
+                chemoProphylaxis = antiViralStatus ;
+        }
+        else    // HIV negative
+            chemoProphylaxis = prepStatus ;
+    }
+    
+    /**
+     * Setter of chemoProphylaxis. 
+     * Will only set it to true if statusHIV is true.
+     * @param status 
+     */
+    public void setChemoProphylaxis(boolean status)
+    {
+        chemoProphylaxis = status ;
+    }
+
+    /**
      * 
      * @return true if MSM discloses statusHIV, false otherwise
      */
@@ -1367,39 +1411,6 @@ public class MSM extends Agent {
             changeProbability = (oldDiscloseProbability - newDiscloseProbability)/oldDiscloseProbability ;
         }
         initSeroStatus(newDiscloseProbability * changeProbability) ;
-    }
-    
-    /**
-     * Alters the probability of being on antiViral medication with undetectable
-     * virus blood concentration from year to year. If the probability increases 
-     * then only MSM not on antiviral medication will change, and vice versa if the probability
-     * decreases.
-     * @param year 
-     */
-    public void reinitProbabilityAntiViral(int year) 
-    {
-        if (year == 0)
-            return ;
-        
-        double[] probabilityAntiViral = new double[] {0.532, 0.706, 0.735, 0.689, 0.706, 0.802, 0.766, 0.830, 0.818, 0.854} ;
-        double newProbability = probabilityAntiViral[year] ;
-        double oldProbability = probabilityAntiViral[year-1] ;
-        double changeProbability ;
-        if (newProbability > oldProbability)
-        {
-            if (discloseStatusHIV)
-                return ;
-            changeProbability = (newProbability - oldProbability)/(1 - oldProbability) ;
-        }
-        else    // Probability of being on antiViral medication decreases.
-        {
-            if (!discloseStatusHIV)
-                return ;
-            changeProbability = (oldProbability - newProbability)/oldProbability ;
-        }
-        newProbability *= changeProbability ;
-        
-        setAntiViralStatus(RAND.nextDouble() < newProbability) ;
     }
     
     /**
@@ -1570,8 +1581,8 @@ public class MSM extends Agent {
             String partnerDisclosure = partner.declareStatus() ;
             //Boolean partnerSeroPosition = partner.getSeroPosition() ;
 
-            // Not if on PrEP
-            if (getPrepStatus())
+            // Not if on PrEP or using U=U
+            if (chemoProphylaxis)
             {
                 //if (RAND.nextDouble() > probabilityUseCondom)    // '>' intended
                     return false ;
@@ -1579,52 +1590,30 @@ public class MSM extends Agent {
             //if (useGSN && partner.useGSN) // && partner.riskyStatus))
                 //return false ;
 
-            if (getSeroSort(relationshipClazzName))    // might use condom when serodiscordance or nondisclosure
+            if (partner.discloseStatusHIV || discloseStatusHIV)
             {
-                if (String.valueOf(getStatusHIV()).equals(partnerDisclosure)) 
-                    return false ;
-                /*
-                {
-                    if (RAND.nextDouble() < probabilityUseCondom ) 
-                        return true;
-                    if (!(getStatusHIV()) || (partner.getPrepStatus())) // !getPrepStatus() || 
-                        return (RAND.nextDouble() < probabilityUseCondom ) ;
-                    else if (!getStatusHIV() && !partner.getAntiViralStatus())
-                        return (RAND.nextDouble() < probabilityUseCondom ) ;
-                }*/
-            }
-            if (getSeroPosition())
-                if (!(NONE.equals(partnerDisclosure)))  // maybe if partner does not disclose
+                if (getSeroSort(relationshipClazzName) && partner.getSeroSort(relationshipClazzName))    
+                    if (String.valueOf(getStatusHIV()).equals(partnerDisclosure)) 
+                        return false ;
+
+                if (seroPosition && partner.seroPosition)
                     return false; // (RAND.nextDouble() < probabilityUseCondom ) ;
+            }
             return (RAND.nextDouble() < probabilityUseCondom ) ;
         }
         else    // if not risky
         {
             //if (2 > 0)
               //  return true ;
-            //LOGGER.severe("Safe Agent:" + String.valueOf(getAgentId()));
-            if (getStatusHIV())
-                if (!getAntiViralStatus())
-                    return true ;
-            else if (!getPrepStatus())
+            if (!chemoProphylaxis)
             {
-                if (!partner.getDiscloseStatusHIV()) // Partner doesn't disclose
-                    return true ; 
-                if (partner.getStatusHIV() && !partner.getAntiViralStatus()) // Partner HIV +ve without supressed viral load
+                if (statusHIV)
+                    return true ;
+                else if (partner.statusHIV && !partner.chemoProphylaxis) // Partner HIV +ve without supressed viral load
                     return true ;
             }
             return (RAND.nextDouble() < probabilityUseCondom ) ;  //TODO: Should there be subset who always use?
         }
-    }
-    
-    /**
-     * 
-     * @return (int) the number of orgies in a MSM community per cycle
-     */
-    //@Override
-    //public int getOrgyNumber()
-    {
-        //return ORGY_NUMBER ;
     }
     
     /**
