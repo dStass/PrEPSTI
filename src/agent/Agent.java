@@ -848,20 +848,6 @@ public abstract class Agent {
     abstract public void reinitScreenCycle(int year) throws Exception ;
     
     /**
-     * Adjusts per year the probability of being on anti-retroviral medication 
-     * with undetectable viral load.
-     * @param year - The year whose parameter values are to be used.
-     */
-    abstract public void reinitProbabilityAntiViral(int year) ;
-    
-    /**
-     * Adjusts per year the probability of disclosing ones HIV status.
-     * @param year - The year whose parameter values are to be used.
-     * @throws Exception 
-     */
-    abstract public void reinitProbablityDiscloseHIV(int year) throws Exception ;
-    
-    /**
      * Getter for risky status
      * @return riskyStatus (boolean) whether the Agent practices risky behaviour 
      * regarding condom use.
