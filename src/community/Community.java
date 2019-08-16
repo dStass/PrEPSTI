@@ -87,7 +87,7 @@ public class Community {
      * (String) Name of previous simulation to reload.
      * Not reloaded if this is an empty string.
      */
-    static final String RELOAD_SIMULATION = "" ; // "symptom24aPop40000Cycles1460" ; // "reboot17aPop40000Cycles1460" ; // "uniformLow9bPop40000Cycles1460" ; 
+    static final String RELOAD_SIMULATION = "" ; // "symptom1cPop1000Cycles730" ; // "symptom24aPop40000Cycles1460" ; // "reboot17aPop40000Cycles1460" ; // "uniformLow9bPop40000Cycles1460" ; 
     
     static public String getFilePath()
     {
@@ -265,7 +265,7 @@ public class Community {
             ArrayList<String> commenceList = new ArrayList<String>() ;
             ArrayList<String> breakupList ;
             
-            for (int burnin = 0 ; burnin < 5000 ; burnin++ )
+            for (int burnin = 0 ; burnin < 8000 ; burnin++ )
             {
                 commenceString = community.generateRelationships(true) ;
                 commenceList.addAll(Reporter.EXTRACT_ARRAYLIST(commenceString, Reporter.RELATIONSHIPID)) ;
