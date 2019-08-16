@@ -18,7 +18,7 @@ public class Urethra extends Site {
     static double INITIAL = 0.010 ; // 0.01 ; // 0.002 ;
 
     // Probability of positive symptomatic status if infected
-    static double SYMPTOMATIC_PROBABILITY = 0.80 ;
+    static double SYMPTOMATIC_PROBABILITY = 0.90 ; // 0.80 ;
     
     /**
      * Duration of gonorrhoea infection in Urethra.
