@@ -54,13 +54,17 @@ public class MSM extends Agent {
     /** Probability of serosorting if HIV negative (2017) */
     static double PROBABILITY_NEGATIVE_SERO_SORT = 0.45 ;
     /** Probability of serosorting in Casual Relationship if HIV positive */
-    static double PROBABILITY_POSITIVE_CASUAL_SERO_SORT = 0.40 ; // 0.431 ;
+    static double PROBABILITY_POSITIVE_CASUAL_SERO_SORT = 0.630 ; // 0.431 ;
+    // .630, .630, .630, .630, .630, .710, .586, .673, .510, .550, 341
     /** Probability of serosorting in Casual Relationship if HIV negative */
-    static double PROBABILITY_NEGATIVE_CASUAL_SERO_SORT = 0.5 ; // 0.485 ;
+    static double PROBABILITY_NEGATIVE_CASUAL_SERO_SORT = 0.513 ; // 0.485 ;
+    // .513, .513, .513, .513, .513, .579, .480, .474, .547, .520, .485
     /** Probability of serosorting in Regular Relationship if HIV positive */
-    static double PROBABILITY_POSITIVE_REGULAR_SERO_SORT = 0.5 ; // 0.274 ;
+    static double PROBABILITY_POSITIVE_REGULAR_SERO_SORT = 0.358 ;
+    // .358, .397, .344, .397, .378, .495, .404, .347, .408, .374, .274
     /** Probability of serosorting in Regular Relationship if HIV negative */
-    static double PROBABILITY_NEGATIVE_REGULAR_SERO_SORT = 0.5 ; // 0.712 ;
+    static double PROBABILITY_NEGATIVE_REGULAR_SERO_SORT = 0.473 ;
+    // .473, .618, .643, .515, .744, .763, .720, .731, .709, .712, .701
     /** Probability of serosorting in Regular Relationship if HIV positive */
     static double PROBABILITY_POSITIVE_MONOGOMOUS_SERO_SORT 
             = PROBABILITY_POSITIVE_REGULAR_SERO_SORT ;
@@ -135,7 +139,10 @@ public class MSM extends Agent {
 
             msm.setAntiViralStatus(RAND.nextDouble() < newProbability) ;
             if (year > 5)
+            {
                 msm.resetChemoProphylaxis(true) ;
+                msm.setChemoPartner(true) ;
+            }
         }
     }
     
@@ -207,10 +214,10 @@ public class MSM extends Agent {
     {
         if (year == 0)
             return ;
-        // Go from 2010, ARTB (Table 9, 2014) (Table 11, 2017)
+        // GCPS (Table 15, 2011) (Table 14, 2013) (Table 16, 2017)
         // Year-by-year rates of UAIC 
-        int[] newRiskyOdds = new int[] {297,291,340,345,331,340,364,350,362,409,520} ;
-        int[] newSafeOdds = new int[] {484,516,456,501,469,465,444,473,440,424,307} ;
+        int[] newRiskyOdds = new int[] {290,293,369,345,331,340,364,350,362,409,520} ;
+        int[] newSafeOdds = new int[] {468,514,471,501,469,465,444,473,440,424,307} ;
         // newRiskyProportions         {.38,.36,.43,.41,.41,.42,.45,.43,.45,.49,.63} ;
         // total_odds                 {781,807,796,846,800,805,808,823,802,831,827}
         SAFE_ODDS = newSafeOdds[year] ;
@@ -456,27 +463,29 @@ public class MSM extends Agent {
     private boolean discloseStatusHIV ;
     /** Whether currently taking PrEP. */
     private boolean prepStatus ;
-    /** Whether uses PrEP or viral suppression as prophylaxis */
+    /** Whether uses own PrEP or viral suppression as prophylaxis */
     private boolean chemoProphylaxis ;
+    /** Whether uses partner's PrEP or viral suppression as prophylaxis */
+    private boolean chemoPartner ;
     /** Whether MSM is Risky, Safe otherwise. */
     private boolean riskyStatus ;
     
     /** Transmission probabilities per sexual contact from Urethra to Rectum */
-    static double URETHRA_TO_RECTUM = 0.95 ; 
+    static double URETHRA_TO_RECTUM = 0.90 ; 
     /** Transmission probabilities sexual contact from Urethra to Pharynx. */
-    static double URETHRA_TO_PHARYNX = 0.90 ; 
+    static double URETHRA_TO_PHARYNX = 0.85 ; 
     /** Transmission probabilities sexual contact from Rectum to Urethra. */
-    static double RECTUM_TO_URETHRA = 0.025 ;
+    static double RECTUM_TO_URETHRA = 0.150 ;
     /** Transmission probabilities sexual contact from Rectum to Pharynx. */
-    static double RECTUM_TO_PHARYNX = 0.030 ;
+    static double RECTUM_TO_PHARYNX = 0.015 ;
     /** Transmission probabilities sexual contact in Pharynx to Urethra intercourse. */
-    static double PHARYNX_TO_URETHRA = 0.020 ; 
+    static double PHARYNX_TO_URETHRA = 0.10 ; 
     /** Transmission probabilities sexual contact in Pharynx to Rectum intercourse. */
-    static double PHARYNX_TO_RECTUM = 0.025 ; 
+    static double PHARYNX_TO_RECTUM = 0.020 ; 
     /** Transmission probabilities sexual contact in Pharynx to Pharynx intercourse (kissing). */
-    static double PHARYNX_TO_PHARYNX = 0.17 ; 
+    static double PHARYNX_TO_PHARYNX = 0.050 ; 
     /** Transmission probabilities sexual contact in Urethra to Urethra intercourse (docking). */
-    static double URETHRA_TO_URETHRA = 0.010 ; 
+    static double URETHRA_TO_URETHRA = 0.005 ; 
     /** Transmission probabilities sexual contact in Rectum to Rectum intercourse. */
     static double RECTUM_TO_RECTUM = 0.001 ;
 
@@ -635,13 +644,14 @@ public class MSM extends Agent {
     }
     
     	
-    static int SAFE_ODDS = 484 ; // 475 ; // 447 ; // 2010 value //
+    static int SAFE_ODDS = 468 ;
     // Odds of an MSM being riskyMSM
-    static int RISKY_ODDS = 297 ; // 321 ; // 361 ; // 2010 value
+    static int RISKY_ODDS = 290 ;
     // Sum of safeOdds and riskyOdds
     static int TOTAL_ODDS = RISKY_ODDS + SAFE_ODDS ;
-//        int[] safeOdds = new int[] {475,471,435,447,464,448,443,445,421,398,398} ;
-//        int[] riskyOdds = new int[] {321,327,378,361,337,360,357,375,388,482,482} ;
+//        int[] newSafeOdds = new int[] {468,514,471,501,469,465,444,473,440,424,307} ;
+//       int[] newRiskyOdds = new int[] {290,293,369,345,331,340,364,350,362,409,520} ;
+        
 
     /** 
      * Describes correlation between statusHIV and riskyStatus.
@@ -715,6 +725,7 @@ public class MSM extends Agent {
         initRiskiness() ;
         
         chemoProphylaxis = false ;
+        chemoPartner = false ;
         
         // Initialises infectedStatus at beginning of simulation, 
         //ensuring consistency with Site.infectedStatus
@@ -738,9 +749,9 @@ public class MSM extends Agent {
         double riskyProbability = ((double) RISKY_ODDS)/totalOdds ;
         riskyProbability *= GET_HIV_RISKY_CORRELATION(statusHIV) ;
         
-        probabilityUseCondom = sampleGamma(4, 0.1, 1) ; // Gamma2 * (1 - riskyProbability) * RAND.nextDouble() ;
-        if (probabilityUseCondom > 1)
-            probabilityUseCondom = 1 ;
+        probabilityUseCondom = RAND.nextDouble() ; // sampleGamma(4, 0.1, 1) ; // Gamma2 * (1 - riskyProbability) * RAND.nextDouble() ;
+        //if (probabilityUseCondom > 1)
+          //  probabilityUseCondom = 1 ;
         
         riskyStatus = (RAND.nextDouble() < riskyProbability) ;
         
@@ -913,6 +924,7 @@ public class MSM extends Agent {
         censusReport += Reporter.ADD_REPORT_PROPERTY("riskyStatus", riskyStatus) ;
         censusReport += Reporter.ADD_REPORT_PROPERTY("antiViralStatus", antiViralStatus) ;
         censusReport += Reporter.ADD_REPORT_PROPERTY("chemoProphylaxis", chemoProphylaxis) ;
+        censusReport += Reporter.ADD_REPORT_PROPERTY("chemoPartner", chemoPartner) ;
         censusReport += Reporter.ADD_REPORT_PROPERTY("consentCasualProbability", consentCasualProbability) ;
         
         for (Site site : sites)
@@ -1109,7 +1121,7 @@ public class MSM extends Agent {
      */
     public boolean getSeroSort(String relationshipClazzName)    //, Boolean status)
     {
-        Boolean serosort  = false ;
+        Boolean serosort = false ;
         String returnString = "seroSort" + relationshipClazzName ;
         try
         {
@@ -1245,6 +1257,25 @@ public class MSM extends Agent {
     public void setChemoProphylaxis(boolean status)
     {
         chemoProphylaxis = status ;
+    }
+
+    /**
+     * Getter for chemoPartner.
+     * @return (boolean) chemoPartner.
+     */
+    public boolean getChemoPartner()
+    {
+        return chemoPartner ;
+    }
+    
+    /**
+     * Setter of chemoProphylaxis. 
+     * Will only set it to true if statusHIV is true.
+     * @param status 
+     */
+    public void setChemoPartner(boolean status)
+    {
+        chemoPartner = status ;
     }
 
     /**
@@ -1437,8 +1468,10 @@ public class MSM extends Agent {
     public boolean consent(String relationshipClazzName, Agent partner)
     {
         if (getSeroSort(relationshipClazzName))
-            if (!String.valueOf(getStatusHIV()).equals(declareStatus()))
+            if (statusHIV != ((MSM) partner).statusHIV)
                 return false ;
+            //if (!String.valueOf(getStatusHIV()).equals(declareStatus()))
+              //  return false ;
         return super.consent(relationshipClazzName, partner) ;
     }
     
@@ -1578,23 +1611,27 @@ public class MSM extends Agent {
         MSM partner = (MSM) agentPartner ;
         if (riskyStatus)
         {
-            String partnerDisclosure = partner.declareStatus() ;
             //Boolean partnerSeroPosition = partner.getSeroPosition() ;
 
             // Not if on PrEP or using U=U
             if (chemoProphylaxis)
             {
-                //if (RAND.nextDouble() > probabilityUseCondom)    // '>' intended
-                    return false ;
+                return false ;
             }
             //if (useGSN && partner.useGSN) // && partner.riskyStatus))
                 //return false ;
 
             if (partner.discloseStatusHIV || discloseStatusHIV)
             {
-                if (getSeroSort(relationshipClazzName) && partner.getSeroSort(relationshipClazzName))    
-                    if (String.valueOf(getStatusHIV()).equals(partnerDisclosure)) 
+                if (statusHIV == partner.statusHIV)
                         return false ;
+                if (chemoPartner)
+                {
+                    if (statusHIV && partner.prepStatus)
+                        return false ;
+                    if (partner.statusHIV && partner.antiViralStatus)
+                        return false ;
+                }
 
                 if (seroPosition && partner.seroPosition)
                     return false; // (RAND.nextDouble() < probabilityUseCondom ) ;
@@ -1605,13 +1642,24 @@ public class MSM extends Agent {
         {
             //if (2 > 0)
               //  return true ;
-            if (!chemoProphylaxis)
+            if (chemoProphylaxis)
+                return (RAND.nextDouble() < probabilityUseCondom ) ;
+            
+            if (partner.discloseStatusHIV || discloseStatusHIV)
             {
-                if (statusHIV)
-                    return true ;
-                else if (partner.statusHIV && !partner.chemoProphylaxis) // Partner HIV +ve without supressed viral load
+                if (statusHIV == partner.statusHIV) 
+                    return (RAND.nextDouble() < probabilityUseCondom ) ;
+                else if (partner.statusHIV)
+                {
+                    if ((!partner.antiViralStatus) || (!chemoPartner))
+                        return true ;
+                }
+                else if ((!partner.prepStatus) || (!chemoPartner))    // partner HIV negative
                     return true ;
             }
+            else
+                return true ;
+            
             return (RAND.nextDouble() < probabilityUseCondom ) ;  //TODO: Should there be subset who always use?
         }
     }
