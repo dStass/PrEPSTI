@@ -142,13 +142,22 @@ public class MSM extends Agent {
                 }
             }
             //newProbability *= changeProbability ;
+        }
 
-            if (year == 5)    // During year 2012
+        
+        if (year == 5)    // During year 2012
+        {
+            for (Agent agent : agentList)
             {
+                msm = (MSM) agent ;
                 msm.resetChemoProphylaxis(true) ;
                 msm.setChemoPartner(true) ;
                 if (msm.statusHIV)
+                {
                     msm.seroSortRegular = false ;
+                    msm.seroSortCasual = true ;
+                }
+                
             }
         }
     }
@@ -282,8 +291,8 @@ public class MSM extends Agent {
         // Year-by-year rates of UAIC 
         int[] newRiskyOdds = new int[] {290,293,369,345,331,340,364,350,362,409,520} ;
         int[] newSafeOdds = new int[] {468,514,471,501,469,465,444,473,440,424,307} ;
-        // newRiskyProportions         {.38,.36,.43,.41,.41,.42,.45,.43,.45,.49,.63} ;
-        // total_odds                 {781,807,796,846,800,805,808,823,802,831,827}
+        // newRiskyProportions         {.38,.36,.44,.41,.41,.42,.45,.43,.45,.49,.63} ;
+        // total_odds                 {758,807,840,846,800,805,808,823,802,831,827}
         SAFE_ODDS = newSafeOdds[year] ;
         RISKY_ODDS = newRiskyOdds[year] ;
         
@@ -551,7 +560,7 @@ public class MSM extends Agent {
     /** Transmission probabilities sexual contact in Pharynx to Rectum intercourse. */
     static double PHARYNX_TO_RECTUM = 0.040 ; 
     /** Transmission probabilities sexual contact in Pharynx to Pharynx intercourse (kissing). */
-    static double PHARYNX_TO_PHARYNX = 0.250 ; 
+    static double PHARYNX_TO_PHARYNX = 0.20 ; 
     /** Transmission probabilities sexual contact in Urethra to Urethra intercourse (docking). */
     static double URETHRA_TO_URETHRA = 0.001 ; 
     /** Transmission probabilities sexual contact in Rectum to Rectum intercourse. */
