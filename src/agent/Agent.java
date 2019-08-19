@@ -126,6 +126,7 @@ public abstract class Agent {
         try
         {
             REINIT_SCREEN_CYCLE(agentList, year) ;
+            REINIT_NB_RELATIONSHIPS(agentList, year) ;
             MSM.REINIT_PROBABILITY_ANTIVIRAL(agentList, year) ;
             MSM.REINIT_PROBABILITY_DISCLOSURE_HIV(agentList, year) ;
             MSM.REINIT_RISK_ODDS(agentList, year) ;
@@ -168,7 +169,7 @@ public abstract class Agent {
     
     static final void REINIT_NB_RELATIONSHIPS(ArrayList<Agent> agentList, int year)
     {
-        for (Agent agent : agentList)
+        //for (Agent agent : agentList)
         {
             // agent.setConcurrency(value)
         }
