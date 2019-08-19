@@ -84,10 +84,10 @@ abstract public class Site {
     static double SYMPTOMATIC_PROBABILITY = 0.5 ;
     
     /** Minimum incubation period. */
-    static int MIN_INCUBATION = 2 ;
+    static int MIN_INCUBATION = 7 ; //2 ;
     
     /** Range of incubation periods. */
-    static int RANGE_INCUBATION = 4 ;
+    static int RANGE_INCUBATION = 5 ;
 
     // Probability of site transmitting infection, if all other probabilities unity
     //static double TRANSMIT = 0.5 ;
@@ -377,7 +377,7 @@ abstract public class Site {
      */
     public int chooseIncubationTime()
     {
-        incubationTime = MIN_INCUBATION ; // + RAND.nextInt(RANGE_INCUBATION) - 1 ; // (int) new GammaDistribution(distributionMean,1).sample()) + distributionMean ;
+        incubationTime = MIN_INCUBATION ; //+ RAND.nextInt(RANGE_INCUBATION) ; // (int) new GammaDistribution(distributionMean,1).sample()) + distributionMean ;
         return incubationTime ;
     }
     
