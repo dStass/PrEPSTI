@@ -125,23 +125,85 @@ public class MSM extends Agent {
             
             if (newProbability > oldProbability)
             {
-                if (msm.antiViralStatus)
+                if (!msm.antiViralStatus)
+                {
+                    changeProbability = (newProbability - oldProbability)/(1 - oldProbability) ;
+                    msm.setAntiViralStatus(RAND.nextDouble() < changeProbability) ;
                     continue ;
-                changeProbability = (newProbability - oldProbability)/(1 - oldProbability) ;
+                }
             }
             else    // Probability of being on antiViral medication decreases.
             {
-                if (!msm.antiViralStatus)
+                if (msm.antiViralStatus)
+                {
+                    changeProbability = (oldProbability - newProbability)/oldProbability ;
+                    msm.setAntiViralStatus(RAND.nextDouble() < changeProbability) ;
                     continue ;
-                changeProbability = (oldProbability - newProbability)/oldProbability ;
+                }
             }
-            newProbability *= changeProbability ;
+            //newProbability *= changeProbability ;
 
-            msm.setAntiViralStatus(RAND.nextDouble() < newProbability) ;
-            if (year > 5)
+            if (year == 5)    // During year 2012
             {
                 msm.resetChemoProphylaxis(true) ;
                 msm.setChemoPartner(true) ;
+                if (msm.statusHIV)
+                    msm.seroSortRegular = false ;
+            }
+        }
+    }
+    
+    /**
+     * Alters the willingness to trust U=U as protection against HIV on a year-by-year
+     * basis.
+     * Data taken from Table 21 in GCPS 2017.
+     * @param agentList
+     * @param year 
+     */
+    static protected void REINIT_TRUST_ANTIVIRAL(ArrayList<Agent> agentList, int year) 
+    {
+        double[] positiveTrustAntiViral = new double[] {0.0,0.0,0.0,0.0,0.0,0.0,0.483,0.772,
+            0.692, 0.742, 0.804} ;
+        double[] negativeTrustAntiViral = new double[] {0.0,0.0,0.0,0.0,0.0,0.0,0.106,0.094,
+            0.129, 0.157, 0.203} ;
+        
+        double positiveLastProbability = positiveTrustAntiViral[year - 1] ;
+        double positiveTrustProbability = positiveTrustAntiViral[year] ;
+        double negativeLastProbability = negativeTrustAntiViral[year - 1] ;
+        double negativeTrustProbability = negativeTrustAntiViral[year] ;
+        double changeProbability ; 
+        
+        for (Agent agent : agentList)
+        {
+            MSM msm = (MSM) agent ;
+            
+            double lastProbability = 1.0 ; 
+            double trustProbability = 1.0 ;
+            
+            if (msm.statusHIV)
+            {
+                lastProbability = positiveLastProbability ;
+                trustProbability = positiveTrustProbability ;
+            }
+            else
+            {
+                lastProbability = negativeLastProbability ;
+                trustProbability = negativeTrustProbability ;
+            }
+            
+            if (trustProbability > lastProbability)
+            {
+                if (msm.chemoPartner)
+                    continue ;
+                changeProbability = (trustProbability - lastProbability)/(1 - lastProbability) ;
+                msm.setChemoProphylaxis(RAND.nextDouble() < changeProbability);
+            }
+            else
+            {
+                if (!msm.chemoPartner)
+                    continue ;
+                changeProbability = (lastProbability - trustProbability)/lastProbability ;
+                msm.setChemoProphylaxis(RAND.nextDouble() > changeProbability) ;
             }
         }
     }
@@ -154,7 +216,7 @@ public class MSM extends Agent {
      * @param year
      * @throws Exception 
      */
-    static protected void REINIT_PROBABILITY_DISCLOSURE_HIV(ArrayList<Agent> agentList, int year) throws Exception
+    static protected void REINIT_PROBABILITY_DISCLOSURE_HIV(ArrayList<Agent> agentList, int year) //throws Exception
     {
         // Go from 2007
         double newDiscloseProbability ;
@@ -192,14 +254,16 @@ public class MSM extends Agent {
                 if (msm.discloseStatusHIV)
                     continue ;
                 changeProbability = (newDiscloseProbability - oldDiscloseProbability)/(1 - oldDiscloseProbability) ;
+                msm.initSeroStatus(changeProbability) ;
             }
             else    // if less likely to disclose
             {
                 if (!msm.discloseStatusHIV)
                     continue ;
                 changeProbability = (oldDiscloseProbability - newDiscloseProbability)/oldDiscloseProbability ;
+                msm.initSeroStatus(changeProbability) ;
             }
-            msm.initSeroStatus(newDiscloseProbability * changeProbability) ;
+            
         }
     }
     
@@ -467,25 +531,29 @@ public class MSM extends Agent {
     private boolean chemoProphylaxis ;
     /** Whether uses partner's PrEP or viral suppression as prophylaxis */
     private boolean chemoPartner ;
+    /** Whether uses viral suppression as prophylaxis */
+    private boolean trustAntiViral ;
+    /** Whether trusts PrEP as prophylaxis */
+    private boolean trustPrep ;
     /** Whether MSM is Risky, Safe otherwise. */
     private boolean riskyStatus ;
     
     /** Transmission probabilities per sexual contact from Urethra to Rectum */
-    static double URETHRA_TO_RECTUM = 0.90 ; 
+    static double URETHRA_TO_RECTUM = 0.85 ; 
     /** Transmission probabilities sexual contact from Urethra to Pharynx. */
-    static double URETHRA_TO_PHARYNX = 0.85 ; 
+    static double URETHRA_TO_PHARYNX = 0.80 ; 
     /** Transmission probabilities sexual contact from Rectum to Urethra. */
-    static double RECTUM_TO_URETHRA = 0.150 ;
+    static double RECTUM_TO_URETHRA = 0.040 ;
     /** Transmission probabilities sexual contact from Rectum to Pharynx. */
-    static double RECTUM_TO_PHARYNX = 0.015 ;
+    static double RECTUM_TO_PHARYNX = 0.010 ;
     /** Transmission probabilities sexual contact in Pharynx to Urethra intercourse. */
-    static double PHARYNX_TO_URETHRA = 0.10 ; 
+    static double PHARYNX_TO_URETHRA = 0.035 ; 
     /** Transmission probabilities sexual contact in Pharynx to Rectum intercourse. */
-    static double PHARYNX_TO_RECTUM = 0.020 ; 
+    static double PHARYNX_TO_RECTUM = 0.040 ; 
     /** Transmission probabilities sexual contact in Pharynx to Pharynx intercourse (kissing). */
-    static double PHARYNX_TO_PHARYNX = 0.050 ; 
+    static double PHARYNX_TO_PHARYNX = 0.250 ; 
     /** Transmission probabilities sexual contact in Urethra to Urethra intercourse (docking). */
-    static double URETHRA_TO_URETHRA = 0.005 ; 
+    static double URETHRA_TO_URETHRA = 0.001 ; 
     /** Transmission probabilities sexual contact in Rectum to Rectum intercourse. */
     static double RECTUM_TO_RECTUM = 0.001 ;
 
@@ -726,6 +794,8 @@ public class MSM extends Agent {
         
         chemoProphylaxis = false ;
         chemoPartner = false ;
+        trustAntiViral = false ;
+        trustPrep = false ;
         
         // Initialises infectedStatus at beginning of simulation, 
         //ensuring consistency with Site.infectedStatus
@@ -925,6 +995,8 @@ public class MSM extends Agent {
         censusReport += Reporter.ADD_REPORT_PROPERTY("antiViralStatus", antiViralStatus) ;
         censusReport += Reporter.ADD_REPORT_PROPERTY("chemoProphylaxis", chemoProphylaxis) ;
         censusReport += Reporter.ADD_REPORT_PROPERTY("chemoPartner", chemoPartner) ;
+        censusReport += Reporter.ADD_REPORT_PROPERTY("trustAntiViral", trustAntiViral) ;
+        censusReport += Reporter.ADD_REPORT_PROPERTY("trustPrep", trustPrep) ;
         censusReport += Reporter.ADD_REPORT_PROPERTY("consentCasualProbability", consentCasualProbability) ;
         
         for (Site site : sites)
@@ -1276,6 +1348,42 @@ public class MSM extends Agent {
     public void setChemoPartner(boolean status)
     {
         chemoPartner = status ;
+    }
+
+    /**
+     * Getter for trustAntiViral.
+     * @return (boolean) trustAntiViral.
+     */
+    public boolean getTrustAntiViral()
+    {
+        return trustAntiViral ;
+    }
+    
+    /**
+     * Setter of trustAntiViral.
+     * @param status 
+     */
+    public void setTrustAntiViral(boolean status)
+    {
+        trustAntiViral = status ;
+    }
+
+    /**
+     * Getter for trustPrep.
+     * @return (boolean) trustPrep.
+     */
+    public boolean getTrustPrep()
+    {
+        return trustPrep ;
+    }
+    
+    /**
+     * Setter of trustPrep.
+     * @param status 
+     */
+    public void setTrustPrep(boolean status)
+    {
+        trustPrep = status ;
     }
 
     /**
