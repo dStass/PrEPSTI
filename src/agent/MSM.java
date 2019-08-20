@@ -1716,8 +1716,8 @@ public class MSM extends Agent {
     @Override
     protected boolean chooseCondom(String relationshipClazzName, Agent agentPartner) 
     {
-        if (2 < 0)
-            return (RAND.nextDouble() < probabilityUseCondom ) ;
+        //if (2 < 0)
+          //  return (RAND.nextDouble() < probabilityUseCondom ) ;
         MSM partner = (MSM) agentPartner ;
         if (riskyStatus)
         {
