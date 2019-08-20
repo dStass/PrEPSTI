@@ -18,14 +18,14 @@ public class Urethra extends Site {
     static double INITIAL = 0.010 ; // 0.01 ; // 0.002 ;
 
     // Probability of positive symptomatic status if infected
-    static double SYMPTOMATIC_PROBABILITY = 0.90 ; // 0.80 ;
+    static double SYMPTOMATIC_PROBABILITY = 0.80 ; // 0.90 ; // 
     
     /**
      * Duration of gonorrhoea infection in Urethra.
      * Proper value unknown as almost always treated. 
      * Value for Rectum taken.
      */
-    static int INFECTION_DURATION = 183 ;
+    static int INFECTION_DURATION = 84 ; //  Matched to Pharynx // 183 ;
     
     
     /** Days between asymptomatic STI screens . */
