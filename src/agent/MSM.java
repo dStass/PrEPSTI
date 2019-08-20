@@ -55,7 +55,7 @@ public class MSM extends Agent {
     static double PROBABILITY_NEGATIVE_SERO_SORT = 0.45 ;
     /** Probability of serosorting in Casual Relationship if HIV positive */
     static double PROBABILITY_POSITIVE_CASUAL_SERO_SORT = 0.630 ; // 0.431 ;
-    // .630, .630, .630, .630, .630, .710, .586, .673, .510, .550, 341
+    // .630, .630, .630, .630, .630, .710, .586, .673, .510, .550, .341
     /** Probability of serosorting in Casual Relationship if HIV negative */
     static double PROBABILITY_NEGATIVE_CASUAL_SERO_SORT = 0.513 ; // 0.485 ;
     // .513, .513, .513, .513, .513, .579, .480, .474, .547, .520, .485
@@ -144,7 +144,7 @@ public class MSM extends Agent {
             //newProbability *= changeProbability ;
         }
 
-        
+        /*
         if (year == 5)    // During year 2012
         {
             for (Agent agent : agentList)
@@ -159,7 +159,7 @@ public class MSM extends Agent {
                 }
                 
             }
-        }
+        }*/
     }
     
     /**
@@ -202,14 +202,14 @@ public class MSM extends Agent {
             
             if (trustProbability > lastProbability)
             {
-                if (msm.chemoPartner)
+                if (msm.trustAntiViral)
                     continue ;
                 changeProbability = (trustProbability - lastProbability)/(1 - lastProbability) ;
                 msm.setChemoProphylaxis(RAND.nextDouble() < changeProbability);
             }
             else
             {
-                if (!msm.chemoPartner)
+                if (!msm.trustAntiViral)
                     continue ;
                 changeProbability = (lastProbability - trustProbability)/lastProbability ;
                 msm.setChemoProphylaxis(RAND.nextDouble() > changeProbability) ;
@@ -263,14 +263,15 @@ public class MSM extends Agent {
                 if (msm.discloseStatusHIV)
                     continue ;
                 changeProbability = (newDiscloseProbability - oldDiscloseProbability)/(1 - oldDiscloseProbability) ;
-                msm.initSeroStatus(changeProbability) ;
+                msm.setDiscloseStatusHIV(RAND.nextDouble() < changeProbability);
             }
             else    // if less likely to disclose
             {
                 if (!msm.discloseStatusHIV)
                     continue ;
                 changeProbability = (oldDiscloseProbability - newDiscloseProbability)/oldDiscloseProbability ;
-                msm.initSeroStatus(changeProbability) ;
+                msm.setDiscloseStatusHIV(RAND.nextDouble() > changeProbability);
+                //msm.initSeroStatus(changeProbability) ;
             }
             
         }
@@ -353,7 +354,7 @@ public class MSM extends Agent {
     
     /**
      * Resets the probability of MSM using a GSN year-by-year.
-     * Values taken from GCPS "Where men met their male sex partners in the sox months
+     * Values taken from GCPS "Where men met their male sex partners in the six months
      * prior to the survey. (Table 20 2013, Table 10 2018)
      * @param agentList
      * @param year 
@@ -560,7 +561,7 @@ public class MSM extends Agent {
     /** Transmission probabilities sexual contact in Pharynx to Rectum intercourse. */
     static double PHARYNX_TO_RECTUM = 0.040 ; 
     /** Transmission probabilities sexual contact in Pharynx to Pharynx intercourse (kissing). */
-    static double PHARYNX_TO_PHARYNX = 0.20 ; 
+    static double PHARYNX_TO_PHARYNX = 0.23 ; 
     /** Transmission probabilities sexual contact in Urethra to Urethra intercourse (docking). */
     static double URETHRA_TO_URETHRA = 0.001 ; 
     /** Transmission probabilities sexual contact in Rectum to Rectum intercourse. */
@@ -846,20 +847,14 @@ public class MSM extends Agent {
     final void initSeroStatus(double probabilityDiscloseHIV)
     {
         discloseStatusHIV = (RAND.nextDouble() < probabilityDiscloseHIV) ;
-        if (discloseStatusHIV)
+        //if (discloseStatusHIV)
         {
             seroSortCasual = (RAND.nextDouble() < getProbabilitySeroSortCasual(statusHIV)) ;
             seroSortRegular = (RAND.nextDouble() < getProbabilitySeroSortRegular(statusHIV)) ;
             seroSortMonogomous = (RAND.nextDouble() < getProbabilitySeroSortMonogomous(statusHIV)) ;
             seroPosition = (RAND.nextDouble() < getProbabilitySeroPosition(statusHIV)) ;
         }
-        else    // Cannot seroSort or SeroPosition without disclosing statusHIV
-        {
-            seroSortCasual = false ;
-            seroSortRegular = false ;
-            seroSortMonogomous = false ;
-            seroPosition = false ;
-        }
+        
     }
     
     /**
@@ -1221,7 +1216,6 @@ public class MSM extends Agent {
      */
     public void setSeroSort(boolean sort)
     {
-        discloseStatusHIV = (discloseStatusHIV || sort) ;
         seroSort = sort ;
     }
 
@@ -1264,7 +1258,6 @@ public class MSM extends Agent {
      */
     public void setSeroPosition(boolean position)
     {
-        discloseStatusHIV = (discloseStatusHIV || position) ;
         seroPosition = position ;
     }
     
@@ -1606,8 +1599,8 @@ public class MSM extends Agent {
         double consentProbability = RAND.nextDouble() ;
         if ((useGSN && riskyStatus) && (partner.useGSN && partner.getRiskyStatus()))
         {
-            double probabilityNotConsent = Math.pow(1 - consentCasualProbability,2) ;
-            return (consentProbability < (1 - probabilityNotConsent)) ;
+            //double probabilityNotConsent = Math.pow(1 - consentCasualProbability,2) ;
+            return true ; //(consentProbability < (1 - probabilityNotConsent)) ;
         }
         
         return (consentProbability < consentCasualProbability) ;
@@ -1723,18 +1716,20 @@ public class MSM extends Agent {
     @Override
     protected boolean chooseCondom(String relationshipClazzName, Agent agentPartner) 
     {
-        //if (2 < 0)
-          //  return (RAND.nextDouble() < probabilityUseCondom ) ;
+        if (2 < 0)
+            return (RAND.nextDouble() < probabilityUseCondom ) ;
         MSM partner = (MSM) agentPartner ;
         if (riskyStatus)
         {
             //Boolean partnerSeroPosition = partner.getSeroPosition() ;
 
             // Not if on PrEP or using U=U
-            if (chemoProphylaxis)
-            {
+            if (prepStatus)
                 return false ;
-            }
+            
+            if (antiViralStatus && trustAntiViral)
+                return false ;
+            
             //if (useGSN && partner.useGSN) // && partner.riskyStatus))
                 //return false ;
 
@@ -1742,13 +1737,11 @@ public class MSM extends Agent {
             {
                 if (statusHIV == partner.statusHIV)
                         return false ;
-                if (chemoPartner)
-                {
-                    if (statusHIV && partner.prepStatus)
-                        return false ;
-                    if (partner.statusHIV && partner.antiViralStatus)
-                        return false ;
-                }
+                if (partner.prepStatus)
+                    return false ;
+                    
+                if (partner.antiViralStatus && trustAntiViral)
+                    return false ;
 
                 if (seroPosition && partner.seroPosition)
                     return false; // (RAND.nextDouble() < probabilityUseCondom ) ;
@@ -1759,7 +1752,7 @@ public class MSM extends Agent {
         {
             //if (2 > 0)
               //  return true ;
-            if (chemoProphylaxis)
+            if (prepStatus)
                 return (RAND.nextDouble() < probabilityUseCondom ) ;
             
             if (partner.discloseStatusHIV || discloseStatusHIV)
@@ -1768,10 +1761,10 @@ public class MSM extends Agent {
                     return (RAND.nextDouble() < probabilityUseCondom ) ;
                 else if (partner.statusHIV)
                 {
-                    if ((!partner.antiViralStatus) || (!chemoPartner))
+                    if ((!partner.antiViralStatus) || (!trustAntiViral))
                         return true ;
                 }
-                else if ((!partner.prepStatus) || (!chemoPartner))    // partner HIV negative
+                else if ((!partner.prepStatus) || (!trustPrep))    // partner HIV negative
                     return true ;
             }
             else
