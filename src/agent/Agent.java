@@ -126,11 +126,12 @@ public abstract class Agent {
         try
         {
             REINIT_SCREEN_CYCLE(agentList, year) ;
-            REINIT_NB_RELATIONSHIPS(agentList, year) ;
+            //REINIT_NB_RELATIONSHIPS(agentList, year) ;
             MSM.REINIT_PROBABILITY_ANTIVIRAL(agentList, year) ;
             MSM.REINIT_PROBABILITY_DISCLOSURE_HIV(agentList, year) ;
             MSM.REINIT_RISK_ODDS(agentList, year) ;
-            //MSM.REINIT_USE_GSN(agentList, year) ;
+            MSM.REINIT_TRUST_ANTIVIRAL(agentList, year) ;
+            MSM.REINIT_USE_GSN(agentList, year) ;
         }
         catch ( Exception e )
         {
