@@ -70,7 +70,7 @@ public class Community {
     //static public String FILE_PATH = "/short/is14/mw7704/prepsti/output/year2007/" ;
     
     /** Whether parameters change throughout simulation. */
-    static boolean DYNAMIC = false ;
+    static boolean DYNAMIC = true ;
     
     /** Dump reports to disk after this many cycles. */
     static final int DUMP_CYCLE = ((int) Math.pow(10, 7))/POPULATION ;
@@ -584,7 +584,7 @@ public class Community {
     private String interveneCommunity(int cycle)
     {
         // When to end burn-in
-        int startCycle = 365 * 5 ;
+        int startCycle = 365 * 4 ;
         if ((cycle < startCycle))
             return "" ;
         
@@ -597,6 +597,9 @@ public class Community {
         String report = "" ;
         if (year * 365 == (cycle - startCycle))
         {
+            //if (year == 3)
+              //  for (Agent agent : agents)
+                //    agent.scaleProbabilityUseCondom(0.75);
             Agent.REINIT(agents, year) ;
             //unchangedAgents = (ArrayList<Agent>) agents.clone() ;
             //LOGGER.info(String.valueOf(year)) ;
