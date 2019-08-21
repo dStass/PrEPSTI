@@ -599,7 +599,7 @@ public class Community {
         {
             //if (year == 3)
               //  for (Agent agent : agents)
-                //    agent.scaleProbabilityUseCondom(0.75);
+                //    agent.scaleProbabilityUseCondom(0.5);
             Agent.REINIT(agents, year) ;
             //unchangedAgents = (ArrayList<Agent>) agents.clone() ;
             //LOGGER.info(String.valueOf(year)) ;
