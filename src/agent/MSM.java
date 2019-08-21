@@ -1600,7 +1600,8 @@ public class MSM extends Agent {
         if ((useGSN && riskyStatus) && (partner.useGSN && partner.getRiskyStatus()))
         {
             //double probabilityNotConsent = Math.pow(1 - consentCasualProbability,2) ;
-            return true ; //(consentProbability < (1 - probabilityNotConsent)) ;
+            //return true ; //(consentProbability < (1 - probabilityNotConsent)) ;
+            consentProbability *= 0.5 ;
         }
         
         return (consentProbability < consentCasualProbability) ;
