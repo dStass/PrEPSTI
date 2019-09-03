@@ -22,9 +22,12 @@ import java.util.logging.Level;
 
 public class EncounterPresenter extends Presenter {
     
-    //static private String[] simNames = new String[] {"to2014max3contact93dPop40000Cycles4380"} ; // "fixPerfectRisky29aPop40000Cycles2000","fixPerfectRisky29bPop40000Cycles2000","fixPerfectRisky29cPop40000Cycles2000","fixPerfectRisky29dPop40000Cycles2000","fixPerfectRisky29ePop40000Cycles2000","fixPerfectRisky29fPop40000Cycles2000","fixPerfectRisky29gPop40000Cycles2000","fixPerfectRisky29hPop40000Cycles2000","fixPerfectRisky29iPop40000Cycles2000","fixPerfectRisky29jPop40000Cycles2000"} ;
-            //= new String[] {"to2012linear67cPop40000Cycles3285"} ; // ,"to2014agentAdjust29aPop40000Cycles4920","to2014agentAdjust29cPop40000Cycles4920"} ; // "to2012max3same40aPop40000Cycles2920"} ; // "max3contact56aPop40000Cycles2460"} ; // ,"NoPrepCalibration74bPop40000Cycles5000","NoPrepCalibration74cPop40000Cycles5000"} ;
-    static private String[] simNames = new String[] {"shoot7aPop40000Cycles1460"}; //,"uniformWild9BbPop40000Cycles1460","uniformWild9BcPop40000Cycles1460","uniformWild9BdPop40000Cycles1460","uniformWild9BePop40000Cycles1460"} ; 
+    static private String[] simNames = new String[] {"from2007wild2bPop40000Cycles5840"} ; //,"from2007symptom9gPop40000Cycles5840"} ;
+    //static private String[] simNames = new String[] {"from2007postHolt3aPop40000Cycles5475","from2007postHolt3ePop40000Cycles5475",
+        //"from2007postHolt3fPop40000Cycles5475","from2007postHolt3iPop40000Cycles5475","from2007postHolt3jPop40000Cycles5475"} ;
+    //static private String[] simNames = new String[] {"symptom9aPop40000Cycles2190","symptom9bPop40000Cycles2190","symptom9cPop40000Cycles2190","symptom9dPop40000Cycles2190","symptom9ePop40000Cycles2190",
+      //  "symptom9fPop40000Cycles2190","symptom9gPop40000Cycles2190","symptom9hPop40000Cycles2190","symptom9iPop40000Cycles2190","symptom9jPop40000Cycles2190"} ;
+    //static private String[] simNames = new String[] {"testRebootPop40000Cycles730"} ;
     
     private EncounterReporter reporter ;
     
@@ -46,7 +49,8 @@ public class EncounterPresenter extends Presenter {
         //String reportFileName = "output/untouchable/" ; // args[2] ;
         //String reportFileName = "output/test/" ; // args[2] ;
         //String reportFileName = "output/prePrEP/" ; // args[2] ;
-        String reportFileName = "output/year2007/" ; // args[2] ;
+        String reportFileName = "output/prep/" ; // args[2] ;
+        //String reportFileName = "output/year2007/" ; // args[2] ;
         //String reportFileName = "output/year2010/" ; // args[2] ;
         //String reportFileName = "output/year2012/" ; // args[2] ;
         LOGGER.info(chartTitle) ;
@@ -62,7 +66,7 @@ public class EncounterPresenter extends Presenter {
         //encounterPresenter.plotFinalIncidenceRecord(siteNames, 0, Reporter.DAYS_PER_YEAR) ;
         //encounterPresenter.plotSortedFinalIncidenceRecord(siteNames, 0, Reporter.DAYS_PER_YEAR,"statusHIV") ;
         //encounterPresenter.plotCumulativeAgentTransmissionReport() ;
-        encounterPresenter.plotIncidenceYears(siteNames, 3, 2014) ;
+        encounterPresenter.plotIncidenceYears(siteNames, 11, 2017) ;
         //encounterPresenter.plotNumberCondomlessYears(3, 0, 0, 2017, new String[] {"Casual","Regular","Monogomous"}) ;
         //encounterPresenter.plotNumberCondomlessReport(0, 6, 0, new String[] {"Casual","Regular","Monogomous"}) ;
         //encounterPresenter.plotPercentAgentCondomlessReport(new String[] {"Casual","Regular","Monogomous"}, 0, 6, 0, "", false) ;
@@ -221,6 +225,8 @@ public class EncounterPresenter extends Presenter {
         for (int siteIndex = 0 ; siteIndex < siteList.size() ; siteIndex++ )
             finalSiteNames[siteIndex] = siteList.get(siteIndex) ;
         
+        LOGGER.log(Level.INFO, "{0}", finalIncidenceRecord);
+        
         callPlotChartDefault(finalSiteNames, EncounterReporter.INCIDENCE, "Site", finalIncidenceRecord) ;
         //plotValues("incidence", finalIncidenceRecord) ;        
     }
@@ -265,7 +271,7 @@ public class EncounterPresenter extends Presenter {
             HashMap<Object,String> report = encounterReporter.prepareYearsIncidenceRecord(siteNames, backYears, lastYear) ;
             reports.add((HashMap<Object,String>) report.clone()) ;
         }
-        incidenceRecordYears = Reporter.PREPARE_MEAN_HASHMAP_REPORT(reports) ;
+        incidenceRecordYears = Reporter.PREPARE_MEAN_HASHMAP_REPORT(reports,"year","INCIDENCE",simNames[0]) ;
         LOGGER.log(Level.INFO, "{0}", incidenceRecordYears);
         String[] scoreNames = new String[siteNames.length + 1] ;
         for (int siteIndex = 0 ; siteIndex < siteNames.length ; siteIndex++ )
