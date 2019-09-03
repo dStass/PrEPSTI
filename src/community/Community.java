@@ -32,7 +32,7 @@ import java.util.logging.Level;
  *
  *******************************************************************/
 public class Community {
-    static final public int POPULATION = 40000 ;
+    static final public int POPULATION = 10000 ;
     static final int AGENTS_PER_DAY = POPULATION / 365 ;
     static public int MAX_CYCLES ; // = 350 ; 
     static public String NAME_ROOT = "" ;
@@ -70,7 +70,7 @@ public class Community {
     //static public String FILE_PATH = "/short/is14/mw7704/prepsti/output/year2007/" ;
     
     /** Whether parameters change throughout simulation. */
-    static boolean DYNAMIC = true ;
+    static boolean DYNAMIC = false ;
     
     /** Dump reports to disk after this many cycles. */
     static final int DUMP_CYCLE = ((int) Math.pow(10, 7))/POPULATION ;
@@ -81,13 +81,13 @@ public class Community {
      * (String) Name of previous burn-in to reload.
      * Not reloaded if this is an empty string.
      */
-    static final String RELOAD_BURNIN = "" ; // 
+    static final String RELOAD_BURNIN = "" ; // "symptom1cPop1000Cycles730" ;  ; // 
     
     /**
      * (String) Name of previous simulation to reload.
-     * Not reloaded if this is an empty string.
+     * Nothing reloaded if this is an empty string.
      */
-    static final String RELOAD_SIMULATION = "" ; // "symptom1cPop1000Cycles730" ; // "symptom24aPop40000Cycles1460" ; // "reboot17aPop40000Cycles1460" ; // "uniformLow9bPop40000Cycles1460" ; 
+    static final String RELOAD_SIMULATION = "" ; // "rebootTestPop40000Cycles730" ; // 
     
     static public String getFilePath()
     {
@@ -827,9 +827,10 @@ public class Community {
     private String births(int nbBirths)
     {
         String record = "birth:" ;
+        MSM newAgent ;
         for (int birth = 0 ; birth < nbBirths ; birth++ )
         {
-            MSM newAgent = generateAgent(0) ; // MSM.BIRTH_MSM(0) ;
+            newAgent = generateAgent(0) ; // MSM.BIRTH_MSM(0) ;
             agents.add(newAgent) ;
             record += newAgent.getCensusReport() ;
             //record += Reporter.ADD_REPORT_PROPERTY("agentId",newAgent.getAgentId()) ;
@@ -1019,7 +1020,7 @@ public class Community {
                     for (Site site : agent.getSites())
                     {
                         if (agent.getInfectedStatus(site) != 0)
-                            record += Reporter.ADD_REPORT_PROPERTY(site.getSite(), agent.getSymptomatic(site)) ;
+                            record += Reporter.ADD_REPORT_PROPERTY(site.toString(), agent.getSymptomatic(site)) ;
                     }
                     agent.treat() ;
                     record += Reporter.ADD_REPORT_LABEL("treated") ;
@@ -1032,9 +1033,9 @@ public class Community {
                 record += Reporter.ADD_REPORT_PROPERTY("agentId",agent.getAgentId()) ;
                 for (Site site : agent.getSites())
                 {
-                    if (agent.getInfectedStatus(site) != 0)
-                        record += Reporter.ADD_REPORT_PROPERTY(site.getSite(), agent.getSymptomatic(site)) ;
-                    //LOGGER.info(site.getSite()) ;
+                    if (agent.getInfectedStatus(site) > 0)
+                        record += Reporter.ADD_REPORT_PROPERTY(site.toString(), agent.getSymptomatic(site)) ;
+                    //LOGGER.info(site.toString()) ;
                 }
                 
                 // agent.progressSitesInfection() allow infection to run one cycle of its course
@@ -1093,7 +1094,7 @@ public class Community {
             for (Site site : agent.getSites())
             {
                 siteInfected = (site.getInfectedStatus() != 0) ;
-                //LOGGER.log(Level.INFO, "{0} {1}", new Object[] {site.getSite(),siteInfected}) ;
+                //LOGGER.log(Level.INFO, "{0} {1}", new Object[] {site.toString(),siteInfected}) ;
 
                 // Due for an STI screen?
                 if (RAND.nextDouble() < site.getScreenProbability(new String[] {Integer.toString(cycle)})) 
@@ -1101,18 +1102,18 @@ public class Community {
                     if (siteInfected)
                     {        
                         //LOGGER.info("infected") ;
-                        agentRecord += Reporter.ADD_REPORT_PROPERTY(site.getSite(), site.getSymptomatic()) ;
+                        agentRecord += Reporter.ADD_REPORT_PROPERTY(site.toString(), site.getSymptomatic()) ;
                         treat = site.treat() ;
                     }
                     else
-                        agentRecord += Reporter.ADD_REPORT_PROPERTY(site.getSite(),Reporter.CLEAR) ;
+                        agentRecord += Reporter.ADD_REPORT_PROPERTY(site.toString(),Reporter.CLEAR) ;
                     
                     agentRecord += Reporter.ADD_REPORT_PROPERTY("tested") ;
                     //untestedSites.remove(site) ;
                 }
                 else if (siteInfected)
                 {
-                    agentRecord += Reporter.ADD_REPORT_PROPERTY(site.getSite(), site.getSymptomatic()) ;
+                    agentRecord += Reporter.ADD_REPORT_PROPERTY(site.toString(), site.getSymptomatic()) ;
 
                     // agent.progressSitesInfection() allow infection to run one cycle of its course
                     // and returns boolean whether agent is cleared (!stillInfected)
@@ -1135,7 +1136,7 @@ public class Community {
             /*if (allSites)  // if any Site symptomatic
                 for (Site site : untestedSites)
                 {
-                    siteIndex = agentRecord.indexOf(site.getSite()) ;
+                    siteIndex = agentRecord.indexOf(site.toString()) ;
                     if (siteIndex > -1)    // Site infected but not tested
                     {
                         // Skip value of siteName
@@ -1152,11 +1153,11 @@ public class Community {
                         if (site.getInfectedStatus() != 0)
                         {        
                             //LOGGER.info("infected") ;
-                            agentRecord += Reporter.ADD_REPORT_PROPERTY(site.getSite(), site.getSymptomatic()) ;
+                            agentRecord += Reporter.ADD_REPORT_PROPERTY(site.toString(), site.getSymptomatic()) ;
                             site.treat() ;
                         }
                         else
-                            agentRecord += Reporter.ADD_REPORT_PROPERTY(site.getSite(),Reporter.CLEAR) ;
+                            agentRecord += Reporter.ADD_REPORT_PROPERTY(site.toString(),Reporter.CLEAR) ;
                         
                         agentRecord += Reporter.ADD_REPORT_PROPERTY("tested") ;
                     }
