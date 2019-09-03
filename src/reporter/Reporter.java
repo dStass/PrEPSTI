@@ -11,8 +11,8 @@ import java.io.* ;
 import java.lang.reflect.*;
 import java.util.ArrayList ;
 //import java.util.Arrays;
-//import java.util.Set ;
-//import java.util.Collections;
+import java.util.Set ;
+import java.util.Collections;
 import java.util.HashMap ;
 
 import java.util.logging.Level;
@@ -45,7 +45,7 @@ public class Reporter {
     static boolean WRITE_REPORT = true ;
     
     /** Path to folder for saving reports. */
-    static String REPORT_FOLDER = "C:\\Users\\MichaelWalker\\UNSW\\NSW PSRP - Documents\\Model development\\output\\" ;
+    static public String REPORT_FOLDER = "C:\\Users\\MichaelWalker\\UNSW\\NSW PSRP - Documents\\Model development\\output\\" ;
     
     /** Names of properties for filtering records. */
     private ArrayList<String> filterPropertyNames = new ArrayList<String>() ;
@@ -404,7 +404,8 @@ public class Reporter {
     }
 
     /**
-     * Extracts bounded substrings containing propertyName as substring
+     * Extracts bounded substrings containing propertyName as substring with value
+     * in @param values.
      * @param propertyName 
      * @param bound - String bounding substrings of interest
      * @param string
@@ -1319,7 +1320,7 @@ public class Reporter {
         
         for (Object key : firstReport.keySet())
         {
-            LOGGER.info("year:" + key.toString());
+            //LOGGER.info("year:" + key.toString());
             for (String propertyName : reportProperties)
             {
                 double itemValue = 0.0 ;
@@ -1341,6 +1342,47 @@ public class Reporter {
         
         return meanReport ;
     }
+        
+    /**
+     * 
+     * Averages over entries in sorted reports in (ArrayList) reportList.
+     * Avoids saving it now, better done at plot Method.
+     * @param reportList
+     * @param categoryName
+     * @param sortingProperty
+     * @param reportName
+     * @param nameSimulation
+     * @return (ArrayList) report with (ArrayList) subreports where the values 
+     * in the subreports are averaged over the innermost ArrayList.
+     */
+    static public HashMap<Object,HashMap<Object,String>> 
+        PREPARE_MEAN_HASHMAP_REPORT(ArrayList<HashMap<Object,HashMap<Object,String>>> reportList, String categoryName, String sortingProperty, String reportName, String nameSimulation)
+    {
+        // Find mean of reports
+        HashMap<Object,HashMap<Object,String>> meanReport = new HashMap<Object,HashMap<Object,String>>() ;
+        
+        boolean writeLocal = WRITE_REPORT ;
+        WRITE_REPORT = false ;
+        
+        // Cycle through sortingProperty values
+        HashMap<Object,HashMap<Object,String>> firstReport = reportList.get(0) ;
+        Set<Object> sortingValues = (Set<Object>) firstReport.keySet() ;
+        
+        for (Object sortingValue : sortingValues)
+        {
+            ArrayList<HashMap<Object,String>> sortedList = new ArrayList<HashMap<Object,String>>() ;
+            for (HashMap<Object,HashMap<Object,String>> report : reportList)
+                sortedList.add(report.get(sortingValue)) ;
+            meanReport.put(sortingValue, (HashMap<Object,String>) PREPARE_MEAN_HASHMAP_REPORT(sortedList, categoryName, reportName, nameSimulation).clone()) ;
+        }
+        
+        //if (writeLocal)
+            //WRITE_CSV_STRING(meanReport, categoryName, reportName, nameSimulation, REPORT_FOLDER) ;
+        WRITE_REPORT = writeLocal ;
+        
+        return meanReport ;
+    }
+    
 
     /**
      * 
@@ -1939,7 +1981,7 @@ public class Reporter {
     {
         if (reader.fileIndex >= reader.fileNames.size())
         {
-            reader.fileIndex = 0 ;
+            reader.fileIndex = 0 ;    // This may cause problems somewhere, possibly unnecessary
             input = reader.updateOutputArray() ;
             return false ;
         }
@@ -2281,12 +2323,17 @@ public class Reporter {
      */
     public static void main(String[] args)
     {
-        String folderPath = "output/prep/" ;
-        //String[] simNames = new String[] {"gradualShoot17aPop40000Cycles5475","gradualShoot17bPop40000Cycles5475","gradualShoot17cPop40000Cycles5475","gradualShoot17dPop40000Cycles5475","gradualShoot17ePop40000Cycles5475"} ; 
-          //"from2007To2016prep9fPop40000Cycles5110","from2007To2016prep9gPop40000Cycles5110","from2007To2016prep9hPop40000Cycles5110","from2007To2016prep9iPop40000Cycles5110","from2007To2016prep9jPop40000Cycles5110"} ;
-        //String[] simNames = new String[] {"from2007gsn32aPop40000Cycles5475","from2007gsn32dPop40000Cycles5475"} ; 
-        String[] simNames = new String[] {"from2007calibration32aPop40000Cycles5475","from2007calibration32bPop40000Cycles5475","from2007calibration32cPop40000Cycles5475","from2007calibration32dPop40000Cycles5475","from2007calibration32ePop40000Cycles5475",
-                       "from2007calibration32fPop40000Cycles5475","from2007calibration32gPop40000Cycles5475","from2007calibration32hPop40000Cycles5475","from2007calibration32iPop40000Cycles5475","from2007calibration32jPop40000Cycles5475"} ;
+        String folderPath = "output/test/" ;
+        String[] simNames = new String[] {"adjustCondom75Holt3aPop40000Cycles4380","adjustCondom75Holt3bPop40000Cycles4380","adjustCondom75Holt3cPop40000Cycles4380","adjustCondom75Holt3dPop40000Cycles4380","adjustCondom75Holt3ePop40000Cycles4380",
+        "adjustCondom75Holt3fPop40000Cycles4380","adjustCondom75Holt3gPop40000Cycles4380","adjustCondom75Holt3hPop40000Cycles4380","adjustCondom75Holt3iPop40000Cycles4380","adjustCondom75Holt3jPop40000Cycles4380"} ;
+        //String[] simNames = new String[] {"noGSNpostHolt3aPop40000Cycles5475","noGSNpostHolt3bPop40000Cycles5475","noGSNpostHolt3cPop40000Cycles5475","noGSNpostHolt3dPop40000Cycles5475","noGSNpostHolt3ePop40000Cycles5475",
+          //      "noGSNpostHolt3fPop40000Cycles5475","noGSNpostHolt3gPop40000Cycles5475","noGSNpostHolt3hPop40000Cycles5475","noGSNpostHolt3iPop40000Cycles5475","noGSNpostHolt3jPop40000Cycles5475"} ;
+        //String[] simNames = new String[] {"adjustCondom85aPop40000Cycles2555","adjustCondom85bPop40000Cycles2555","adjustCondom85cPop40000Cycles2555","adjustCondom85dPop40000Cycles2555","adjustCondom85ePop40000Cycles2555",
+          //  "adjustCondom85fPop40000Cycles2555","adjustCondom85gPop40000Cycles2555","adjustCondom85hPop40000Cycles2555","adjustCondom85iPop40000Cycles2555","adjustCondom85jPop40000Cycles2555"} ; 
+        //String[] simNames = new String[] {"from2007calibration32aPop40000Cycles5840","from2007calibration32bPop40000Cycles5840","from2007calibration32cPop40000Cycles5840","from2007calibration32dPop40000Cycles5840","from2007calibration32ePop40000Cycles5840",
+          //             "from2007calibration32fPop40000Cycles5840","from2007calibration32gPop40000Cycles5840","from2007calibration32hPop40000Cycles5840","from2007calibration32iPop40000Cycles5840","from2007calibration32jPop40000Cycles5840"} ;
+        //String[] simNames = new String[] {"from2007gsn32aPop40000Cycles5840","from2007gsn32bPop40000Cycles5840","from2007gsn32cPop40000Cycles5840","from2007gsn32dPop40000Cycles5840","from2007gsn32ePop40000Cycles5840",
+                       //"from2007gsn32fPop40000Cycles5840","from2007gsn32gPop40000Cycles5840","from2007gsn32hPop40000Cycles5840","from2007gsn32iPop40000Cycles5840","from2007gsn32jPop40000Cycles5840"} ;
         //String[] simNames = new String[] {"from2007allSafe17bPop40000Cycles5475","from2007allSafe17cPop40000Cycles5475","from2007allSafe17dPop40000Cycles5475",
         //"from2007allSafe17fPop40000Cycles5475","from2007allSafe17gPop40000Cycles5475","from2007allSafe17hPop40000Cycles5475"} ;
             //"to2014goneWild51jPop40000Cycles3285"} ;
@@ -2393,6 +2440,8 @@ public class Reporter {
                 if (file.isFile()) 
                 {
                     String fileName = file.getName() ;
+                    if (fileName.contains("METADATA") || fileName.contains("REBOOT"))
+                        continue ;
                     if (fileName.startsWith(simName) && fileName.endsWith("txt"))
                         nameArray.add(fileName) ;
                 }
@@ -2414,7 +2463,7 @@ public class Reporter {
             String fileName1 = fileNames.get(1) ;
             int dashIndex = fileName1.indexOf("-") + 1 ; // Want following position
             int dotIndex = fileName1.indexOf("txt") - 1 ; // -1 for "."
-            
+            //LOGGER.log(Level.INFO, "{0} {1} {2}", new Object[] {fileName1,dashIndex,dotIndex});
             return Integer.valueOf(fileName1.substring(dashIndex,dotIndex)) ;
         }
         
@@ -2533,7 +2582,7 @@ public class Reporter {
                 LOGGER.severe(e.toString());
                 assert(false) ;
             }
-            fileIndex = 0 ;
+            //fileIndex = 0 ;  // This line caused bugs in generating reports.
             return outputList ;
         }
                 
@@ -2579,7 +2628,7 @@ public class Reporter {
             if (outputList.isEmpty())
                 LOGGER.log(Level.SEVERE, "Empty Report from File at {0}", new Object[]{folderPath});
             
-            fileIndex = 0 ;
+            //fileIndex = 0 ;
             
             return outputList ;
         }
