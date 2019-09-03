@@ -131,16 +131,17 @@ public class PopulationReporter extends Reporter {
     protected HashMap<Object,ArrayList<Object>> agentIdSorted(String sortingProperty)
     {
         HashMap<Object,ArrayList<Object>> sortedHashMap = new HashMap<Object,ArrayList<Object>>() ;
-        
+        //LOGGER.info("birthReport");
         ArrayList<String> birthReport = prepareBirthReport() ;
         
         for (String record : birthReport)
         {
+            //LOGGER.info(record);
             ArrayList<String> censusArray = EXTRACT_ARRAYLIST(record,AGENTID) ;
             for (String birth : censusArray)
             {
-                //LOGGER.info(birth);
                 String agentId = EXTRACT_VALUE(AGENTID,birth) ;
+                //LOGGER.info(agentId) ;
                 String sortingValue = EXTRACT_VALUE(sortingProperty,birth) ;
                 if (!sortedHashMap.containsKey(sortingValue))
                     sortedHashMap.put(sortingValue, new ArrayList<Object>()) ;
@@ -151,12 +152,15 @@ public class PopulationReporter extends Reporter {
             }
             //break ;
         }
+        //LOGGER.log(Level.INFO,"{0}", sortedHashMap) ;
+        for (Object sortingKey : sortedHashMap.keySet())
+            LOGGER.log(Level.INFO, "{0} {1}", new Object[] {sortingKey, sortedHashMap.get(sortingKey).size()});
         return sortedHashMap ;
     }
     
     /**
-     * FIXME: Only works for final record.
-     * @param deathRecordNb
+     * 
+     * @param recordNb
      * @return List of agentIds of Agents living at recordNb.
      */
     public ArrayList<Object> prepareAgentsAliveRecord(int recordNb)
@@ -226,6 +230,7 @@ public class PopulationReporter extends Reporter {
     
     /**
      * 
+     * @param recordNb (int) The record of interest.
      * @return (int) agentId of last Agent born on or before cycle recordNb.
      */
     public int getMaxAgentId(int recordNb)
@@ -490,15 +495,17 @@ public class PopulationReporter extends Reporter {
         
         //int backCycles = getBackCycles(backYears, backMonths, backDays) ;
         ArrayList<String> backCyclesReport = getBackCyclesReport(backYears, backMonths, backDays, endCycle) ;
-        
         for (boolean nextInput = true ; nextInput ; nextInput = updateReport())
         {
+            //for (int reportNb = 0 ; reportNb < input.size() ; reportNb += outputCycle )
+            //{
             for (int reportNb = 0 ; reportNb < backCyclesReport.size() ; reportNb += outputCycle )
             {
                 record = backCyclesReport.get(reportNb) ;
                 birthReport.add(record.substring(INDEX_OF_PROPERTY("birth",record),INDEX_OF_PROPERTY("death",record))) ;
             }
         }
+        
         return birthReport ;
     }
     
