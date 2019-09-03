@@ -71,42 +71,37 @@ public class ScreeningPresenter extends Presenter {
         this.reporter = reporter ;
     }
 
-    //static private String[] simNames = new String[] {"to2016gammaScreen3aPop40000Cycles3285"} ;
-    //static private String[] simNames = new String[] {"gamma7aPop40000Cycles1460"} ; //,"gamma4bcPop40000Cycles4380","gamma4bdPop40000Cycles4380","gamma4bePop40000Cycles4380","gamma4bfPop40000Cycles4380"} ; 
-    //static private String[] simNames = new String[] {"to2016gamma7aPop40000Cycles5110"} ; //,"to2014gamma4bPop40000Cycles5110","to2014gamma4cPop40000Cycles5110","to2014gamma4dPop40000Cycles5110","to2014gamma4ePop40000Cycles5110","to2014gamma4fPop40000Cycles5110"} ; 
-    //static private String[] simNames = new String[] {"halfCasual10adjust70bPop40000Cycles2920"} ; 
+    //static private String[] simNames = new String[] {"noSerosort2Pop10000Cycles1095"} ;
+    //static String[] simNames = new String[] {"adjustCondom75Holt3aPop40000Cycles4380","adjustCondom75Holt3bPop40000Cycles4380","adjustCondom75Holt3cPop40000Cycles4380","adjustCondom75Holt3dPop40000Cycles4380","adjustCondom75Holt3ePop40000Cycles4380",
+      //  "adjustCondom75Holt3fPop40000Cycles4380","adjustCondom75Holt3gPop40000Cycles4380","adjustCondom75Holt3hPop40000Cycles4380","adjustCondom75Holt3iPop40000Cycles4380","adjustCondom75Holt3jPop40000Cycles4380"} ;
+    //static private String[] simNames = new String[] {"noAntiviralPostHolt3aPop40000Cycles5475"} ; // ,"noAntiviralPostHolt3bPop40000Cycles5475","noAntiviralPostHolt3cPop40000Cycles5475","noAntiviralPostHolt3dPop40000Cycles5475","noAntiviralPostHolt3ePop40000Cycles5475",
+        //"noAntiviralPostHolt3fPop40000Cycles5475","noAntiviralPostHolt3gPop40000Cycles5475","noAntiviralPostHolt3hPop40000Cycles5475","noAntiviralPostHolt3iPop40000Cycles5475","noAntiviralPostHolt3jPop40000Cycles5475"} ;
+    //static private String[] simNames = new String[] {"GSNp40postHolt3aPop40000Cycles4015","GSNp40postHolt3bPop40000Cycles4015","GSNp40postHolt3cPop40000Cycles4015","GSNp40postHolt3dPop40000Cycles4015","GSNp40postHolt3ePop40000Cycles4015",
+      //  "GSNp40postHolt3fPop40000Cycles4015","GSNp40postHolt3gPop40000Cycles4015","GSNp40postHolt3hPop40000Cycles4015","GSNp40postHolt3iPop40000Cycles4015","GSNp40postHolt3jPop40000Cycles4015"} ;
+    // static String[] simNames = new String[] {"noGSNpostHolt3aPop40000Cycles5475"} ; //,"noGSNpostHolt3bPop40000Cycles5475","noGSNpostHolt3cPop40000Cycles5475","noGSNpostHolt3dPop40000Cycles5475","noGSNpostHolt3ePop40000Cycles5475",
+      //  "noGSNpostHolt3fPop40000Cycles5475","noGSNpostHolt3gPop40000Cycles5475","noGSNpostHolt3hPop40000Cycles5475","noGSNpostHolt3iPop40000Cycles5475","noGSNpostHolt3jPop40000Cycles5475"} ;
+    //static String[] simNames = new String[] {"from2007holt2aPop40000Cycles2190","from2007holt2bPop40000Cycles2190","from2007holt2cPop40000Cycles2190"} ;
+    //static String[] simNames = new String[] {"from2007wild2bPop40000Cycles5840"} ;
+    //static String[] simNames = new String[] {"scaleCondom50aPop40000Cycles2190"} ; //,"calibration50bPop40000Cycles1095","calibration50cPop40000Cycles1095"} ;
+    //static private String[] simNames = new String[] {"shoot17aPop40000Cycles2190","shoot17bPop40000Cycles2190","shoot17cPop40000Cycles2190","shoot17dPop40000Cycles2190","shoot17ePop40000Cycles2190",
+      //  "shoot17fPop40000Cycles2190","shoot17gPop40000Cycles2190","shoot17hPop40000Cycles2190","shoot17iPop40000Cycles2190","shoot17jPop40000Cycles2190"} ; 
+      //  "shoot2fPop40000Cycles2920","shoot2gPop40000Cycles2920","shoot2hPop40000Cycles2920","shoot2iPop40000Cycles2920","shoot2jPop40000Cycles2920"} ;
       //  "max3contact96cPop40000Cycles7300"} ; //,"max3contact96dPop40000Cycles7300","max3contact96aPop40000Cycles7300"} ;
-    static private String[] simNames = new String[] {"uniformWild9BgPop40000Cycles4380"} ; //,"uniformWild9BbPop40000Cycles1460","uniformWild9BcPop40000Cycles1460","uniformWild9BdPop40000Cycles1460","uniformWild9BePop40000Cycles1460"} ; 
-    //static private String[] simNames = new String[] {"uniformWild9BaPop40000Cycles1460","uniformWild9BbPop40000Cycles1460","uniformWild9BcPop40000Cycles1460","uniformWild9BdPop40000Cycles1460","uniformWild9BePop40000Cycles1460"} ; 
-    //static private String[] simNames = new String[] {"uniform07Wild9gPop40000Cycles2190"} ; //,"uniformWild9BbPop40000Cycles1460","uniformWild9BcPop40000Cycles1460","uniformWild9BdPop40000Cycles1460","uniformWild9BePop40000Cycles1460"} ; 
-      //  "max3contact96cPop40000Cycles7300"} ; //,"max3contact96dPop40000Cycles7300","max3contact96aPop40000Cycles7300"} ;
-    //static private String[] simNames = new String[] {"gamma7R4M17bPop40000Cycles2920"} ; //
-    //static private String[] simNames = new String[] {"break050up1ePop40000Cycles2920"} ;
-        //"adjust2009contact96dPop40000Cycles5475","adjust2009contact96ePop40000Cycles5475","adjust2009contact96fPop40000Cycles5475","adjust2009contact96gPop40000Cycles5475",
-        //"adjust2009contact96hPop40000Cycles5475","adjust2009contact96iPop40000Cycles5475","adjust2009contact96jPop40000Cycles5475"} ;
-    //static private String[] simNames = new String[] {"to2014doubleCasual8aPop40000Cycles4745"} ; //,"adjust2009contact96ePop40000Cycles4380","adjust2009contact96iPop40000Cycles4380"} ; //,
-        //"adjust2009contact96dPop40000Cycles4380","adjust2009contact96ePop40000Cycles4380","adjust2009contact96fPop40000Cycles4380","adjust2009contact96gPop40000Cycles4380",
-        //"adjust2009contact96hPop40000Cycles4380","adjust2009contact96iPop40000Cycles4380","adjust2009contact96jPop40000Cycles4380"} ;
-    //static private String[] simNames = new String[] {"adjust2009contact96aPop40000Cycles7300","adjust2009contact96bPop40000Cycles7300","adjust2009contact96cPop40000Cycles7300",
-      //  "adjust2009contact96dPop40000Cycles7300","adjust2009contact96ePop40000Cycles7300","adjust2009contact96fPop40000Cycles7300","adjust2009contact96gPop40000Cycles7300",
-        //"adjust2009contact96hPop40000Cycles7300","adjust2009contact96iPop40000Cycles7300","adjust2009contact96jPop40000Cycles7300"} ;
-
+    static private String[] simNames = new String[] {"pholtaPop40000Cycles1460"} ; //,"pholtbPop40000Cycles1460"} ; //
+    
     public static void main(String[] args)
     {
-        //String simName = "from2010try7aPop40000Cycles1460" ; 
-        //String simName = "to2014max3contact93jPop40000Cycles4380" ;
-        //String simName =  "to2014contact96dPop40000Cycles4380" ;
         //String simName =  "adjust2009contact96aPop40000Cycles4380" ;
         //String simName = "sameScreen29aPop40000Cycles3190" ;
         //String simName = "Year2007Commence5fPop40000Cycles2500" ;
         //String simName = "safeContact99aPop40000Cycles4000" ;
         //String simName = "to2012max3sameScreen34cPop40000Cycles4380" ;
         //String simName = "to2014agentAdjust29aPop40000Cycles4920" ;
-        //String simName = "max3contact96aPop40000Cycles7300" ;
+        //String simName = "testRebootPop40000Cycles730" ;
         String simName = simNames[0] ;
         
         boolean unique = false ;
-        int notifications = -1 ; 
+        int notifications = 0 ; 
         String chartTitle ;
         if (unique && (notifications == 1))
             chartTitle = "unique " ;
@@ -114,16 +109,16 @@ public class ScreeningPresenter extends Presenter {
             chartTitle = "" ;
         if (notifications == 0)
         {
-            chartTitle += "notifications" ;
+            chartTitle += "notification-rate" ;
             //chartTitle += "condom use scaledown in 2009" ;
         } //
         else if (notifications == 1)
-            chartTitle += "positivity" ;
+            chartTitle += "incidence" ;
         else
         {
             //chartTitle += "mean_prevalence" 
             chartTitle += "multi-site prevalence" 
-            //chartTitle += "condom use scaledown in eighth year (2009)"
+            //chartTitle += "multi-site symptomatic"
         
         + "" ;
         }
@@ -132,12 +127,13 @@ public class ScreeningPresenter extends Presenter {
         //String chartTitle = "testing_6_months" ; // args[1] ;
         //String chartTitle = "infections_past_2years_PrEP" ; // args[1] ;
         //String reportFileName = "output/untouchable/" ; // args[2] ;
+        //String reportFileName = "output/prep/" ; // args[2] ;
         //String reportFileName = "output/prePrEP/" ; // args[2] ;
         //String reportFileName = "output/test/" ; // args[2] ;
         //String reportFileName = "output/reverse/" ; // args[2] ;
         //String reportFileName = "output/year2012/" ; // args[2] ;
-        String reportFileName = "output/year2010/" ; // args[2] ;
-        //String reportFileName = "output/year2007/" ; // args[2] ;
+        //String reportFileName = "output/year2010/" ; // args[2] ;
+        String reportFileName = "output/year2007/" ; // args[2] ;
 
         LOGGER.info(chartTitle) ;
         
@@ -161,14 +157,17 @@ public class ScreeningPresenter extends Presenter {
 
         //screeningPresenter.multiPlotScreening(new Object[] {"prevalence","coprevalence",new String[] {"Pharynx","Rectum"},new String[] {"Urethra","Rectum"},"prevalence",new String[] {"Pharynx","Rectum","Urethra"}});
         //screeningPresenter.multiPlotScreening(new Object[] {"prevalence","prevalence",new String[] {"Pharynx","Rectum","Urethra"}});
+        //screeningPresenter.plotIncidencePerCycle(siteNames) ;
         //screeningPresenter.plotNotificationsPerCycle(siteNames) ;
         //screeningPresenter.plotSitePrevalence(siteNames) ;
-        screeningPresenter.plotPrevalence(siteNames) ;
+        //screeningPresenter.plotSiteSymptomPrevalence(siteNames) ;
+        //screeningPresenter.plotPrevalence(siteNames) ;
+        //screeningPresenter.plotPrevalenceYears(siteNames,10,2017) ;
         //screeningPresenter.plotFinalSymptomatic(new String[] {"Pharynx","Rectum","Urethra"}) ;
         //screeningPresenter.plotFinalPrevalences(new String[] {"Pharynx","Rectum","Urethra"}) ;
         //screeningPresenter.plotFinalNotifications(new String[] {"Pharynx","Rectum","Urethra"}, unique, 0, Reporter.DAYS_PER_YEAR, notifications) ;
         //screeningPresenter.plotSortedFinalNotifications(new String[] {"Pharynx","Rectum","Urethra"}, unique, 0, 0, Reporter.DAYS_PER_YEAR, "statusHIV") ; 
-        //screeningPresenter.plotSortedNotificationsYears(siteNames, unique, 3, 2009, "statusHIV") ;
+        screeningPresenter.plotSortedNotificationsYears(siteNames, unique, 3, 2009, "statusHIV") ;
         //screeningPresenter.plotNotificationsYears(siteNames,5,2014) ;    // siteNames,5,4) ;    // new String[] {"all"} 
         //screeningPresenter.plotPositivityYears(siteNames, unique, 8, 2014) ;
         //screeningPresenter.plotNotificationPerCycle() ;    
@@ -198,10 +197,16 @@ public class ScreeningPresenter extends Presenter {
         siteAllNames[0] = "all" ;
         // = Arrays.copyOf(siteNames, siteNames.length + 1) ;
         System.arraycopy(siteNames, 0, siteAllNames, 1, siteNames.length);
-        
+        ArrayList<HashMap<Object,HashMap<Object,String>>> reports = new ArrayList<HashMap<Object,HashMap<Object,String>>>() ;
         
         // Get sorted Report
-        HashMap<Object,HashMap<Object,String>> sortedNotificationsYears = reporter.prepareSortedYearsNotificationsRecord(siteNames, backYears, lastYear, sortingProperty) ;
+        for (String simulation: simNames)
+        {
+            ScreeningReporter screeningReporter = new ScreeningReporter(simulation,reporter.getFolderPath()) ;
+            reports.add(screeningReporter.prepareSortedYearsNotificationsRecord(siteNames, backYears, lastYear, sortingProperty)) ;
+        }
+        HashMap<Object,HashMap<Object,String>> sortedNotificationsYears //= reports.get(0) ;
+                = Reporter.PREPARE_MEAN_HASHMAP_REPORT(reports, "year", sortingProperty, NOTIFICATION, simNames[0]) ;
         
         // Generate legend and multiPlotNames
         String[] legend = new String[siteAllNames.length * sortedNotificationsYears.size()] ;
@@ -233,6 +238,7 @@ public class ScreeningPresenter extends Presenter {
                 }
             }
             plotSortedNotifications.put(year, yearlyEntry) ;
+            Reporter.WRITE_CSV_STRING(plotSortedNotifications, "year", NOTIFICATION, simNames[0], Reporter.REPORT_FOLDER) ;
             // Reset for next year
             yearlyEntry = "" ;
         }
@@ -262,7 +268,7 @@ public class ScreeningPresenter extends Presenter {
             ScreeningReporter screeningReporter = new ScreeningReporter(simulation,reporter.getFolderPath()) ;
             reports.add(screeningReporter.prepareYearsNotificationsRecord(siteNames, backYears, lastYear)) ;
         }
-        notificationsYearsPlot = Reporter.PREPARE_MEAN_HASHMAP_REPORT(reports) ;
+        notificationsYearsPlot = Reporter.PREPARE_MEAN_HASHMAP_REPORT(reports, "year", NOTIFICATION, simNames[0]) ;
         //notificationsRecordYears = Reporter.AVERAGED_HASHMAP_REPORT(reports) ;
         
         //LOGGER.log(Level.INFO, "{0},{1},{2}", new Object[] {notificationsRecordYears.get(2007)[0],notificationsRecordYears.get(2007)[1],notificationsRecordYears.get(2007)[2]});
@@ -387,6 +393,7 @@ public class ScreeningPresenter extends Presenter {
     {
         String finalNotificationsRecord = "" ;
         HashMap<Object,String> notificationsRecord = reporter.prepareSortedFinalNotificationsRecord(siteNames, unique, backYears, backMonths, backDays, 0, sortingProperty) ;
+        LOGGER.log(Level.INFO, "{0}", notificationsRecord);
         //HashMap<Object,Number[]> finalNotificationsRecord = new HashMap<Object,Number[]>() ;
         //HashMap<Object,HashMap<Object,Number>> notificationsRecord = reporter.prepareSortedFinalNotificationsRecord(siteNames, unique, backYears, backMonths, backDays, 0, sortingProperty) ;
         
@@ -399,6 +406,7 @@ public class ScreeningPresenter extends Presenter {
         String siteValue ;
         for (String siteName : propertiesList )
         {
+            LOGGER.info(siteName);
             //String sortedNotifications = "" ; // Reporter.ADD_REPORT_LABEL(siteName) ; // new Number[nbSortingValues] ;
             //Number[] sortedNotifications = new Number[nbSortingValues] ;
             int sortedIndex = 0 ;
@@ -626,6 +634,10 @@ public class ScreeningPresenter extends Presenter {
         plotCycleValue("proportion", symptomaticReport) ;
     }
     
+    /**
+     * Plots the proportion of Agents that are symptomatic at each siteName over time (cycles).
+     * @param siteNames - Name of Sites to plot for.
+     */
     public void plotSiteProportionSymptomatic(String[] siteNames)
     {
         ArrayList<ArrayList<Object>> symptomaticReports = new ArrayList<ArrayList<Object>>() ;
@@ -691,8 +703,8 @@ public class ScreeningPresenter extends Presenter {
         
         for (String siteName : siteNames)
             notificationReports.add(reporter.prepareNotificationsReport(siteName)) ;
-        
-        multiPlotCycleValue("notifications", notificationReports, siteNames) ;
+        LOGGER.log(Level.INFO, "{0}", notificationReports);
+        multiPlotCycleValue("incidence", notificationReports, siteNames) ;
     }
     
     
