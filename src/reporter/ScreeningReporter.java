@@ -116,6 +116,7 @@ public class ScreeningReporter extends Reporter {
      * @param siteNames
      * @param backYears
      * @param lastYear
+     * @param sortedAgents
      * @return Year-by-year report for backYears years on notification on last day
      * of each year ending lastYear.
      */
@@ -137,6 +138,7 @@ public class ScreeningReporter extends Reporter {
             //HashMap<Object,Number[]> notificationsRecord ;
             for (int year = 0 ; year < backYears ; year++ )
             {
+                LOGGER.info(String.valueOf(year));
                 //Number[] yearlyNotificationsRecord = new Number[siteNames.length + 1] ;
                 //String yearlyNotificationsString = "" ;
                 //endCycle = maxCycles - year * DAYS_PER_YEAR ;
@@ -154,7 +156,7 @@ public class ScreeningReporter extends Reporter {
             }
             //if (writeLocal)
               //  WRITE_CSV(notificationRecordYears, "Year", siteNames, "yearlyNotifications", simName, getFolderPath()) ;
-            //WRITE_REPORT = writeLocal ;
+            WRITE_REPORT = writeLocal ;
             
             return notificationsRecordYears ;
         }
@@ -179,6 +181,7 @@ public class ScreeningReporter extends Reporter {
 
             for (Object sortingValue : sortedAgentReport.keySet())
             {
+                LOGGER.log(Level.INFO, "value:{0} population:{1}", new Object[] {sortingValue,sortedAgentReport.get(sortingValue).size()});
                 HashMap<Object,String> yearsNotificationsRecord = new HashMap<Object,String>() ; 
                 yearsNotificationsRecord = prepareYearsNotificationsRecord(siteNames, backYears, lastYear, sortedAgentReport.get(sortingValue)) ;
                 
@@ -259,6 +262,7 @@ public class ScreeningReporter extends Reporter {
         
         for (Object sortingValue : sortedAgentReport.keySet())
         {
+            LOGGER.info(sortingValue.toString());
             //HashMap<Object,Number[]> finalNotificationsRecord = prepareFinalNotificationsRecord(siteNames,unique, backYears, backMonths, backDays, endCycle, sortedAgentReport.get(sortingValue)) ;
             String finalNotificationsRecord = prepareFinalNotificationsRecord(siteNames,unique, backYears, backMonths, backDays, endCycle, sortedAgentReport.get(sortingValue)) ;
             //HashMap<Object,Number> notificationsRecord = new HashMap<Object,Number>() ;
@@ -324,6 +328,7 @@ public class ScreeningReporter extends Reporter {
             population = getPopulation() ; // 15-64yo NSW males 3600000 ; // 
         else
             population = sortedAgents.size() ;
+        LOGGER.info("population:" + String.valueOf(population));
         /**Sorting by statusHIV
         PopulationReporter populationReporter = new PopulationReporter(getMetaDatum("Community.NAME_ROOT"), getFolderPath()); 
         HashMap<Object,ArrayList<Object>> sortingReport = populationReporter.sortStatusHIV() ;
@@ -335,6 +340,7 @@ public class ScreeningReporter extends Reporter {
         double denominator = ((double) getBackCycles(0,backMonths,backDays)*population)/(100*DAYS_PER_YEAR) ; // daysBetweenTests) ; //DAYS_PER_YEAR) ; // *population/100000
         for (String siteName : siteNames)
         {
+            LOGGER.info(siteName) ;
             notifications = 0 ;
             ArrayList<Object> positiveAgents = new ArrayList<Object>() ;
             for (String finalIncidenceRecord : finalNotificationsReport)
@@ -377,6 +383,7 @@ public class ScreeningReporter extends Reporter {
                 sortedRecord = BOUNDED_STRING_FROM_ARRAY(AGENTID,sortedAgents,AGENTID,finalNotificationsRecord) ;
 
             notifications += COUNT_VALUE_INCIDENCE(TREATED,"",sortedRecord,0)[1] ;
+            notifications += COUNT_VALUE_INCIDENCE(TESTED,TREATED,sortedRecord,0)[0] ;
             
             record = BOUNDED_STRING_BY_CONTENTS(TESTED,AGENTID,sortedRecord) ;
             ArrayList<Object> testedList = EXTRACT_ALL_VALUES(AGENTID,record) ;
@@ -635,6 +642,7 @@ public class ScreeningReporter extends Reporter {
         // Number of times a Site is mentioned, regardless of infection status
         int[] mentions ;
         
+        //LOGGER.log(Level.INFO, "{0}", endCycle);
         String finalPrevalenceRecord = getBackCyclesReport(0,0,1,endCycle).get(0) ; // getFinalRecord() ;
         
         double population = getPopulation() ; 
@@ -1270,17 +1278,15 @@ public class ScreeningReporter extends Reporter {
         String siteStatus ;
         String[] siteNames = MSM.SITE_NAMES ;
         boolean agentInfected ;
-        boolean nextInput = true ; 
-
-        while (nextInput)
-        {
         
-            for (int siteIndex = 0 ; siteIndex < siteNames.length ; siteIndex++ )
-            {
-                String siteName = siteNames[siteIndex] ;
-                siteNames[siteIndex] = siteName.substring(0,1).toUpperCase() 
-                        + siteName.substring(1) ;
-            }
+        /*for (int siteIndex = 0 ; siteIndex < siteNames.length ; siteIndex++ )
+        {
+            String siteName = siteNames[siteIndex] ;
+            siteNames[siteIndex] = siteName.substring(0,1).toUpperCase() 
+                    + siteName.substring(1) ;
+        }*/
+
+        for (boolean nextInput = true ; nextInput ; nextInput = updateReport() )
             for (String record : input)
             {
                 nbSymptomatic = 0 ;
@@ -1312,8 +1318,7 @@ public class ScreeningReporter extends Reporter {
 
                 prevalenceReport.add(entry) ;
             }
-            nextInput = updateReport() ;
-        }
+            
         return prevalenceReport ;
     }
     
