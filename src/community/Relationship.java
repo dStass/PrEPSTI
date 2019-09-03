@@ -476,8 +476,8 @@ public class Relationship {
             
             // Update report
             report += Reporter.ADD_REPORT_PROPERTY("contact", contact) ;
-            report += Reporter.ADD_REPORT_PROPERTY(site0.getSite(),infectStatus0) ;
-            report += Reporter.ADD_REPORT_PROPERTY(site1.getSite(),infectStatus1) ;
+            report += Reporter.ADD_REPORT_PROPERTY(site0.toString(),infectStatus0) ;
+            report += Reporter.ADD_REPORT_PROPERTY(site1.toString(),infectStatus1) ;
             // compare Infection status of both sites
             /*
             Infection infection0 = site0.getInfection();
@@ -489,8 +489,8 @@ public class Relationship {
         
             // Choose whether condom is used, if any Urethra involved
             infectProbability = 1.0;
-            if ((URETHRA.equals(site0.getSite()) && (RECTUM.equals(site1.getSite()))) 
-                    || (URETHRA.equals(site1.getSite())&& RECTUM.equals(site0.getSite())))
+            if ((URETHRA.equals(site0.toString()) && (RECTUM.equals(site1.toString()))) 
+                    || (URETHRA.equals(site1.toString())&& RECTUM.equals(site0.toString())))
             {
                 report += "condom:" ;
                 
