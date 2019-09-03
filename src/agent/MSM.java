@@ -643,7 +643,7 @@ public class MSM extends Agent {
     public static double GET_INFECT_PROBABILITY(Site infectedSite, Site clearSite)
     {
     	double infectProbability = -1.0 ;
-        String probabilityString = infectedSite.getSite().toUpperCase() + "_TO_" + clearSite.getSite().toUpperCase() ;
+        String probabilityString = infectedSite.toString().toUpperCase() + "_TO_" + clearSite.toString().toUpperCase() ;
         try
         {
             infectProbability = MSM.class.getDeclaredField(probabilityString).getDouble(null) ;
@@ -943,6 +943,16 @@ public class MSM extends Agent {
             else
                 consentProbability = RAND.doubles(lowerProb, upperProb).iterator().nextDouble() ;
         }
+        
+        // Compensate for seroSorting
+        /*if (seroSortCasual)
+        {
+            if (statusHIV)
+                consentCasualProbability *= (1.0/PROPORTION_HIV) ;
+            else    // !statusHIV 
+                consentCasualProbability *= (1.0/(1.0 - PROPORTION_HIV)) ;
+        }*/
+        
         //double adjustConsent = 0.8 ;    // /2.0 because two Agents in every Relationship
         consentCasualProbability = Math.sqrt(ADJUST_CASUAL_CONSENT * consentProbability/2.0) ;
     }
@@ -1043,7 +1053,7 @@ public class MSM extends Agent {
     @Override
     protected Site chooseSite(Site site)
     {
-        if (site.getSite().equals(RECTUM))
+        if (site.toString().equals(RECTUM))
         {
             int index = RAND.nextInt(6) ;
             if (index < 3) 
@@ -1053,7 +1063,7 @@ public class MSM extends Agent {
             else 
                 return rectum ;
         }
-        else if (site.getSite().equals(PHARYNX))
+        else if (site.toString().equals(PHARYNX))
         {
             int chooseTotal = chooseUrethra + choosePharynx + chooseRectum ;
             int index = RAND.nextInt(chooseTotal) ;
@@ -1063,7 +1073,7 @@ public class MSM extends Agent {
                 return urethra ;
             return rectum ;
         }
-        else    // if (site.getSite().equals(URETHRA))
+        else    // if (site.toString().equals(URETHRA))
         {
             int index = RAND.nextInt(10) ;
             if (index < 3)
@@ -1096,7 +1106,7 @@ public class MSM extends Agent {
     protected Site chooseNotRectumSite(Site site) 
     {
         int index ;
-        if (URETHRA.equals(site.getSite()))
+        if (URETHRA.equals(site.toString()))
         {
             index = RAND.nextInt(6) ;
             if (index < 5)
@@ -1259,6 +1269,15 @@ public class MSM extends Agent {
     public void setSeroPosition(boolean position)
     {
         seroPosition = position ;
+    }
+    
+    /**
+     * Getter of consentCasualProbability.
+     * @return (double) The probability of consenting to a Casual Relationship.
+     */
+    public double getConsentCasualProbability()
+    {
+        return consentCasualProbability ;
     }
     
     /**
@@ -1577,7 +1596,8 @@ public class MSM extends Agent {
     @Override
     public boolean consent(String relationshipClazzName, Agent partner)
     {
-        if (getSeroSort(relationshipClazzName))
+        boolean seroSort = false ;
+        if (getSeroSort(relationshipClazzName) && seroSort)
             if (statusHIV != ((MSM) partner).statusHIV)
                 return false ;
             //if (!String.valueOf(getStatusHIV()).equals(declareStatus()))
@@ -1717,7 +1737,8 @@ public class MSM extends Agent {
     @Override
     protected boolean chooseCondom(String relationshipClazzName, Agent agentPartner) 
     {
-        //if (2 < 0)
+        //boolean testCondom = false ;
+        //if (testCondom)
           //  return (RAND.nextDouble() < probabilityUseCondom ) ;
         MSM partner = (MSM) agentPartner ;
         if (riskyStatus)
