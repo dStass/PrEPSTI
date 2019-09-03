@@ -77,6 +77,7 @@ public class Pharynx extends Site {
      * 
      * @return Probability of site being infected initially.
      */
+    @Override
     protected double getInfectedProbability()
     {
         return INITIAL ;
