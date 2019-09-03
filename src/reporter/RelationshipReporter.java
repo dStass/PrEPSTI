@@ -502,50 +502,57 @@ public class RelationshipReporter extends Reporter {
     
     /**
      * 
-     * @param noBreakups
+     * @param noBreakups (boolean) ignore Relationships which have broken up.
      * @return (HashMap) relationshipId maps to [agentIds]
      */
     public HashMap<Object,String[]> prepareRelationshipAgentReport(boolean noBreakups)
     {
+        //LOGGER.info("prepareRelationshipAgentReport");
         HashMap<Object,String[]> relationshipAgentReport = new HashMap<Object,String[]>() ;
         
-        //ArrayList<String> commenceReport = prepareCommenceReport() ; // (ArrayList<String>) getReport("commence",this) ; //  
+        ArrayList<String> commenceReport = (ArrayList<String>) getReport("commence",this) ; //  
         
         ArrayList<String> relationshipRecords ;
         String relationshipId ;
         String[] agentIds ; // = new String[2] ;
         
-        String record ;
+        String record = "" ;
         
         ArrayList<String> blacklist = new ArrayList<String>() ;
         if (noBreakups)
             blacklist = prepareRelationshipBreakupRecord() ;
         
-        record = prepareBurninRecord() ;    // "0," + 
-        for (boolean nextInput = true ; nextInput ; nextInput = updateReport() )
-            for (String inputRecord : input)
+        //record = prepareBurninRecord() ;    // "0," + 
+        //for (boolean nextInput = true ; nextInput ; nextInput = updateReport() )
+        //LOGGER.log(Level.INFO, "{0}", commenceReport);
+        for (String inputRecord : commenceReport)
+        {
+            //LOGGER.info(inputRecord);
+            //inputString.add(inputRecord) ;
+            //record = inputString.get(reportNb) ;
+            int relationshipIdIndex = INDEX_OF_PROPERTY(RELATIONSHIPID,inputRecord) ;
+            int clearIndex = INDEX_OF_PROPERTY("clear",inputRecord) ;
+            if (clearIndex < 0)
+                clearIndex = inputRecord.length() ;
+            if (relationshipIdIndex >= 0 && (relationshipIdIndex < clearIndex)) 
+                record += inputRecord.substring(relationshipIdIndex,clearIndex) ;
+            else if (record.isEmpty())    // true unless contains burninRecord
+                continue ;
+                //LOGGER.info(record);
+
+            relationshipRecords = EXTRACT_ARRAYLIST(record,RELATIONSHIPID) ;
+            //LOGGER.log(Level.INFO, "{0}", relationshipRecords);
+            for (String relationshipRecord : relationshipRecords)
             {
-                //inputString.add(inputRecord) ;
-                //record = inputString.get(reportNb) ;
-                int relationshipIdIndex = INDEX_OF_PROPERTY(RELATIONSHIPID,inputRecord) ;
-                int clearIndex = INDEX_OF_PROPERTY("clear",inputRecord) ;
-                if (relationshipIdIndex >= 0 && (relationshipIdIndex < clearIndex)) 
-                    record += inputRecord.substring(relationshipIdIndex,clearIndex) ;
-                else if (record.isEmpty())    // true unless contains burninRecord
-                    continue ;
-                
-                relationshipRecords = EXTRACT_ARRAYLIST(record,RELATIONSHIPID) ;
-                for (String relationshipRecord : relationshipRecords)
-                {
-                    relationshipId = EXTRACT_VALUE(RELATIONSHIPID,relationshipRecord) ;
-                    if (noBreakups)
-                        if (blacklist.contains(relationshipId))
-                            continue ;
-                    agentIds = EXTRACT_AGENTIDS(relationshipRecord,0) ;
-                    relationshipAgentReport.put(relationshipId, agentIds) ;
-                }
-                
-                record = "" ;
+                relationshipId = EXTRACT_VALUE(RELATIONSHIPID,relationshipRecord) ;
+                if (noBreakups)
+                    if (blacklist.contains(relationshipId))
+                        continue ;
+                agentIds = EXTRACT_AGENTIDS(relationshipRecord,0) ;
+                relationshipAgentReport.put(relationshipId, agentIds) ;
+            }
+
+            record = "" ;
         }
         
         /*for (String record : commenceReport)
@@ -1102,6 +1109,8 @@ public class RelationshipReporter extends Reporter {
         
         int backCycles = GET_BACK_CYCLES(backYears, backMonths, backDays, endCycle) ;
         
+        // Each record is a HashMap where relationshipClassName maps to a 
+            //  HashMap where agentIds map to new relationshipIds.
         ArrayList<HashMap<Object,HashMap<Object,ArrayList<Object>>>> agentsEnteredRelationshipReport 
          = prepareAgentsEnteredRelationshipReport(relationshipClassNames, 0, 0, endCycle, endCycle) ;
         
@@ -1183,8 +1192,8 @@ public class RelationshipReporter extends Reporter {
         Class[] parameterClazzes = new Class[] {String[].class,int.class,int.class,int.class,int.class} ;
         Object[] parameters = new Object[] {relationshipClassNames, backYears, backMonths, backDays, endCycle} ;
         HashMap<Object,HashMap<Object,ArrayList<Object>>> agentRelationshipsRecord
-            = (HashMap<Object,HashMap<Object,ArrayList<Object>>>) getRecord("agentRelationships",this,parameterClazzes,parameters) ;
-        //prepareAgentRelationshipsRecord(relationshipClassNames, backYears, backMonths, backDays) ;
+            = (HashMap<Object,HashMap<Object,ArrayList<Object>>>) prepareAgentRelationshipsRecord(relationshipClassNames, backYears, backMonths, backDays) ;
+        // getRecord("agentRelationships",this,parameterClazzes,parameters) ;
         
         ArrayList<Object> totalAgents = new ArrayList<Object>() ;
         ArrayList<Object> relationshipClazzAgents ;
@@ -1496,8 +1505,8 @@ public class RelationshipReporter extends Reporter {
         ArrayList<HashMap<Object,HashMap<Object,ArrayList<Object>>>> agentsEnteredRelationshipReport 
                 = new ArrayList<HashMap<Object,HashMap<Object,ArrayList<Object>>>>() ; 
         
-        HashMap<Object,String[]> relationshipAgentReport 
-                = prepareRelationshipAgentReport() ; // (HashMap<Object,String[]>) getReport("relationshipAgent",this) ; // 
+        //HashMap<Object,String[]> relationshipAgentReport 
+          //      = prepareRelationshipAgentReport() ; // (HashMap<Object,String[]>) getReport("relationshipAgent",this) ; // 
         //LOGGER.log(Level.INFO, "{0}", relationshipAgentReport) ;
         
         // How many cycles far back do we count back from endCycle?
@@ -1516,24 +1525,28 @@ public class RelationshipReporter extends Reporter {
             for (String relationshipClassName : relationshipClassNames)
                 commenceRelationshipRecord.put(relationshipClassName, new HashMap<Object,ArrayList<Object>>()) ;
             ArrayList<String> relationshipIdArray = EXTRACT_ARRAYLIST(record,RELATIONSHIPID) ;
+            //LOGGER.log(Level.INFO,"{0}",relationshipIdArray) ;
             for (String relationshipString : relationshipIdArray)
             {
+                //LOGGER.info(relationshipString) ;
                 Object relationshipIdValue = EXTRACT_VALUE(RELATIONSHIPID,relationshipString) ;
                 String relationshipClassName = EXTRACT_VALUE(RELATIONSHIP,relationshipString) ;
+                String agentId0 = EXTRACT_VALUE(AGENTID0,relationshipString) ;
+                String agentId1 = EXTRACT_VALUE(AGENTID1,relationshipString) ;
                 if (!commenceRelationshipRecord.containsKey(relationshipClassName)) 
                 {
                     //LOGGER.info("commenceRelationshipRecord does not contain key " + relationshipClassName) ;
                     continue ;
                 }
-                Object[] agentIdValues = relationshipAgentReport.get(relationshipIdValue) ; 
+                //Object[] agentIdValues = relationshipAgentReport.get(relationshipIdValue) ; 
                 
                 //String agentId0Value = EXTRACT_VALUE(AGENTID0,relationshipString) ;
                 commenceRelationshipRecord.put(relationshipClassName,
-                        UPDATE_HASHMAP(agentIdValues[0],relationshipIdValue,commenceRelationshipRecord.get(relationshipClassName))) ;
+                        UPDATE_HASHMAP(Integer.valueOf(agentId0),relationshipIdValue,commenceRelationshipRecord.get(relationshipClassName))) ;
                 
                 //String agentId1Value = EXTRACT_VALUE(AGENTID1,relationshipString) ;
                 commenceRelationshipRecord.put(relationshipClassName,
-                        UPDATE_HASHMAP(agentIdValues[1],relationshipIdValue,commenceRelationshipRecord.get(relationshipClassName))) ;
+                        UPDATE_HASHMAP(Integer.valueOf(agentId1),relationshipIdValue,commenceRelationshipRecord.get(relationshipClassName))) ;
             }
             
             agentsEnteredRelationshipReport.add(0,(HashMap<Object,HashMap<Object,ArrayList<Object>>>) commenceRelationshipRecord.clone()) ;
@@ -1673,19 +1686,23 @@ public class RelationshipReporter extends Reporter {
         
         String filteredRecord ;
         
+        // (HashMap) relationshipId maps to String describing boolean concordance of propertName between involved Agents.
         HashMap<Object,String> relationshipConcordanceReport = prepareRelationshipConcordanceReport(propertyName) ;
         
+            //LOGGER.log(Level.INFO,"{0}", fullReport) ;
         for (String fullRecord : fullReport)
         {
+            //LOGGER.log(Level.INFO,"{0}", fullRecord) ;
             ArrayList<String> relationshipList = EXTRACT_ARRAYLIST(fullRecord,RELATIONSHIPID) ;
             filteredRecord = "" ;
-            
+            //LOGGER.log(Level.INFO,"{0}", relationshipList) ;
             for (String relationshipEntry : relationshipList)
             {
+                //LOGGER.info(relationshipEntry);
                 String relationshipId = EXTRACT_VALUE(RELATIONSHIPID,relationshipEntry) ;
                 String concordanceString = relationshipConcordanceReport.get(relationshipId) ;
-                //LOGGER.log(Level.INFO, "{0} {1} {2}", new Object[] {Level.INFO, TRUE, NONE});
-                if (COMPARE_VALUE(propertyName,String.valueOf(concordant),concordanceString))
+                
+                if (TRUE.equals(EXTRACT_VALUE(propertyName,concordanceString)))
                     filteredRecord += relationshipEntry ;
             }
             filteredReport.add(filteredRecord) ;
@@ -1702,6 +1719,7 @@ public class RelationshipReporter extends Reporter {
      */
     public HashMap<Object,String> prepareRelationshipConcordanceReport(String propertyName)
     {
+        //LOGGER.info("prepareRelationshipConcordanceReport");
         HashMap<Object,String> relationshipConcordanceReport = new HashMap<Object,String>() ; 
         String concordanceString ;
         
@@ -1969,7 +1987,7 @@ public class RelationshipReporter extends Reporter {
     protected ArrayList<String> prepareCommenceReport()
     {
         ArrayList<String> commenceReport = new ArrayList<String>() ;
-        
+        LOGGER.info("prepareCommenceReport");
         //Include burn-in Relationships
         //ArrayList<String> inputString = new ArrayList<String>() ;
         //LOGGER.info(Relationship.BURNIN_COMMENCE) ;
