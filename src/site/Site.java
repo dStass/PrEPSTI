@@ -159,7 +159,8 @@ abstract public class Site {
      * 
      * @return String name of Site subClass
      */
-    public String getSite()
+    @Override
+    public String toString()
     {
         return site ;
     }
@@ -179,7 +180,7 @@ abstract public class Site {
         }
         return false ;
     }
-
+    
     /**
      * Choose probability that Site is symptomatic and then invoke 
  chooseSymptomatic() to choose.
@@ -290,8 +291,7 @@ abstract public class Site {
     public boolean progressInfection()
     {
         infectionTime-- ;
-        incubationTime-- ;
-        if (infectionTime == 0)
+        if (infectionTime < 0)
         {
             clearInfection() ;
             return true ;
@@ -358,7 +358,7 @@ abstract public class Site {
      * Randomly chooses how long an infection lasts, assuming it is untreated.
      * @return Randomly chosen from Gamma Distribution from half mean cutoff.
      */
-    public int setInfectionDuration()
+    public int applyInfectionDuration()
     {
         infectionTime = RAND.nextInt(getInfectionDuration() - 1) + 1 ;
         infectedStatus = 1 ;
@@ -414,11 +414,16 @@ abstract public class Site {
      */
     public String getCensusReport()
     {
-        String censusReport = Reporter.ADD_REPORT_PROPERTY("Site",getSite()) ;
+        String censusReport = Reporter.ADD_REPORT_PROPERTY("Site",toString()) ;
         //censusReport += Reporter.ADD_REPORT_PROPERTY("screenCycle",getScreenCycle()) ;
         //censusReport += Reporter.ADD_REPORT_PROPERTY("screenTime",getScreenTime()) ;
-        censusReport += Reporter.ADD_REPORT_PROPERTY("infectionTime",infectionTime) ;
-        censusReport += Reporter.ADD_REPORT_PROPERTY("incubationTime",incubationTime) ;
+        if (infectedStatus > 0)
+        {
+            // Order is important, symptomatic must be before all other infection-related properties.
+            censusReport += Reporter.ADD_REPORT_PROPERTY("symptomatic",symptomatic) ;
+            censusReport += Reporter.ADD_REPORT_PROPERTY("infectionTime",infectionTime) ;
+            censusReport += Reporter.ADD_REPORT_PROPERTY("incubationTime",incubationTime) ;
+        }
         
         return censusReport ;
     }
