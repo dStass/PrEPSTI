@@ -32,7 +32,7 @@ import java.util.logging.Level;
  *
  *******************************************************************/
 public class Community {
-    static final public int POPULATION = 10000 ;
+    static final public int POPULATION = 40000 ;
     static final int AGENTS_PER_DAY = POPULATION / 365 ;
     static public int MAX_CYCLES ; // = 350 ; 
     static public String NAME_ROOT = "" ;
@@ -265,7 +265,7 @@ public class Community {
             ArrayList<String> commenceList = new ArrayList<String>() ;
             ArrayList<String> breakupList ;
             
-            for (int burnin = 0 ; burnin < 8000 ; burnin++ )
+            for (int burnin = 0 ; burnin < 10000 ; burnin++ ) // 20000
             {
                 commenceString = community.generateRelationships(true) ;
                 commenceList.addAll(Reporter.EXTRACT_ARRAYLIST(commenceString, Reporter.RELATIONSHIPID)) ;
@@ -399,8 +399,9 @@ public class Community {
         }
         HashMap<Object,Number> finalNotificationsRecord = new HashMap<Object,Number>() ;
         
-        for (boolean unique : new boolean[] {true})    // false,
+        for (boolean unique : new boolean[] {})    // false,
         {
+            LOGGER.info("unique:" + String.valueOf(unique)) ;
             //HashMap<Object,Number> finalPositivityRecord = new HashMap<Object,Number>() ;
             String notificationsRecord = screeningReporter.prepareFinalNotificationsRecord(new String[] {"Pharynx","Rectum","Urethra"}, unique, 0, Reporter.DAYS_PER_YEAR) ;
             //HashMap<Object,Number[]> notificationsRecord = screeningReporter.prepareFinalNotificationsRecord(new String[] {"Pharynx","Rectum","Urethra"}, unique, 0, Reporter.DAYS_PER_YEAR) ;
@@ -415,10 +416,10 @@ public class Community {
             //community.dumpOutputReturn() ;
         }
         
-        LOGGER.log(Level.INFO, "Notification rate {0}", new Object[] {finalNotificationsRecord});
+        //LOGGER.log(Level.INFO, "Notification rate {0}", new Object[] {finalNotificationsRecord});
         
         screeningReporter = new ScreeningReporter(SIM_NAME,FILE_PATH) ;
-        String prevalenceReports = "" ;
+        //String prevalenceReports = "" ;
         ArrayList<Object> prevalenceReport ;
         for (String siteName : new String[] {"Pharynx","Rectum","Urethra"})
         {
@@ -431,7 +432,11 @@ public class Community {
 
     
         //EncounterReporter encounterReporter = new EncounterReporter("Agent to Agent",community.encounterReport) ;
-        //EncounterReporter encounterReporter = new EncounterReporter(Community.SIM_NAME,Community.FILE_PATH) ;
+        EncounterReporter encounterReporter = new EncounterReporter(Community.SIM_NAME,Community.FILE_PATH) ;
+        LOGGER.info("Incidence " + encounterReporter.prepareFinalIncidenceRecord(new String[] {"Pharynx","Rectum","Urethra"}, 0, 0, 365, MAX_CYCLES).toString());
+//            EncounterPresenter encounterPresenter
+//                    = new EncounterPresenter(SIM_NAME,"multi prevalence",encounterReporter) ;
+//            encounterPresenter.multiPlotScreening(new Object[] {"prevalence","prevalence",new String[] {"Pharynx","Rectum","Urethra"}}) ;  // ,"coprevalence",new String[] {"Pharynx","Rectum"},new String[] {"Urethra","Rectum"}
         //HashMap<Object,Number> finalTransmissionsRecord = encounterReporter.prepareFinalIncidenceRecord(new String[] {"Pharynx","Rectum","Urethra"}, 0, Reporter.DAYS_PER_YEAR) ;
         //LOGGER.log(Level.INFO, "{0}", finalTransmissionsRecord);
 //        EncounterPresenter encounterPresenter = new EncounterPresenter(Community.SIM_NAME,"agent to agent", encounterReporter) ;
@@ -653,7 +658,7 @@ public class Community {
      * 
      * @return (String) report of Relationships generated
      */
-    private String generateRelationships(boolean burnin)
+    private String generateRelationshipsOld(boolean burnin)
     {
         String report = "" ;
 
@@ -715,6 +720,107 @@ public class Community {
             report += runGroupSex() ;
 
         return report ;
+    }
+    
+   /**
+     * Generate relationships within the community. 
+     * The agents are shuffled and then paired off, starting at
+     * the end of the ArrayList. Those entering Relationships are removed.
+     * Process repeats for each Relationship Class until no more Relationships
+     * are formed.
+     * 
+     * @return (String) report of Relationships generated
+     */
+    private String generateRelationships(boolean burnin)    // 
+    {
+        String report = "" ;
+        Class<?> relationshipClazz ;
+        ArrayList availableAgents = (ArrayList<Agent>) agents.clone() ;
+        
+        String[] relationshipClazzNames ;
+        if (burnin) 
+            relationshipClazzNames = new String[] {"Regular","Monogomous"} ;
+        else 
+            relationshipClazzNames = new String[] {"Casual","Regular","Monogomous"} ;
+        for (String relationshipClazzName : relationshipClazzNames)
+        {
+            ArrayList<ArrayList<Agent>> agentLists = seekingAgents(availableAgents,relationshipClazzName) ;
+            //MSM.SEEKING_AGENTS(availableAgents,relationshipClazzName) ;
+            
+            // Determine which Agents seek out which Relationship Class
+            for (ArrayList<Agent> seekingAgentList : agentLists) 
+            {
+                // Pair Agents, remove pairs, repeat until stuck
+                int oldListSize = 0 ;
+                int listSize = -1 ;
+                while (oldListSize > listSize)
+                {
+                    Collections.shuffle(seekingAgentList) ;
+                    oldListSize =  seekingAgentList.size() ; 
+                    for (int index0 = oldListSize - 1 ; index0 > 0 ; index0 = index0 - 2 )
+                    {
+                        Agent agent0 = seekingAgentList.get(index0) ;
+                        for (int index1 = index0 - 1 ; index1 >=0 ; index1-- )
+                        {
+                            Agent agent1 = seekingAgentList.get(index1) ;
+
+
+                            // Have only one Relationship between two given Agents
+                            if (agent1.getCurrentPartnerIds().contains(agent0.getAgentId()))
+                                continue ;
+
+                            if (agent0.consent(relationshipClazzName,agent1) && agent1.consent(relationshipClazzName,agent0))
+                            {
+                                try
+                                {
+                                    relationshipClazz = Class.forName("community." + relationshipClazzName) ;
+                                    Relationship relationship = (Relationship) relationshipClazz.newInstance() ;
+                                    nbRelationships++ ;
+                                    report += relationship.addAgents(agent0, agent1);
+                                    //LOGGER.info(report) ;
+                                }
+                                catch( Exception e )
+                                {
+                                    LOGGER.severe(e.toString()) ;
+                                }
+                                seekingAgentList.remove(index0) ;
+                                seekingAgentList.remove(index1) ;
+                                break ;
+
+                                // No longer available for other Relationships
+                                //availableAgents.remove(agent0) ;
+                                //availableAgents.remove(agent1) ;
+                            }
+                        }
+                    }
+                    listSize = seekingAgentList.size() ;
+                }
+//                if (listSize > -1)
+//                    LOGGER.log(Level.INFO, "{0} {1}", new Object[] {relationshipClazzName,listSize});
+            }
+        }
+        return report ;
+    }
+    
+    /**
+     * Returns an ArrayList of Agents seeking a relationshipClazzName Relationship.
+     * May be overridden to accomodate serosorting etc.
+     * @param relationshipClazzName
+     * @param number (int) 
+     * @return 
+     */
+    private ArrayList<ArrayList<Agent>> seekingAgents(ArrayList<Agent> agentList, String relationshipClazzName)
+    {
+        ArrayList<ArrayList<Agent>> seekingAgentList = new ArrayList<ArrayList<Agent>>() ;
+        ArrayList<Agent> list = new ArrayList<Agent>() ;
+        // Determine which Agents seek out which Relationship Class
+        for (Agent agent : agentList)
+            if (agent.seekRelationship(relationshipClazzName))
+                list.add(agent) ;
+    
+        seekingAgentList.add(list) ;
+
+        return seekingAgentList ;    
     }
 
     /**
