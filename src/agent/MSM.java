@@ -459,6 +459,49 @@ public class MSM extends Agent {
     }
     
     /**
+     * Returns an ArrayList of Agents seeking a relationshipClazzName Relationship.
+     * May be overridden to accomodate serosorting etc.
+     * @param relationshipClazzName
+     * @param number (int) 
+     * @return 
+     */
+    static public ArrayList<ArrayList<Agent>> SEEKING_AGENTS(ArrayList<Agent> agentList, String relationshipClazzName)
+    {
+        ArrayList<ArrayList<Agent>> seekingAgentList = new ArrayList<ArrayList<Agent>>() ;
+        
+        ArrayList<Agent> positiveHIV = new ArrayList<Agent>() ;
+        ArrayList<Agent> negativeHIV = new ArrayList<Agent>() ;
+        
+        int index ;
+        // Determine which Agents seek out which Relationship Class
+        for (Agent agent : agentList)
+        {
+            MSM msm = (MSM) agent ;
+            if (msm.seekRelationship(relationshipClazzName))
+            {
+                if (msm.statusHIV)
+                {
+                    if (msm.seroSort)
+                        positiveHIV.add(msm) ;
+                    else
+                        positiveHIV.add(0,msm) ;
+                }
+                else
+                {
+                    if (msm.seroSort)
+                        negativeHIV.add(msm) ;
+                    else
+                        negativeHIV.add(0,msm) ;
+                }
+            }
+        }
+        seekingAgentList.add(positiveHIV) ;
+        seekingAgentList.add(negativeHIV) ;
+
+        return seekingAgentList ;    
+    }
+    
+    /**
      * 
      * @param hivStatus
      * @return (double) Factor to adjust riskyProbability according to statusHIV.
@@ -549,19 +592,19 @@ public class MSM extends Agent {
     private boolean riskyStatus ;
     
     /** Transmission probabilities per sexual contact from Urethra to Rectum */
-    static double URETHRA_TO_RECTUM = 0.85 ; 
+    static double URETHRA_TO_RECTUM = 0.80 ; 
     /** Transmission probabilities sexual contact from Urethra to Pharynx. */
-    static double URETHRA_TO_PHARYNX = 0.80 ; 
+    static double URETHRA_TO_PHARYNX = 0.40 ; 
     /** Transmission probabilities sexual contact from Rectum to Urethra. */
-    static double RECTUM_TO_URETHRA = 0.040 ;
+    static double RECTUM_TO_URETHRA = 0.020 ;
     /** Transmission probabilities sexual contact from Rectum to Pharynx. */
     static double RECTUM_TO_PHARYNX = 0.010 ;
     /** Transmission probabilities sexual contact in Pharynx to Urethra intercourse. */
-    static double PHARYNX_TO_URETHRA = 0.035 ; 
+    static double PHARYNX_TO_URETHRA = 0.020 ; 
     /** Transmission probabilities sexual contact in Pharynx to Rectum intercourse. */
-    static double PHARYNX_TO_RECTUM = 0.040 ; 
+    static double PHARYNX_TO_RECTUM = 0.010 ; 
     /** Transmission probabilities sexual contact in Pharynx to Pharynx intercourse (kissing). */
-    static double PHARYNX_TO_PHARYNX = 0.23 ; 
+    static double PHARYNX_TO_PHARYNX = 0.05 ; 
     /** Transmission probabilities sexual contact in Urethra to Urethra intercourse (docking). */
     static double URETHRA_TO_URETHRA = 0.001 ; 
     /** Transmission probabilities sexual contact in Rectum to Rectum intercourse. */
@@ -1596,13 +1639,29 @@ public class MSM extends Agent {
     @Override
     public boolean consent(String relationshipClazzName, Agent partner)
     {
-        boolean seroSort = false ;
-        if (getSeroSort(relationshipClazzName) && seroSort)
+        if (getSeroSort(relationshipClazzName))
             if (statusHIV != ((MSM) partner).statusHIV)
                 return false ;
             //if (!String.valueOf(getStatusHIV()).equals(declareStatus()))
               //  return false ;
         return super.consent(relationshipClazzName, partner) ;
+    }
+    
+    /**
+     * //TODO: Find justifiable values for regularOdds and monogomousOdds
+     * @param relationshipClazzName
+     * @return (double) probability of MSM seeking out Relationship of class
+     * relationshipClazzName.
+     */
+    @Override
+    protected double seekRelationshipProbability(String relationshipClazzName)
+    {
+        if (CASUAL.equals(relationshipClazzName))
+            return consentCasualProbability ;
+        else if (REGULAR.equals(relationshipClazzName))
+            return getRegularOdds() ;
+        //else if (MONOGOMOUS.equals(relationshipClazzName))
+        return getMonogomousOdds() ;
     }
     
     /**
@@ -1617,12 +1676,6 @@ public class MSM extends Agent {
     protected boolean consentCasual(Agent partner)
     {
         double consentProbability = RAND.nextDouble() ;
-        if ((useGSN && riskyStatus) && (partner.useGSN && partner.getRiskyStatus()))
-        {
-            //double probabilityNotConsent = Math.pow(1 - consentCasualProbability,2) ;
-            //return true ; //(consentProbability < (1 - probabilityNotConsent)) ;
-            consentProbability *= 0.5 ;
-        }
         
         return (consentProbability < consentCasualProbability) ;
     }
