@@ -1492,6 +1492,28 @@ public abstract class Agent {
         //return available ;
     }
     
+    public boolean seekRelationship(String relationshipClazzName)
+    {
+        if (inMonogomous)
+            if (RAND.nextDouble() > infidelity) 
+                return false ;
+        if (CASUAL.equals(relationshipClazzName))
+            return (RAND.nextDouble() < seekRelationshipProbability(CASUAL)) ;
+        else if (REGULAR.equals(relationshipClazzName))
+            return (RAND.nextDouble() < seekRelationshipProbability(REGULAR)) ;
+        else if (0 == currentRelationships.size())   // Seeking Monogomous Relationship
+            return (RAND.nextDouble() < seekRelationshipProbability(MONOGOMOUS)) ;
+        return false ;
+    }
+    
+    /**
+     * 
+     * @param relationshipClazzName
+     * @return (double) probability of Agent seeking out Relationship of class
+     * relationshipClazzName.
+     */
+    abstract protected double seekRelationshipProbability(String relationshipClazzName);
+    
     /**
      * Whether to accept proposed Casual Relationship.
      * @param partner (Agent) with whom Relationship is proposed.
