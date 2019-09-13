@@ -594,17 +594,17 @@ public class MSM extends Agent {
     /** Transmission probabilities per sexual contact from Urethra to Rectum */
     static double URETHRA_TO_RECTUM = 0.80 ; 
     /** Transmission probabilities sexual contact from Urethra to Pharynx. */
-    static double URETHRA_TO_PHARYNX = 0.40 ; 
+    static double URETHRA_TO_PHARYNX = 0.80 ; 
     /** Transmission probabilities sexual contact from Rectum to Urethra. */
-    static double RECTUM_TO_URETHRA = 0.020 ;
+    static double RECTUM_TO_URETHRA = 0.10 ;
     /** Transmission probabilities sexual contact from Rectum to Pharynx. */
     static double RECTUM_TO_PHARYNX = 0.010 ;
     /** Transmission probabilities sexual contact in Pharynx to Urethra intercourse. */
-    static double PHARYNX_TO_URETHRA = 0.020 ; 
+    static double PHARYNX_TO_URETHRA = 0.10 ; 
     /** Transmission probabilities sexual contact in Pharynx to Rectum intercourse. */
     static double PHARYNX_TO_RECTUM = 0.010 ; 
     /** Transmission probabilities sexual contact in Pharynx to Pharynx intercourse (kissing). */
-    static double PHARYNX_TO_PHARYNX = 0.05 ; 
+    static double PHARYNX_TO_PHARYNX = 0.02 ; 
     /** Transmission probabilities sexual contact in Urethra to Urethra intercourse (docking). */
     static double URETHRA_TO_URETHRA = 0.001 ; 
     /** Transmission probabilities sexual contact in Rectum to Rectum intercourse. */
@@ -912,7 +912,12 @@ public class MSM extends Agent {
      * distribution to choose in the 100+ range. Otherwise find the daily probability 
      * associated with the extrema of each range and choose with a Uniform distribution.
      * 
-     * For men who are not on PrEP we use the 2005 data from HIM, where the proportions
+     * For men who are not on PrEP the GCPS gives for the number of different partners
+     * in the previous six months as
+     *   0        1      2-10   11-50   51-99    100+
+     * 0.1345   0.2301  0.4022  0.1761  0.0372  0.0200  
+     * 
+     * Previously we used the 2005 data from HIM, where the proportions
      * for each range are
      *   0       1-9      10+
      * 0.235    0.374    0.391
@@ -933,9 +938,9 @@ public class MSM extends Agent {
         }
         else
         {
-            lowerBounds = new int[] {0,1,10} ;
-            proportions = new double[] {0.235, 0.374, 0.391} ;
-            cumulative = new double[] {0.235, 0.235, 0.235} ;
+            lowerBounds = new int[] {0,1,2,11,51,100} ;
+            proportions = new double[] {0.1345, 0.2301, 0.4022, 0.1761, 0.0372, 0.02} ;
+            cumulative = new double[] {0.1345, 0.1345, 0.1345, 0.1345, 0.1345, 0.1345} ;
             timeAverage = 183.0 ;
         }
         // Now loop over proportions at each cumulIndex to fill out cumulative Array.
@@ -996,8 +1001,9 @@ public class MSM extends Agent {
                 consentCasualProbability *= (1.0/(1.0 - PROPORTION_HIV)) ;
         }*/
         
-        //double adjustConsent = 0.8 ;    // /2.0 because two Agents in every Relationship
-        consentCasualProbability = Math.sqrt(ADJUST_CASUAL_CONSENT * consentProbability/2.0) ;
+        //double adjustConsent = 0.8 ;    
+        // Logically /2.0 because two Agents in every Relationship, also requires sqrt, but better results without them.
+        consentCasualProbability = consentProbability ;    // Math.sqrt(ADJUST_CASUAL_CONSENT * consentProbability/2.0) ;
     }
     
     /**
