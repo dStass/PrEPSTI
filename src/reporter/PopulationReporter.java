@@ -116,7 +116,7 @@ public class PopulationReporter extends Reporter {
             {
                 String agentId = EXTRACT_VALUE(AGENTID,birth) ;
                 String sortingValue = EXTRACT_VALUE(sortingProperty,birth) ;
-                sortedHashMap.put((Object) agentId, sortingValue) ;
+                sortedHashMap.put(agentId, sortingValue) ;
             }
         }
         return sortedHashMap ;
@@ -153,9 +153,56 @@ public class PopulationReporter extends Reporter {
             //break ;
         }
         //LOGGER.log(Level.INFO,"{0}", sortedHashMap) ;
-        for (Object sortingKey : sortedHashMap.keySet())
-            LOGGER.log(Level.INFO, "{0} {1}", new Object[] {sortingKey, sortedHashMap.get(sortingKey).size()});
         return sortedHashMap ;
+    }
+    
+    
+    public String preparePropertyCorrelationReport(String property1, String property2)
+    {
+        String report = "" ;
+        
+        ArrayList<String> birthReport = prepareBirthReport() ;
+        ArrayList<String> agentReport ;
+        double property2not1 = 0 ;
+        double property1not2 = 0 ; 
+        double property1and2 = 0 ;
+        int propertyNeither = 0 ;
+        
+        for (String record : birthReport)
+        {
+            agentReport = EXTRACT_ARRAYLIST(record,AGENTID) ;
+            for (String agentRecord : agentReport)
+            {
+                boolean has1 = Boolean.valueOf(EXTRACT_VALUE(property1,agentRecord)) ;
+                boolean has2 = Boolean.valueOf(EXTRACT_VALUE(property2,agentRecord)) ;
+
+                if (has2 && !has1)
+                    property2not1++ ;
+                else if (has1 && !has2)
+                    property1not2++ ;
+                else if (has1 && has2)
+                    property1and2++ ;
+                else    // if (!has1 && !has2)
+                    propertyNeither++ ;
+            }
+        }
+        double proportion1with2 = property1and2/(property1and2 + property1not2) ;
+        double proportion2with1 = property1and2/(property1and2 + property2not1) ;
+        double proportionNot1with2 = property2not1/(propertyNeither + property2not1) ;
+        double proportionNot2with1 = property1not2/(propertyNeither + property1not2) ;
+        
+        LOGGER.log(Level.INFO,"{0} {1} {2} {3}", new Object[] {property2not1, property1not2, property1and2, propertyNeither});
+        
+        report = "Of those with " + property1 + " true, " ;
+        report += String.valueOf(proportion1with2) + " had " + property2 + " true.\n" ;
+        report += "Of those with " + property1 + " false, " ;
+        report += String.valueOf(proportionNot1with2) + " had " + property2 + " true.\n" ;
+        report += "Of those with " + property2 + " true, " ;
+        report += String.valueOf(proportion2with1) + " had " + property1 + " true.\n" ;
+        report += "Of those with " + property2 + " false, " ;
+        report += String.valueOf(proportionNot2with1) + " had " + property1 + " true.\n" ;
+        
+        return report ;
     }
     
     /**
@@ -169,6 +216,7 @@ public class PopulationReporter extends Reporter {
         
         int maxAgentId = getMaxAgentId() ;
         ArrayList<Object> agentsDeadRecord = prepareAgentsDeadRecord(recordNb) ;
+        LOGGER.info(String.valueOf(agentsDeadRecord.size()));
         // Cycle through all born and keep those who haven't died.
         for (int agentAlive = 0 ; agentAlive <= maxAgentId ; agentAlive++ )
             if (!agentsDeadRecord.contains(String.valueOf(agentAlive)))
@@ -457,11 +505,12 @@ public class PopulationReporter extends Reporter {
             for (int reportNb = 0 ; reportNb < input.size() ; reportNb += outputCycle )
             {
                 record = input.get(reportNb) ;
-                //LOGGER.log(Level.INFO, "{0} {1}", new Object[] {reportNb,record});
+                //LOGGER.log(Level.INFO, "{0} {1} {2}", new Object[] {reportNb,deathReport.size(),input.size()});
                 deathIndex = INDEX_OF_PROPERTY(DEATH,record) ;
                 if (deathIndex < 0)
-                    continue ;
-                deathReport.add(record.substring(deathIndex)) ;
+                    deathReport.add("") ;
+                else
+                    deathReport.add(record.substring(deathIndex)) ;
             }
             
         return deathReport ;
