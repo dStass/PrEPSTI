@@ -417,11 +417,11 @@ public class Community {
         }
         
         //LOGGER.log(Level.INFO, "Notification rate {0}", new Object[] {finalNotificationsRecord});
-        
+        String[] siteNames = new String[] {"Pharynx","Rectum","Urethra"} ;
         screeningReporter = new ScreeningReporter(SIM_NAME,FILE_PATH) ;
         //String prevalenceReports = "" ;
         ArrayList<Object> prevalenceReport ;
-        for (String siteName : new String[] {"Pharynx","Rectum","Urethra"})
+        for (String siteName : siteNames)
         {
             prevalenceReport = screeningReporter.preparePrevalenceReport(siteName) ;
             //LOGGER.info(String.valueOf(prevalenceReport.size())) ;
@@ -430,10 +430,13 @@ public class Community {
         prevalenceReport = screeningReporter.preparePrevalenceReport() ;
         LOGGER.log(Level.INFO,"{0} {1}", new Object[] {"all", prevalenceReport.get(prevalenceReport.size() - 1)}) ;
 
-    
+        String finalPrevalencesRecord = screeningReporter.prepareFinalPrevalencesSortedRecord(siteNames, "statusHIV") ;
+        LOGGER.log(Level.INFO, "{0}", finalPrevalencesRecord) ;
+        
         //EncounterReporter encounterReporter = new EncounterReporter("Agent to Agent",community.encounterReport) ;
         EncounterReporter encounterReporter = new EncounterReporter(Community.SIM_NAME,Community.FILE_PATH) ;
         LOGGER.info("Incidence " + encounterReporter.prepareFinalIncidenceRecord(new String[] {"Pharynx","Rectum","Urethra"}, 0, 0, 365, MAX_CYCLES).toString());
+        LOGGER.info("Incidence " + encounterReporter.prepareSortedFinalIncidenceRecord(siteNames, 0, 0, 365, MAX_CYCLES, "statusHIV").toString());
 //            EncounterPresenter encounterPresenter
 //                    = new EncounterPresenter(SIM_NAME,"multi prevalence",encounterReporter) ;
 //            encounterPresenter.multiPlotScreening(new Object[] {"prevalence","prevalence",new String[] {"Pharynx","Rectum","Urethra"}}) ;  // ,"coprevalence",new String[] {"Pharynx","Rectum"},new String[] {"Urethra","Rectum"}
@@ -1119,7 +1122,10 @@ public class Community {
             if (RAND.nextDouble() < agent.getScreenProbability(args)) 
             {
                 record += Reporter.ADD_REPORT_PROPERTY("agentId",agent.getAgentId()) ;
-                record += Reporter.ADD_REPORT_LABEL("tested") ;
+                // boolean tested = ((record.contains("Rectum") || record.contains("Urethra")) || !(RAND.nextDouble() < 0.5))
+                // boolean tested = ((record.contains("Urethra")) || !(RAND.nextDouble() < 0.75))
+                // if (tested)
+                    record += Reporter.ADD_REPORT_LABEL("tested") ;
                 if (infected)
                 {
                     //LOGGER.info("screening agentId:"+String.valueOf(agent.getAgentId())) ;
@@ -1128,8 +1134,11 @@ public class Community {
                         if (agent.getInfectedStatus(site) != 0)
                             record += Reporter.ADD_REPORT_PROPERTY(site.toString(), agent.getSymptomatic(site)) ;
                     }
-                    agent.treat() ;
-                    record += Reporter.ADD_REPORT_LABEL("treated") ;
+                //if (tested)
+                    {
+                        agent.treat() ;
+                        record += Reporter.ADD_REPORT_LABEL("treated") ;
+                    }
                 }
                 record += " " ;
             }
@@ -1148,8 +1157,7 @@ public class Community {
                 // and returns boolean whether agent is cleared (!stillInfected)
                 if (agent.progressSitesInfection())
                 {
-                    record += Reporter.ADD_REPORT_LABEL("cleared") ;
-                    record += " " ;
+                    record += Reporter.ADD_REPORT_PROPERTY("cleared") ;
                     //LOGGER.info("cleared");
                 }
                 else if (agent.getSymptomatic())
