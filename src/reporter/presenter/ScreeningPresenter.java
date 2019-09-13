@@ -71,23 +71,17 @@ public class ScreeningPresenter extends Presenter {
         this.reporter = reporter ;
     }
 
-    //static private String[] simNames = new String[] {"noSerosort2Pop10000Cycles1095"} ;
-    //static String[] simNames = new String[] {"adjustCondom75Holt3aPop40000Cycles4380","adjustCondom75Holt3bPop40000Cycles4380","adjustCondom75Holt3cPop40000Cycles4380","adjustCondom75Holt3dPop40000Cycles4380","adjustCondom75Holt3ePop40000Cycles4380",
+    //static String[] simNames = new String[] {"seekPop40000Cycles730"} ;
+    static String[] simNames = new String[] {"seek1cPop40000Cycles5475","seek1dPop40000Cycles5475","seek1ePop40000Cycles5475",
+        "seek1fPop40000Cycles5475","seek1gPop40000Cycles5475","seek1hPop40000Cycles5475","seek1iPop40000Cycles5475","seek1jPop40000Cycles5475"} ;
       //  "adjustCondom75Holt3fPop40000Cycles4380","adjustCondom75Holt3gPop40000Cycles4380","adjustCondom75Holt3hPop40000Cycles4380","adjustCondom75Holt3iPop40000Cycles4380","adjustCondom75Holt3jPop40000Cycles4380"} ;
     //static private String[] simNames = new String[] {"noAntiviralPostHolt3aPop40000Cycles5475"} ; // ,"noAntiviralPostHolt3bPop40000Cycles5475","noAntiviralPostHolt3cPop40000Cycles5475","noAntiviralPostHolt3dPop40000Cycles5475","noAntiviralPostHolt3ePop40000Cycles5475",
         //"noAntiviralPostHolt3fPop40000Cycles5475","noAntiviralPostHolt3gPop40000Cycles5475","noAntiviralPostHolt3hPop40000Cycles5475","noAntiviralPostHolt3iPop40000Cycles5475","noAntiviralPostHolt3jPop40000Cycles5475"} ;
-    //static private String[] simNames = new String[] {"GSNp40postHolt3aPop40000Cycles4015","GSNp40postHolt3bPop40000Cycles4015","GSNp40postHolt3cPop40000Cycles4015","GSNp40postHolt3dPop40000Cycles4015","GSNp40postHolt3ePop40000Cycles4015",
-      //  "GSNp40postHolt3fPop40000Cycles4015","GSNp40postHolt3gPop40000Cycles4015","GSNp40postHolt3hPop40000Cycles4015","GSNp40postHolt3iPop40000Cycles4015","GSNp40postHolt3jPop40000Cycles4015"} ;
-    // static String[] simNames = new String[] {"noGSNpostHolt3aPop40000Cycles5475"} ; //,"noGSNpostHolt3bPop40000Cycles5475","noGSNpostHolt3cPop40000Cycles5475","noGSNpostHolt3dPop40000Cycles5475","noGSNpostHolt3ePop40000Cycles5475",
+    //static String[] simNames = new String[] {"noGSNpostHolt3aPop40000Cycles5475"} ; //,"noGSNpostHolt3bPop40000Cycles5475","noGSNpostHolt3cPop40000Cycles5475","noGSNpostHolt3dPop40000Cycles5475","noGSNpostHolt3ePop40000Cycles5475",
       //  "noGSNpostHolt3fPop40000Cycles5475","noGSNpostHolt3gPop40000Cycles5475","noGSNpostHolt3hPop40000Cycles5475","noGSNpostHolt3iPop40000Cycles5475","noGSNpostHolt3jPop40000Cycles5475"} ;
     //static String[] simNames = new String[] {"from2007holt2aPop40000Cycles2190","from2007holt2bPop40000Cycles2190","from2007holt2cPop40000Cycles2190"} ;
     //static String[] simNames = new String[] {"from2007wild2bPop40000Cycles5840"} ;
-    //static String[] simNames = new String[] {"scaleCondom50aPop40000Cycles2190"} ; //,"calibration50bPop40000Cycles1095","calibration50cPop40000Cycles1095"} ;
-    //static private String[] simNames = new String[] {"shoot17aPop40000Cycles2190","shoot17bPop40000Cycles2190","shoot17cPop40000Cycles2190","shoot17dPop40000Cycles2190","shoot17ePop40000Cycles2190",
-      //  "shoot17fPop40000Cycles2190","shoot17gPop40000Cycles2190","shoot17hPop40000Cycles2190","shoot17iPop40000Cycles2190","shoot17jPop40000Cycles2190"} ; 
-      //  "shoot2fPop40000Cycles2920","shoot2gPop40000Cycles2920","shoot2hPop40000Cycles2920","shoot2iPop40000Cycles2920","shoot2jPop40000Cycles2920"} ;
-      //  "max3contact96cPop40000Cycles7300"} ; //,"max3contact96dPop40000Cycles7300","max3contact96aPop40000Cycles7300"} ;
-    static private String[] simNames = new String[] {"pholtaPop40000Cycles1460"} ; //,"pholtbPop40000Cycles1460"} ; //
+    //static String[] simNames = new String[] {"pholtaPop40000Cycles1460"} ; //,"pholtbPop40000Cycles1460"} ; //
     
     public static void main(String[] args)
     {
@@ -101,7 +95,7 @@ public class ScreeningPresenter extends Presenter {
         String simName = simNames[0] ;
         
         boolean unique = false ;
-        int notifications = 0 ; 
+        int notifications = -1 ; 
         String chartTitle ;
         if (unique && (notifications == 1))
             chartTitle = "unique " ;
@@ -127,13 +121,13 @@ public class ScreeningPresenter extends Presenter {
         //String chartTitle = "testing_6_months" ; // args[1] ;
         //String chartTitle = "infections_past_2years_PrEP" ; // args[1] ;
         //String reportFileName = "output/untouchable/" ; // args[2] ;
-        //String reportFileName = "output/prep/" ; // args[2] ;
+        String reportFileName = "output/prep/" ; // args[2] ;
         //String reportFileName = "output/prePrEP/" ; // args[2] ;
         //String reportFileName = "output/test/" ; // args[2] ;
         //String reportFileName = "output/reverse/" ; // args[2] ;
         //String reportFileName = "output/year2012/" ; // args[2] ;
         //String reportFileName = "output/year2010/" ; // args[2] ;
-        String reportFileName = "output/year2007/" ; // args[2] ;
+        //String reportFileName = "output/year2007/" ; // args[2] ;
 
         LOGGER.info(chartTitle) ;
         
@@ -162,12 +156,14 @@ public class ScreeningPresenter extends Presenter {
         //screeningPresenter.plotSitePrevalence(siteNames) ;
         //screeningPresenter.plotSiteSymptomPrevalence(siteNames) ;
         //screeningPresenter.plotPrevalence(siteNames) ;
-        //screeningPresenter.plotPrevalenceYears(siteNames,10,2017) ;
+        //screeningPresenter.plotPrevalenceYears(siteNames,11,2017) ;
+        //screeningPresenter.plotSortedPrevalenceYears(siteNames,11,2017,"statusHIV") ;
         //screeningPresenter.plotFinalSymptomatic(new String[] {"Pharynx","Rectum","Urethra"}) ;
         //screeningPresenter.plotFinalPrevalences(new String[] {"Pharynx","Rectum","Urethra"}) ;
+        //screeningPresenter.plotSortedFinalPrevalences(new String[] {"Pharynx","Rectum","Urethra"}, "statusHIV") ;
         //screeningPresenter.plotFinalNotifications(new String[] {"Pharynx","Rectum","Urethra"}, unique, 0, Reporter.DAYS_PER_YEAR, notifications) ;
         //screeningPresenter.plotSortedFinalNotifications(new String[] {"Pharynx","Rectum","Urethra"}, unique, 0, 0, Reporter.DAYS_PER_YEAR, "statusHIV") ; 
-        screeningPresenter.plotSortedNotificationsYears(siteNames, unique, 3, 2009, "statusHIV") ;
+        screeningPresenter.plotSortedNotificationsYears(siteNames, unique, 11, 2017, "statusHIV") ;
         //screeningPresenter.plotNotificationsYears(siteNames,5,2014) ;    // siteNames,5,4) ;    // new String[] {"all"} 
         //screeningPresenter.plotPositivityYears(siteNames, unique, 8, 2014) ;
         //screeningPresenter.plotNotificationPerCycle() ;    
@@ -197,7 +193,7 @@ public class ScreeningPresenter extends Presenter {
         siteAllNames[0] = "all" ;
         // = Arrays.copyOf(siteNames, siteNames.length + 1) ;
         System.arraycopy(siteNames, 0, siteAllNames, 1, siteNames.length);
-        ArrayList<HashMap<Object,HashMap<Object,String>>> reports = new ArrayList<HashMap<Object,HashMap<Object,String>>>() ;
+        ArrayList<HashMap<Object,String>> reports = new ArrayList<HashMap<Object,String>>() ;
         
         // Get sorted Report
         for (String simulation: simNames)
@@ -205,8 +201,8 @@ public class ScreeningPresenter extends Presenter {
             ScreeningReporter screeningReporter = new ScreeningReporter(simulation,reporter.getFolderPath()) ;
             reports.add(screeningReporter.prepareSortedYearsNotificationsRecord(siteNames, backYears, lastYear, sortingProperty)) ;
         }
-        HashMap<Object,HashMap<Object,String>> sortedNotificationsYears //= reports.get(0) ;
-                = Reporter.PREPARE_MEAN_HASHMAP_REPORT(reports, "year", sortingProperty, NOTIFICATION, simNames[0]) ;
+        HashMap<Object,String> sortedNotificationsYears //= reports.get(0) ;
+                = Reporter.PREPARE_MEAN_HASHMAP_REPORT(reports) ;
         
         // Generate legend and multiPlotNames
         String[] legend = new String[siteAllNames.length * sortedNotificationsYears.size()] ;
@@ -222,27 +218,12 @@ public class ScreeningPresenter extends Presenter {
             }
         }
         
-        // Put report in appropriate, text-based form
-        String yearlyEntry = "" ;
-        String newSiteName ;
-        int firstYear = 1 + lastYear - backYears ;
-        for (int year = firstYear ; year <= lastYear ; year++)
-        {
-            for (Object sortingValue : multiPlotNames)
-            {
-                String notifications = sortedNotificationsYears.get(sortingValue).get(year) ;
-                for (String siteName : siteAllNames)
-                {
-                    newSiteName = siteName.concat(GROUP).concat(sortingValue.toString()) ;
-                    yearlyEntry += Reporter.ADD_REPORT_PROPERTY(newSiteName, Reporter.EXTRACT_VALUE(siteName,notifications)) ;
-                }
-            }
-            plotSortedNotifications.put(year, yearlyEntry) ;
-            Reporter.WRITE_CSV_STRING(plotSortedNotifications, "year", NOTIFICATION, simNames[0], Reporter.REPORT_FOLDER) ;
-            // Reset for next year
-            yearlyEntry = "" ;
-        }
-        plotHashMapString(plotSortedNotifications,NOTIFICATION,"year",legend) ;
+        String title = NOTIFICATION ;
+        if (!sortingProperty.isEmpty())
+            title += "_" + sortingProperty ;
+
+        Reporter.WRITE_CSV_STRING(plotSortedNotifications, "year", title, simNames[0], Reporter.REPORT_FOLDER) ;
+        plotHashMapString(plotSortedNotifications,title,"year",legend) ;
     }
     
     /**
@@ -475,14 +456,31 @@ public class ScreeningPresenter extends Presenter {
      * @param backYears
      * @param lastYear 
      */
+    public void plotSortedPrevalenceYears(String[] siteNames, int backYears, int lastYear, String sortingProperty)
+    {
+        //HashMap<Object,Number[]> 
+        HashMap<Object,String>  prevalenceRecordYears = reporter.prepareYearsPrevalenceRecord(siteNames, backYears, lastYear, sortingProperty) ;
+        String[] siteAllNames = Arrays.copyOf(siteNames, siteNames.length + 1) ;
+        siteAllNames[siteNames.length] = "all" ;
+        LOGGER.log(Level.INFO, "{0}", prevalenceRecordYears.get(2017));
+        plotHashMapString(prevalenceRecordYears,PREVALENCE,"Year", siteAllNames) ;
+    }
+    
+    /**
+     * Plots bar chart showing incidence at each Site for each of the last backYears
+     * years counting back from lastYear.
+     * @param siteNames
+     * @param backYears
+     * @param lastYear 
+     */
     public void plotPrevalenceYears(String[] siteNames, int backYears, int lastYear)
     {
         //HashMap<Object,Number[]> 
-        HashMap<Object,String>  prevalenceRecordYears = reporter.prepareYearsPrevalenceRecord(siteNames, backYears, lastYear) ;
+        HashMap<Object,String>  prevalenceRecordYears = reporter.prepareYearsPrevalenceRecord(siteNames, backYears, lastYear, "") ;
         String[] siteAllNames = Arrays.copyOf(siteNames, siteNames.length + 1) ;
         siteAllNames[siteNames.length] = "all" ;
-        
-        plotHashMapString(prevalenceRecordYears,PREVALENCE,"Year", siteNames) ;
+        LOGGER.log(Level.INFO, "{0}", prevalenceRecordYears);
+        plotHashMapString(prevalenceRecordYears,PREVALENCE,"Year", siteAllNames) ;
     }
     
     /**
@@ -504,8 +502,23 @@ public class ScreeningPresenter extends Presenter {
     {
         //HashMap<Object,Number> 
         String finalPrevalencesRecord = reporter.prepareFinalPrevalencesRecord(siteNames) ;
+        LOGGER.info(finalPrevalencesRecord);
         
+        plotValues(PREVALENCE,finalPrevalencesRecord) ;        
+    }
+    
+    /**
+     * Plots bar chart showing prevalence of requested siteNames and total prevalence.
+     * @param siteNames 
+     * @param sortingProperty 
+     */
+    public void plotSortedFinalPrevalences(String[] siteNames, String sortingProperty)
+    {
+        //HashMap<Object,Number> 
+        String finalPrevalencesRecord = reporter.prepareFinalPrevalencesSortedRecord(siteNames, sortingProperty) ;
         
+        LOGGER.log(Level.INFO, "{0}", finalPrevalencesRecord) ;
+                
         plotValues(PREVALENCE,finalPrevalencesRecord) ;        
     }
     
