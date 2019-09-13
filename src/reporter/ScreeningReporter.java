@@ -17,6 +17,7 @@ import java.util.ArrayList ;
 import java.util.Arrays;
 import java.util.Collections ;
 import java.util.Set ;
+import java.util.EnumSet ;
 import java.util.HashMap;
 import java.util.logging.Level;
 
@@ -169,9 +170,10 @@ public class ScreeningReporter extends Reporter {
      * @param sortingProperty
      * @return 
      */
-    public HashMap<Object,HashMap<Object,String>> 
+    public HashMap<Object,String> 
         prepareSortedYearsNotificationsRecord(String[] siteNames, int backYears, int lastYear, String sortingProperty)
         {
+            HashMap<Object,String> sortedYearsNotificationsReport = new HashMap<Object,String>() ;
             HashMap<Object,HashMap<Object,String>> sortedYearsNotificationsRecord = new HashMap<Object,HashMap<Object,String>>() ;
             //HashMap<Object,HashMap<Object,Number[]>> sortedYearsNotificationsRecord = new HashMap<Object,HashMap<Object,Number[]>>() ;
             
@@ -188,7 +190,28 @@ public class ScreeningReporter extends Reporter {
                 sortedYearsNotificationsRecord.put(sortingValue, (HashMap<Object,String>) yearsNotificationsRecord) ;
                 //sortedYearsNotificationsRecord.put(sortingValue, (HashMap<Object,Number[]>) yearsNotificationsRecord.clone()) ;
             }
-            return sortedYearsNotificationsRecord ;
+            
+            // Put report in appropriate, text-based form
+            String yearlyEntry ;
+            String propertyEntry ;
+            int firstYear = 1 + lastYear - backYears ;
+            for (int year = firstYear ; year <= lastYear ; year++)
+            {
+                yearlyEntry = "" ;
+                for (Object sortingValue : sortedYearsNotificationsRecord.keySet())
+                {
+                    String notifications = sortedYearsNotificationsRecord.get(sortingValue).get(year) ;
+                    ArrayList<String> properties = IDENTIFY_PROPERTIES(notifications) ;
+                    for (String property : properties)
+                    {
+                        propertyEntry = property.concat("__").concat(sortingValue.toString()) ;
+                        yearlyEntry += Reporter.ADD_REPORT_PROPERTY(propertyEntry, Reporter.EXTRACT_VALUE(property,notifications)) ;
+                    }
+                }
+                sortedYearsNotificationsReport.put(year, yearlyEntry) ;
+            }
+        
+            return sortedYearsNotificationsReport ;
         }
         
     
@@ -327,7 +350,13 @@ public class ScreeningReporter extends Reporter {
         if (sortedAgents.isEmpty())    // if no sortingProperty specified take everyone
             population = getPopulation() ; // 15-64yo NSW males 3600000 ; // 
         else
-            population = sortedAgents.size() ;
+        {
+            ArrayList<Object> countedAgents = (ArrayList<Object>) sortedAgents.clone() ;
+            PopulationReporter populationReporter = new PopulationReporter(simName,getFolderPath()) ;
+            ArrayList<Object> agentsAliveReport = populationReporter.prepareAgentsAliveRecord(endCycle) ;
+            countedAgents.retainAll(agentsAliveReport) ;
+            population = countedAgents.size() ;
+        }
         LOGGER.info("population:" + String.valueOf(population));
         /**Sorting by statusHIV
         PopulationReporter populationReporter = new PopulationReporter(getMetaDatum("Community.NAME_ROOT"), getFolderPath()); 
@@ -582,11 +611,12 @@ public class ScreeningReporter extends Reporter {
      * @param siteNames
      * @param backYears
      * @param lastYear
+     * @param sortingProperty
      * @return Year-by-year report for backYears years on prevalence on last day
      * of each year ending lastYear.
      */
     public HashMap<Object,String> 
-        prepareYearsPrevalenceRecord(String[] siteNames, int backYears, int lastYear) 
+        prepareYearsPrevalenceRecord(String[] siteNames, int backYears, int lastYear, String sortingProperty) 
         {
             //HashMap<Object,Number[]> prevalenceRecordYears = new HashMap<Object,Number[]>() ;
             HashMap<Object,String> prevalenceRecordYears = new HashMap<Object,String>() ;
@@ -601,7 +631,10 @@ public class ScreeningReporter extends Reporter {
                 //Number[] yearlyPrevalenceRecord = new Number[siteNames.length + 1] ;
                
                 endCycle = maxCycles - year * DAYS_PER_YEAR ;
-                prevalenceRecord += prepareFinalPrevalencesRecord(siteNames, endCycle);
+                if (sortingProperty.isEmpty())
+                    prevalenceRecord += prepareFinalPrevalencesRecord(siteNames, endCycle);
+                else
+                    prevalenceRecord += prepareFinalPrevalencesSortedRecord(siteNames, sortingProperty, endCycle);
                
                 //for (int siteIndex = 0 ; siteIndex < siteNames.length ; siteIndex++ )
                   //  yearlyPrevalenceRecord[siteIndex] = prevalenceRecord.get(siteNames[siteIndex]) ;
@@ -611,6 +644,7 @@ public class ScreeningReporter extends Reporter {
                 prevalenceRecordYears.put(lastYear - year, prevalenceRecord) ;
                 prevalenceRecord = "" ;
             }
+            LOGGER.info(prevalenceRecordYears.toString());
             
             return prevalenceRecordYears ;
         }
@@ -636,8 +670,8 @@ public class ScreeningReporter extends Reporter {
     public String prepareFinalPrevalencesRecord(String[] siteNames, int endCycle)
     {
         //HashMap<Object,Number> 
-        String finalPrevalencesRecord = "" ;    // = new HashMap<Object,Number>() ;
-        
+        String prevalencesRecord = "" ;    // = new HashMap<Object,Number>() ;
+        double population = getPopulation() ;
         int prevalence ;
         // Number of times a Site is mentioned, regardless of infection status
         int[] mentions ;
@@ -645,14 +679,16 @@ public class ScreeningReporter extends Reporter {
         //LOGGER.log(Level.INFO, "{0}", endCycle);
         String finalPrevalenceRecord = getBackCyclesReport(0,0,1,endCycle).get(0) ; // getFinalRecord() ;
         
-        double population = getPopulation() ; 
+        
+        // agentId maps to sortingProperty
+        //if (sortingProperty.isEmpty())
         for (String siteName : siteNames)
         {
             // Count infected siteName
             mentions = COUNT_VALUE_INCIDENCE(siteName,CLEAR,finalPrevalenceRecord,0) ;
-            finalPrevalencesRecord += ADD_REPORT_PROPERTY(siteName,(mentions[1] - mentions[0])/population) ;
+            prevalencesRecord += ADD_REPORT_PROPERTY(siteName,(mentions[1] - mentions[0])/population) ;
         }
-        
+
         // Count Agents with any Site infected
         ArrayList<String> agentRecords = EXTRACT_ARRAYLIST(finalPrevalenceRecord,AGENTID) ;
         prevalence = 0 ;
@@ -664,11 +700,105 @@ public class ScreeningReporter extends Reporter {
                         prevalence++ ;
                         break ;
                     }
-        finalPrevalencesRecord += ADD_REPORT_PROPERTY("all",prevalence/population) ;
         
-        return finalPrevalencesRecord ;
+        prevalencesRecord += ADD_REPORT_PROPERTY("all",prevalence/population) ;
+        return prevalencesRecord ;
     }
  
+    /**
+     * 
+     * @param siteNames
+     * @param sortingProperty
+     * @return Records of final prevalences for specified siteNames and in total,
+     * sorted according to sortingProperty.
+     */
+    public String prepareFinalPrevalencesSortedRecord(String[] siteNames, String sortingProperty)
+    {
+        int endCycle = getMaxCycles() ;
+        
+        return prepareFinalPrevalencesSortedRecord(siteNames, sortingProperty, endCycle) ;
+    }
+    
+ 
+    /**
+     * 
+     * @param siteNames
+     * @param sortingProperty
+     * @param endCycle
+     * @return Records of final prevalences for specified siteNames and in total,
+     * sorted according to sortingProperty.
+     */
+    public String prepareFinalPrevalencesSortedRecord(String[] siteNames, String sortingProperty, int endCycle)
+    {
+        //String finalPrevalencesSortedRecord = new HashMap<Object,String>() ;
+        
+        PopulationReporter populationReporter = new PopulationReporter(simName,getFolderPath()) ;
+        HashMap<Object,ArrayList<Object>> sortedAgentReport = populationReporter.agentIdSorted(sortingProperty) ;
+        
+        ArrayList<Object> agentsAliveReport = populationReporter.prepareAgentsAliveRecord(endCycle) ;
+            
+        int[] sitePrevalences = new int[siteNames.length] ;
+        
+        double population ;
+        String prevalencesRecord = "" ; 
+        
+        String finalPrevalenceRecord = getBackCyclesReport(0,0,1,endCycle).get(0) ; // getFinalRecord() ;
+        
+        for (Object key : sortedAgentReport.keySet())
+        {
+            ArrayList<Object> sortedAgents = sortedAgentReport.get(key) ;
+            /*if (sortingProperty.isEmpty())
+                population = getPopulation() ; 
+            else*/
+            // Allow for deaths among selected Agents when determining the relevant population.
+            ArrayList<Object> countedAgents = (ArrayList<Object>) sortedAgents.clone() ;
+            countedAgents.retainAll(agentsAliveReport) ;
+            population = countedAgents.size() ;
+            //prevalencesRecord = "" ; 
+            for (int index = 0 ; index < sitePrevalences.length ; index++ )
+                sitePrevalences[index] = 0 ;
+        
+            // Count Agents with any Site infected
+            ArrayList<String> agentRecords = EXTRACT_ARRAYLIST(finalPrevalenceRecord,AGENTID) ;
+            int prevalence = 0 ;
+            int sitePrevalence ;
+            boolean incrementPrevalence ; 
+            for (String record : agentRecords)
+            {
+                String agentId = EXTRACT_VALUE(AGENTID,record) ;
+                if (sortedAgents.contains(agentId))
+                {
+                    incrementPrevalence = false ;
+                    for (int siteIndex = 0 ; siteIndex < siteNames.length ; siteIndex++ )
+                    {
+                        String siteName = siteNames[siteIndex] ;
+                        if (record.contains(siteName))
+                            if (!EXTRACT_VALUE(siteName,record).equals(CLEAR))
+                            {
+                                //LOGGER.info(record);
+                                sitePrevalence = sitePrevalences[siteIndex] ;
+                                sitePrevalence++ ;
+                                sitePrevalences[siteIndex] = sitePrevalence ;
+                                incrementPrevalence = true ;
+                            }
+                    }
+                    if (incrementPrevalence)
+                        prevalence++ ;
+                }
+            }
+            for (int siteIndex = 0 ; siteIndex < siteNames.length ; siteIndex++ )
+            {
+                String siteEntry = siteNames[siteIndex] + "__" + key.toString() ;
+                prevalencesRecord += ADD_REPORT_PROPERTY(siteEntry, sitePrevalences[siteIndex]/population) ;
+            }
+            //LOGGER.log(Level.INFO, "{0} {1}", new Object[] {prevalence,population});
+            prevalencesRecord += ADD_REPORT_PROPERTY("all" + "__" + key.toString(),prevalence/population) ;
+            //LOGGER.info(prevalencesRecord);
+            //finalPrevalencesSortedRecord.put(key, prevalencesRecord) ;
+        }
+        return prevalencesRecord ;
+    }
+    
     /**
      * 
      * @param siteNames
