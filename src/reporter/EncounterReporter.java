@@ -196,6 +196,42 @@ public class EncounterReporter extends Reporter {
     /**
      * 
      * @param siteNames
+     * @param backYears
+     * @param lastYear
+     * @return Year-by-year report for backYears years OF INCIDENTS on last day
+     * of each year ending lastYear.
+     */
+    public HashMap<Object,String> 
+        prepareYearsIncidenceReport(String[] siteNames, int backYears, int lastYear, String sortingProperty) 
+        {
+            if (sortingProperty.isEmpty())
+                return prepareYearsIncidenceRecord(siteNames, backYears, lastYear) ;
+            HashMap<Object,String> incidenceRecordYears = new HashMap<Object,String>() ;
+            //HashMap<Object,Number[]> incidenceRecordYears = new HashMap<Object,Number[]>() ;
+            
+            int maxCycles = getMaxCycles() ;
+            
+            String incidenceRecord ;
+            for (int year = 0 ; year < backYears ; year++ )
+            {
+                //Number[] yearlyIncidenceRecord = new Number[siteNames.length + 1] ;
+               
+                //endCycle = maxCycles - year * DAYS_PER_YEAR ;
+                incidenceRecord = prepareSortedFinalIncidenceRecord(siteNames, year, 0, DAYS_PER_YEAR, maxCycles, sortingProperty);
+                
+                //for (int siteIndex = 0 ; siteIndex < siteNames.length ; siteIndex++ )
+                  //  yearlyIncidenceRecord[siteIndex] = incidenceRecord.get(siteNames[siteIndex]) ;
+                //yearlyIncidenceRecord[siteNames.length] = incidenceRecord.get("all") ;
+                incidenceRecordYears.put(lastYear - year, incidenceRecord) ;
+            }
+            
+            return incidenceRecordYears ;
+        }
+    
+    
+    /**
+     * 
+     * @param siteNames
      * @param backMonths
      * @param backDays
      * @return Records of final incidence for specified siteNames and in total.
@@ -250,7 +286,11 @@ public class EncounterReporter extends Reporter {
         //LOGGER.log(Level.INFO, "{0} {1} {2}", new Object[] {backMonths, backDays, endCycle});
         ArrayList<String> finalIncidentsReport = getBackCyclesReport(0, backMonths, backDays, endCycle) ;
         
-        double population = getPopulation() ; // Double.valueOf(getPopulation()) ; 
+        double population = 0.0 ; 
+        if (sortedAgents.isEmpty())
+            population = Double.valueOf(getPopulation()) ; 
+        else
+            population = sortedAgents.size() ;
         // Adjust incidence rate for sampling time and days per year
         //* 100 because units  per 100 person years
         double denominator = population * getBackCycles(0,backMonths,backDays)/(100.0 * DAYS_PER_YEAR) ;
@@ -289,23 +329,26 @@ public class EncounterReporter extends Reporter {
     }
     
     
-    public HashMap<Object,String> prepareSortedFinalIncidenceRecord(String[] siteNames, int backYears, int backMonths, int backDays, int endCycle, String sortingProperty) 
+    public String prepareSortedFinalIncidenceRecord(String[] siteNames, int backYears, int backMonths, int backDays, int endCycle, String sortingProperty) 
     {
-        HashMap<Object,String> sortedFinalIncidenceRecord = new HashMap<Object,String>() ;
+        String sortedFinalIncidenceRecord = "" ;
         //HashMap<Object,HashMap<Object,Number>> sortedFinalIncidenceRecord = new HashMap<Object,HashMap<Object,Number>>() ;
-        
         // Get Report of sortingValue mapping to agentIds
-        LOGGER.info("populationReporter");
         PopulationReporter populationReporter = new PopulationReporter(simName,getFolderPath()) ;
         HashMap<Object,ArrayList<Object>> sortedAgentReport = populationReporter.agentIdSorted(sortingProperty) ;
-        LOGGER.log(Level.INFO,"{0}", sortedAgentReport) ;
+        
         String finalIncidenceRecord ; // = new HashMap<Object,Number>() ;
         for (Object sortingValue : sortedAgentReport.keySet())
         {
             //HashMap<Object,Number> finalIncidenceRecord = new HashMap<Object,Number>() ;
             finalIncidenceRecord = prepareFinalIncidenceRecord(siteNames, backYears, backMonths, backDays, endCycle, sortedAgentReport.get(sortingValue)) ;
             
-            sortedFinalIncidenceRecord.put(sortingValue, finalIncidenceRecord) ;
+            ArrayList<String> properties = IDENTIFY_PROPERTIES(finalIncidenceRecord) ;
+            for (String property : properties)
+            {
+                String propertyValue = EXTRACT_VALUE(property,finalIncidenceRecord) ;
+                sortedFinalIncidenceRecord += ADD_REPORT_PROPERTY(property + "_" + sortingValue.toString(), propertyValue) ;
+            }
         }
     
         return sortedFinalIncidenceRecord ;
@@ -687,7 +730,7 @@ public class EncounterReporter extends Reporter {
             for (String encounter : encounters)
             {
                 String[] agentIds = relationshipAgentReport.get(EXTRACT_VALUE(RELATIONSHIPID,encounter)) ;
-                for (String agentId : agentIds)
+                for (Object agentId : agentIds)
                     agentCondomlessIntercourse = UPDATE_HASHMAP(agentId,startCycle + recordNb,agentCondomlessIntercourse) ;
             }
         }
@@ -765,33 +808,80 @@ public class EncounterReporter extends Reporter {
      * @return Reports the percent of Agents who have been involved in each subclass of Relationship 
      * who have partaken in condomless anal intercourse within those Relationships.
      */
-    public HashMap<Object,Number> preparePercentAgentCondomlessReport(String[] relationshipClassNames, int backYears, int backMonths, int backDays, int endCycle, String concordanceName, boolean concordant)
+    public String preparePercentAgentCondomlessReport(String[] relationshipClassNames, int backYears, int backMonths, int backDays, int endCycle, String concordanceName, boolean concordant)
     {
-        HashMap<Object,Number> percentCondomlessRelationship = new HashMap<Object,Number>() ;
-        
+        return preparePercentAgentCondomlessReport(relationshipClassNames, backYears, backMonths, backDays, endCycle, concordanceName, concordant, "") ;
+    }
+    
+    /**
+     * 
+     * @param relationshipClassNames
+     * @param backYears
+     * @param backMonths
+     * @param backDays
+     * @param endCycle
+     * @param concordanceName
+     * @param concordant
+     * @return Reports the percent of Agents who have been involved in each subclass of Relationship 
+     * who have partaken in condomless anal intercourse within those Relationships.
+     */
+    public String preparePercentAgentCondomlessReport(String[] relationshipClassNames, int backYears, int backMonths, int backDays, int endCycle, String concordanceName, boolean concordant, String sortingProperty)
+    {
+        String percentCondomlessReport = "" ;
+        //HashMap<Object,Number> percentCondomlessRelationship = new HashMap<Object,Number>() ;
+        String property ;
         RelationshipReporter relationshipReporter = new RelationshipReporter(simName,getFolderPath()) ;
-        HashMap<Object,Number> numberRelationshipsReport 
-                = relationshipReporter.prepareNumberRelationshipsReport(relationshipClassNames, backYears, backMonths, backDays, endCycle) ;
+        // (HashMap) relationshipClassName maps to the number of Agents involved in given class of Relationship 
+        //during the specified period.
+        
+        // Get Report of sortingValue mapping to agentIds
+        HashMap<Object,ArrayList<Object>> sortedAgentReport = new HashMap<Object,ArrayList<Object>>() ;
+        if (sortingProperty.isEmpty())
+            sortedAgentReport.put("",new ArrayList<Object>()) ;
+        else
+        {
+            PopulationReporter populationReporter = new PopulationReporter(simName,getFolderPath()) ;
+            sortedAgentReport = populationReporter.agentIdSorted(sortingProperty) ;
+        }
         
         for (String relationshipClazzName : relationshipClassNames)
         {
-            double totalAgents = numberRelationshipsReport.get(relationshipClazzName).doubleValue() ;
-            if (totalAgents == 0)
+            //agentId maps to the cycles in which they had condomless anal intercourse 
+            HashMap<Object,ArrayList<Object>> agentCondomlessReport = prepareAgentCondomlessReport(backYears, backMonths, backDays, endCycle, relationshipClazzName, concordanceName, concordant) ; 
+            ArrayList<Object> activeAgentList = new ArrayList<Object>() ;
+            ArrayList<Object> uniqueAgentList = new ArrayList<Object>() ;
+            //for (Object numberKey : agentCondomlessReport.keySet()) //numberAgentCondomlessReport.keySet())
+            //for (Object keyValue : agentCondomlessReport.values())
+            //{
+                //ArrayList<Object> newAgents = agentCondomlessReport.get(keyValue) ;
+                activeAgentList.addAll(agentCondomlessReport.keySet()) ;
+                activeAgentList.removeAll(uniqueAgentList) ;
+                uniqueAgentList.addAll(activeAgentList) ;
+            //}
+            
+            for (Object sortingValue : sortedAgentReport.keySet())
             {
-                percentCondomlessRelationship.put(relationshipClazzName,0.0) ;
-                continue ;
-            }
-            // (HashMap) Number of condomless intercourse acts maps to the Number
-            // of Agents to have committed that many such acts 
-            HashMap<Object,Number> numberAgentCondomlessReport 
-                    = prepareNumberAgentCondomlessReport(backYears, backMonths, backDays, endCycle, relationshipClazzName, concordanceName, concordant) ;
-            int activeAgents = 0 ;
-            for (Object numberKey : numberAgentCondomlessReport.keySet())
-                activeAgents += numberAgentCondomlessReport.get(numberKey).intValue() ;
+                ArrayList<Object> sortedAgents = sortedAgentReport.get(sortingValue) ;
+                String[] clazzList = new String[] {relationshipClazzName} ;
+                HashMap<Object,Number> numberRelationshipsReport 
+                    = relationshipReporter.prepareNumberRelationshipsReport(clazzList, backYears, backMonths, backDays, endCycle, sortedAgents) ;
+
+                property = relationshipClazzName ;
+                LOGGER.info(uniqueAgentList.toString());
+                if ("" != sortingValue)
+                {
+                LOGGER.info(uniqueAgentList.toString());
+                    uniqueAgentList.retainAll(sortedAgents) ;
+                    property += "_" + sortingValue ;
+                }
+                int activeAgents = uniqueAgentList.size() ;
         
-            percentCondomlessRelationship.put(relationshipClazzName,activeAgents/totalAgents) ;
+                Double totalAgents = numberRelationshipsReport.get(relationshipClazzName).doubleValue() ;
+                //percentCondomlessRelationship.put(relationshipClazzName,activeAgents/totalAgents) ;
+                percentCondomlessReport += ADD_REPORT_PROPERTY(property,activeAgents/totalAgents) ;
+            }
         }
-        return percentCondomlessRelationship ;
+        return percentCondomlessReport ;
     }
     
     /**
@@ -805,28 +895,29 @@ public class EncounterReporter extends Reporter {
      * @param concordant
      * @return year-by-year report
      */
-    public HashMap<Object,Number[]> preparePercentAgentCondomlessYears(String[] relationshipClassNames, int backYears, int backMonths, int backDays, int lastYear, String concordanceName, boolean concordant)
+    public HashMap<Object,String> preparePercentAgentCondomlessYears(String[] relationshipClassNames, int backYears, int lastYear, String concordanceName, boolean concordant, String sortingProperty)
     {
-        HashMap<Object,Number[]> percentAgentCondomlessYears = new HashMap<Object,Number[]>() ;
+        HashMap<Object,String> percentAgentCondomlessYears = new HashMap<Object,String>() ;
+        //HashMap<Object,Number[]> percentAgentCondomlessYears = new HashMap<Object,Number[]>() ;
     
         int maxCycles = getMaxCycles() ;
             
         int endCycle ;
-        HashMap<Object,Number> percentAgentCondomlessReport ;
         
         for (int year = 0 ; year < backYears ; year++ )
         {
-            Number[] yearlyNumberAgentsEnteredRelationship = new Number[relationshipClassNames.length] ;
-               
-                endCycle = maxCycles - year * DAYS_PER_YEAR ;
-                percentAgentCondomlessReport 
-                        = preparePercentAgentCondomlessReport(relationshipClassNames, 0, backMonths, backDays, endCycle, concordanceName, concordant);
-               
-                for (int classIndex = 0 ; classIndex < relationshipClassNames.length ; classIndex++ )
-                    yearlyNumberAgentsEnteredRelationship[classIndex] = percentAgentCondomlessReport.get(relationshipClassNames[classIndex]) ;
-                
-                percentAgentCondomlessYears.put(lastYear - year, (Number[]) yearlyNumberAgentsEnteredRelationship.clone()) ;
+            String yearlyNumberAgentsEnteredRelationship ;
+
+            endCycle = maxCycles - year * DAYS_PER_YEAR ;
+            yearlyNumberAgentsEnteredRelationship 
+                = preparePercentAgentCondomlessReport(relationshipClassNames, 0, 0, DAYS_PER_YEAR, endCycle, concordanceName, concordant, sortingProperty);
+
+//                for (int classIndex = 0 ; classIndex < relationshipClassNames.length ; classIndex++ )
+//                    yearlyNumberAgentsEnteredRelationship[classIndex] = percentAgentCondomlessRecord.get(relationshipClassNames[classIndex]) ;
+
+            percentAgentCondomlessYears.put(lastYear - year, yearlyNumberAgentsEnteredRelationship) ;
         }
+        LOGGER.info(percentAgentCondomlessYears.toString()) ;
 
         return percentAgentCondomlessYears ;
     }
