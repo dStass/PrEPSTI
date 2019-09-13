@@ -13,6 +13,7 @@ import java.util.ArrayList ;
 //import java.util.Arrays;
 import java.util.Set ;
 import java.util.Collections;
+import java.util.* ;
 import java.util.HashMap ;
 
 import java.util.logging.Level;
@@ -1395,75 +1396,118 @@ public class Reporter {
     static public HashMap<Object,Number[]> PREPARE_GRAY_REPORT(String[] simNames, String folderPath, int startYear, int endYear)
     {
         HashMap<Object,Number[]> grayReport = new HashMap<Object,Number[]>() ;
-        int nbColumns = 4+4+4+1+1 ;
-        String[] colNames = new String[nbColumns] ;
+        ArrayList<HashMap<Object,String>> hashMapReports = new ArrayList<HashMap<Object,String>>() ;
+        //ArrayList<ArrayList<Object>> arrayListReports = new ArrayList<ArrayList<Object>>() ;
+        ArrayList<String> reportNames = new ArrayList<String>() ;
+//        int nbColumns = 8 ; // 4+4+4+1+1 ;
+        ArrayList<String> colNames = new ArrayList<String>() ;
         
         String[] siteNames = MSM.SITE_NAMES ;
-        int arraysLength = siteNames.length + 1 ;
-        String[] arrayNames = new String[arraysLength] ;
-        for (int siteIndex = 0 ; siteIndex < siteNames.length ; siteIndex++ )
-            arrayNames[siteIndex] = siteNames[siteIndex] ;
-        arrayNames[siteNames.length] = "all" ;
+        String[] relationshipClazzNames = new String[] {"Casual","Regular","Monogomous"} ;
         
+//        for (int siteIndex = 0 ; siteIndex < siteNames.length ; siteIndex++ )
+//            arrayNames[siteIndex] = siteNames[siteIndex] ;
+//        arrayNames[siteNames.length] = "all" ;
+//        
         ArrayList<Object> sortedYears = new ArrayList<Object>() ;
         
         int backYears = 1 + endYear - startYear ;
         
         ArrayList<HashMap<Object,String>> prevalenceReports = new ArrayList<HashMap<Object,String>>() ;  
+        ArrayList<HashMap<Object,String>> prevalenceHivReports = new ArrayList<HashMap<Object,String>>() ;  
+        ArrayList<HashMap<Object,String>> prevalenceRiskyReports = new ArrayList<HashMap<Object,String>>() ;  
         ArrayList<HashMap<Object,String>> notificationReports = new ArrayList<HashMap<Object,String>>() ;
-        ArrayList<HashMap<Object,Number>> beenTestedReports = new ArrayList<HashMap<Object,Number>>() ;
+        ArrayList<HashMap<Object,String>> notificationHivReports = new ArrayList<HashMap<Object,String>>() ;
+        ArrayList<HashMap<Object,String>> incidenceReports = new ArrayList<HashMap<Object,String>>() ;
+        ArrayList<HashMap<Object,String>> incidenceHivReports = new ArrayList<HashMap<Object,String>>() ;
+        ArrayList<HashMap<Object,String>> condomlessReports = new ArrayList<HashMap<Object,String>>() ;
+        ArrayList<HashMap<Object,String>> condomlessHivReports = new ArrayList<HashMap<Object,String>>() ;
         
-        ArrayList<HashMap<Object,String>> incidenceReports = new ArrayList<HashMap<Object,String>>() ;  
+        
+        ArrayList<HashMap<Object,Number>> beenTestedReports = new ArrayList<HashMap<Object,Number>>() ;
         ArrayList<ArrayList<Object>> condomUseReports = new ArrayList<ArrayList<Object>>() ;
         for (String simulation : simNames)
         {
             ScreeningReporter screeningReporter = new ScreeningReporter(simulation, folderPath);
-            prevalenceReports.add(screeningReporter.prepareYearsPrevalenceRecord(siteNames, backYears, endYear)) ;
+            prevalenceReports.add(screeningReporter.prepareYearsPrevalenceRecord(siteNames, backYears, endYear, "")) ;
+            prevalenceHivReports.add(screeningReporter.prepareYearsPrevalenceRecord(siteNames, backYears, endYear, "statusHIV")) ;
+            prevalenceRiskyReports.add(screeningReporter.prepareYearsPrevalenceRecord(siteNames, backYears, endYear, "riskyStatus")) ;
             notificationReports.add(screeningReporter.prepareYearsNotificationsRecord(siteNames, backYears, endYear)) ;
-            beenTestedReports.add(screeningReporter.prepareYearsBeenTestedReport(backYears, 0, 0, endYear)) ;
-             
-            EncounterReporter encounterReporter = new EncounterReporter(simulation, folderPath) ;
+            notificationHivReports.add(screeningReporter.prepareSortedYearsNotificationsRecord(siteNames, backYears, endYear, "statusHIV")) ;
+            EncounterReporter encounterReporter = new EncounterReporter(simulation, folderPath);
             incidenceReports.add(encounterReporter.prepareYearsIncidenceRecord(siteNames, backYears, endYear)) ;
+            incidenceHivReports.add(encounterReporter.prepareYearsIncidenceRecord(siteNames, backYears, endYear, "statusHIV")) ;
+            condomlessReports.add(encounterReporter.preparePercentAgentCondomlessYears(relationshipClazzNames, backYears, endYear, "statusHIV", false, "")) ;
+            condomlessHivReports.add(encounterReporter.preparePercentAgentCondomlessYears(relationshipClazzNames, backYears, endYear, "statusHIV", false, "statusHIV")) ;
+            beenTestedReports.add(screeningReporter.prepareYearsBeenTestedReport(backYears, 0, 0, endYear)) ;
             condomUseReports.add(encounterReporter.prepareYearsCondomUseRecord(backYears, endYear)) ;
         }
         HashMap<Object,String> prevalenceRecordYears = PREPARE_MEAN_HASHMAP_REPORT(prevalenceReports) ;
+        hashMapReports.add((HashMap<Object,String>) prevalenceRecordYears) ;
+        reportNames.add("prevalence") ;
+        HashMap<Object,String> prevalenceHivRecordYears = PREPARE_MEAN_HASHMAP_REPORT(prevalenceHivReports) ;
+        hashMapReports.add((HashMap<Object,String>) prevalenceHivRecordYears) ;
+        reportNames.add("prevalence_HIV") ;
+        HashMap<Object,String> prevalenceRiskyRecordYears = PREPARE_MEAN_HASHMAP_REPORT(prevalenceRiskyReports) ;
+        hashMapReports.add((HashMap<Object,String>) prevalenceRiskyRecordYears) ;
+        reportNames.add("prevalence_risky") ;
         HashMap<Object,String> notificationsRecordYears = PREPARE_MEAN_HASHMAP_REPORT(notificationReports) ;
-        HashMap<Object,Number> beenTestedReportYears = MEAN_HASHMAP_REPORT(beenTestedReports) ;
-        
+        hashMapReports.add((HashMap<Object,String>) notificationsRecordYears) ;
+        reportNames.add("notifications") ;
+        HashMap<Object,String> notificationsHivRecordYears = PREPARE_MEAN_HASHMAP_REPORT(notificationHivReports) ;
+        hashMapReports.add((HashMap<Object,String>) notificationsHivRecordYears) ;
+        reportNames.add("notifications_HIV") ;
         HashMap<Object,String> incidenceReportYears = PREPARE_MEAN_HASHMAP_REPORT(incidenceReports) ;
+        hashMapReports.add((HashMap<Object,String>) incidenceReportYears) ;
+        reportNames.add("incidence") ;
+        HashMap<Object,String> incidenceHivReportYears = PREPARE_MEAN_HASHMAP_REPORT(incidenceHivReports) ;
+        hashMapReports.add((HashMap<Object,String>) incidenceHivReportYears) ;
+        reportNames.add("incidence_HIV") ;
+        HashMap<Object,String> condomlessReportYears = PREPARE_MEAN_HASHMAP_REPORT(condomlessReports) ;
+        hashMapReports.add((HashMap<Object,String>) condomlessReportYears) ;
+        reportNames.add("condomless") ;
+        HashMap<Object,String> condomlessHivReportYears = PREPARE_MEAN_HASHMAP_REPORT(condomlessHivReports) ;
+        hashMapReports.add((HashMap<Object,String>) condomlessHivReportYears) ;
+        reportNames.add("condomless_HIV") ;
+        
+        HashMap<Object,Number> beenTestedReportYears = MEAN_HASHMAP_REPORT(beenTestedReports) ;
         ArrayList<Object> condomUseYears = AVERAGED_REPORT(condomUseReports,"proportion") ;
         
         // Construct Gray report
+        ArrayList<String> properties ;
         for (int year = startYear ; year <= endYear ; year++)
         {
-            Number[] values = new Number[nbColumns] ;
-            //LOGGER.log(Level.INFO, "{0}", prevalenceRecordYears.get(year));
-            for (int index = 0 ; index < arraysLength ; index++ )    // 
+            ArrayList<Number> valuesList = new ArrayList<Number>() ;
+            for (int reportIndex = 0 ; reportIndex < hashMapReports.size() ; reportIndex++ )
             {
-                values[index] = Double.valueOf(EXTRACT_VALUE(arrayNames[index],prevalenceRecordYears.get(year))) ;
-                values[arraysLength + index] = Double.valueOf(EXTRACT_VALUE(arrayNames[index],incidenceReportYears.get(year))) ;
-                values[2*arraysLength + index] = Double.valueOf(EXTRACT_VALUE(arrayNames[index],notificationsRecordYears.get(year))) ;
+                HashMap<Object,String> hashMapReport = hashMapReports.get(reportIndex) ;
+                properties = IDENTIFY_PROPERTIES(hashMapReport.get(year)) ;
+                LOGGER.info(reportNames.get(reportIndex) + " " + properties.toString() + " " + hashMapReport.get(year));
+                //LOGGER.log(Level.INFO, "{0}", prevalenceRecordYears.get(year));
+                for (int propertyIndex = 0 ; propertyIndex < properties.size() ; propertyIndex++ )    // 
+                {
+                    if (year == startYear)
+                        colNames.add(reportNames.get(reportIndex) + "_" + properties.get(propertyIndex)) ; //TODO
+                    valuesList.add(Double.valueOf(EXTRACT_VALUE(properties.get(propertyIndex),hashMapReport.get(year)))) ;
+                }
             }
-            //LOGGER.log(Level.INFO, "condom:{0}|", condomUseYears.get(year - startYear).toString());
             String condomValue = condomUseYears.get(year - startYear).toString() ;
-            values[3*arraysLength] = Double.valueOf(EXTRACT_VALUE("proportion",condomValue)) ;
-            values[3*arraysLength + 1] = beenTestedReportYears.get(year) ;
+            valuesList.add(Double.valueOf(EXTRACT_VALUE("proportion",condomValue))) ;
+            valuesList.add(beenTestedReportYears.get(year)) ;
+            if (year == startYear)
+            {
+                colNames.add("condom_use") ; //TODO
+                colNames.add("testing_coverage") ;
+            }       
             
-            grayReport.put(year, values) ;
+            Number[] valuesArray = valuesList.toArray(new Number[0]) ; // new Number[valuesList.size()] ;
+            grayReport.put(year, valuesArray) ;
             sortedYears.add(year) ;
         }
         
-        // Set up column names in report
-        for (int index = 0 ; index < arraysLength ; index++ )    // 
-        {
-            colNames[index] = "prevalence_" + arrayNames[index] ;
-            colNames[arraysLength + index] = "incidence_" + arrayNames[index] ;
-            colNames[2*arraysLength + index] = "notification_" + arrayNames[index] ;
-        }
-        colNames[3*arraysLength] = "condom_use" ;
-        colNames[3*arraysLength + 1] = "testing_coverage" ;
+        String[] colNamesArray = (String[]) colNames.toArray(new String[0]) ;
         
-        WRITE_CSV(grayReport,"year",colNames,sortedYears,"Gray_report",simNames[0],REPORT_FOLDER) ;
+        WRITE_CSV(grayReport,"year",colNamesArray,sortedYears,"Gray_report",simNames[0],REPORT_FOLDER) ;
         return grayReport ;
     }
     
@@ -1845,10 +1889,7 @@ public class Reporter {
         if (propertyNames.isEmpty())
             meanProperties = IDENTIFY_PROPERTIES((String) reports.get(0).get(0)) ;
         else
-        {
-            LOGGER.info("Correctly identified propertyName 'proportion'") ;
             meanProperties = propertyNames ;
-        }
         
         for (int cycle = 0 ; cycle < (nbRecords) ; cycle++ )
         {
@@ -1979,9 +2020,10 @@ public class Reporter {
      */
     protected boolean updateReport()
     {
+        //LOGGER.info(String.valueOf(reader.fileIndex) + reader.fileNames.get(reader.fileIndex)) ;
         if (reader.fileIndex >= reader.fileNames.size())
         {
-            reader.fileIndex = 0 ;    // This may cause problems somewhere, possibly unnecessary
+            //reader.fileIndex = 0 ;    // This may cause problems somewhere, possibly unnecessary
             input = reader.updateOutputArray() ;
             return false ;
         }
@@ -2323,9 +2365,14 @@ public class Reporter {
      */
     public static void main(String[] args)
     {
-        String folderPath = "output/test/" ;
-        String[] simNames = new String[] {"adjustCondom75Holt3aPop40000Cycles4380","adjustCondom75Holt3bPop40000Cycles4380","adjustCondom75Holt3cPop40000Cycles4380","adjustCondom75Holt3dPop40000Cycles4380","adjustCondom75Holt3ePop40000Cycles4380",
-        "adjustCondom75Holt3fPop40000Cycles4380","adjustCondom75Holt3gPop40000Cycles4380","adjustCondom75Holt3hPop40000Cycles4380","adjustCondom75Holt3iPop40000Cycles4380","adjustCondom75Holt3jPop40000Cycles4380"} ;
+        String folderPath = "output/prep/" ;
+        //String[] simNames = new String[] {"noGSNpostHolt3aPop40000Cycles5475","noGSNpostHolt3bPop40000Cycles5475","noGSNpostHolt3cPop40000Cycles5475","noGSNpostHolt3dPop40000Cycles5475","noGSNpostHolt3ePop40000Cycles5475",
+            //"noGSNpostHolt3fPop40000Cycles5475","noGSNpostHolt3gPop40000Cycles5475","noGSNpostHolt3hPop40000Cycles5475","noGSNpostHolt3iPop40000Cycles5475","noGSNpostHolt3jPop40000Cycles5475"} ;
+        String[] simNames = new String[] {"seek1cPop40000Cycles5475","seek1dPop40000Cycles5475","seek1ePop40000Cycles5475",
+        "seek1fPop40000Cycles5475","seek1gPop40000Cycles5475","seek1hPop40000Cycles5475","seek1iPop40000Cycles5475","seek1jPop40000Cycles5475"} ;
+    
+        //String[] simNames = new String[] {"adjustCondom75Holt3aPop40000Cycles4380","adjustCondom75Holt3bPop40000Cycles4380","adjustCondom75Holt3cPop40000Cycles4380","adjustCondom75Holt3dPop40000Cycles4380","adjustCondom75Holt3ePop40000Cycles4380",
+        //"adjustCondom75Holt3fPop40000Cycles4380","adjustCondom75Holt3gPop40000Cycles4380","adjustCondom75Holt3hPop40000Cycles4380","adjustCondom75Holt3iPop40000Cycles4380","adjustCondom75Holt3jPop40000Cycles4380"} ;
         //String[] simNames = new String[] {"noGSNpostHolt3aPop40000Cycles5475","noGSNpostHolt3bPop40000Cycles5475","noGSNpostHolt3cPop40000Cycles5475","noGSNpostHolt3dPop40000Cycles5475","noGSNpostHolt3ePop40000Cycles5475",
           //      "noGSNpostHolt3fPop40000Cycles5475","noGSNpostHolt3gPop40000Cycles5475","noGSNpostHolt3hPop40000Cycles5475","noGSNpostHolt3iPop40000Cycles5475","noGSNpostHolt3jPop40000Cycles5475"} ;
         //String[] simNames = new String[] {"adjustCondom85aPop40000Cycles2555","adjustCondom85bPop40000Cycles2555","adjustCondom85cPop40000Cycles2555","adjustCondom85dPop40000Cycles2555","adjustCondom85ePop40000Cycles2555",
@@ -2391,7 +2438,10 @@ public class Reporter {
             ArrayList<String> outputArray = new ArrayList<String>() ;
             String record ;
             if (fileIndex >= fileNames.size())
+            {
+                fileIndex = 0 ;
                 return outputArray ;
+            }
             try
             {
                 //LOGGER.info(folderPath + getFileName());
@@ -2524,14 +2574,14 @@ public class Reporter {
         private ArrayList<String> getBackCyclesReport(int backCycles, int endCycle)
         {
             ArrayList<String> outputList = new ArrayList<String>() ;
-            
+            int cycleFileIndex ;
             try
             {
                 int startCycle = endCycle - backCycles ;
                 // Open file
-                fileIndex = startCycle/cyclesPerFile ;
+                cycleFileIndex = startCycle/cyclesPerFile ;
                 //getSpecificFile(startCycle) ;
-                BufferedReader fileReader = new BufferedReader(new FileReader(folderPath + fileNames.get(fileIndex))) ;
+                BufferedReader fileReader = new BufferedReader(new FileReader(folderPath + fileNames.get(cycleFileIndex))) ;
                         
                 boolean newFile = false ;
 
@@ -2551,7 +2601,7 @@ public class Reporter {
                     // Open new file if reached end of previous one
                     if (newFile)
                     {
-                        fileReader = new BufferedReader(new FileReader(folderPath + fileNames.get(fileIndex))) ;
+                        fileReader = new BufferedReader(new FileReader(folderPath + fileNames.get(cycleFileIndex))) ;
                         newFile = false ;
                     }
 
@@ -2573,7 +2623,7 @@ public class Reporter {
                     // Prepare for next file
                     startLine = 0 ;
                     endLine -= cyclesPerFile ;
-                    fileIndex++ ;
+                    cycleFileIndex++ ;
                     newFile = true ;
                 }
             }
@@ -2582,7 +2632,6 @@ public class Reporter {
                 LOGGER.severe(e.toString());
                 assert(false) ;
             }
-            //fileIndex = 0 ;  // This line caused bugs in generating reports.
             return outputList ;
         }
                 
@@ -2597,7 +2646,7 @@ public class Reporter {
             ArrayList<String> outputList = new ArrayList<String>() ;
             ArrayList<String> fileList = new ArrayList<String>() ;
             
-            fileIndex = fileNames.size() - 1 ;
+            int cycleFileIndex = fileNames.size() - 1 ;
             // From which line do we had files
             int fromLine = 0 ;
             
@@ -2605,8 +2654,8 @@ public class Reporter {
             {
                 while (backCycles > 0)
                 {
-                    BufferedReader fileReader = new BufferedReader(new FileReader(folderPath + getFileName())) ;
-                    fileIndex = fileIndex - 2 ; // -2 to compensate for fileIndex++ in getFileName()
+                    BufferedReader fileReader = new BufferedReader(new FileReader(folderPath + fileNames.get(cycleFileIndex))) ;
+                    cycleFileIndex = cycleFileIndex - 1 ; 
 
                     for (String record = fileReader.readLine() ;  record != null ; record = fileReader.readLine() )
                     {
