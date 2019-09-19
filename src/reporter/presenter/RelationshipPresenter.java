@@ -26,12 +26,14 @@ public class RelationshipPresenter extends Presenter{
     
     private RelationshipReporter reporter ;
     
+    //static String simName = "burnin20000aPop40000Cycles730" ;
+    static String simName = "casual5000Pop40000Cycles730" ;
+    //static String simName = "nbRelationships3Pop40000Cycles730" ;
+    //static String simName = "serosortPop10000Cycles1095" ;
+    //static String simName = "noGSNpostHolt3aPop40000Cycles5475" ; // "testPlotCondomUsePop4000Cycles500" ; // args[0] ;
+        
     public static void main(String[] args)
     {
-        //String simName = "seekPop40000Cycles1460" ; 
-        //String simName = "nbRelationships3Pop40000Cycles730" ;
-        String simName = "serosortPop10000Cycles1095" ;
-        //String simName = "noGSNpostHolt3aPop40000Cycles5475" ; // "testPlotCondomUsePop4000Cycles500" ; // args[0] ;
         //String chartTitle = "Nb_Agents_had_given_relationships" ; // args[1] ;
         //String chartTitle = "cumulative_relationships" ; // args[1] ;
         String chartTitle = "mean_nb_relationships" ;
@@ -55,11 +57,11 @@ public class RelationshipPresenter extends Presenter{
         //relationshipPresenter.plotCumulativeRelationships(10, new String[] {"Casual","Regular","Monogomous"}, 0, 6, 0) ;
         //relationshipPresenter.plotCumulativeRelationshipLengths() ;
         //relationshipPresenter.plotRelationshipCumulativeTransmissions() ;
-        //relationshipPresenter.plotMeanNumberRelationshipsReport(relationshipClazzNames);
+        relationshipPresenter.plotMeanNumberRelationshipsReport(relationshipClazzNames);
         //relationshipPresenter.plotAgentRelationshipsMeanYears(relationshipClazzNames, 3, 6, 0, 2017) ;
         //relationshipPresenter.plotAgentRelationshipsMean(new String[] {"Casual","Regular","Monogomous"}, 1, 0, 0, "statusHIV") ;
         //relationshipPresenter.plotRelationshipLength() ;
-        relationshipPresenter.plotRecentRelationshipsReport(relationshipClazzNames,0,6,0) ;
+        //relationshipPresenter.plotRecentRelationshipsReport(relationshipClazzNames,0,6,0) ;
         //relationshipPresenter.plotNumberRelationships(new String[] {"Casual","Regular","Monogomous"}, 0, 6, 0) ;
         //relationshipPresenter.plotNumberAgentsEnteredRelationship(new String[] {"Casual","Regular","Monogomous"}, 0, 6, 0) ;
         //relationshipPresenter.plotNumberAgentsEnteredRelationshipYears(new String[] {"Casual"}, 10, 6, 0, 2017) ;
@@ -388,13 +390,18 @@ public class RelationshipPresenter extends Presenter{
         HashMap<Object,Number[]> invertedHashMap 
                 = Reporter.INVERT_HASHMAP_LIST(recentRelationshipsReport,relationshipClassNewNames) ;
         LOGGER.info(invertedHashMap.toString());
+        
+        for (int index = 0 ; index < relationshipClassNewNames.length ; index++ )
+            relationshipClassNewNames[index] = relationshipClassNewNames[index] + GROUP + relationshipClassNewNames[index] ;
                 
         String timePeriod = String.valueOf(backYears) + " years " 
                 + String.valueOf(backMonths) + " months " 
                 + String.valueOf(backDays) + " days " ;
         
-        plotHashMap("partners in " + timePeriod,relationshipClassNewNames,binHashMap(invertedHashMap, relationshipClassNewNames)) ;
-        //plotSpline("partners in " + timePeriod,"Number of Agents",invertedHashMap, relationshipClassNewNames) ;
+        HashMap<Object,Number[]> binnedReport = binHashMap(invertedHashMap, relationshipClassNewNames) ;
+        LOGGER.info(reporter.getFolderPath());
+        Reporter.WRITE_CSV(binnedReport, chartTitle, relationshipClassNewNames, "nb_Relationships", simName, reporter.getFolderPath()) ;
+        plotHashMap("partners in " + timePeriod,relationshipClassNewNames,binnedReport) ;
     }
     
     /**
