@@ -132,8 +132,8 @@ public class PopulationReporter extends Reporter {
     {
         HashMap<Object,ArrayList<Object>> sortedHashMap = new HashMap<Object,ArrayList<Object>>() ;
         //LOGGER.info("birthReport");
-        ArrayList<String> birthReport = prepareBirthReport() ;
         
+        ArrayList<String> birthReport = prepareBirthReport() ;
         for (String record : birthReport)
         {
             //LOGGER.info(record);
@@ -145,7 +145,7 @@ public class PopulationReporter extends Reporter {
                 String sortingValue = EXTRACT_VALUE(sortingProperty,birth) ;
                 if (!sortedHashMap.containsKey(sortingValue))
                     sortedHashMap.put(sortingValue, new ArrayList<Object>()) ;
-                ArrayList<Object> agentIdList = sortedHashMap.get(sortingValue) ;
+                ArrayList<Object> agentIdList = (ArrayList<Object>) sortedHashMap.get(sortingValue).clone() ;
                 agentIdList.add(agentId) ;
                 sortedHashMap.put(sortingValue, (ArrayList<Object>) agentIdList.clone()) ;
                 //break ;
@@ -216,7 +216,7 @@ public class PopulationReporter extends Reporter {
         
         int maxAgentId = getMaxAgentId() ;
         ArrayList<Object> agentsDeadRecord = prepareAgentsDeadRecord(recordNb) ;
-        LOGGER.info(String.valueOf(agentsDeadRecord.size()));
+        
         // Cycle through all born and keep those who haven't died.
         for (int agentAlive = 0 ; agentAlive <= maxAgentId ; agentAlive++ )
             if (!agentsDeadRecord.contains(String.valueOf(agentAlive)))
@@ -544,15 +544,10 @@ public class PopulationReporter extends Reporter {
         
         //int backCycles = getBackCycles(backYears, backMonths, backDays) ;
         ArrayList<String> backCyclesReport = getBackCyclesReport(backYears, backMonths, backDays, endCycle) ;
-        for (boolean nextInput = true ; nextInput ; nextInput = updateReport())
+        for (int reportNb = 0 ; reportNb < backCyclesReport.size() ; reportNb += outputCycle )
         {
-            //for (int reportNb = 0 ; reportNb < input.size() ; reportNb += outputCycle )
-            //{
-            for (int reportNb = 0 ; reportNb < backCyclesReport.size() ; reportNb += outputCycle )
-            {
-                record = backCyclesReport.get(reportNb) ;
-                birthReport.add(record.substring(INDEX_OF_PROPERTY("birth",record),INDEX_OF_PROPERTY("death",record))) ;
-            }
+            record = backCyclesReport.get(reportNb) ;
+            birthReport.add(record.substring(INDEX_OF_PROPERTY("birth",record),INDEX_OF_PROPERTY("death",record))) ;
         }
         
         return birthReport ;
