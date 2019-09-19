@@ -507,7 +507,7 @@ public class RelationshipReporter extends Reporter {
      */
     public HashMap<Object,String[]> prepareRelationshipAgentReport(boolean noBreakups)
     {
-        //LOGGER.info("prepareRelationshipAgentReport");
+        LOGGER.info("prepareRelationshipAgentReport()");
         HashMap<Object,String[]> relationshipAgentReport = new HashMap<Object,String[]>() ;
         
         ArrayList<String> commenceReport = (ArrayList<String>) getReport("commence",this) ; //  
@@ -521,6 +521,7 @@ public class RelationshipReporter extends Reporter {
         ArrayList<String> blacklist = new ArrayList<String>() ;
         if (noBreakups)
             blacklist = prepareRelationshipBreakupRecord() ;
+        LOGGER.log(Level.INFO, "nobreakups:{0} blackList{1}", new Object[] {noBreakups,blacklist}) ;
         
         //record = prepareBurninRecord() ;    // "0," + 
         //for (boolean nextInput = true ; nextInput ; nextInput = updateReport() )
@@ -549,6 +550,12 @@ public class RelationshipReporter extends Reporter {
                     if (blacklist.contains(relationshipId))
                         continue ;
                 agentIds = EXTRACT_AGENTIDS(relationshipRecord,0) ;
+                if (agentIds == null || agentIds.length != 2)
+                {
+                    LOGGER.severe("No Agents found for Relationship " + relationshipId) ;
+                    LOGGER.info(relationshipRecord) ;
+                    continue ;
+                }
                 relationshipAgentReport.put(relationshipId, agentIds) ;
             }
 
@@ -1977,6 +1984,7 @@ public class RelationshipReporter extends Reporter {
         ArrayList<Object> agentsAlive = populationReporter.prepareAgentsAliveRecord(endCycle) ;
         
         int newRelationships ;
+        //int population = getPopulation() ;
         
         for (Object relationshipClassName : numberRecentRelationshipsReport.keySet())
         {
@@ -1990,6 +1998,11 @@ public class RelationshipReporter extends Reporter {
                 recentRelationshipsReport.put(relationshipClassName,
                         INCREMENT_HASHMAP(newRelationships,recentRelationshipsReport.get(relationshipClassName))) ;
             }
+            
+            HashMap<Object,Number> numberRelationshipsReport = (HashMap<Object,Number>) recentRelationshipsReport.get(relationshipClassName).clone() ;
+            for (Object numberKey : numberRelationshipsReport.keySet())
+                numberRelationshipsReport.put(numberKey, numberRelationshipsReport.get(numberKey).doubleValue()/agentsAlive.size()) ;
+            recentRelationshipsReport.put(relationshipClassName, (HashMap<Object,Number>) numberRelationshipsReport.clone()) ;
         }
           
         return recentRelationshipsReport ;
