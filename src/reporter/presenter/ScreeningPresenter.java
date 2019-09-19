@@ -71,9 +71,9 @@ public class ScreeningPresenter extends Presenter {
         this.reporter = reporter ;
     }
 
-    //static String[] simNames = new String[] {"seekPop40000Cycles730"} ;
-    static String[] simNames = new String[] {"seek1cPop40000Cycles5475","seek1dPop40000Cycles5475","seek1ePop40000Cycles5475",
-        "seek1fPop40000Cycles5475","seek1gPop40000Cycles5475","seek1hPop40000Cycles5475","seek1iPop40000Cycles5475","seek1jPop40000Cycles5475"} ;
+    static String[] simNames = new String[] {"seek200Pop40000Cycles730"} ;
+    //static String[] simNames = new String[] {"seek1cPop40000Cycles5475","seek1dPop40000Cycles5475","seek1ePop40000Cycles5475",
+      //  "seek1fPop40000Cycles5475","seek1gPop40000Cycles5475","seek1hPop40000Cycles5475","seek1iPop40000Cycles5475","seek1jPop40000Cycles5475"} ;
       //  "adjustCondom75Holt3fPop40000Cycles4380","adjustCondom75Holt3gPop40000Cycles4380","adjustCondom75Holt3hPop40000Cycles4380","adjustCondom75Holt3iPop40000Cycles4380","adjustCondom75Holt3jPop40000Cycles4380"} ;
     //static private String[] simNames = new String[] {"noAntiviralPostHolt3aPop40000Cycles5475"} ; // ,"noAntiviralPostHolt3bPop40000Cycles5475","noAntiviralPostHolt3cPop40000Cycles5475","noAntiviralPostHolt3dPop40000Cycles5475","noAntiviralPostHolt3ePop40000Cycles5475",
         //"noAntiviralPostHolt3fPop40000Cycles5475","noAntiviralPostHolt3gPop40000Cycles5475","noAntiviralPostHolt3hPop40000Cycles5475","noAntiviralPostHolt3iPop40000Cycles5475","noAntiviralPostHolt3jPop40000Cycles5475"} ;
@@ -121,9 +121,9 @@ public class ScreeningPresenter extends Presenter {
         //String chartTitle = "testing_6_months" ; // args[1] ;
         //String chartTitle = "infections_past_2years_PrEP" ; // args[1] ;
         //String reportFileName = "output/untouchable/" ; // args[2] ;
-        String reportFileName = "output/prep/" ; // args[2] ;
+        //String reportFileName = "output/prep/" ; // args[2] ;
         //String reportFileName = "output/prePrEP/" ; // args[2] ;
-        //String reportFileName = "output/test/" ; // args[2] ;
+        String reportFileName = "output/test/" ; // args[2] ;
         //String reportFileName = "output/reverse/" ; // args[2] ;
         //String reportFileName = "output/year2012/" ; // args[2] ;
         //String reportFileName = "output/year2010/" ; // args[2] ;
@@ -160,10 +160,10 @@ public class ScreeningPresenter extends Presenter {
         //screeningPresenter.plotSortedPrevalenceYears(siteNames,11,2017,"statusHIV") ;
         //screeningPresenter.plotFinalSymptomatic(new String[] {"Pharynx","Rectum","Urethra"}) ;
         //screeningPresenter.plotFinalPrevalences(new String[] {"Pharynx","Rectum","Urethra"}) ;
-        //screeningPresenter.plotSortedFinalPrevalences(new String[] {"Pharynx","Rectum","Urethra"}, "statusHIV") ;
+        screeningPresenter.plotSortedFinalPrevalences(new String[] {"Pharynx","Rectum","Urethra"}, "statusHIV") ;
         //screeningPresenter.plotFinalNotifications(new String[] {"Pharynx","Rectum","Urethra"}, unique, 0, Reporter.DAYS_PER_YEAR, notifications) ;
         //screeningPresenter.plotSortedFinalNotifications(new String[] {"Pharynx","Rectum","Urethra"}, unique, 0, 0, Reporter.DAYS_PER_YEAR, "statusHIV") ; 
-        screeningPresenter.plotSortedNotificationsYears(siteNames, unique, 11, 2017, "statusHIV") ;
+        //screeningPresenter.plotSortedNotificationsYears(siteNames, unique, 11, 2017, "statusHIV") ;
         //screeningPresenter.plotNotificationsYears(siteNames,5,2014) ;    // siteNames,5,4) ;    // new String[] {"all"} 
         //screeningPresenter.plotPositivityYears(siteNames, unique, 8, 2014) ;
         //screeningPresenter.plotNotificationPerCycle() ;    
@@ -519,7 +519,8 @@ public class ScreeningPresenter extends Presenter {
         
         LOGGER.log(Level.INFO, "{0}", finalPrevalencesRecord) ;
                 
-        plotValues(PREVALENCE,finalPrevalencesRecord) ;        
+        //plotValues(PREVALENCE,finalPrevalencesRecord) ;        
+        multiPlotValues(finalPrevalencesRecord,PREVALENCE,"Sites") ;
     }
     
     /**
