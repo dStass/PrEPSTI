@@ -75,7 +75,7 @@ public class Presenter {
     static final String COMMA = Reporter.COMMA ;
 
     // Used for controlling if and what is co-plotted from file.
-    static boolean PLOT_FILE = true ;    
+    static boolean PLOT_FILE = false ;    
     static String FOLDER_PATH = "data_files/" ;
     static String FILENAME = "gonoGoneWild" ; // "incidence_kirby2018" ; // "meanNotificationRate" ; // "unique_positivity_urethra" ; // "notifications" ; //  
     //static String[] DATA_SCORE = new String[] {"hiv_negative","hiv_positive"} ;
@@ -166,7 +166,7 @@ public class Presenter {
     
     /**
      * Adds data from given report to the given dataset
-     * @param dataset
+     * @param xySeriesCollection
      * @param report
      * @param readScores - (String[]) valueTypes given in new report
      * @return (DefaultCategoryDataset) dataset with new data from report
@@ -186,7 +186,7 @@ public class Presenter {
                 category = (Comparable) key ;
 
                 scoreValueArray = report.get(key) ;
-                LOGGER.log(Level.INFO,"{0}",scoreValueArray) ;
+                //LOGGER.log(Level.INFO,"{0}",scoreValueArray) ;
                 scoreValue = scoreValueArray[scoreIndex] ;
                 if (int.class.isInstance(category) || Integer.class.isInstance(category)) 
                 {
@@ -773,6 +773,8 @@ public class Presenter {
         
         // Find keys in order
         ArrayList<Object> categoryEntry = new ArrayList<Object>() ;
+        Integer[] openIndices = new Integer[] {0,1,2,10,20,50,100} ;
+        Integer[] closeIndices = new Integer[] {0,1,9,19,49,99,1000} ;
         ArrayList<Number> scoreValue ;
         Number[] scoreValueArray ;
         Number[] hashMapValue ;
@@ -790,26 +792,34 @@ public class Presenter {
         int totalDigits = ((int) Math.log10(Integer.valueOf(String.valueOf(categoryEntry.get(categoryEntry.size() - 1))))) + 1 ;
         int dataSize = categoryEntry.size() ;
         
-        // Bin entries
-        int openSegmentNb = 0 ;
-        int closeSegmentNb = 1 ;    // (int) Math.pow(base, nextIndex) - 1 ;    // First category stands alone
         //scoreValueArray = scoreData.get(index) ;
 
-        while (closeSegmentNb > openSegmentNb)
+        //while (closeSegmentNb > openSegmentNb)
+        for (int categoryIndex = 0 ; categoryIndex < openIndices.length ; categoryIndex++ )
         {
-            LOGGER.info(String.valueOf(closeSegmentNb)) ;
+            // Bin entries
+            int openSegmentNb = openIndices[categoryIndex] ;
+            int closeSegmentNb = closeIndices[categoryIndex] ;    // (int) Math.pow(base, nextIndex) - 1 ;    // First category stands alone
+
             // Initialise scoreValue
             scoreValue = new ArrayList<Number>() ;
             for (String scoreName1 : scoreNames)
                 scoreValue.add(0.0) ;
+            //LOGGER.info(scoreValue.toString());
 
-            categoryValue  = String.valueOf(categoryEntry.get(openSegmentNb)) + categoryValue ;
+            categoryValue  = String.valueOf(categoryEntry.get(openSegmentNb)) ;
+            if (closeSegmentNb >= dataSize) 
+                closeSegmentNb = dataSize - 1 ;
+            if (closeSegmentNb > openSegmentNb)
+                categoryValue += "-" + String.valueOf(categoryEntry.get(closeSegmentNb)) ;
             int nbDigits = ((int) Math.log10(Integer.valueOf(String.valueOf(categoryEntry.get(openSegmentNb))))) + 1 ;
+            if (nbDigits < 1)
+                nbDigits = 1 ;
             for (int addSpace = nbDigits ; addSpace < totalDigits ; addSpace++ )
                 categoryValue = " ".concat(categoryValue) ;
             
             // loop through bin
-            for (int segmentIndex = openSegmentNb ; segmentIndex < closeSegmentNb ; segmentIndex++ )
+            for (int segmentIndex = openSegmentNb ; segmentIndex <= closeSegmentNb ; segmentIndex++ )
             {
                 scoreValueArray = unbinned.get(categoryEntry.get(segmentIndex)) ;
                 // Add scores
@@ -819,15 +829,15 @@ public class Presenter {
             }
                     
             // Add bin to dataset
-            binned.put(categoryValue, (Number[]) scoreValue.toArray()) ;
+            binned.put(categoryValue, (Number[]) scoreValue.toArray(new Number[0])) ;
                     
+            LOGGER.log(Level.INFO, "closeSegmentNb {0}, openSegmentNb {1}, categoryValue {2}", new Object[] {closeSegmentNb,openSegmentNb,categoryValue}) ;
             // prepare for next bin
-            openSegmentNb = closeSegmentNb ;    // (int) Math.pow(base, binIndex) - 1 ;    // -1 java counts from 0
-            closeSegmentNb = (closeSegmentNb + 1) * base - 1  ;    // (int) Math.pow(base, nextIndex) - 1 ;    // -1 include closeSegmentNB in for-loop
-            categoryValue = "-" + String.valueOf(categoryEntry.get(closeSegmentNb-1)) ;
-            if (closeSegmentNb > dataSize) 
-                closeSegmentNb = dataSize ;
-            //categoryValue = "-" + String.valueOf(categoryEntry.get(closeSegmentNb-1)) ;
+            //openSegmentNb = closeSegmentNb ;    // (int) Math.pow(base, binIndex) - 1 ;    // -1 java counts from 0
+            //closeSegmentNb = (closeSegmentNb) * base   ;    // (int) Math.pow(base, nextIndex) - 1 ;    // -1 include closeSegmentNB in for-loop
+            ////categoryValue = "-" + String.valueOf(categoryEntry.get(closeSegmentNb - 1)) ;
+            //
+            LOGGER.log(Level.INFO, "{0} {1} {2} {3}", binned.get(categoryValue)) ;
                     
         }
 
@@ -920,8 +930,9 @@ public class Presenter {
     {
         //LOGGER.info("callPlotChart()") ;
         // Extract data from reportArray
+        //LOGGER.info(reportArray.toString());
         ArrayList<ArrayList<Object>> dataList = parseReportArray(scoreName, reportArray) ;
-        
+        //LOGGER.info(dataList.toString());
         // Send data to be processed and presented
         chart_awt.callPlotChart(chartTitle,dataList,scoreName) ;
     }
@@ -1164,7 +1175,7 @@ public class Presenter {
      */
     protected void plotHashMap(String categoryName, String[] scoreNames, HashMap<Object,Number[]> hashMapReport )
     {
-        //LOGGER.info("plotHashMap()") ;
+        LOGGER.info("plotHashMap()") ;
         //ArrayList<String> categoryInteger = new ArrayList<String>() ;
         ArrayList<ArrayList<Number>> scoreNumbers = new ArrayList<ArrayList<Number>>() ;
         ArrayList<Object> categoryEntry = new ArrayList<Object>() ;
@@ -1346,6 +1357,7 @@ public class Presenter {
     public void multiPlotValues(String record, String yLabel, String xLabel)
     {
         DefaultCategoryDataset dataset = parseSortedRecord(record) ;
+        LOGGER.log(Level.INFO, "{0}",dataset);
         chart_awt.plotBarChart(chartTitle, dataset, yLabel, xLabel) ;
     }            
     
@@ -1510,6 +1522,7 @@ public class Presenter {
         ArrayList<String> sortedNames = Reporter.IDENTIFY_PROPERTIES(record) ;
         for (String name : sortedNames)
         {
+            LOGGER.info(name);
             String[] nameParts = name.split(GROUP) ;
             String property = nameParts[0] ;
             
@@ -1599,6 +1612,7 @@ public class Presenter {
     private ArrayList<ArrayList<Object>> parseReportArray(String scoreName, ArrayList<Object> report)
     {       
         ArrayList<ArrayList<Object>> scoreList = new ArrayList<ArrayList<Object>>() ;
+        LOGGER.info(report.toString());
         ArrayList<Object> plotList = new ArrayList<Object>() ;
         for (Object record : report)
         {
@@ -1968,9 +1982,9 @@ public class Presenter {
          */
         private void callStackedPlotChart(String chartTitle, ArrayList<Object> categoryList, ArrayList<ArrayList<Number>> scoreLists, String[] scoreNames, String xLabel)
         {
-            //LOGGER.info("callPlotChartInteger()") ;
+            LOGGER.info("callPlotChartInteger()") ;
             boolean bin = false ;    // Comparable.class.isInstance(categoryList.get(0)) ;
-            
+            boolean readInputFile = false ;
             DefaultCategoryDataset dataset ;
             
             String[] finalNames = new String[scoreNames.length + 1] ;
@@ -1980,7 +1994,7 @@ public class Presenter {
                 HashMap<Object,Number[]> dataReport = READ_HASHMAP_NUMBER_ARRAY_CSV(FILENAME) ;
                 LOGGER.log(Level.INFO, "{0}", dataReport);
                 // Match categories to input file
-                if ((1 < 0) && categoryList.size() > dataReport.size())
+                if (readInputFile && (categoryList.size() > dataReport.size()))
                 {
                     ArrayList<Object> loseCategories = new ArrayList<Object>() ;
                     for (Object category : categoryList)
@@ -2062,7 +2076,7 @@ public class Presenter {
          */
         private void plotBarChart(String chartTitle, CategoryDataset dataset, String yLabel, String xLabel)
         {
-            //LOGGER.info("plotBarChart()");
+            LOGGER.info("plotBarChart()");
             JFreeChart barChart = ChartFactory.createBarChart(chartTitle,xLabel,
                 yLabel,dataset,PlotOrientation.VERTICAL,true, true, false);
             
@@ -2605,6 +2619,7 @@ public class Presenter {
                 XYSeries xySeries = new XYSeries(legend[plotNumber]) ;
 
                 data = scoreData.get(plotNumber) ;
+                //LOGGER.info(scoreData.toString());
                 dataSize = data.size();
                 
                 for (int index = 0 ; index < dataSize; index++ )
