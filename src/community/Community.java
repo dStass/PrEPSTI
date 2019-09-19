@@ -81,7 +81,7 @@ public class Community {
      * (String) Name of previous burn-in to reload.
      * Not reloaded if this is an empty string.
      */
-    static final String RELOAD_BURNIN = "" ; // "symptom1cPop1000Cycles730" ;  ; // 
+    static final String RELOAD_BURNIN = "seek2Pop40000Cycles730" ;
     
     /**
      * (String) Name of previous simulation to reload.
@@ -262,32 +262,34 @@ public class Community {
             // Generate relationships for simulation
             String commenceString ;
             String breakupString ;
+            String relationshipId ;
+            HashMap<Object,String> commenceMap = new HashMap<Object,String>() ;
             ArrayList<String> commenceList = new ArrayList<String>() ;
-            ArrayList<String> breakupList ;
+            ArrayList<Object> breakupList ;
             
-            for (int burnin = 0 ; burnin < 10000 ; burnin++ ) // 20000
+            LOGGER.info("burning in Relationships") ;
+            for (int burnin = 0 ; burnin < 2500 ; burnin++ ) // 20000
             {
-                commenceString = community.generateRelationships(true) ;
-                commenceList.addAll(Reporter.EXTRACT_ARRAYLIST(commenceString, Reporter.RELATIONSHIPID)) ;
-                
-                breakupString = community.clearRelationships().substring(6) ;
-                breakupList = Reporter.EXTRACT_ARRAYLIST(breakupString, Reporter.RELATIONSHIPID) ;
-                for (String breakup : breakupList)
+                commenceString = community.generateRelationships() ;
+                commenceList = Reporter.EXTRACT_ARRAYLIST(commenceString, Reporter.RELATIONSHIPID) ;
+                for (String commence : commenceList)
                 {
-                    for (String commence : commenceList)
-                        if (commence.startsWith(breakup))
-                        {
-                            commenceList.remove(commence) ;
-                            break ;
-                        }
-                    //Relationship.BURNIN_BREAKUP += breakup ;
+                    if (!commence.contains("Casual"))
+                    {
+                        relationshipId = Reporter.EXTRACT_VALUE(Reporter.RELATIONSHIPID, commence) ;
+                        commenceMap.put(relationshipId,commence) ;
+                    }
                 }
+
+                breakupString = community.clearRelationships(); // .substring(6) ;
+                breakupList = Reporter.EXTRACT_ALL_VALUES(Reporter.RELATIONSHIPID, breakupString) ;
+                for (Object breakup : breakupList)
+                    if (commenceMap.containsKey(breakup))
+                        commenceMap.remove(breakup) ;
             }
             
-            for (String commence : commenceList)
-            {
-                Relationship.BURNIN_COMMENCE += commence ;
-            }
+            for (String commence : commenceMap.values())
+                Relationship.BURNIN_COMMENCE = commence + Relationship.BURNIN_COMMENCE ;
         }
         else
         {
@@ -313,7 +315,7 @@ public class Community {
             //LOGGER.log(Level.INFO,"{0} {1}", new Object[] {Relationship.NB_RELATIONSHIPS,Relationship.NB_RELATIONSHIPS_CREATED});
             // update relationships and perform sexual encounters, report them
             //LOGGER.info("generate") ;
-            relationshipRecord = cycleString + community.generateRelationships(false);
+            relationshipRecord = cycleString + community.generateRelationships();
             
             //LOGGER.info("encounter");
             encounterRecord = cycleString + community.runEncounters();
@@ -430,8 +432,8 @@ public class Community {
         prevalenceReport = screeningReporter.preparePrevalenceReport() ;
         LOGGER.log(Level.INFO,"{0} {1}", new Object[] {"all", prevalenceReport.get(prevalenceReport.size() - 1)}) ;
 
-        String finalPrevalencesRecord = screeningReporter.prepareFinalPrevalencesSortedRecord(siteNames, "statusHIV") ;
-        LOGGER.log(Level.INFO, "{0}", finalPrevalencesRecord) ;
+        //String finalPrevalencesRecord = screeningReporter.prepareFinalPrevalencesSortedRecord(siteNames, "statusHIV") ;
+        //LOGGER.log(Level.INFO, "prevalence {0}", finalPrevalencesRecord) ;
         
         //EncounterReporter encounterReporter = new EncounterReporter("Agent to Agent",community.encounterReport) ;
         EncounterReporter encounterReporter = new EncounterReporter(Community.SIM_NAME,Community.FILE_PATH) ;
@@ -542,7 +544,6 @@ public class Community {
     {
         String report = "" ;
         initialRecord = "" ;
-        
         scribe = new Scribe(SIM_NAME, new String[] {"relationship","encounter","infection", "population"}) ;
         for (int id = 0 ; id <  population ; id++ ) 
         {
@@ -561,6 +562,7 @@ public class Community {
             initialRecord += newAgent.getCensusReport() ;
             //LOGGER.info(initialRecord);
         }
+        
         //String relationshipRecord = generateRelationships() ;
         // Clear all initial infections
         
@@ -638,8 +640,8 @@ public class Community {
     }
     
     /**
-     * Calls BIRTH_MSM() to generate either RiskyMSM and SafeMSM.
-     * TODO: Generalise to more general types of Agent
+     * Initialises a new Agent and sets any initial conditions.
+     * @param startAge (int) The age with which the new Agent is born to the community.
      * @return MSM subclass newAgent 
      */
     private MSM generateAgent(int startAge)
@@ -734,17 +736,14 @@ public class Community {
      * 
      * @return (String) report of Relationships generated
      */
-    private String generateRelationships(boolean burnin)    // 
+    private String generateRelationships()    // 
     {
         String report = "" ;
         Class<?> relationshipClazz ;
         ArrayList availableAgents = (ArrayList<Agent>) agents.clone() ;
         
         String[] relationshipClazzNames ;
-        if (burnin) 
-            relationshipClazzNames = new String[] {"Regular","Monogomous"} ;
-        else 
-            relationshipClazzNames = new String[] {"Casual","Regular","Monogomous"} ;
+        relationshipClazzNames = new String[] {"Casual","Regular","Monogomous"} ;
         for (String relationshipClazzName : relationshipClazzNames)
         {
             ArrayList<ArrayList<Agent>> agentLists = seekingAgents(availableAgents,relationshipClazzName) ;
@@ -933,6 +932,12 @@ public class Community {
         return births(nbBirths) ;
     }
 
+    /**
+     * Handles introduction of new Agents every cycle
+     * Agents are 'born' to the simulation at 16-20 years old.
+     * @param nbBirths (int) The number of new Agents to be born.
+     * @return 
+     */
     private String births(int nbBirths)
     {
         String record = "birth:" ;
@@ -1073,7 +1078,7 @@ public class Community {
     /*****************************************************************
      * Calls breakup() of Relationship relationship, which probabilistically
      * calls Relationship.del() 
-     * @param relationship
+     * @param relationship (Relationship) The Relationship to be ended.
      *****************************************************************/
     private String endRelationship(Relationship relationship) 
     {
