@@ -408,6 +408,7 @@ public class Reporter {
      * Extracts bounded substrings containing propertyName as substring with value
      * in @param values.
      * @param propertyName 
+     * @param values 
      * @param bound - String bounding substrings of interest
      * @param string
      * @return String boundedOutput
@@ -1436,7 +1437,7 @@ public class Reporter {
             notificationHivReports.add(screeningReporter.prepareSortedYearsNotificationsRecord(siteNames, backYears, endYear, "statusHIV")) ;
             EncounterReporter encounterReporter = new EncounterReporter(simulation, folderPath);
             incidenceReports.add(encounterReporter.prepareYearsIncidenceRecord(siteNames, backYears, endYear)) ;
-            incidenceHivReports.add(encounterReporter.prepareYearsIncidenceRecord(siteNames, backYears, endYear, "statusHIV")) ;
+            incidenceHivReports.add(encounterReporter.prepareYearsIncidenceReport(siteNames, backYears, endYear, "statusHIV")) ;
             condomlessReports.add(encounterReporter.preparePercentAgentCondomlessYears(relationshipClazzNames, backYears, endYear, "statusHIV", false, "")) ;
             condomlessHivReports.add(encounterReporter.preparePercentAgentCondomlessYears(relationshipClazzNames, backYears, endYear, "statusHIV", false, "statusHIV")) ;
             beenTestedReports.add(screeningReporter.prepareYearsBeenTestedReport(backYears, 0, 0, endYear)) ;
