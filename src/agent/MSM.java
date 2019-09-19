@@ -222,8 +222,8 @@ public class MSM extends Agent {
      * disclose probabilities each year.
      * Probabilities taken from Table 9 of ARTB 2017
      * and Table 8 of ARTB 2018.
-     * @param year
-     * @throws Exception 
+     * @param agentList
+     * @param year 
      */
     static protected void REINIT_PROBABILITY_DISCLOSURE_HIV(ArrayList<Agent> agentList, int year) //throws Exception
     {
@@ -461,8 +461,8 @@ public class MSM extends Agent {
     /**
      * Returns an ArrayList of Agents seeking a relationshipClazzName Relationship.
      * May be overridden to accomodate serosorting etc.
-     * @param relationshipClazzName
-     * @param number (int) 
+     * @param agentList
+     * @param relationshipClazzName 
      * @return 
      */
     static public ArrayList<ArrayList<Agent>> SEEKING_AGENTS(ArrayList<Agent> agentList, String relationshipClazzName)
@@ -592,19 +592,19 @@ public class MSM extends Agent {
     private boolean riskyStatus ;
     
     /** Transmission probabilities per sexual contact from Urethra to Rectum */
-    static double URETHRA_TO_RECTUM = 0.80 ; 
+    static double URETHRA_TO_RECTUM = 0.95 ; 
     /** Transmission probabilities sexual contact from Urethra to Pharynx. */
-    static double URETHRA_TO_PHARYNX = 0.80 ; 
+    static double URETHRA_TO_PHARYNX = 0.30 ; 
     /** Transmission probabilities sexual contact from Rectum to Urethra. */
-    static double RECTUM_TO_URETHRA = 0.10 ;
+    static double RECTUM_TO_URETHRA = 0.030 ;
     /** Transmission probabilities sexual contact from Rectum to Pharynx. */
-    static double RECTUM_TO_PHARYNX = 0.010 ;
+    static double RECTUM_TO_PHARYNX = 0.020 ;
     /** Transmission probabilities sexual contact in Pharynx to Urethra intercourse. */
-    static double PHARYNX_TO_URETHRA = 0.10 ; 
+    static double PHARYNX_TO_URETHRA = 0.02 ; 
     /** Transmission probabilities sexual contact in Pharynx to Rectum intercourse. */
-    static double PHARYNX_TO_RECTUM = 0.010 ; 
+    static double PHARYNX_TO_RECTUM = 0.070 ; 
     /** Transmission probabilities sexual contact in Pharynx to Pharynx intercourse (kissing). */
-    static double PHARYNX_TO_PHARYNX = 0.02 ; 
+    static double PHARYNX_TO_PHARYNX = 0.08 ; 
     /** Transmission probabilities sexual contact in Urethra to Urethra intercourse (docking). */
     static double URETHRA_TO_URETHRA = 0.001 ; 
     /** Transmission probabilities sexual contact in Rectum to Rectum intercourse. */
@@ -1571,8 +1571,9 @@ public class MSM extends Agent {
     
     /**
      * Allow for re-initialisation of prepStatus during simulation while 
-     * initPrepStatus() remains private.
-     * @param prep 
+     * initPrepStatus() remains private. 
+     * @param year
+     * @param riskyProbability
      */
     public void reinitPrepStatus(int year, double riskyProbability)
     {
