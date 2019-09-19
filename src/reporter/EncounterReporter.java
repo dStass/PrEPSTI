@@ -255,25 +255,6 @@ public class EncounterReporter extends Reporter {
      */
     public String prepareFinalIncidenceRecord(String[] siteNames, int backYears, int backMonths, int backDays, int endCycle)
     {
-        //HashMap<Object,Number>
-        
-        return prepareFinalIncidenceRecord(siteNames, backYears, backMonths, backDays, endCycle, new ArrayList<Object>()) ;
-    }
-    
-    /**
-     * 
-     * @param siteNames
-     * @param backYears
-     * @param backMonths
-     * @param backDays
-     * @param endCycle
-     * @param sortedAgents - ArrayList of agentIds for which the incidence is to be calculated. 
-     * If empty then all Agents are considered. Calling method is expected to choose Agents 
-     * according to some criteria such as HIV status.
-     * @return Records of final incidence for specified siteNames and in total.
-     */
-    public String prepareFinalIncidenceRecord(String[] siteNames, int backYears, int backMonths, int backDays, int endCycle, ArrayList<Object> sortedAgents)
-    {
         String finalIncidence = "" ; // new HashMap<Object,Number>() ;
         //HashMap<Object,Number> finalIncidence = new HashMap<Object,Number>() ;
         
@@ -286,11 +267,8 @@ public class EncounterReporter extends Reporter {
         //LOGGER.log(Level.INFO, "{0} {1} {2}", new Object[] {backMonths, backDays, endCycle});
         ArrayList<String> finalIncidentsReport = getBackCyclesReport(0, backMonths, backDays, endCycle) ;
         
-        double population = 0.0 ; 
-        if (sortedAgents.isEmpty())
-            population = Double.valueOf(getPopulation()) ; 
-        else
-            population = sortedAgents.size() ;
+        double population = Double.valueOf(getPopulation()) ; 
+        
         // Adjust incidence rate for sampling time and days per year
         //* 100 because units  per 100 person years
         double denominator = population * getBackCycles(0,backMonths,backDays)/(100.0 * DAYS_PER_YEAR) ;
@@ -329,31 +307,169 @@ public class EncounterReporter extends Reporter {
     }
     
     
-    public String prepareSortedFinalIncidenceRecord(String[] siteNames, int backYears, int backMonths, int backDays, int endCycle, String sortingProperty) 
+    /**
+     * 
+     * @param siteNames
+     * @param backYears
+     * @param backMonths
+     * @param backDays
+     * @param endCycle
+     * @param sortingProperty
+     * @return Records of final incidence for specified siteNames and in total.
+     */
+    public String prepareSortedFinalIncidenceRecord(String[] siteNames, int backYears, int backMonths, int backDays, int endCycle, String sortingProperty)
     {
-        String sortedFinalIncidenceRecord = "" ;
-        //HashMap<Object,HashMap<Object,Number>> sortedFinalIncidenceRecord = new HashMap<Object,HashMap<Object,Number>>() ;
-        // Get Report of sortingValue mapping to agentIds
+        String finalIncidence = "" ; // new HashMap<Object,Number>() ;
+        HashMap<Object,Number[]> sortedFinalIncidence = new HashMap<Object,Number[]>() ;
+        ArrayList<String> siteNameList = new ArrayList<String>(Arrays.asList(siteNames)) ;
+        siteNameList.add("all") ;
+        String[] agentIds = new String[2] ;
+        endCycle = endCycle - (backYears * DAYS_PER_YEAR) ;
+        
+        int incidents ;
+        String record ;
+        
+        ArrayList<String> finalIncidentsReport = getBackCyclesReport(0, backMonths, backDays, endCycle) ;
+        
+        RelationshipReporter relationshipReporter = new RelationshipReporter(simName,getFolderPath()) ;
+        HashMap<Object,String[]> relationshipAgentReport =  relationshipReporter.prepareRelationshipAgentReport() ;
+        
         PopulationReporter populationReporter = new PopulationReporter(simName,getFolderPath()) ;
         HashMap<Object,ArrayList<Object>> sortedAgentReport = populationReporter.agentIdSorted(sortingProperty) ;
-        
-        String finalIncidenceRecord ; // = new HashMap<Object,Number>() ;
-        for (Object sortingValue : sortedAgentReport.keySet())
-        {
-            //HashMap<Object,Number> finalIncidenceRecord = new HashMap<Object,Number>() ;
-            finalIncidenceRecord = prepareFinalIncidenceRecord(siteNames, backYears, backMonths, backDays, endCycle, sortedAgentReport.get(sortingValue)) ;
-            
-            ArrayList<String> properties = IDENTIFY_PROPERTIES(finalIncidenceRecord) ;
-            for (String property : properties)
+        HashMap<Object,Object> sortedAgentIds = populationReporter.sortedAgentIds(sortingProperty) ;
+        ArrayList<Object> agentsAliveReport = populationReporter.prepareAgentsAliveRecord(endCycle) ;
+
+        for (Object relationshipId : relationshipAgentReport.keySet())
+            if (relationshipAgentReport.get(relationshipId) == null || relationshipAgentReport.get(relationshipId).length != 2)
             {
-                String propertyValue = EXTRACT_VALUE(property,finalIncidenceRecord) ;
-                sortedFinalIncidenceRecord += ADD_REPORT_PROPERTY(property + "_" + sortingValue.toString(), propertyValue) ;
+                LOGGER.severe("No Agents found for Relationship " + relationshipId) ;
+            }
+        
+        for (String finalIncidentsRecord : finalIncidentsReport)
+        {
+            record = encounterByValue(TRANSMISSION,TRUE,finalIncidentsRecord) ;
+            for (int encounterIndex = record.indexOf(RELATIONSHIPID) ; encounterIndex > -1 ; encounterIndex = record.indexOf(RELATIONSHIPID,encounterIndex + 1))
+            {
+                boolean[] incidenceAgentIds = new boolean[] {false,false} ;
+                String encounterString = extractEncounter(record,encounterIndex) ;
+                String relationshipId = EXTRACT_VALUE(RELATIONSHIPID,encounterString) ;
+                if (!relationshipAgentReport.containsKey(relationshipId))
+                    LOGGER.severe(relationshipId + " not found in relationshipAgentReport") ;
+                agentIds = relationshipAgentReport.get(relationshipId) ;
+                //Object[] sortingValues = new Object[] {sortedAgentIds.get(agentIds[0]),sortedAgentIds.get(agentIds[1])} ;
+                if (agentIds == null || agentIds.length != 2)
+                {
+                    LOGGER.log(Level.SEVERE, "relationsipId:{0} {1}", new Object[] {relationshipId,agentIds});
+                    continue;
+                }
+                
+                for (int contactIndex = encounterString.indexOf(CONTACT) ; contactIndex > -1 ; contactIndex = encounterString.indexOf(CONTACT,contactIndex + 1))
+                {
+                    String contactString = extractContact(encounterString,contactIndex) ;
+                    Object incidentValue = "" ;
+                    String incidentSiteName = "" ;
+                    String incidentAgentId = "" ;
+                    String siteNameA = "" ;
+                    String siteNameB = "" ;
+                    int siteIndexA = -1 ;
+                    for (String siteName : siteNames)
+                    {
+                        siteIndexA = contactString.indexOf(siteName) ;
+                        if (siteIndexA > 0)
+                        {
+                            siteNameA = siteName ;
+                            break ;
+                        }
+                    }
+                    int siteIndexB = -1 ;
+                    for (String siteName : siteNames)
+                    {
+                        siteIndexB = contactString.indexOf(siteName,siteIndexB+1) ;
+                        if (siteIndexB == siteIndexA)
+                            siteIndexB = contactString.indexOf(siteName,siteIndexB+1) ;
+                        if (siteIndexB > 0)
+                        {
+                            siteNameB = siteName ;
+                            boolean AthenB = siteIndexA < siteIndexB ;
+                            int incidentIndex ;
+                            if ("0".equals(EXTRACT_VALUE(siteName,contactString,siteIndexB)))
+                            {
+                                if (AthenB)
+                                {
+                                    incidentIndex = 1 ;
+                                    incidentSiteName = siteNameB ;
+                                }
+                                else
+                                {
+                                    incidentIndex = 0 ;
+                                    incidentSiteName = siteNameA ;
+                                }
+                            }
+                            else
+                            {
+                                if (AthenB)
+                                {
+                                    incidentIndex = 0 ;
+                                    incidentSiteName = siteNameA ;
+                                }
+                                else
+                                {
+                                    incidentIndex = 1 ;
+                                    incidentSiteName = siteNameB ;
+                                }
+                            }
+                            //incidentValue = sortingValues[incidentIndex] ;
+                            incidentAgentId = agentIds[incidentIndex] ;
+                            incidenceAgentIds[incidentIndex] = true ;
+
+                            break ;
+                        }
+                    }
+                    incidentValue = sortedAgentIds.get(incidentAgentId) ;
+                    if (!sortedFinalIncidence.containsKey(incidentValue))
+                    {
+                        Number[] siteArray = new Number[siteNames.length + 1] ;
+                        for (int index = 0 ; index < siteArray.length ; index++)
+                            siteArray[index] = 0.0 ;
+                        sortedFinalIncidence.put(incidentValue, siteArray) ;
+                    }
+                    Number[] siteArray = sortedFinalIncidence.get(incidentValue) ;
+                    incidents = siteArray[siteNameList.indexOf(incidentSiteName)].intValue() ;
+                    incidents++ ;
+                    siteArray[siteNameList.indexOf(incidentSiteName)] = incidents ;
+                    sortedFinalIncidence.put(incidentValue,siteArray) ;
+                }
+                for (int allIndex = 0 ; allIndex < 2 ; allIndex++ )
+                    if (incidenceAgentIds[allIndex])
+                    {
+                        String incidentAgentId = agentIds[allIndex] ;
+                        Object incidentValue = sortedAgentIds.get(incidentAgentId) ;
+                        Number[] siteArray = sortedFinalIncidence.get(incidentValue) ;
+                        incidents = siteArray[siteNameList.indexOf("all")].intValue() ;
+                        incidents++ ;
+                        siteArray[siteNameList.indexOf("all")] = incidents ;
+                        sortedFinalIncidence.put(incidentValue,siteArray) ;
+                    }
             }
         }
-    
-        return sortedFinalIncidenceRecord ;
+        
+        for (Object sortingKey : sortedFinalIncidence.keySet())
+        {
+            ArrayList<Object> sortedAgents = sortedAgentReport.get(sortingKey) ;
+            sortedAgents.retainAll(agentsAliveReport) ;
+            int population = sortedAgents.size() ;
+            double denominator = population * getBackCycles(0,backMonths,backDays)/(100.0 * DAYS_PER_YEAR) ;
+            for (int siteIndex = 0 ; siteIndex < siteNameList.size() ; siteIndex++ )
+            {
+                String entryName = siteNameList.get(siteIndex) + "_" + sortingKey.toString() ;
+                Number entryValue = sortedFinalIncidence.get(sortingKey)[siteIndex] ;
+                finalIncidence += ADD_REPORT_PROPERTY(entryName,entryValue.doubleValue()/denominator) ;
+            }
+        }
+
+        return finalIncidence ;
     }
- 
+    
     /**
      * 
      * @return (ArrayList) The number of transmissions in each cycle per 
@@ -888,11 +1004,10 @@ public class EncounterReporter extends Reporter {
      * 
      * @param relationshipClassNames
      * @param backYears
-     * @param backMonths
-     * @param backDays
      * @param lastYear
      * @param concordanceName
      * @param concordant
+     * @param sortingProperty
      * @return year-by-year report
      */
     public HashMap<Object,String> preparePercentAgentCondomlessYears(String[] relationshipClassNames, int backYears, int lastYear, String concordanceName, boolean concordant, String sortingProperty)
