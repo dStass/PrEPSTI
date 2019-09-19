@@ -329,7 +329,10 @@ public class ScreeningReporter extends Reporter {
      * @param siteNames
      * @param backYears
      * @param endCycle
+     * @param backMonths
+     * @param backDays
      * @param unique  - Count one positive result per Agent if true. 
+     * @param sortedAgents 
      * @return Records of final notifications for specified siteNames and in total.
      */
     public String prepareFinalNotificationsRecord(String[] siteNames, boolean unique, int backYears, int backMonths, int backDays, int endCycle, ArrayList<Object> sortedAgents)
@@ -358,12 +361,6 @@ public class ScreeningReporter extends Reporter {
             population = countedAgents.size() ;
         }
         LOGGER.info("population:" + String.valueOf(population));
-        /**Sorting by statusHIV
-        PopulationReporter populationReporter = new PopulationReporter(getMetaDatum("Community.NAME_ROOT"), getFolderPath()); 
-        HashMap<Object,ArrayList<Object>> sortingReport = populationReporter.sortStatusHIV() ;
-        ArrayList<Object> sortedAgents = sortingReport.get(TRUE) ;
-        population = sortedAgents.size() ;
-        */
         
         // Adjust for portion of year sampled //! and units of 100 person-years
         double denominator = ((double) getBackCycles(0,backMonths,backDays)*population)/(100*DAYS_PER_YEAR) ; // daysBetweenTests) ; //DAYS_PER_YEAR) ; // *population/100000
@@ -788,12 +785,12 @@ public class ScreeningReporter extends Reporter {
             }
             for (int siteIndex = 0 ; siteIndex < siteNames.length ; siteIndex++ )
             {
-                String siteEntry = siteNames[siteIndex] + "__" + key.toString() ;
+                String siteEntry = siteNames[siteIndex] + "_" + key.toString() ;
                 prevalencesRecord += ADD_REPORT_PROPERTY(siteEntry, sitePrevalences[siteIndex]/population) ;
             }
             //LOGGER.log(Level.INFO, "{0} {1}", new Object[] {prevalence,population});
-            prevalencesRecord += ADD_REPORT_PROPERTY("all" + "__" + key.toString(),prevalence/population) ;
-            //LOGGER.info(prevalencesRecord);
+            prevalencesRecord += ADD_REPORT_PROPERTY("all" + "_" + key.toString(),prevalence/population) ;
+            LOGGER.info(prevalencesRecord);
             //finalPrevalencesSortedRecord.put(key, prevalencesRecord) ;
         }
         return prevalencesRecord ;
