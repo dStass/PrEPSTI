@@ -81,7 +81,7 @@ public class Community {
      * (String) Name of previous burn-in to reload.
      * Not reloaded if this is an empty string.
      */
-    static final String RELOAD_BURNIN = "seek2Pop40000Cycles730" ;
+    static final String RELOAD_BURNIN = "" ; // "seek2Pop40000Cycles730" ;
     
     /**
      * (String) Name of previous simulation to reload.
@@ -1127,10 +1127,7 @@ public class Community {
             if (RAND.nextDouble() < agent.getScreenProbability(args)) 
             {
                 record += Reporter.ADD_REPORT_PROPERTY("agentId",agent.getAgentId()) ;
-                // boolean tested = ((record.contains("Rectum") || record.contains("Urethra")) || !(RAND.nextDouble() < 0.5))
-                // boolean tested = ((record.contains("Urethra")) || !(RAND.nextDouble() < 0.75))
-                // if (tested)
-                    record += Reporter.ADD_REPORT_LABEL("tested") ;
+                record += Reporter.ADD_REPORT_LABEL("tested") ;
                 if (infected)
                 {
                     //LOGGER.info("screening agentId:"+String.valueOf(agent.getAgentId())) ;
@@ -1139,6 +1136,8 @@ public class Community {
                         if (agent.getInfectedStatus(site) != 0)
                             record += Reporter.ADD_REPORT_PROPERTY(site.toString(), agent.getSymptomatic(site)) ;
                     }
+                // boolean tested = ((record.contains("Rectum") || record.contains("Urethra")) || !(RAND.nextDouble() < 0.5)) ;
+                //boolean tested = ((record.contains("Urethra")) || !(RAND.nextDouble() < 0.5)) ;
                 //if (tested)
                     {
                         agent.treat() ;
