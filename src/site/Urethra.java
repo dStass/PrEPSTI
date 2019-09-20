@@ -15,7 +15,7 @@ public class Urethra extends Site {
 
     // Constants that vary according to Site subclass
     /** Probability of initial gonorrhoea infection */
-    static double INITIAL = 0.01 ; // 0.002 ;
+    static double INITIAL = 0.006 ; // 0.01 ; // 0.002 ;
 
     // Probability of positive symptomatic status if infected
     static double SYMPTOMATIC_PROBABILITY = 0.90 ; // 0.80 ; // 0.90 ; // 
