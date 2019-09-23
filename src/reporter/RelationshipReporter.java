@@ -521,7 +521,6 @@ public class RelationshipReporter extends Reporter {
         ArrayList<String> blacklist = new ArrayList<String>() ;
         if (noBreakups)
             blacklist = prepareRelationshipBreakupRecord() ;
-        LOGGER.log(Level.INFO, "nobreakups:{0} blackList{1}", new Object[] {noBreakups,blacklist}) ;
         
         //record = prepareBurninRecord() ;    // "0," + 
         //for (boolean nextInput = true ; nextInput ; nextInput = updateReport() )
@@ -2170,6 +2169,8 @@ public class RelationshipReporter extends Reporter {
             burninCommenceStatic = getMetaDatum("Relationship.BURNIN_COMMENCE") ;
             burninBreakupStatic = getMetaDatum("Relationship.BURNIN_BREAKUP") ;
         }
+        else
+            LOGGER.info(burninBreakupStatic) ;
         burninCommenceList = EXTRACT_ARRAYLIST(burninCommenceStatic,RELATIONSHIPID) ;
         burninBreakup = EXTRACT_ALL_VALUES(RELATIONSHIPID,burninBreakupStatic,0) ;
         
