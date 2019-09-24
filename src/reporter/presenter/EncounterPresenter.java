@@ -22,16 +22,14 @@ import java.util.logging.Level;
 
 public class EncounterPresenter extends Presenter {
     
-    static String[] simNames = new String[] {"seek1cPop40000Cycles5475","seek1dPop40000Cycles5475","seek1ePop40000Cycles5475",
-        "seek1fPop40000Cycles5475","seek1gPop40000Cycles5475","seek1hPop40000Cycles5475","seek1iPop40000Cycles5475","seek1jPop40000Cycles5475"} ;
+    //static String[] simNames = new String[] {"seek1cPop40000Cycles5475","seek1dPop40000Cycles5475","seek1ePop40000Cycles5475",
+      //  "seek1fPop40000Cycles5475","seek1gPop40000Cycles5475","seek1hPop40000Cycles5475","seek1iPop40000Cycles5475","seek1jPop40000Cycles5475"} ;
     //static String[] simNames = new String[] {"noGSNpostHolt3aPop40000Cycles5475","noGSNpostHolt3bPop40000Cycles5475","noGSNpostHolt3cPop40000Cycles5475","noGSNpostHolt3dPop40000Cycles5475","noGSNpostHolt3ePop40000Cycles5475",
       //  "noGSNpostHolt3fPop40000Cycles5475","noGSNpostHolt3gPop40000Cycles5475","noGSNpostHolt3hPop40000Cycles5475","noGSNpostHolt3iPop40000Cycles5475","noGSNpostHolt3jPop40000Cycles5475"} ;
     //static private String[] simNames = new String[] {"serosort2Pop10000Cycles2190"} ; //,"from2007symptom9gPop40000Cycles5840"} ;
-    //static private String[] simNames = new String[] {"from2007postHolt3aPop40000Cycles5475","from2007postHolt3ePop40000Cycles5475",
-        //"from2007postHolt3fPop40000Cycles5475","from2007postHolt3iPop40000Cycles5475","from2007postHolt3jPop40000Cycles5475"} ;
-    //static private String[] simNames = new String[] {"symptom9aPop40000Cycles2190","symptom9bPop40000Cycles2190","symptom9cPop40000Cycles2190","symptom9dPop40000Cycles2190","symptom9ePop40000Cycles2190",
-      //  "symptom9fPop40000Cycles2190","symptom9gPop40000Cycles2190","symptom9hPop40000Cycles2190","symptom9iPop40000Cycles2190","symptom9jPop40000Cycles2190"} ;
-    //static private String[] simNames = new String[] {"testRebootPop40000Cycles730"} ;
+    //static private String[] simNames = new String[] {"from2007seek27aPop40000Cycles5475","from2007seek27bPop40000Cycles5475","from2007seek27cPop40000Cycles5475","from2007seek27dPop40000Cycles5475","from2007seek27ePop40000Cycles5475",
+      //  "from2007seek27fPop40000Cycles5475","from2007seek27gPop40000Cycles5475","from2007seek27hPop40000Cycles5475","from2007seek27iPop40000Cycles5475","from2007seek27jPop40000Cycles5475"} ;
+    static private String[] simNames = new String[] {"from2007seek30aPop40000Cycles3650"} ; //,"seekTestbPop40000Cycles2190","seekTestcPop40000Cycles2190","seekTestdPop40000Cycles2190","seekTestePop40000Cycles2190"} ;
     
     private EncounterReporter reporter ;
     
@@ -39,23 +37,23 @@ public class EncounterPresenter extends Presenter {
     {
         //String simName = "TestPop40000Cycles100" ; // Community.SIM_NAME ; // "introPrepCalibration48Pop40000Cycles7000" ; // args[0] ;
         //String simName =  "to2014max3contact93dPop40000Cycles4380" ;
-        String[] simNames = new String[] {"serosort2Pop10000Cycles2190"} ;
+        //String[] simNames = new String[] {"serosort2Pop10000Cycles2190"} ;
         //String[] simNames = new String[] {"noGSNpostHolt3aPop40000Cycles5475"} ;
         String simName = simNames[0] ; 
         //String simName = "neutral_calibration2Pop40000Cycles4000" ;
         //String simName = "RelationshipCalibrationPop40000Cycles200" ; // "NoPrepCalibration86Pop40000Cycles5000" ; // "introPrepCalibration48Pop40000Cycles7000" ; // args[0] ;
         //String simName = "AllSexualContactsPop40000Cycles1200" ;
         //String chartTitle = "infections_of_PrEP_users" ; // args[1] ;
-        String chartTitle = "proportion_of_Agents_had_discordant_CLAI" ; // args[1] ;
+        //String chartTitle = "proportion_of_Agents_had_discordant_CLAI" ; // args[1] ;
         //String chartTitle = "condom use universal" ;
         //String chartTitle = "new infections" ;
-        //String chartTitle = "incidence_rate (per 100 MSM)" ;
+        String chartTitle = "incidence_rate (per 100 MSM)" ;
         //String chartTitle = "protection" ; // args[1] ;
         //String chartTitle = "condom_coverage" ; // args[1] ;
         //String reportFileName = "output/untouchable/" ; // args[2] ;
-        String reportFileName = "output/test/" ; // args[2] ;
+        //String reportFileName = "output/test/" ; // args[2] ;
         //String reportFileName = "output/prePrEP/" ; // args[2] ;
-        //String reportFileName = "output/prep/" ; // args[2] ;
+        String reportFileName = "output/prep/" ; // args[2] ;
         //String reportFileName = "output/year2007/" ; // args[2] ;
         //String reportFileName = "output/year2010/" ; // args[2] ;
         //String reportFileName = "output/year2012/" ; // args[2] ;
@@ -72,12 +70,12 @@ public class EncounterPresenter extends Presenter {
         //encounterPresenter.plotFinalIncidenceRecord(siteNames, 0, Reporter.DAYS_PER_YEAR) ;
         //encounterPresenter.plotSortedFinalIncidenceRecord(siteNames, 0, Reporter.DAYS_PER_YEAR,"statusHIV") ;
         //encounterPresenter.plotCumulativeAgentTransmissionReport() ;
-        //encounterPresenter.plotIncidenceYears(siteNames, 11, 2017) ;
+        encounterPresenter.plotIncidenceYears(siteNames, 8, 2015, "") ;
         //encounterPresenter.plotNumberCondomlessYears(3, 0, 0, 2017, new String[] {"Casual","Regular","Monogomous"}) ;
         //encounterPresenter.plotNumberCondomlessReport(0, 6, 0, new String[] {"Casual","Regular","Monogomous"}) ;
         //encounterPresenter.plotPercentAgentCondomlessReport(new String[] {"Casual","Regular","Monogomous"}, 0, 6, 0, "", false) ;
         //encounterPresenter.plotPercentAgentCondomlessReport(new String[] {"Casual","Regular","Monogomous"}, 0, 6, 0, "statusHIV", true) ; 
-        encounterPresenter.plotPercentAgentCondomlessYears(new String[] {"Casual","Regular","Monogomous"}, 3, 2017, "statusHIV", false, "statusHIV") ; 
+        //encounterPresenter.plotPercentAgentCondomlessYears(new String[] {"Casual","Regular","Monogomous"}, 3, 2017, "statusHIV", false, "statusHIV") ; 
         //encounterPresenter.plotNumberAgentTransmissionReport("statusHIV") ;
         //encounterPresenter.plotFromSiteToSite(siteNames) ; // (new String[] {"Rectum","Urethra"});
         //encounterPresenter.plotReceiveSortPrepStatusReport("true") ;
@@ -247,7 +245,6 @@ public class EncounterPresenter extends Presenter {
     public void plotSortedFinalIncidenceRecord(String[] siteNames, int backMonths, int backDays, String sortingProperty)
     {
         int endCycle = reporter.getMaxCycles() ;
-        LOGGER.info("endCycle:" + String.valueOf(endCycle)) ;
         String finalIncidenceRecord = reporter.prepareSortedFinalIncidenceRecord(siteNames, 0, backMonths, backDays, endCycle, sortingProperty) ;
         //HashMap<Object,Number> finalIncidenceRecord = reporter.prepareFinalIncidenceRecord(siteNames, 0, backMonths, backDays, endCycle) ;
             
@@ -280,10 +277,7 @@ public class EncounterPresenter extends Presenter {
         }
         incidenceRecordYears = Reporter.PREPARE_MEAN_HASHMAP_REPORT(reports,"year","INCIDENCE",simNames[0]) ;
         LOGGER.log(Level.INFO, "{0}", incidenceRecordYears);
-        String[] scoreNames = new String[siteNames.length + 1] ;
-        for (int siteIndex = 0 ; siteIndex < siteNames.length ; siteIndex++ )
-            scoreNames[siteIndex+1] = siteNames[siteIndex] ;
-        scoreNames[0] = "all" ;
+        String[] scoreNames = Reporter.IDENTIFY_PROPERTIES(incidenceRecordYears.get(lastYear)).toArray(new String[0]) ;
         
         plotHashMapString(incidenceRecordYears,EncounterReporter.INCIDENCE,"year",scoreNames) ;
     }
