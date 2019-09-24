@@ -73,7 +73,7 @@ public class Community {
     static boolean DYNAMIC = false ;
     
     /** Dump reports to disk after this many cycles. */
-    static final int DUMP_CYCLE = ((int) Math.pow(10, 7))/POPULATION ;
+    static int DUMP_CYCLE = 250 ; // ((int) Math.pow(10, 7))/POPULATION ;
     /** Whether to dump partial reports during simulation. */
     static final boolean PARTIAL_DUMP = (DUMP_CYCLE > 0) ;
     
@@ -188,9 +188,15 @@ public class Community {
         {
             LOGGER.info(args[argIndex]);
             if (args[argIndex].equals("raijin"))
+            {
                 FILE_PATH = "/short/is14/mw7704/prepsti/" + FILE_PATH ;
+                DUMP_CYCLE = 500 ;
+            }
             else if (args[argIndex].equals("katana"))
+            {
                 FILE_PATH = "/srv/scratch/z3524276/prepsti/" + FILE_PATH ;
+                DUMP_CYCLE = 500 ;
+            }
             argIndex++ ;
         }
         /*
@@ -213,6 +219,9 @@ public class Community {
             if (siteIndex != 9)    // 9 transmissionProbabilities or none
                 LOGGER.severe("Transmission probabilities missing. Only found " + String.valueOf(siteIndex-3) + " out of 9") ;
         }
+        
+        COMMENT += MSM.TRANSMISSION_PROBABILITY_REPORT() ;
+        
         // Whether to plot prevalence upon completion.
         // Must be false when run on an HPC cluster.
         TO_PLOT = (!FILE_PATH.contains("prepsti")) ;
@@ -594,7 +603,7 @@ public class Community {
     private String interveneCommunity(int cycle)
     {
         // When to end burn-in
-        int startCycle = 365 * 4 ;
+        int startCycle = 365 * 1 ;
         if ((cycle < startCycle))
             return "" ;
         
@@ -1313,6 +1322,7 @@ public class Community {
      */
     private void dump()
     {
+        LOGGER.info("commencing dump") ;
         scribe.dump(this) ;
                 //MetaData() ;
         try
@@ -1326,6 +1336,7 @@ public class Community {
         {
             LOGGER.log(Level.SEVERE, "{0} {1}", new Object[] {nsfe.getLocalizedMessage(), nsfe.toString()});
         }
+        LOGGER.info("dump complete") ;
     }
     
     /**
@@ -1333,6 +1344,7 @@ public class Community {
      */
     private void dumpMetaData()
     {
+        LOGGER.info(TRUE) ;
         ArrayList<String> metaLabels = new ArrayList<String>() ; 
         ArrayList<Object> metaData = new ArrayList<Object>() ; 
         metaLabels.add("Community.NAME_ROOT") ;
