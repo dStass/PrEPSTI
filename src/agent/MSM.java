@@ -592,19 +592,19 @@ public class MSM extends Agent {
     private boolean riskyStatus ;
     
     /** Transmission probabilities per sexual contact from Urethra to Rectum */
-    static double URETHRA_TO_RECTUM = 0.95 ; 
+    static double URETHRA_TO_RECTUM = 0.80 ; 
     /** Transmission probabilities sexual contact from Urethra to Pharynx. */
-    static double URETHRA_TO_PHARYNX = 0.50 ; 
+    static double URETHRA_TO_PHARYNX = 0.30 ; 
     /** Transmission probabilities sexual contact from Rectum to Urethra. */
-    static double RECTUM_TO_URETHRA = 0.050 ;
+    static double RECTUM_TO_URETHRA = 0.080 ;
     /** Transmission probabilities sexual contact from Rectum to Pharynx. */
-    static double RECTUM_TO_PHARYNX = 0.050 ;
+    static double RECTUM_TO_PHARYNX = 0.040 ;
     /** Transmission probabilities sexual contact in Pharynx to Urethra intercourse. */
-    static double PHARYNX_TO_URETHRA = 0.02 ; 
+    static double PHARYNX_TO_URETHRA = 0.03 ; 
     /** Transmission probabilities sexual contact in Pharynx to Rectum intercourse. */
-    static double PHARYNX_TO_RECTUM = 0.050 ; 
+    static double PHARYNX_TO_RECTUM = 0.030 ; 
     /** Transmission probabilities sexual contact in Pharynx to Pharynx intercourse (kissing). */
-    static double PHARYNX_TO_PHARYNX = 0.05 ; 
+    static double PHARYNX_TO_PHARYNX = 0.040 ; 
     /** Transmission probabilities sexual contact in Urethra to Urethra intercourse (docking). */
     static double URETHRA_TO_URETHRA = 0.001 ; 
     /** Transmission probabilities sexual contact in Rectum to Rectum intercourse. */
@@ -699,6 +699,29 @@ public class MSM extends Agent {
     	return infectProbability ;
     }
     
+    public static String TRANSMISSION_PROBABILITY_REPORT()
+    {
+        String report = "" ;
+        
+        String[] SITENAMES = new String[] {"PHARYNX", "RECTUM", "URETHRA"} ;
+        for (int siteIndex1 = 0 ; siteIndex1 < 3 ; siteIndex1++ )
+            for (int siteIndex2 = 0 ; siteIndex2 < 3 ; siteIndex2++ )
+            {
+                String siteName1 = SITENAMES[siteIndex1] ;
+                String siteName2 = SITENAMES[siteIndex2] ;
+                String sitesTransmit = siteName1 + "_TO_" + siteName2 ;
+                try
+                {
+                    double infectProbability = MSM.class.getDeclaredField(sitesTransmit).getDouble(null) ;
+                    report += Reporter.ADD_REPORT_PROPERTY(sitesTransmit, infectProbability) ;
+                }
+                catch ( Exception e )
+                {
+                    LOGGER.log(Level.SEVERE, "{0} : {1}", new Object[]{e.getClass().getName(), e.getLocalizedMessage()});
+                }
+            }
+        return report ;
+    }
     /**
      * Choose sites for sexual contact, implementing seropositioning
      * if required. If so, Urethra of positive statusHIV msm is never chosen if 
