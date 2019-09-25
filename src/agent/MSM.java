@@ -99,8 +99,8 @@ public class MSM extends Agent {
      * then only MSM not on antiviral medication will change, and vice versa if the probability
      * decreases.
      * Taken from Table 17 ARTB 2017 and Table 16 ARTB 2018
-     * @param agentList
-     * @param year 
+     * @param agentList (ArrayList) List of Agents to undergo parameter change.
+     * @param year (int) Year of simulation, starting from 0.
      * @throws java.lang.Exception 
      */
     static protected void REINIT_PROBABILITY_ANTIVIRAL(ArrayList<Agent> agentList, int year) throws Exception
@@ -166,8 +166,8 @@ public class MSM extends Agent {
      * Alters the willingness to trust U=U as protection against HIV on a year-by-year
      * basis.
      * Data taken from Table 21 in GCPS 2017.
-     * @param agentList
-     * @param year 
+     * @param agentList (ArrayList) List of Agents to undergo parameter change.
+     * @param year (int) Year of simulation starting from year zero.
      */
     static protected void REINIT_TRUST_ANTIVIRAL(ArrayList<Agent> agentList, int year) 
     {
@@ -222,8 +222,8 @@ public class MSM extends Agent {
      * disclose probabilities each year.
      * Probabilities taken from Table 9 of ARTB 2017
      * and Table 8 of ARTB 2018.
-     * @param agentList
-     * @param year 
+     * @param agentList (ArrayList) List of Agents to undergo parameter change.
+     * @param year (int) Year of simulation, starting from zero.
      */
     static protected void REINIT_PROBABILITY_DISCLOSURE_HIV(ArrayList<Agent> agentList, int year) //throws Exception
     {
@@ -280,9 +280,9 @@ public class MSM extends Agent {
     /**
      * Resets the probability of Risky vs Safe behaviour according to the year.
      * Rates taken from GCPS 2011 Table 16, 2014 Table 15, 
-     * @param agentList
-     * @param year
-     * @throws java.lang.Exception
+     * @param agentList (ArrayList) List of Agents to undergo parameter change.
+     * @param year (int) Year of simulation, starting from zero.
+     * @throws java.lang.Exception (Exception)
      */
     static protected void REINIT_RISK_ODDS(ArrayList<Agent> agentList, int year) throws Exception
     {
@@ -356,8 +356,8 @@ public class MSM extends Agent {
      * Resets the probability of MSM using a GSN year-by-year.
      * Values taken from GCPS "Where men met their male sex partners in the six months
      * prior to the survey. (Table 20 2013, Table 10 2018)
-     * @param agentList
-     * @param year 
+     * @param agentList (ArrayList) List of Agents to undergo parameter change.
+     * @param year (int) Year of simulation, starting from zero.
      */
     static protected void REINIT_USE_GSN(ArrayList<Agent> agentList, int year)
     {
@@ -410,8 +410,8 @@ public class MSM extends Agent {
      * Resets the probability of consenting to a Casual relationship according to 
      * the year and the HIV status of each MSM.
      * Rates taken from GCPS 2011 Table 16, 2014 Table 15, 
-     * @param agentList
-     * @param year
+     * @param agentList (ArrayList) List of Agents to undergo parameter change.
+     * @param year (int) Year of simulation, starting from zero.
      */
     static protected void REINIT_CONSENT_CASUAL_PROBABILITY(ArrayList<Agent> agentList, int year)
     {
@@ -461,9 +461,9 @@ public class MSM extends Agent {
     /**
      * Returns an ArrayList of Agents seeking a relationshipClazzName Relationship.
      * May be overridden to accomodate serosorting etc.
-     * @param agentList
-     * @param relationshipClazzName 
-     * @return 
+     * @param agentList (ArrayList) List of Agents to be considered for specified Relationship.
+     * @param relationshipClazzName (String) Name of Relationship sub-Class. 
+     * @return (
      */
     static public ArrayList<ArrayList<Agent>> SEEKING_AGENTS(ArrayList<Agent> agentList, String relationshipClazzName)
     {
@@ -594,19 +594,19 @@ public class MSM extends Agent {
     /** Transmission probabilities per sexual contact from Urethra to Rectum */
     static double URETHRA_TO_RECTUM = 0.90 ; 
     /** Transmission probabilities sexual contact from Urethra to Pharynx. */
-    static double URETHRA_TO_PHARYNX = 0.40 ; 
+    static double URETHRA_TO_PHARYNX = 0.50 ; 
     /** Transmission probabilities sexual contact from Rectum to Urethra. */
-    static double RECTUM_TO_URETHRA = 0.070 ;
+    static double RECTUM_TO_URETHRA = 0.040 ;
     /** Transmission probabilities sexual contact from Rectum to Pharynx. */
-    static double RECTUM_TO_PHARYNX = 0.020 ;
+    static double RECTUM_TO_PHARYNX = 0.005 ;
     /** Transmission probabilities sexual contact in Pharynx to Urethra intercourse. */
-    static double PHARYNX_TO_URETHRA = 0.03 ; 
+    static double PHARYNX_TO_URETHRA = 0.04 ; 
     /** Transmission probabilities sexual contact in Pharynx to Rectum intercourse. */
-    static double PHARYNX_TO_RECTUM = 0.020 ; 
+    static double PHARYNX_TO_RECTUM = 0.040 ; 
     /** Transmission probabilities sexual contact in Pharynx to Pharynx intercourse (kissing). */
-    static double PHARYNX_TO_PHARYNX = 0.040 ; 
+    static double PHARYNX_TO_PHARYNX = 0.045 ; 
     /** Transmission probabilities sexual contact in Urethra to Urethra intercourse (docking). */
-    static double URETHRA_TO_URETHRA = 0.001 ; 
+    static double URETHRA_TO_URETHRA = 0.04 ; 
     /** Transmission probabilities sexual contact in Rectum to Rectum intercourse. */
     static double RECTUM_TO_RECTUM = 0.001 ;
 
@@ -631,7 +631,12 @@ public class MSM extends Agent {
     /** Probability of joining a group-sex event if invited. */
     static double JOIN_GSE_PROBABILITY = 6.35 * Math.pow(10,-4) ;
     
-    
+    /**
+     * Allows changing of SITE_TO_SITE transmission probabilities.
+     * @param infectedSiteName (String) Name of transmitting Site.
+     * @param clearSiteName (String) Name of receiving Site.
+     * @param transmission (double) New value for transmissionProbability.
+     */
     public static void RESET_INFECT_PROBABILITIES(int index)
     {
         HashMap<String[],double[]> transmissionMap = new HashMap<String[], double[]>() ;
@@ -659,10 +664,10 @@ public class MSM extends Agent {
     }
     
     /**
-     * Allows changing of SITE_TO_SITE transmission probabilities.
-     * @param infectedSiteName
-     * @param clearSiteName
-     * @param transmission 
+     * Allows setting of SITE_TO_SITE transmission probabilities.
+     * @param infectedSiteName (String) Name of transmitting Site.
+     * @param clearSiteName (String) Name of receiving Site.
+     * @param transmission (double) New value for transmissionProbability.
      */
     public static void SET_INFECT_PROBABILITY(String infectedSiteName, String clearSiteName, double transmission)
     {
@@ -679,8 +684,8 @@ public class MSM extends Agent {
     
     /**
      * 
-     * @param infectedSite
-     * @param clearSite
+     * @param infectedSite (Site) Infected Site capable of transmitting infection.
+     * @param clearSite (Site) Infection-clear Site in danger of becoming infected.
      * @return infectProbability (double) the probability of infection of clearSite
      */
     public static double GET_INFECT_PROBABILITY(Site infectedSite, Site clearSite)
@@ -699,6 +704,11 @@ public class MSM extends Agent {
     	return infectProbability ;
     }
     
+    /**
+     * 
+     * @return (String) Report specifying values of each transmissionProbability 
+     * parameter.
+     */
     public static String TRANSMISSION_PROBABILITY_REPORT()
     {
         String report = "" ;
@@ -727,8 +737,8 @@ public class MSM extends Agent {
      * if required. If so, Urethra of positive statusHIV msm is never chosen if 
      * couple is serodiscordant. 
      * Also check if either MSM refrains from anal intercourse in Casual Relationships.
-     * @param agent0
-     * @param agent1
+     * @param agent0 (Agent) Participant in specified Relationship.
+     * @param agent1 (Agent) Participant in specified Relationship.
      * @param relationshipClazzName
      * @return (Site[]) Sites of sexual contact for agent0, agent1, respectively.
      */
@@ -742,8 +752,8 @@ public class MSM extends Agent {
      * if required. If so, Urethra of positive statusHIV msm is never chosen if 
      * couple is serodiscordant. 
      * Current Relationship Class is of no consequence.
-     * @param msm0
-     * @param msm1
+     * @param msm0 (MSM) Participant in specified Relationship.
+     * @param msm1 (MSM) Participant in specified Relationship.
      * @return (Site[]) Sites of sexual contact for msm0, msm1, respectively.
      */
     public static Site[] CHOOSE_SITES(MSM msm0, MSM msm1)
@@ -756,9 +766,10 @@ public class MSM extends Agent {
      * if required. If so, Urethra of positive statusHIV msm is never chosen if 
      * couple is serodiscordant. 
      * Also check if either MSM refrains from anal intercourse in Casual Relationships.
-     * @param msm0
-     * @param msm1
-     * @param relationshipClazzName
+     * @param msm0 (MSM) Participant in specified Relationship.
+     * @param msm1 (MSM) Participant in specified Relationship.
+     * @param relationshipClazzName (String) Name of Relationship sub-Class hosting 
+     * the encounter.
      * @return (Site[]) Sites of sexual contact for msm0, msm1, respectively.
      */
     public static Site[] CHOOSE_SITES(MSM msm0, MSM msm1, String relationshipClazzName)
@@ -1120,6 +1131,7 @@ public class MSM extends Agent {
     /**
      * Used when choosing Site for sexual encounter where one Site has already 
      * been chosen.
+     * @param site (Site) Site to choose in complement to.
      * @return random choice of rectum, urethra or pharynx
      */
     @Override
@@ -1172,7 +1184,7 @@ public class MSM extends Agent {
     /**
      * Used when choosing Site other than Rectum for sexual encounter when Site
      * other than Rectum has already been chosen.
-     * @param site
+     * @param site (Site) Non-rectal Site to choose in complement to.
      * @return random choice of rectum, urethra or pharynx
      */
     protected Site chooseNotRectumSite(Site site) 
@@ -1215,18 +1227,26 @@ public class MSM extends Agent {
 
     /**
      * Setter of Site rectum.
-     * @param rectum 
+     * @param rectum (Rectum)
      */
     protected void setRectum(Rectum rectum)
     {
         this.rectum = rectum ;
     }
     
+    /**
+     * Getter of Site urethra.
+     * @return 
+     */
     public Urethra getUrethra()
     {
         return urethra ;		
     }
 
+    /**
+     * Setter of Site urethra.
+     * @param urethra (Urethra)
+     */
     protected void setUrethra(Urethra urethra)
     {
         this.urethra = urethra ;
@@ -1237,6 +1257,10 @@ public class MSM extends Agent {
         return pharynx ;
     }
 
+    /**
+     * Setter for Pharynx.
+     * @param pharynx (Pharynx) 
+     */
     protected void setPharynx(Pharynx pharynx)
     {
         this.pharynx = pharynx ;
@@ -1255,7 +1279,7 @@ public class MSM extends Agent {
      * Setter of statusHIV.
      * Also ensures that prepStatus and antiViralStatus do not have
      * inappropriate values.
-     * @param status 
+     * @param status (boolean)
      */
     public void setStatusHIV(boolean status)
     {
@@ -1266,6 +1290,10 @@ public class MSM extends Agent {
             setAntiViralStatus(false) ;
     }
 
+    /**
+     * Setter for riskyStatus.
+     * @param risky (boolean) new value for riskyStatus.
+     */
     @Override
     public void setRiskyStatus(boolean risky)
     {
@@ -1274,8 +1302,10 @@ public class MSM extends Agent {
     
     /**
      * Getter of seroSort variables, specific to Class of Relationship.
-     * @param relationshipClazzName
-     * @return 
+     * @param relationshipClazzName (String) Name of relationship subclass for 
+     * which serosorting status is sought.
+     * @return (boolean) Whether MSM uses serosorting for risk-reduction in relationships
+     * of type relationshipClazzName.
      */
     public boolean getSeroSort(String relationshipClazzName)    //, Boolean status)
     {
@@ -1294,7 +1324,7 @@ public class MSM extends Agent {
     
     /**
      * Setter of seroSort, used for unit testing
-     * @param sort 
+     * @param sort (boolean) Whether MSM uses serosorting for risk-reduction.
      */
     public void setSeroSort(boolean sort)
     {
@@ -1303,7 +1333,8 @@ public class MSM extends Agent {
 
     /**
      * Setter of seroSortRegular
-     * @param sort 
+     * @param sort (boolean) Whether MSM uses serosorting for risk-reduction in 
+     * regular relationships.
      */
     public void setSeroSortRegular(boolean sort)
     {
@@ -1312,7 +1343,8 @@ public class MSM extends Agent {
 
     /**
      * Setter of seroSortCasual
-     * @param sort 
+     * @param sort (boolean) Whether MSM uses serosorting for risk-reduction in 
+     * casual relationships.
      */
     public void setSeroSortCasual(boolean sort)
     {
@@ -1321,7 +1353,8 @@ public class MSM extends Agent {
 
     /**
      * Setter of seroSort
-     * @param sort 
+     * @param sort (boolean) Whether MSM uses serosorting for risk-reduction in 
+     * monogomous relationships.
      */
     public void setSeroSortMonogomous(boolean sort)
     {
@@ -1334,9 +1367,9 @@ public class MSM extends Agent {
     }
     
     /**
-     * Setter of seroPosition. Used for unit testing.
+     * Setter of seroPosition. 
      * Changes discloseStatus to true if (position == true)
-     * @param position 
+     * @param position (boolean) Whether MSM uses seropositioning for risk-reduction.
      */
     public void setSeroPosition(boolean position)
     {
@@ -1354,7 +1387,7 @@ public class MSM extends Agent {
     
     /**
      * Setter of consentCasualProbability.
-     * @param casualProbability 
+     * @param casualProbability (double)
      */
     public void setConsentCasualProbability(double casualProbability)
     {
@@ -1382,7 +1415,7 @@ public class MSM extends Agent {
     /**
      * Setter of antiViralStatus. 
      * Will only set it to true if statusHIV is true.
-     * @param status 
+     * @param status (boolean)
      */
     public void setAntiViralStatus(boolean status)
     {
@@ -1417,7 +1450,7 @@ public class MSM extends Agent {
     /**
      * Setter of chemoProphylaxis. 
      * Will only set it to true if statusHIV is true.
-     * @param status 
+     * @param status (boolean)
      */
     public void setChemoProphylaxis(boolean status)
     {
@@ -1436,7 +1469,7 @@ public class MSM extends Agent {
     /**
      * Setter of chemoProphylaxis. 
      * Will only set it to true if statusHIV is true.
-     * @param status 
+     * @param status (boolean)
      */
     public void setChemoPartner(boolean status)
     {
@@ -1454,7 +1487,7 @@ public class MSM extends Agent {
     
     /**
      * Setter of trustAntiViral.
-     * @param status 
+     * @param status (boolean)
      */
     public void setTrustAntiViral(boolean status)
     {
@@ -1472,7 +1505,7 @@ public class MSM extends Agent {
     
     /**
      * Setter of trustPrep.
-     * @param status 
+     * @param status (boolean)
      */
     public void setTrustPrep(boolean status)
     {
@@ -1489,8 +1522,8 @@ public class MSM extends Agent {
     }
     
     /**
-     * Setter of discloseStatusHIV. Used for unit testing
-     * @param disclose 
+     * Setter of discloseStatusHIV. 
+     * @param disclose (boolean) 
      */
     public void setDiscloseStatusHIV(boolean disclose)
     {
