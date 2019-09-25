@@ -283,7 +283,7 @@ public class Community {
                 commenceList = Reporter.EXTRACT_ARRAYLIST(commenceString, Reporter.RELATIONSHIPID) ;
                 for (String commence : commenceList)
                 {
-                    if (!commence.contains("Casual"))
+                    //if (!commence.contains("Casual"))
                     {
                         relationshipId = Reporter.EXTRACT_VALUE(Reporter.RELATIONSHIPID, commence) ;
                         commenceMap.put(relationshipId,commence) ;
