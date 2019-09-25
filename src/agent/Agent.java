@@ -123,19 +123,25 @@ public abstract class Agent {
     static public boolean REINIT(ArrayList<Agent> agentList, int year) 
     {
         //boolean successful = true ;
+        String methodName = "" ;
         try
         {
+            methodName = "screen" ;
             REINIT_SCREEN_CYCLE(agentList, year) ;
             //REINIT_NB_RELATIONSHIPS(agentList, year) ;
+            methodName = "antiviral" ;
             MSM.REINIT_PROBABILITY_ANTIVIRAL(agentList, year) ;
+            methodName = "disclosure" ;
             MSM.REINIT_PROBABILITY_DISCLOSURE_HIV(agentList, year) ;
+            methodName = "riskiness" ;
             MSM.REINIT_RISK_ODDS(agentList, year) ;
+            methodName = "trust_antiviral" ;
             MSM.REINIT_TRUST_ANTIVIRAL(agentList, year) ;
-            MSM.REINIT_USE_GSN(agentList, year) ;
+            //MSM.REINIT_USE_GSN(agentList, year) ;
         }
         catch ( Exception e )
         {
-            LOGGER.severe(e.toString()) ;
+            LOGGER.severe(e.toString() + " in method " + methodName) ;
             return false ;
         }
         return true ;
