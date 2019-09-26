@@ -603,7 +603,7 @@ public class Community {
     private String interveneCommunity(int cycle)
     {
         // When to end burn-in
-        int startCycle = 365 * 1 ;
+        int startCycle = 365 * 3 ;
         if ((cycle < startCycle))
             return "" ;
         
@@ -1322,7 +1322,6 @@ public class Community {
      */
     private void dump()
     {
-        LOGGER.info("commencing dump") ;
         scribe.dump(this) ;
                 //MetaData() ;
         try
@@ -1336,7 +1335,6 @@ public class Community {
         {
             LOGGER.log(Level.SEVERE, "{0} {1}", new Object[] {nsfe.getLocalizedMessage(), nsfe.toString()});
         }
-        LOGGER.info("dump complete") ;
     }
     
     /**
@@ -1403,6 +1401,7 @@ public class Community {
      */
     private void dumpRebootData()
     {
+        LOGGER.info("dumpRebootData()");
         ArrayList<String> metaLabels = new ArrayList<String>() ; 
         ArrayList<Object> metaData = new ArrayList<Object>() ; 
         
@@ -1420,6 +1419,7 @@ public class Community {
                     relationshipReboot +=relationship.getRecord() ;
         metaData.add(relationshipReboot) ; 
      
+        LOGGER.info("scribe.dumpRebootData()");
         scribe.dumpRebootData(metaLabels, metaData);
     }
     
