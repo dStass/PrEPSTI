@@ -337,29 +337,25 @@ public class EncounterReporter extends Reporter {
         PopulationReporter populationReporter = new PopulationReporter(simName,getFolderPath()) ;
         HashMap<Object,ArrayList<Object>> sortedAgentReport = populationReporter.agentIdSorted(sortingProperty) ;
         HashMap<Object,Object> sortedAgentIds = populationReporter.sortedAgentIds(sortingProperty) ;
-        ArrayList<Object> agentsAliveReport = populationReporter.prepareAgentsAliveRecord(endCycle) ;
+        ArrayList<Object> agentsAliveReport = populationReporter.prepareAgentsAliveRecord(endCycle - DAYS_PER_YEAR) ;
 
-        for (Object relationshipId : relationshipAgentReport.keySet())
-            if (relationshipAgentReport.get(relationshipId) == null || relationshipAgentReport.get(relationshipId).length != 2)
-            {
-                LOGGER.severe("No Agents found for Relationship " + relationshipId) ;
-            }
-        
         for (String finalIncidentsRecord : finalIncidentsReport)
         {
+            // All retained contacts of all retained encounters have transmission.
             record = encounterByValue(TRANSMISSION,TRUE,finalIncidentsRecord) ;
             for (int encounterIndex = record.indexOf(RELATIONSHIPID) ; encounterIndex > -1 ; encounterIndex = record.indexOf(RELATIONSHIPID,encounterIndex + 1))
             {
                 boolean[] incidenceAgentIds = new boolean[] {false,false} ;
                 String encounterString = extractEncounter(record,encounterIndex) ;
                 String relationshipId = EXTRACT_VALUE(RELATIONSHIPID,encounterString) ;
-                if (!relationshipAgentReport.containsKey(relationshipId))
-                    LOGGER.severe(relationshipId + " not found in relationshipAgentReport") ;
+                    if (!relationshipAgentReport.containsKey(relationshipId))
+                        LOGGER.severe(relationshipId + " not found in relationshipAgentReport") ;
                 agentIds = relationshipAgentReport.get(relationshipId) ;
                 //Object[] sortingValues = new Object[] {sortedAgentIds.get(agentIds[0]),sortedAgentIds.get(agentIds[1])} ;
                 if (agentIds == null || agentIds.length != 2)
                 {
-                    LOGGER.log(Level.SEVERE, "relationsipId:{0} {1}", new Object[] {relationshipId,agentIds});
+                    //LOGGER.log(Level.SEVERE, "relationsipId:{0} {1}", new Object[] {relationshipId,agentIds});
+                    LOGGER.info(finalIncidentsRecord.substring(0, 100)) ;
                     continue;
                 }
                 
@@ -371,60 +367,66 @@ public class EncounterReporter extends Reporter {
                     String incidentAgentId = "" ;
                     String siteNameA = "" ;
                     String siteNameB = "" ;
+                    
+                    // Find siteA in contact
                     int siteIndexA = -1 ;
-                    for (String siteName : siteNames)
+                    int indexA = 0 ;
+                    while (siteIndexA < 0)
                     {
-                        siteIndexA = contactString.indexOf(siteName) ;
-                        if (siteIndexA > 0)
-                        {
-                            siteNameA = siteName ;
-                            break ;
-                        }
+                        siteIndexA = contactString.indexOf(siteNames[indexA]) ;
+                        siteNameA = siteNames[indexA] ;
+                        indexA++ ;
                     }
-                    int siteIndexB = -1 ;
-                    for (String siteName : siteNames)
+                    
+                    // Find siteB in contact
+                    int indexB = indexA ;
+                    // Does siteNameB == siteNameA ?
+                    int siteIndexB = contactString.indexOf(siteNameA,siteIndexA + 1) ;
+                    // indexB == siteNames.length only if siteNameB == siteNameA
+                    //for (String siteName : siteNames)
+                    while ((siteIndexB < 0) && (indexB < (siteNames.length + 1)))
                     {
-                        siteIndexB = contactString.indexOf(siteName,siteIndexB+1) ;
-                        if (siteIndexB == siteIndexA)
-                            siteIndexB = contactString.indexOf(siteName,siteIndexB+1) ;
-                        if (siteIndexB > 0)
-                        {
-                            siteNameB = siteName ;
-                            boolean AthenB = siteIndexA < siteIndexB ;
-                            int incidentIndex ;
-                            if ("0".equals(EXTRACT_VALUE(siteName,contactString,siteIndexB)))
-                            {
-                                if (AthenB)
-                                {
-                                    incidentIndex = 1 ;
-                                    incidentSiteName = siteNameB ;
-                                }
-                                else
-                                {
-                                    incidentIndex = 0 ;
-                                    incidentSiteName = siteNameA ;
-                                }
-                            }
-                            else
-                            {
-                                if (AthenB)
-                                {
-                                    incidentIndex = 0 ;
-                                    incidentSiteName = siteNameA ;
-                                }
-                                else
-                                {
-                                    incidentIndex = 1 ;
-                                    incidentSiteName = siteNameB ;
-                                }
-                            }
-                            //incidentValue = sortingValues[incidentIndex] ;
-                            incidentAgentId = agentIds[incidentIndex] ;
-                            incidenceAgentIds[incidentIndex] = true ;
+                        siteIndexB = contactString.indexOf(siteNames[indexB]) ;
+                        indexB++ ;
+                    }
+                    
+                    siteNameB = siteNames[indexB - 1] ;
+                    
+                    if ((siteIndexB < 0) || (siteIndexA < 0))
+                        LOGGER.severe("Site missing in contactSting " + contactString) ;
+                    
+                    // Determine transmitting and receiving Sites.
+                    boolean AthenB = siteIndexA < siteIndexB ;
+                    int incidentIndex ;
+                    // Receiving Site has value "0" in contactString.
+                    if ("0".equals(EXTRACT_VALUE(siteNameB,contactString,siteIndexB)))
+                    {
+                        incidentSiteName = siteNameB ;
+                        if (AthenB)
+                            incidentIndex = 1 ;
+                        else
+                            incidentIndex = 0 ;
+                    }
+                    else if ("1".equals(EXTRACT_VALUE(siteNameB,contactString,siteIndexB)))
+                    {
+                        incidentSiteName = siteNameA ;
+                        if (AthenB)
+                            incidentIndex = 0 ;
+                        else
+                            incidentIndex = 1 ;
+                    }
+                    else
+                    {
+                        LOGGER.log(Level.SEVERE, "siteIndexA:{0} siteIndexB:{1} siteNameA:{2} siteNameB:{3} {4}",
+                                new Object[] {indexA, indexB, siteNameA, siteNameB, contactString});
+                        incidentIndex = -1 ;
+                    }
+                    
+                    // To track any Site
+                    //incidentValue = sortingValues[incidentIndex] ;
+                    incidentAgentId = agentIds[incidentIndex] ;
+                    incidenceAgentIds[incidentIndex] = true ;
 
-                            break ;
-                        }
-                    }
                     incidentValue = sortedAgentIds.get(incidentAgentId) ;
                     if (!sortedFinalIncidence.containsKey(incidentValue))
                     {
