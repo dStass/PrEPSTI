@@ -369,7 +369,7 @@ public class Community {
         if (!PARTIAL_DUMP || (((Community.MAX_CYCLES)/DUMP_CYCLE) * DUMP_CYCLE) != Community.MAX_CYCLES )
             community.dump() ;
         community.dumpMetaData() ;
-        community.dumpRebootData() ;
+        //community.dumpRebootData() ;
         
         long elapsedTime = System.nanoTime() - startTime ;
         long milliTime = elapsedTime/1000000 ;
