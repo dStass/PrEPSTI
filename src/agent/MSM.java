@@ -592,21 +592,21 @@ public class MSM extends Agent {
     private boolean riskyStatus ;
     
     /** Transmission probabilities per sexual contact from Urethra to Rectum */
-    static double URETHRA_TO_RECTUM = 0.90 ; 
+    static double URETHRA_TO_RECTUM = 0.80 ; 
     /** Transmission probabilities sexual contact from Urethra to Pharynx. */
-    static double URETHRA_TO_PHARYNX = 0.50 ; 
+    static double URETHRA_TO_PHARYNX = 0.30 ; 
     /** Transmission probabilities sexual contact from Rectum to Urethra. */
-    static double RECTUM_TO_URETHRA = 0.040 ;
+    static double RECTUM_TO_URETHRA = 0.080 ;
     /** Transmission probabilities sexual contact from Rectum to Pharynx. */
-    static double RECTUM_TO_PHARYNX = 0.005 ;
+    static double RECTUM_TO_PHARYNX = 0.040 ;
     /** Transmission probabilities sexual contact in Pharynx to Urethra intercourse. */
-    static double PHARYNX_TO_URETHRA = 0.04 ; 
+    static double PHARYNX_TO_URETHRA = 0.03 ; 
     /** Transmission probabilities sexual contact in Pharynx to Rectum intercourse. */
-    static double PHARYNX_TO_RECTUM = 0.040 ; 
+    static double PHARYNX_TO_RECTUM = 0.030 ; 
     /** Transmission probabilities sexual contact in Pharynx to Pharynx intercourse (kissing). */
-    static double PHARYNX_TO_PHARYNX = 0.045 ; 
+    static double PHARYNX_TO_PHARYNX = 0.040 ; 
     /** Transmission probabilities sexual contact in Urethra to Urethra intercourse (docking). */
-    static double URETHRA_TO_URETHRA = 0.04 ; 
+    static double URETHRA_TO_URETHRA = 0.001 ; 
     /** Transmission probabilities sexual contact in Rectum to Rectum intercourse. */
     static double RECTUM_TO_RECTUM = 0.001 ;
 
@@ -812,7 +812,7 @@ public class MSM extends Agent {
      * Describes correlation between statusHIV and riskyStatus.
      * Must be less than 1/PROPORTION_HIV OR initRiskiness() fails.
      */
-    static double HIV_RISKY_CORRELATION = 1.5 ; // 2.0 ; // 1.0 ;	
+    static double HIV_RISKY_CORRELATION = 2.0 ; // 1.0 ;	
     
     /**
      * Choose whether MSM is RiskyMSM or SafeMSM
