@@ -70,7 +70,7 @@ public class Community {
     //static public String FILE_PATH = "/short/is14/mw7704/prepsti/output/year2007/" ;
     
     /** Whether parameters change throughout simulation. */
-    static boolean DYNAMIC = false ;
+    static boolean DYNAMIC = true ;
     
     /** Dump reports to disk after this many cycles. */
     static int DUMP_CYCLE = 250 ; // ((int) Math.pow(10, 7))/POPULATION ;
@@ -603,7 +603,7 @@ public class Community {
     private String interveneCommunity(int cycle)
     {
         // When to end burn-in
-        int startCycle = 365 * 3 ;
+        int startCycle = 365 * 4 ;
         if ((cycle < startCycle))
             return "" ;
         
@@ -755,7 +755,8 @@ public class Community {
         relationshipClazzNames = new String[] {"Casual","Regular","Monogomous"} ;
         for (String relationshipClazzName : relationshipClazzNames)
         {
-            ArrayList<ArrayList<Agent>> agentLists = seekingAgents(availableAgents,relationshipClazzName) ;
+            ArrayList<ArrayList<Agent>> agentLists = MSM.SEEKING_AGENTS(availableAgents,relationshipClazzName) ;
+            //ArrayList<ArrayList<Agent>> agentLists = seekingAgents(availableAgents,relationshipClazzName) ;
             //MSM.SEEKING_AGENTS(availableAgents,relationshipClazzName) ;
             
             // Determine which Agents seek out which Relationship Class
