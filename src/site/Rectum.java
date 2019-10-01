@@ -14,7 +14,7 @@ public class Rectum extends Site {
     // Constants that vary according to Site subclass
     
     /** Probability of Site being infected initially */
-    static double INITIAL = 0.02 ; // 0.034 ; // 0.075 ; // 0.080 ; // 0.08 ; // 0.005 ;
+    static double INITIAL = 0.040 ; // 0.08 ; // 0.005 ;
     
     /** Probability of positive symptomatic status if infected */
     static double SYMPTOMATIC_PROBABILITY = 0.15 ;
@@ -22,7 +22,7 @@ public class Rectum extends Site {
     /**
      * Duration of gonorrhoea infection in rectum.
      */
-    static int INFECTION_DURATION = 365 ; // 183 ; // 365 ; // 274 ; // 365 ; // 183
+    static int INFECTION_DURATION = 274 ; // 365 ; // 183
     
     /**
      * Probability of seeking treatment in a given cycle if infected with 
