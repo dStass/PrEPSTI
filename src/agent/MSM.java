@@ -14,6 +14,7 @@ import java.util.ArrayList ;
 import java.util.Arrays;
 import java.util.HashMap ;
 import java.util.Collection ;
+import java.util.Collections;
 import java.util.stream.IntStream;
 import org.apache.commons.math3.distribution.* ;
 import reporter.PopulationReporter;
@@ -467,38 +468,41 @@ public class MSM extends Agent {
      */
     static public ArrayList<ArrayList<Agent>> SEEKING_AGENTS(ArrayList<Agent> agentList, String relationshipClazzName)
     {
-        ArrayList<ArrayList<Agent>> seekingAgentList = new ArrayList<ArrayList<Agent>>() ;
+        ArrayList<ArrayList<Agent>> seekingAgentListList = new ArrayList<ArrayList<Agent>>() ;
+        ArrayList<Agent> seekingAgentList = new ArrayList<Agent>() ;
         
-        ArrayList<Agent> positiveHIV = new ArrayList<Agent>() ;
-        ArrayList<Agent> negativeHIV = new ArrayList<Agent>() ;
+//        ArrayList<Agent> positiveHIV = new ArrayList<Agent>() ;
+//        ArrayList<Agent> negativeHIV = new ArrayList<Agent>() ;
         
         int index ;
         // Determine which Agents seek out which Relationship Class
+        Collections.shuffle(agentList) ;
         for (Agent agent : agentList)
         {
             MSM msm = (MSM) agent ;
             if (msm.seekRelationship(relationshipClazzName))
             {
-                if (msm.statusHIV)
+                if (msm.statusHIV && msm.seroSort)
                 {
-                    if (msm.seroSort)
-                        positiveHIV.add(msm) ;
-                    else
-                        positiveHIV.add(0,msm) ;
+//                    if (msm.seroSort)
+                        seekingAgentList.add(msm) ;
                 }
-                else
-                {
-                    if (msm.seroSort)
-                        negativeHIV.add(msm) ;
                     else
-                        negativeHIV.add(0,msm) ;
-                }
+                        seekingAgentList.add(0,msm) ;
+                //}
+//                else
+//                {
+//                    if (msm.seroSort)
+//                        negativeHIV.add(msm) ;
+//                    else
+//                        negativeHIV.add(0,msm) ;
+//                }
             }
         }
-        seekingAgentList.add(positiveHIV) ;
-        seekingAgentList.add(negativeHIV) ;
+        seekingAgentListList.add(seekingAgentList) ;
+        //seekingAgentListList.add(negativeHIV) ;
 
-        return seekingAgentList ;    
+        return seekingAgentListList ;    
     }
     
     /**
@@ -592,23 +596,23 @@ public class MSM extends Agent {
     private boolean riskyStatus ;
     
     /** Transmission probabilities per sexual contact from Urethra to Rectum */
-    static double URETHRA_TO_RECTUM = 0.80 ; 
+    static double URETHRA_TO_RECTUM = 0.90 ; 
     /** Transmission probabilities sexual contact from Urethra to Pharynx. */
     static double URETHRA_TO_PHARYNX = 0.30 ; 
     /** Transmission probabilities sexual contact from Rectum to Urethra. */
-    static double RECTUM_TO_URETHRA = 0.080 ;
+    static double RECTUM_TO_URETHRA = 0.025 ;
     /** Transmission probabilities sexual contact from Rectum to Pharynx. */
-    static double RECTUM_TO_PHARYNX = 0.040 ;
+    static double RECTUM_TO_PHARYNX = 0.050 ;
     /** Transmission probabilities sexual contact in Pharynx to Urethra intercourse. */
     static double PHARYNX_TO_URETHRA = 0.03 ; 
     /** Transmission probabilities sexual contact in Pharynx to Rectum intercourse. */
-    static double PHARYNX_TO_RECTUM = 0.030 ; 
+    static double PHARYNX_TO_RECTUM = 0.050 ; 
     /** Transmission probabilities sexual contact in Pharynx to Pharynx intercourse (kissing). */
-    static double PHARYNX_TO_PHARYNX = 0.040 ; 
+    static double PHARYNX_TO_PHARYNX = 0.035 ; 
     /** Transmission probabilities sexual contact in Urethra to Urethra intercourse (docking). */
-    static double URETHRA_TO_URETHRA = 0.001 ; 
+    static double URETHRA_TO_URETHRA = 0.010 ; 
     /** Transmission probabilities sexual contact in Rectum to Rectum intercourse. */
-    static double RECTUM_TO_RECTUM = 0.001 ;
+    static double RECTUM_TO_RECTUM = 0.002 ;
 
     /** The probability of screening in a given cycle with statusHIV true. */
     static double SCREEN_PROBABILITY_HIV_POSITIVE = 0.0029 ;
