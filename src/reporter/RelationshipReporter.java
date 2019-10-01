@@ -549,17 +549,15 @@ public class RelationshipReporter extends Reporter {
                     if (blacklist.contains(relationshipId))
                         continue ;
                 agentIds = EXTRACT_AGENTIDS(relationshipRecord,0) ;
-                if (agentIds == null || agentIds.length != 2)
-                {
-                    LOGGER.severe("No Agents found for Relationship " + relationshipId) ;
-                    LOGGER.info(relationshipRecord) ;
-                    continue ;
-                }
                 relationshipAgentReport.put(relationshipId, agentIds) ;
             }
 
             record = "" ;
         }
+        //LOGGER.info(relationshipAgentReport.keySet().toString());
+//        String missingKey = "3792300" ;     // seek36c
+//        if (!relationshipAgentReport.containsKey(missingKey))
+//            LOGGER.severe("Relationship " + missingKey + " missing from relationshipAgentReport");
         
         /*for (String record : commenceReport)
         {
@@ -1056,8 +1054,8 @@ public class RelationshipReporter extends Reporter {
                 nbAgents = nbAgentsMap.get(propertyValue) ;
                 nbAgentsMap.put(propertyValue,nbAgents + 1) ;
             }
-            LOGGER.info(agentRelationshipsTotal.toString());
-            LOGGER.info(nbAgentsMap.toString()) ;
+//            LOGGER.info(agentRelationshipsTotal.toString());
+//            LOGGER.info(nbAgentsMap.toString()) ;
             for (Object sortingValue : agentRelationshipsTotal.keySet())
                 agentRelationshipsMean += ADD_REPORT_PROPERTY(relationshipClazzName + "_" + sortingValue.toString(),
                     ((double) agentRelationshipsTotal.get(sortingValue))/nbAgentsMap.get(sortingValue)) ;
@@ -2134,12 +2132,12 @@ public class RelationshipReporter extends Reporter {
         for (boolean nextInput = true ; nextInput ; nextInput = updateReport() )
             for (String inputRecord : input)
             {
-                //inputString.add(inputRecord) ;
+            //inputString.add(inputRecord) ;
                 //record = inputString.get(reportNb) ;
                 int relationshipIdIndex = INDEX_OF_PROPERTY(RELATIONSHIPID,inputRecord) ;
                 int clearIndex = INDEX_OF_PROPERTY("clear",inputRecord) ;
                 if (relationshipIdIndex >= 0 && (relationshipIdIndex < clearIndex)) 
-                    record += inputRecord.substring(relationshipIdIndex,clearIndex) ;
+                    record = inputRecord.substring(relationshipIdIndex,clearIndex) + record ;
                 else
                     record += "" ;
                 commenceReport.add(record) ;
