@@ -25,14 +25,14 @@ public class PopulationPresenter extends Presenter{
     public static void main(String[] args)
     {
         //String simName = "NoPrepCalibration33Pop40000Cycles3000" ; // Community.NAME_ROOT ; // "introPrepCalibration48Pop40000Cycles7000" ; // args[0] ;
-        String simName = "goneWild48aPop40000Cycles730" ; 
+        String simName = "noGSNpostHolt3jPop40000Cycles5475" ; 
         String chartTitle = "age_at_death" ; // args[1] ;
-        //String reportFileName = "output/test/" ; // args[2] ;
-        String reportFileName = "output/year2007/" ; // args[2] ;
+        String reportFileName = "output/test/" ; // args[2] ;
+        //String reportFileName = "output/year2007/" ; // args[2] ;
         LOGGER.info(chartTitle) ;
         PopulationPresenter populationPresenter = new PopulationPresenter(simName,chartTitle,reportFileName) ;
-        
-        populationPresenter.plotAgeAtDeath();
+        System.out.println(populationPresenter.reporter.preparePropertyCorrelationReport("statusHIV", "riskyStatus"));
+        //populationPresenter.plotAgeAtDeath();
         
     }
     
