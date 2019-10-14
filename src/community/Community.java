@@ -70,7 +70,7 @@ public class Community {
     //static public String FILE_PATH = "/short/is14/mw7704/prepsti/output/year2007/" ;
     
     /** Whether parameters change throughout simulation. */
-    static boolean DYNAMIC = true ;
+    static boolean DYNAMIC = false ;
     
     /** Dump reports to disk after this many cycles. */
     static int DUMP_CYCLE = 250 ; // ((int) Math.pow(10, 7))/POPULATION ;
@@ -441,6 +441,11 @@ public class Community {
         prevalenceReport = screeningReporter.preparePrevalenceReport() ;
         LOGGER.log(Level.INFO,"{0} {1}", new Object[] {"all", prevalenceReport.get(prevalenceReport.size() - 1)}) ;
 
+        LOGGER.info("At-risk incidence " + screeningReporter.prepareFinalAtRiskIncidentsRecord(siteNames, 0,"")) ;
+        HashMap<Comparable,String> incidenceReport = new HashMap<Comparable,String>() ;
+        if (DYNAMIC)
+            incidenceReport = screeningReporter.prepareYearsAtRiskIncidenceReport(siteNames, 3, 2012, "statusHIV") ;
+        LOGGER.info("by HIV-status " + screeningReporter.prepareFinalAtRiskIncidentsRecord(siteNames, 0,"statusHIV")) ;
         //String finalPrevalencesRecord = screeningReporter.prepareFinalPrevalencesSortedRecord(siteNames, "statusHIV") ;
         //LOGGER.log(Level.INFO, "prevalence {0}", finalPrevalencesRecord) ;
         
@@ -467,7 +472,8 @@ public class Community {
         //populationPresenter.plotAgeAtDeath();
         //PopulationPresenter populationPresenter = new PopulationPresenter("deaths per cycle","deaths per cycle",populationReporter) ;
         //populationPresenter.plotDeathsPerCycle();
-        
+        if (!incidenceReport.isEmpty())
+            community.dumpOutput("riskyIncidence",incidenceReport);
         }
     }
 
@@ -603,7 +609,7 @@ public class Community {
     private String interveneCommunity(int cycle)
     {
         // When to end burn-in
-        int startCycle = 365 * 4 ;
+        int startCycle = 365 ;
         if ((cycle < startCycle))
             return "" ;
         
@@ -767,7 +773,7 @@ public class Community {
                 int listSize = -1 ;
                 while (oldListSize > listSize)
                 {
-                    Collections.shuffle(seekingAgentList) ;
+                    //Collections.shuffle(seekingAgentList) ;
                     oldListSize =  seekingAgentList.size() ; 
                     for (int index0 = oldListSize - 1 ; index0 > 0 ; index0 = index0 - 2 )
                     {
@@ -807,7 +813,8 @@ public class Community {
                     }
                     listSize = seekingAgentList.size() ;
                 }
-//                if (listSize > -1)
+                if (listSize >= oldListSize)
+                    Collections.shuffle(seekingAgentList) ;
 //                    LOGGER.log(Level.INFO, "{0} {1}", new Object[] {relationshipClazzName,listSize});
             }
         }
@@ -1387,6 +1394,23 @@ public class Community {
         {
             BufferedWriter metadataWriter = new BufferedWriter(new FileWriter(Community.FILE_PATH + fileName,true)) ;
             metadataWriter.write(OUTPUT_RETURN) ;
+            metadataWriter.newLine() ;
+            metadataWriter.close() ;
+        }
+        catch ( Exception e )
+        {
+            LOGGER.severe(e.toString()) ;
+        }
+    }
+    
+    private void dumpOutput(String reportName, Object dumpReport)
+    {
+        String fileName = reportName + "_" + SIM_NAME + ".txt" ;
+        LOGGER.info(fileName) ;
+        try
+        {
+            BufferedWriter metadataWriter = new BufferedWriter(new FileWriter(Community.FILE_PATH + fileName,true)) ;
+            metadataWriter.write(dumpReport.toString()) ;
             metadataWriter.newLine() ;
             metadataWriter.close() ;
         }
