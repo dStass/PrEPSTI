@@ -16,8 +16,9 @@ import java.io.* ;
 import java.util.ArrayList ;
 import java.util.Arrays;
 import java.util.Collections ;
-import java.util.Set ;
-import java.util.EnumSet ;
+import java.util.Comparator;
+import java.util.HashSet ;
+import java.util.Collections ;
 import java.util.HashMap;
 import java.util.logging.Level;
 
@@ -55,11 +56,11 @@ public class ScreeningReporter extends Reporter {
      * @return Year-by-year report for backYears years on positivity on last day
      * of each year ending lastYear.
      */
-    public HashMap<Object,String> 
+    public HashMap<Comparable,String> 
         prepareYearsPositivityRecord(String[] siteNames, boolean unique, int backYears, int lastYear) 
         {
             //HashMap<Object,Number[]> positivityRecordYears = new HashMap<Object,Number[]>() ;
-            HashMap<Object,String> positivityRecordYears = new HashMap<Object,String>() ;
+            HashMap<Comparable,String> positivityRecordYears = new HashMap<Comparable,String>() ;
             
             // Whether to save this Report to file
             boolean writeLocal = WRITE_REPORT ;
@@ -105,7 +106,7 @@ public class ScreeningReporter extends Reporter {
      * @param lastYear
      * @return 
      */
-    public HashMap<Object,String> 
+    public HashMap<Comparable,String> 
         prepareYearsNotificationsRecord(String[] siteNames, int backYears, int lastYear) 
         {
             // Number[]
@@ -121,11 +122,11 @@ public class ScreeningReporter extends Reporter {
      * @return Year-by-year report for backYears years on notification on last day
      * of each year ending lastYear.
      */
-    public HashMap<Object,String> 
+    public HashMap<Comparable,String> 
         prepareYearsNotificationsRecord(String[] siteNames, int backYears, int lastYear, ArrayList<Object> sortedAgents ) 
         {
             //HashMap<Object,String> notificationRecordYears = new HashMap<Object,String>() ;
-            HashMap<Object,String> notificationsRecordYears = new HashMap<Object,String>() ;
+            HashMap<Comparable,String> notificationsRecordYears = new HashMap<Comparable,String>() ;
             
             // Whether to save this Report to file
             boolean writeLocal = WRITE_REPORT ;
@@ -170,11 +171,11 @@ public class ScreeningReporter extends Reporter {
      * @param sortingProperty
      * @return 
      */
-    public HashMap<Object,String> 
+    public HashMap<Comparable,String> 
         prepareSortedYearsNotificationsRecord(String[] siteNames, int backYears, int lastYear, String sortingProperty)
         {
-            HashMap<Object,String> sortedYearsNotificationsReport = new HashMap<Object,String>() ;
-            HashMap<Object,HashMap<Object,String>> sortedYearsNotificationsRecord = new HashMap<Object,HashMap<Object,String>>() ;
+            HashMap<Comparable,String> sortedYearsNotificationsReport = new HashMap<Comparable,String>() ;
+            HashMap<Object,HashMap<Comparable,String>> sortedYearsNotificationsRecord = new HashMap<Object,HashMap<Comparable,String>>() ;
             //HashMap<Object,HashMap<Object,Number[]>> sortedYearsNotificationsRecord = new HashMap<Object,HashMap<Object,Number[]>>() ;
             
             // Get Report of sortingValue mapping to agentIds
@@ -184,10 +185,10 @@ public class ScreeningReporter extends Reporter {
             for (Object sortingValue : sortedAgentReport.keySet())
             {
                 LOGGER.log(Level.INFO, "value:{0} population:{1}", new Object[] {sortingValue,sortedAgentReport.get(sortingValue).size()});
-                HashMap<Object,String> yearsNotificationsRecord = new HashMap<Object,String>() ; 
+                HashMap<Comparable,String> yearsNotificationsRecord = new HashMap<Comparable,String>() ; 
                 yearsNotificationsRecord = prepareYearsNotificationsRecord(siteNames, backYears, lastYear, sortedAgentReport.get(sortingValue)) ;
                 
-                sortedYearsNotificationsRecord.put(sortingValue, (HashMap<Object,String>) yearsNotificationsRecord) ;
+                sortedYearsNotificationsRecord.put(sortingValue, (HashMap<Comparable,String>) yearsNotificationsRecord) ;
                 //sortedYearsNotificationsRecord.put(sortingValue, (HashMap<Object,Number[]>) yearsNotificationsRecord.clone()) ;
             }
             
@@ -612,11 +613,11 @@ public class ScreeningReporter extends Reporter {
      * @return Year-by-year report for backYears years on prevalence on last day
      * of each year ending lastYear.
      */
-    public HashMap<Object,String> 
+    public HashMap<Comparable,String> 
         prepareYearsPrevalenceRecord(String[] siteNames, int backYears, int lastYear, String sortingProperty) 
         {
             //HashMap<Object,Number[]> prevalenceRecordYears = new HashMap<Object,Number[]>() ;
-            HashMap<Object,String> prevalenceRecordYears = new HashMap<Object,String>() ;
+            HashMap<Comparable,String> prevalenceRecordYears = new HashMap<Comparable,String>() ;
             
             int maxCycles = getMaxCycles() ;
             
@@ -1078,7 +1079,7 @@ public class ScreeningReporter extends Reporter {
             for (String agentRecord : agentReport)
             {
                 agentId = EXTRACT_VALUE(AGENTID,agentRecord) ;
-                UPDATE_HASHMAP(agentId, startCycle + cycle, agentTestingReport) ;
+                agentTestingReport = (HashMap<Object,ArrayList<Object>>) UPDATE_HASHMAP(agentId, startCycle + cycle, agentTestingReport) ;
             }
         }
         return agentTestingReport ;
@@ -1103,7 +1104,7 @@ public class ScreeningReporter extends Reporter {
         
         // (HashMap) agentId maps to (ArrayList) of cycles in which Agent was tested.
         HashMap<Object,ArrayList<Object>> agentTreatedReport 
-                = prepareAgentTreatedReport(backYears, backMonths, backDays) ;
+                = prepareAgentTreatedReport(new String[] {}, backYears, backMonths, backDays).get("all") ;
         
         // For sorting agentTreatedReport
         HashMap<Object,HashMap<Object,ArrayList<Object>>> sortedAgentTreatedReport 
@@ -1214,7 +1215,7 @@ public class ScreeningReporter extends Reporter {
         
         // (HashMap) agentId maps to (ArrayList) of cycles in which Agent was tested.
         HashMap<Object,ArrayList<Object>> agentTreatedReport 
-                = prepareAgentTreatedReport(backYears, backMonths, backDays) ;
+                = prepareAgentTreatedReport(new String[] {}, backYears, backMonths, backDays).get("all") ;
         
         int population = getPopulation() ;
         int untreated = population ;
@@ -1241,11 +1242,11 @@ public class ScreeningReporter extends Reporter {
      * @param backDays
      * @return (HashMap) agentId maps to (ArrayList) of cycles in which Agent was treated for STIs.
      */
-    public HashMap<Object,ArrayList<Object>> prepareAgentTreatedReport(int backYears, int backMonths, int backDays)
+    public HashMap<Object,HashMap<Object,ArrayList<Object>>> prepareAgentTreatedReport(String [] siteNames, int backYears, int backMonths, int backDays)
     {
         int endCycle = getMaxCycles() ;
         
-        return prepareAgentTreatedReport(backYears, backMonths, backDays, endCycle) ;
+        return prepareAgentTreatedReport(siteNames, backYears, backMonths, backDays, endCycle) ;
     }
  
     /**
@@ -1256,14 +1257,16 @@ public class ScreeningReporter extends Reporter {
      * @param endCycle
      * @return (HashMap) agentId maps to (ArrayList) of cycles in which Agent was treated for STIs.
      */
-    public HashMap<Object,ArrayList<Object>> prepareAgentTreatedReport(int backYears, int backMonths, int backDays, int endCycle)
+    public HashMap<Object,HashMap<Object,ArrayList<Object>>> prepareAgentTreatedReport(String[] siteNames, int backYears, int backMonths, int backDays, int endCycle)
     {
-        HashMap<Object,ArrayList<Object>> agentTreatedReport = new HashMap<Object,ArrayList<Object>>() ; 
+        HashMap<Object,HashMap<Object,ArrayList<Object>>> agentTreatedReport = new HashMap<Object,HashMap<Object,ArrayList<Object>>>() ; 
+        for (String siteName : siteNames)
+            agentTreatedReport.put(siteName, new HashMap<Object,ArrayList<Object>>()) ; 
+        agentTreatedReport.put("all", new HashMap<Object,ArrayList<Object>>()) ;
         
         int backCycles = GET_BACK_CYCLES(backYears, backMonths, backDays, endCycle) ;
         int startCycle = endCycle - backCycles ;
-        
-        ArrayList<String> inputReport = getBackCyclesReport(backYears, backMonths, backDays) ;
+        ArrayList<String> inputReport = getBackCyclesReport(backYears, backMonths, backDays, endCycle) ;
         String record ;
         String agentId ;
         for (int cycle = 0 ; cycle < backCycles ; cycle++ )
@@ -1271,15 +1274,47 @@ public class ScreeningReporter extends Reporter {
             record = inputReport.get(cycle) ;
             
             ArrayList<String> agentReport = EXTRACT_ARRAYLIST(record,AGENTID,TREATED) ;
+            //LOGGER.info("agentReport.size:" + String.valueOf(agentReport.size()));
             for (String agentRecord : agentReport)
             {
                 agentId = EXTRACT_VALUE(AGENTID,agentRecord) ;
-                UPDATE_HASHMAP(agentId, startCycle + cycle, agentTreatedReport) ;
+                agentTreatedReport.put("all", UPDATE_HASHMAP(agentId, startCycle + cycle, agentTreatedReport.get("all"))) ;
+                for (String siteName : siteNames)
+                    if (agentRecord.contains(siteName))
+                        agentTreatedReport.put(siteName, UPDATE_HASHMAP(agentId, startCycle + cycle, agentTreatedReport.get(siteName))) ;
             }
         }
+        //LOGGER.info(agentTreatedReport.get("all").get("1034").toString());
         return agentTreatedReport ;
     }
  
+    public HashMap<Comparable,String> prepareYearsAtRiskIncidenceReport(String[] relationshipClassNames, int backYears, int lastYear, String sortingProperty)
+    {
+        HashMap<Comparable,String> incidentRateReport = new HashMap<Comparable,String>() ;
+        //HashMap<Object,Number[]> percentAgentCondomlessYears = new HashMap<Object,Number[]>() ;
+    
+        int maxCycles = getMaxCycles() ;
+            
+        int endCycle ;
+        
+        for (int year = 0 ; year < backYears ; year++ )
+        {
+            String yearlyNumberAgentsEnteredRelationship ;
+
+            endCycle = maxCycles - year * DAYS_PER_YEAR ;
+            yearlyNumberAgentsEnteredRelationship 
+                = prepareFinalAtRiskIncidentsRecord(relationshipClassNames, backYears, sortingProperty);
+
+//                for (int classIndex = 0 ; classIndex < relationshipClassNames.length ; classIndex++ )
+//                    yearlyNumberAgentsEnteredRelationship[classIndex] = percentAgentCondomlessRecord.get(relationshipClassNames[classIndex]) ;
+
+            incidentRateReport.put(lastYear - year, yearlyNumberAgentsEnteredRelationship) ;
+        }
+        LOGGER.info(incidentRateReport.toString()) ;
+
+        return incidentRateReport ;
+    }
+    
     /**
      * 
      * @param siteNames
@@ -1288,11 +1323,11 @@ public class ScreeningReporter extends Reporter {
      * @param backDays
      * @return atRiskIncidenceReport from year leading up to backYears years ago.
      */
-    public double prepareFinalAtRiskIncidentsRecord(String[] siteNames, int backYears, int backMonths, int backDays)
+    public String prepareFinalAtRiskIncidentsRecord(String[] siteNames, int backYears, String sortingProperty)
     {
         int endCycle = getMaxCycles() - DAYS_PER_YEAR * backYears ;
         
-        return prepareAtRiskIncidenceReport(0, backMonths, backDays, endCycle) ;
+        return prepareAtRiskIncidenceReport(siteNames, 1, 0, 0, endCycle, sortingProperty) ;
     }
     
     /**
@@ -1300,38 +1335,83 @@ public class ScreeningReporter extends Reporter {
      * @return Report of incidence calculated by number of positive tests following
      * negative tests, per time-at-risk being the time between such tests.
      */
-    public double prepareAtRiskIncidenceReport(int backYears, int backMonths, int backDays, int endCycle)
+    public String prepareAtRiskIncidenceReport(String[] siteNames, int backYears, int backMonths, int backDays, int endCycle, String sortingProperty)
     {
-        HashMap<Object,ArrayList<Object>> agentTestingReport = prepareAgentTestingReport(backYears, backMonths, backDays, endCycle) ; 
-        HashMap<Object,ArrayList<Object>> agentTreatedReport = prepareAgentTreatedReport(backYears, backMonths, backDays, endCycle) ; 
+        String incidentRateReport = "" ;
         
-        HashMap<Object,ArrayList<Integer>> timeAtRiskReport = prepareTimeAtRiskReport(agentTestingReport,agentTreatedReport) ;
-        
-        int population = getPopulation() ;
-        
-        int daysAtRisk = 0 ;
-        int nbIncidents = 0 ;
-        int intervalRisk ;
-        
-        for (Object agentId : timeAtRiskReport.keySet())
+        HashSet<Object> sortingProperties = new HashSet<Object>() ; //(Arrays.asList(new Object[] {""})) ;
+        HashMap<Object,ArrayList<Object>> sortedAgentsReport = new HashMap<Object,ArrayList<Object>>() ;
+        if (!sortingProperty.isEmpty())
         {
-            ArrayList<Object> agentTestingRecord = agentTestingReport.get(agentId) ;
-            ArrayList<Object> agentTreatedRecord = agentTreatedReport.get(agentId) ;
-            ArrayList<Integer> agentTimeAtRiskRecord = timeAtRiskReport.get(agentId) ;
-            for (int index = 0 ; index < agentTimeAtRiskRecord.size() ; index ++ )
+            PopulationReporter populationReporter = new PopulationReporter(simName,getFolderPath()) ;
+            sortedAgentsReport = populationReporter.agentIdSorted(sortingProperty) ;
+            Collections.addAll(sortingProperties,sortedAgentsReport.keySet().toArray()) ;
+        }
+        else
+            sortingProperties.add("") ;
+        
+            
+        HashMap<Object,ArrayList<Object>> agentTestingReport = prepareAgentTestingReport(backYears, backMonths, backDays, endCycle) ; 
+        HashMap<Object,HashMap<Object,ArrayList<Object>>> agentTreatedReport = prepareAgentTreatedReport(siteNames, backYears, backMonths, backDays, endCycle) ; 
+        //LOGGER.info(agentTreatedReport.get("all").keySet().toString()) ;
+        
+        HashMap<Object,HashMap<Object,ArrayList<Integer>>> timeAtRiskReport = prepareTimeAtRiskReport(agentTestingReport,agentTreatedReport) ;
+        
+        //int population = getPopulation() ;
+        int daysAtRisk ;
+        int nbIncidents ;
+        for (Object sortingValue : sortingProperties)
+        {
+            for (Object siteName : agentTreatedReport.keySet())
             {
-                intervalRisk = agentTimeAtRiskRecord.get(index) ;
-                daysAtRisk += intervalRisk ;
-                // Count positive test only if preceded by a negative test
-                if ((intervalRisk > 0) && agentTreatedRecord.contains(agentTestingRecord.get(index)))
-                    nbIncidents++ ;
+                daysAtRisk = 0 ;
+                nbIncidents = 0 ;
+                int intervalRisk ;
+
+                HashMap<Object,ArrayList<Object>> treatedRecord = agentTreatedReport.get(siteName) ;
+                    //OGGER.info(treatedRecord.keySet().toString());
+                HashMap<Object,ArrayList<Integer>> atRiskReport = timeAtRiskReport.get(siteName) ;
+
+                // Sort agentIds by sortingProperty if one is given.
+                ArrayList<Object> agentIdList = new ArrayList<Object>() ;
+                Collections.addAll(agentIdList,atRiskReport.keySet().toArray()) ;
+                if (!sortingValue.equals(""))
+                    agentIdList.retainAll(sortedAgentsReport.get(sortingValue)) ;
+                for (Object agentId : agentIdList)
+                {
+                    ArrayList<Object> agentTestingRecord = agentTestingReport.get(agentId.toString()) ;
+                    ArrayList<Object> agentTreatedRecord = treatedRecord.get(agentId.toString()) ;
+                    if (agentTreatedRecord == null)
+                        agentTreatedRecord = new ArrayList<Object>() ;
+                    if (!atRiskReport.containsKey(agentId))
+                        continue ;
+                    ArrayList<Integer> agentTimeAtRiskRecord = atRiskReport.get(agentId.toString()) ;
+    //                LOGGER.info("testing " + agentId.toString() + agentTestingRecord.toString());
+    //                LOGGER.info("treated " + agentTreatedRecord.toString()) ;
+    //                LOGGER.info("risk " + agentTimeAtRiskRecord.toString()) ;
+                    for (int index = 0 ; index < agentTimeAtRiskRecord.size() ; index ++ )
+                    {
+                        //LOGGER.info("agentTreatedRecord " + agentTreatedRecord.toString());
+                        intervalRisk = agentTimeAtRiskRecord.get(index) ;
+                        daysAtRisk += intervalRisk ;
+
+                        // Count positive test only if preceded by a negative test
+                        if (agentTreatedRecord == null)
+                            continue ;
+                        if ((intervalRisk > 0) && agentTreatedRecord.contains(agentTestingRecord.get(index))) // 
+                            nbIncidents++ ;
+                    }
+                }
+
+                // Rate of incidents per 100 MSM-years
+                double incidentRate = (DAYS_PER_YEAR * 100.0 * nbIncidents)/(daysAtRisk) ;
+                String propertyName = siteName.toString() ;
+                if (!"".equals(sortingValue))
+                    propertyName += "_" + sortingValue ;
+                incidentRateReport += Reporter.ADD_REPORT_PROPERTY(propertyName, incidentRate) ;
             }
         }
-        
-        // Rate of incidents per 100 MSM-years
-        double incidentRate = DAYS_PER_YEAR * 100 * ((double) nbIncidents)/(population * daysAtRisk) ;
-        
-        return incidentRate ;
+        return incidentRateReport ;
     }
     
     /**
@@ -1340,9 +1420,10 @@ public class ScreeningReporter extends Reporter {
      * is the number of days since the last positive test, unless the last test was positive 
      * in which case it is zero.
      */
-    private HashMap<Object,ArrayList<Integer>> prepareTimeAtRiskReport(HashMap<Object,ArrayList<Object>> agentTestingReport,HashMap<Object,ArrayList<Object>> agentTreatedReport)
+    private HashMap<Object,HashMap<Object,ArrayList<Integer>>> prepareTimeAtRiskReport(HashMap<Object,ArrayList<Object>> agentTestingReport, 
+            HashMap<Object,HashMap<Object,ArrayList<Object>>> agentTreatedReport)
     {
-        HashMap<Object,ArrayList<Integer>> timeAtRiskReport = new HashMap<Object,ArrayList<Integer>>() ;
+        HashMap<Object,HashMap<Object,ArrayList<Integer>>> timeAtRiskReport = new HashMap<Object,HashMap<Object,ArrayList<Integer>>>() ;
         
         Integer daysAtRisk ;
         // Cycle of previous test
@@ -1351,39 +1432,49 @@ public class ScreeningReporter extends Reporter {
         boolean previousResult ;
         
         Integer day ;
-        
-        for (Object agentId : agentTestingReport.keySet())
+        for (Object siteName : agentTreatedReport.keySet())
         {
-            ArrayList<Object> timeAtRiskRecord = new ArrayList<Object>() ;
-        
-            ArrayList<Object> agentTestingRecord = agentTestingReport.get(agentId) ;
-            ArrayList<Object> agentTreatedRecord = agentTreatedReport.get(agentId) ;
-            
-            previousTest = 0 ;
-            // Need to register a negative test before finding an incident.
-            previousResult = true ;
-            
-            
-            for (Object cycle : agentTestingRecord )
+            HashMap<Object,ArrayList<Object>> treatedReport = agentTreatedReport.get(siteName) ;
+            ArrayList<Object> agentTreatedRecord = new ArrayList<Object>() ;
+            HashMap<Object,ArrayList<Integer>> atRiskReport = new HashMap<Object,ArrayList<Integer>>() ;
+            //LOGGER.info(treatedReport.toString()) ;
+            for (Object agentId : agentTestingReport.keySet())
             {
-                day = Integer.valueOf(String.valueOf(cycle)) ;
-                
-                if (!previousResult)    // Add days-ar-risk to agentRecord
-                    daysAtRisk = day - previousTest ;
+                ArrayList<Object> atRiskRecord = new ArrayList<Object>() ;
+
+                ArrayList<Object> agentTestingRecord = agentTestingReport.get(agentId) ;
+                if (treatedReport.containsKey(agentId))
+                    agentTreatedRecord = treatedReport.get(agentId) ;
                 else
-                    daysAtRisk = 0 ;
-                
-                timeAtRiskRecord.add(daysAtRisk) ;
-                
-                // Prepare for next loop
-                previousTest = day ;
-                
-                if (!agentTreatedRecord.contains(cycle))
-                    previousResult = false ;
-                else 
-                    previousResult = true ;
+                    agentTreatedRecord = new ArrayList<Object>() ;
+                //LOGGER.info(agentTreatedRecord.toString()) ;
+
+                previousTest = 0 ;
+                // Need to register a negative test before finding an incident.
+                previousResult = true ;
+
+
+                for (Object cycle : agentTestingRecord )
+                {
+                    day = Integer.valueOf(String.valueOf(cycle)) ;
+                    if (day == previousTest)
+                        LOGGER.log(Level.SEVERE, "agentId:{0} site:{1} record:{2}", new Object[] {agentId,siteName,agentTestingRecord});
+
+                    if (!previousResult)    // If last test positive
+                        daysAtRisk = day - previousTest ;    // Add days-at-risk to agentRecord
+                    else
+                        daysAtRisk = 0 ;
+
+                    atRiskRecord.add(daysAtRisk) ;
+
+                    // Prepare for next loop
+                    previousTest = day ;
+
+                    previousResult = agentTreatedRecord.contains(cycle) ;
+                }
+                atRiskReport.put(agentId,(ArrayList<Integer>) atRiskRecord.clone()) ;
             }
-            timeAtRiskReport.put(agentId,(ArrayList<Integer>) timeAtRiskRecord.clone()) ;
+            timeAtRiskReport.put(siteName, (HashMap<Object,ArrayList<Integer>>) atRiskReport.clone()) ;
         }
         
         return timeAtRiskReport ;
