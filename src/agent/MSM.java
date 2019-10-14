@@ -482,7 +482,8 @@ public class MSM extends Agent {
             MSM msm = (MSM) agent ;
             if (msm.seekRelationship(relationshipClazzName))
             {
-                if (msm.statusHIV && msm.seroSort)
+                //if (RAND.nextDouble() > msm.consentCasualProbability)
+                if (msm.statusHIV && msm.getSeroSort(relationshipClazzName))
                 {
 //                    if (msm.seroSort)
                         seekingAgentList.add(msm) ;
@@ -596,23 +597,23 @@ public class MSM extends Agent {
     private boolean riskyStatus ;
     
     /** Transmission probabilities per sexual contact from Urethra to Rectum */
-    static double URETHRA_TO_RECTUM = 0.90 ; 
+    static double URETHRA_TO_RECTUM = 0.95 ; 
     /** Transmission probabilities sexual contact from Urethra to Pharynx. */
-    static double URETHRA_TO_PHARYNX = 0.30 ; 
+    static double URETHRA_TO_PHARYNX = 0.60 ; 
     /** Transmission probabilities sexual contact from Rectum to Urethra. */
-    static double RECTUM_TO_URETHRA = 0.025 ;
+    static double RECTUM_TO_URETHRA = 0.040 ;
     /** Transmission probabilities sexual contact from Rectum to Pharynx. */
     static double RECTUM_TO_PHARYNX = 0.050 ;
     /** Transmission probabilities sexual contact in Pharynx to Urethra intercourse. */
-    static double PHARYNX_TO_URETHRA = 0.03 ; 
+    static double PHARYNX_TO_URETHRA = 0.005 ; 
     /** Transmission probabilities sexual contact in Pharynx to Rectum intercourse. */
-    static double PHARYNX_TO_RECTUM = 0.050 ; 
+    static double PHARYNX_TO_RECTUM = 0.040 ; 
     /** Transmission probabilities sexual contact in Pharynx to Pharynx intercourse (kissing). */
-    static double PHARYNX_TO_PHARYNX = 0.035 ; 
+    static double PHARYNX_TO_PHARYNX = 0.070 ; 
     /** Transmission probabilities sexual contact in Urethra to Urethra intercourse (docking). */
-    static double URETHRA_TO_URETHRA = 0.010 ; 
+    static double URETHRA_TO_URETHRA = 0.001 ; 
     /** Transmission probabilities sexual contact in Rectum to Rectum intercourse. */
-    static double RECTUM_TO_RECTUM = 0.002 ;
+    static double RECTUM_TO_RECTUM = 0.005 ;
 
     /** The probability of screening in a given cycle with statusHIV true. */
     static double SCREEN_PROBABILITY_HIV_POSITIVE = 0.0029 ;
@@ -986,6 +987,10 @@ public class MSM extends Agent {
             for (int propIndex = 1 ; propIndex <= cumulIndex ; propIndex++ )
                 cumulative[cumulIndex] += proportions[propIndex] ;
         
+        // Now take square root because both MSMs must consent
+        //for (int cumulIndex = 0 ; cumulIndex < cumulative.length ; cumulIndex++ )
+          //  cumulative[cumulIndex] = cumulative[cumulIndex] * cumulative[cumulIndex] ;
+        
         // Choose range
         double rangeChoice = RAND.nextDouble() ;
         int rangeIndex = 0 ;
@@ -997,18 +1002,8 @@ public class MSM extends Agent {
                 break ;
             }
         }
-        /*if (prepStatus || (rangeIndex < 2)) // 0 or 1 partners
-        {
-            consentProbability = Math.max(0.0,RAND.nextDouble() * proportions[1] 
-                    - RAND.nextDouble() * proportions[0])/timeAverage ;
-        }
-        else */ 
-        if (rangeIndex == 0)
-        {
-            consentCasualProbability = -1.0 ;
-            return ;
-        }
-        else if (rangeIndex == (proportions.length - 1)) // 100+ partners
+        
+        if (rangeIndex == (proportions.length - 1)) // 100+ partners
         {
             double lowerProbability = lowerBounds[rangeIndex]/timeAverage ;
             if (lowerProbability > 1.0)
@@ -1024,9 +1019,10 @@ public class MSM extends Agent {
             double upperProb = (lowerBounds[rangeIndex+1] - 1)/timeAverage ;
             if (upperProb <= lowerProb)    // for bins of width one, assumed to be clustered near zero
             {
-                consentProbability = Math.max(0.0,(RAND.nextDouble() * 2.0 + lowerBounds[rangeIndex] - 1.0)/timeAverage) ;
+                upperProb = lowerBounds[rangeIndex+1]/timeAverage ;
+                //consentProbability =  Math.max(0.0,(lowerBounds[rangeIndex] + (RAND.nextDouble() - 0.5) )/timeAverage) ;
             }
-            else
+            //else
                 consentProbability = RAND.doubles(lowerProb, upperProb).iterator().nextDouble() ;
         }
         
