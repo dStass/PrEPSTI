@@ -11,6 +11,7 @@ import reporter.* ;
 import java.util.ArrayList ;
 //import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Comparator ;
 //import java.lang.reflect.*;
 import java.util.logging.Level;
 
@@ -24,12 +25,13 @@ public class EncounterPresenter extends Presenter {
     
     //static String[] simNames = new String[] {"seek1cPop40000Cycles5475","seek1dPop40000Cycles5475","seek1ePop40000Cycles5475",
       //  "seek1fPop40000Cycles5475","seek1gPop40000Cycles5475","seek1hPop40000Cycles5475","seek1iPop40000Cycles5475","seek1jPop40000Cycles5475"} ;
-    //static String[] simNames = new String[] {"noGSNpostHolt3aPop40000Cycles5475","noGSNpostHolt3bPop40000Cycles5475","noGSNpostHolt3cPop40000Cycles5475","noGSNpostHolt3dPop40000Cycles5475","noGSNpostHolt3ePop40000Cycles5475",
-      //  "noGSNpostHolt3fPop40000Cycles5475","noGSNpostHolt3gPop40000Cycles5475","noGSNpostHolt3hPop40000Cycles5475","noGSNpostHolt3iPop40000Cycles5475","noGSNpostHolt3jPop40000Cycles5475"} ;
+    //static String[] simNames = new String[] {"from2007seek54aPop40000Cycles5475","from2007seek54bPop40000Cycles5475","from2007seek54cPop40000Cycles5475","from2007seek54dPop40000Cycles5475"} ; //,"from2007seek54ePop40000Cycles5475",
+        //"from2007seek54fPop40000Cycles5475","from2007seek54gPop40000Cycles5475","from2007seek54hPop40000Cycles5475","from2007seek54iPop40000Cycles5475","from2007seek54jPop40000Cycles5475"} ;
     //static private String[] simNames = new String[] {"serosort2Pop10000Cycles2190"} ; //,"from2007symptom9gPop40000Cycles5840"} ;
-    //static private String[] simNames = new String[] {"from2007seek27aPop40000Cycles5475","from2007seek27bPop40000Cycles5475","from2007seek27cPop40000Cycles5475","from2007seek27dPop40000Cycles5475","from2007seek27ePop40000Cycles5475",
-      //  "from2007seek27fPop40000Cycles5475","from2007seek27gPop40000Cycles5475","from2007seek27hPop40000Cycles5475","from2007seek27iPop40000Cycles5475","from2007seek27jPop40000Cycles5475"} ;
-    static private String[] simNames = new String[] {"from2007seek30aPop40000Cycles3650"} ; //,"seekTestbPop40000Cycles2190","seekTestcPop40000Cycles2190","seekTestdPop40000Cycles2190","seekTestePop40000Cycles2190"} ;
+    static String[] simNames = new String[] {"newSortCasual2aPop40000Cycles730"} ; //,"seek68bPop40000Cycles1825","seek68cPop40000Cycles1825","seek68dPop40000Cycles1825"} ; //,"seek53ePop40000Cycles1825",
+      //      "seek53fPop40000Cycles1825","seek53gPop40000Cycles1825","seek53hPop40000Cycles1825","seek53iPop40000Cycles1825","seek53jPop40000Cycles1825"} ;
+    //static String[] simNames = new String[] {"to2017seek65aPop40000Cycles5475","to2017seek65bPop40000Cycles5475","to2017seek65cPop40000Cycles5475","to2017seek65dPop40000Cycles5475","to2017seek65ePop40000Cycles5475",
+      //      "to2017seek65fPop40000Cycles5475","to2017seek65gPop40000Cycles5475","to2017seek65hPop40000Cycles5475","to2017seek65iPop40000Cycles5475","to2017seek65jPop40000Cycles5475"} ;
     
     private EncounterReporter reporter ;
     
@@ -51,9 +53,9 @@ public class EncounterPresenter extends Presenter {
         //String chartTitle = "protection" ; // args[1] ;
         //String chartTitle = "condom_coverage" ; // args[1] ;
         //String reportFileName = "output/untouchable/" ; // args[2] ;
-        //String reportFileName = "output/test/" ; // args[2] ;
+        String reportFileName = "output/test/" ; // args[2] ;
         //String reportFileName = "output/prePrEP/" ; // args[2] ;
-        String reportFileName = "output/prep/" ; // args[2] ;
+        //String reportFileName = "output/prep/" ; // args[2] ;
         //String reportFileName = "output/year2007/" ; // args[2] ;
         //String reportFileName = "output/year2010/" ; // args[2] ;
         //String reportFileName = "output/year2012/" ; // args[2] ;
@@ -68,9 +70,9 @@ public class EncounterPresenter extends Presenter {
         //encounterPresenter.plotTransmissionsPerCycle(siteNames);
         //encounterPresenter.plotFinalTransmissions(siteNames);
         //encounterPresenter.plotFinalIncidenceRecord(siteNames, 0, Reporter.DAYS_PER_YEAR) ;
-        //encounterPresenter.plotSortedFinalIncidenceRecord(siteNames, 0, Reporter.DAYS_PER_YEAR,"statusHIV") ;
+        encounterPresenter.plotSortedFinalIncidenceRecord(siteNames, 0, Reporter.DAYS_PER_YEAR,"statusHIV") ;
         //encounterPresenter.plotCumulativeAgentTransmissionReport() ;
-        encounterPresenter.plotIncidenceYears(siteNames, 8, 2015, "") ;
+        //encounterPresenter.plotIncidenceYears(siteNames, 11, 2017, "statusHIV") ;
         //encounterPresenter.plotNumberCondomlessYears(3, 0, 0, 2017, new String[] {"Casual","Regular","Monogomous"}) ;
         //encounterPresenter.plotNumberCondomlessReport(0, 6, 0, new String[] {"Casual","Regular","Monogomous"}) ;
         //encounterPresenter.plotPercentAgentCondomlessReport(new String[] {"Casual","Regular","Monogomous"}, 0, 6, 0, "", false) ;
@@ -261,21 +263,24 @@ public class EncounterPresenter extends Presenter {
      * @param siteNames
      * @param backYears
      * @param lastYear 
+     * @param sortingProperty 
      */
     public void plotIncidenceYears(String[] siteNames, int backYears, int lastYear, String sortingProperty)
     {
-        HashMap<Object,String> incidenceRecordYears = new HashMap<Object,String>() ;
+        HashMap<Comparable,String> incidenceRecordYears = new HashMap<Comparable,String>() ;
         //reporter.prepareYearsIncidenceReport(siteNames, backYears, lastYear) ;
-        ArrayList<HashMap<Object,String>> reports = new ArrayList<HashMap<Object,String>>() ;
+        ArrayList<HashMap<Comparable,String>> reports = new ArrayList<HashMap<Comparable,String>>() ;
         
         for (String simulation : simNames)
         {
             EncounterReporter encounterReporter = new EncounterReporter(simulation,reporter.getFolderPath()) ;
-            //HashMap<Object,Number[]> report 
-            HashMap<Object,String> report = encounterReporter.prepareYearsIncidenceReport(siteNames, backYears, lastYear, sortingProperty) ;
-            reports.add((HashMap<Object,String>) report.clone()) ;
+            HashMap<Comparable,String> report = encounterReporter.prepareYearsIncidenceReport(siteNames, backYears, lastYear, sortingProperty) ;
+            Reporter.CLEAR_REPORT_LIST() ; 
+            reports.add((HashMap<Comparable,String>) report.clone()) ;
         }
+        Reporter.WRITE_CSV_DISTRIBUTION(reports, EncounterReporter.INCIDENCE, simNames[0], "output/prep/") ;
         incidenceRecordYears = Reporter.PREPARE_MEAN_HASHMAP_REPORT(reports,"year","INCIDENCE",simNames[0]) ;
+        
         LOGGER.log(Level.INFO, "{0}", incidenceRecordYears);
         String[] scoreNames = Reporter.IDENTIFY_PROPERTIES(incidenceRecordYears.get(lastYear)).toArray(new String[0]) ;
         
@@ -510,7 +515,7 @@ public class EncounterPresenter extends Presenter {
     
     public void plotPercentAgentCondomlessYears(String[] relationshipClassNames, int backYears, int lastYear, String concordanceName, boolean concordant, String sortingProperty)
     {
-        HashMap<Object,String> percentAgentCondomlessYears 
+        HashMap<Comparable,String> percentAgentCondomlessYears 
                 = reporter.preparePercentAgentCondomlessYears(relationshipClassNames, backYears, lastYear, concordanceName, concordant, sortingProperty) ;
         
         LOGGER.log(Level.INFO, "{0}", percentAgentCondomlessYears) ;
@@ -518,6 +523,7 @@ public class EncounterPresenter extends Presenter {
         String[] legend = Reporter.IDENTIFY_PROPERTIES(percentAgentCondomlessYears.get(lastYear)).toArray(new String[0]) ;
         plotHashMapString(percentAgentCondomlessYears,"percentage engaged in CLAI","year", legend) ;
     }
+    
     /**
      * Plots the proportion of Agents who have either always or not always used a 
      * condom during anal sex, or who never had anal sex during the given time period.
@@ -549,7 +555,7 @@ public class EncounterPresenter extends Presenter {
     public void plotNumberCondomlessYears(int backYears, int backMonths, int backDays, int lastYear, String[] relationshipClazzNames)
     {
         //HashMap<Object,HashMap<Object,Number[]>> 
-        HashMap<Object,HashMap<Object,String>> 
+        HashMap<Comparable,HashMap<Object,String>> 
     numberCondomlessYears = reporter.prepareNumberCondomlessYears(relationshipClazzNames, backYears, backMonths, backDays, lastYear) ;
         
         HashMap<Object,Number[]> yearlyReport = new HashMap<Object,Number[]>() ;
