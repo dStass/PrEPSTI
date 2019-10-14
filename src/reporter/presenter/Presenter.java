@@ -107,6 +107,9 @@ public class Presenter {
         else if (backDays == 1) 
             timeString += " 1 Day" ;
         
+        if ((!timeString.contains("Month")) && (!timeString.contains("Day")))
+            timeString = " year" ;
+        
         return timeString ;
     }
     
@@ -1209,7 +1212,7 @@ public class Presenter {
      * @param xLabel
      * @param legend 
      */
-    protected void plotHashMapString(HashMap<Object,String> report, String yLabel, String xLabel, String[] legend)
+    protected void plotHashMapString(HashMap<?,String> report, String yLabel, String xLabel, String[] legend)
     {
         // Extract data from reportArray
         XYSeriesCollection xySeriesCollection = parseReportHashMap(report, legend) ;
@@ -1726,7 +1729,7 @@ public class Presenter {
      * @param legend
      * @return 
      */
-    private XYSeriesCollection parseReportHashMap(HashMap<Object,String> report, String[] legend)  // 
+    private XYSeriesCollection parseReportHashMap(HashMap<?,String> report, String[] legend)  // 
     {       
         XYSeriesCollection xySeriesCollection = new XYSeriesCollection() ;
         String property ;
