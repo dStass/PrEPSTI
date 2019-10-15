@@ -1301,9 +1301,9 @@ public class ScreeningReporter extends Reporter {
         {
             String yearlyNumberAgentsEnteredRelationship ;
 
-            endCycle = maxCycles - year * DAYS_PER_YEAR ;
+            //endCycle = maxCycles - year * DAYS_PER_YEAR ;
             yearlyNumberAgentsEnteredRelationship 
-                = prepareFinalAtRiskIncidentsRecord(relationshipClassNames, backYears, sortingProperty);
+                = prepareFinalAtRiskIncidentsRecord(relationshipClassNames, year, sortingProperty);
 
 //                for (int classIndex = 0 ; classIndex < relationshipClassNames.length ; classIndex++ )
 //                    yearlyNumberAgentsEnteredRelationship[classIndex] = percentAgentCondomlessRecord.get(relationshipClassNames[classIndex]) ;
