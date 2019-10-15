@@ -473,7 +473,7 @@ public class Community {
         //PopulationPresenter populationPresenter = new PopulationPresenter("deaths per cycle","deaths per cycle",populationReporter) ;
         //populationPresenter.plotDeathsPerCycle();
         if (!incidenceReport.isEmpty())
-            community.dumpOutput("riskyIncidence",incidenceReport);
+            Reporter.dumpOutput("riskyIncidence",SIM_NAME,FILE_PATH,incidenceReport);
         }
     }
 
@@ -768,6 +768,7 @@ public class Community {
             // Determine which Agents seek out which Relationship Class
             for (ArrayList<Agent> seekingAgentList : agentLists) 
             {
+                boolean unmatched ;
                 // Pair Agents, remove pairs, repeat until stuck
                 int oldListSize = 0 ;
                 int listSize = -1 ;
@@ -778,6 +779,7 @@ public class Community {
                     for (int index0 = oldListSize - 1 ; index0 > 0 ; index0 = index0 - 2 )
                     {
                         Agent agent0 = seekingAgentList.get(index0) ;
+                        unmatched = true ;
                         for (int index1 = index0 - 1 ; index1 >=0 ; index1-- )
                         {
                             Agent agent1 = seekingAgentList.get(index1) ;
@@ -803,6 +805,7 @@ public class Community {
                                 }
                                 seekingAgentList.remove(index0) ;
                                 seekingAgentList.remove(index1) ;
+                                unmatched = false ;
                                 break ;
 
                                 // No longer available for other Relationships
@@ -810,11 +813,13 @@ public class Community {
                                 //availableAgents.remove(agent1) ;
                             }
                         }
+                        if (unmatched)
+                            index0++ ;
                     }
                     listSize = seekingAgentList.size() ;
                 }
-                if (listSize >= oldListSize)
-                    Collections.shuffle(seekingAgentList) ;
+                //if (listSize >= oldListSize)
+                  //  Collections.shuffle(seekingAgentList) ;
 //                    LOGGER.log(Level.INFO, "{0} {1}", new Object[] {relationshipClazzName,listSize});
             }
         }
@@ -1394,23 +1399,6 @@ public class Community {
         {
             BufferedWriter metadataWriter = new BufferedWriter(new FileWriter(Community.FILE_PATH + fileName,true)) ;
             metadataWriter.write(OUTPUT_RETURN) ;
-            metadataWriter.newLine() ;
-            metadataWriter.close() ;
-        }
-        catch ( Exception e )
-        {
-            LOGGER.severe(e.toString()) ;
-        }
-    }
-    
-    private void dumpOutput(String reportName, Object dumpReport)
-    {
-        String fileName = reportName + "_" + SIM_NAME + ".txt" ;
-        LOGGER.info(fileName) ;
-        try
-        {
-            BufferedWriter metadataWriter = new BufferedWriter(new FileWriter(Community.FILE_PATH + fileName,true)) ;
-            metadataWriter.write(dumpReport.toString()) ;
             metadataWriter.newLine() ;
             metadataWriter.close() ;
         }
