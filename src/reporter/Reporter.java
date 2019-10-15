@@ -1338,7 +1338,15 @@ public class Reporter {
                 for (HashMap<Comparable,String> report : reportList)
                 {
                     String record = report.get(key) ;
-                    itemValue += Double.valueOf(Reporter.EXTRACT_VALUE(propertyName,record)) ;
+                    try
+                    {
+                        itemValue += Double.valueOf(Reporter.EXTRACT_VALUE(propertyName,record)) ;
+                    }
+                    catch (Exception e)
+                    {
+                        LOGGER.log(Level.SEVERE,"report:{0} propertyName:{1} {2}", new Object[] {reportList.indexOf(report),propertyName,e.toString()}) ;
+                        itemValue = 0.0 ;
+                    }
                 }
                 meanRecord += ADD_REPORT_PROPERTY(propertyName,itemValue/nbReports) ;
             }
@@ -1806,7 +1814,7 @@ public class Reporter {
                 // Read input file of simulationName
                 String fileLine = fileReader.readLine() ;
                 fileReader.close() ;
-                ArrayList<String> scoreNames = IDENTIFY_PROPERTIES(fileLine) ;
+                //ArrayList<String> scoreNames = IDENTIFY_PROPERTIES(fileLine) ;
                 //? categoryName = scoreNames[0] ;
                 //int scoreIndex = Arrays.asList(scoreNames).indexOf(scoreName) ;
 
@@ -1814,22 +1822,29 @@ public class Reporter {
 
                 //ArrayList<String> keyValues = new ArrayList<String>() ;
                 int keyIndex = fileLine.indexOf("=") ;
-                int spaceIndex = -1 ;
+                int spaceIndex = 0 ;
+                int keyIndex2 ;
 
                 //while (fileLine != null)
-                while (keyIndex > 0)
+                while (keyIndex < fileLine.length())
                 {
                     String categoryValue = fileLine.substring(spaceIndex + 1, keyIndex) ;
-                    String scoreString = EXTRACT_BOUNDED_STRING("=",fileLine,keyIndex) ;
+                    keyIndex2 = fileLine.indexOf("=",keyIndex + 1) ;
+                    if (keyIndex2 < 0)
+                        keyIndex2 = fileLine.length() ;
+                    String scoreString = fileLine.substring(keyIndex, keyIndex2) ;
                     scoreValue = EXTRACT_VALUE(scoreName,scoreString) ;
-                    keyIndex = fileLine.indexOf("=") ;
-                    spaceIndex = fileLine.indexOf(SPACE) ;
+                    LOGGER.log(Level.INFO, "year:{0} score:{1}", new Object[] {categoryValue,scoreString});
+                    keyIndex = keyIndex2 ;
+                    // Select SPACE immediately before "="
+                    spaceIndex = fileLine.lastIndexOf(SPACE, keyIndex) ;
                     // Initialise fileLine for Each categoryValue with "categoryValue"
 
                     if (!outputReport.containsKey(categoryValue))
                         outputReport.put(categoryValue, categoryValue) ;
                     outputReport.put(categoryValue, String.join(COMMA, outputReport.get(categoryValue), scoreValue)) ;
                 }   
+            LOGGER.info(fileLine) ;
             }
 
         }
@@ -1852,7 +1867,8 @@ public class Reporter {
         try
         {
             BufferedWriter fileWriter = new BufferedWriter(new FileWriter(filePath,false));
-            fileWriter.write(categoryName) ;
+            String firstLine = String.join(COMMA, simNames) ;
+            fileWriter.write(categoryName + COMMA + firstLine) ;
             fileWriter.newLine() ;
             for (Object key : categoryValues)
             {
@@ -1927,6 +1943,26 @@ public class Reporter {
     {
         return WRITE_CSV_STRING(report, categoryName, new ArrayList<Object>(), reportName, simName, folderPath) ;
     }
+    
+    static public boolean dumpOutput(String reportName, String simName, String folderPath, Object dumpReport)
+    {
+        String fileName = reportName + "_" + simName + ".txt" ;
+        LOGGER.info(fileName) ;
+        try
+        {
+            BufferedWriter metadataWriter = new BufferedWriter(new FileWriter(folderPath + fileName,true)) ;
+            metadataWriter.write(dumpReport.toString()) ;
+            metadataWriter.newLine() ;
+            metadataWriter.close() ;
+        }
+        catch ( Exception e )
+        {
+            LOGGER.severe(e.toString()) ;
+            return false ;
+        }
+        return true ;
+    }
+    
     
     /**
      * 
@@ -2621,13 +2657,13 @@ public class Reporter {
      */
     public static void main(String[] args)
     {
-        String folderPath = "output/test/" ;
-        //String[] simNames = new String[] {"noGSNpostHolt3aPop40000Cycles5475","noGSNpostHolt3bPop40000Cycles5475","noGSNpostHolt3cPop40000Cycles5475","noGSNpostHolt3dPop40000Cycles5475","noGSNpostHolt3ePop40000Cycles5475",
-            //"noGSNpostHolt3fPop40000Cycles5475","noGSNpostHolt3gPop40000Cycles5475","noGSNpostHolt3hPop40000Cycles5475","noGSNpostHolt3iPop40000Cycles5475","noGSNpostHolt3jPop40000Cycles5475"} ;
+        String folderPath = "output/prep/" ;
+        String[] simNames = new String[] {"to2017newSort17aaPop40000Cycles5110", "to2017newSort17baPop40000Cycles5110","to2017newSort17caPop40000Cycles5110","to2017newSort17daPop40000Cycles5110","to2017newSort17eaPop40000Cycles5110",
+            "to2017newSort17faPop40000Cycles5110", "to2017newSort17gaPop40000Cycles5110","to2017newSort17haPop40000Cycles5110","to2017newSort17iaPop40000Cycles5110","to2017newSort17jaPop40000Cycles5110"} ;
         //String[] simNames = new String[] {"from2007seek27aPop40000Cycles5475","from2007seek27bPop40000Cycles5475","from2007seek27cPop40000Cycles5475","from2007seek27dPop40000Cycles5475","from2007seek27ePop40000Cycles5475",
         //"from2007seek27fPop40000Cycles5475","from2007seek27gPop40000Cycles5475","from2007seek27hPop40000Cycles5475","from2007seek27iPop40000Cycles5475","from2007seek27jPop40000Cycles5475"} ;
     
-        String[] simNames = new String[] {"newSortRisk12aPop40000Cycles1825"} ;
+        //String[] simNames = new String[] {"newSortRisk12aPop40000Cycles1825"} ;
         //String[] simNames = new String[] {"newSortRisk12aPop40000Cycles730","newSortRisk11aPop40000Cycles730","newSortRisk10aPop40000Cycles730","newSortRisk9aPop40000Cycles730","newSortRisk8aPop40000Cycles730"} ;
         ArrayList<String> simNameList = new ArrayList<String>() ;
         Collections.addAll(simNameList, simNames) ;
