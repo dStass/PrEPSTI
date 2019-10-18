@@ -120,6 +120,13 @@ public abstract class Agent {
     // The maximum number of relationships an agent may be willing to sustain
     //static int MAX_RELATIONSHIPS = 15;
     
+    /**
+     * Coordinates the reinitialisation of Agent parameters when they change 
+     * year-by-year.
+     * @param agentList
+     * @param year
+     * @return 
+     */
     static public boolean REINIT(ArrayList<Agent> agentList, int year) 
     {
         //boolean successful = true ;
@@ -174,6 +181,11 @@ public abstract class Agent {
         }
     }
     
+    /**
+     * Reinitialises Agents' Relationship-relevant parameter changes year-by-year.
+     * @param agentList
+     * @param year 
+     */
     static final void REINIT_NB_RELATIONSHIPS(ArrayList<Agent> agentList, int year)
     {
         //for (Agent agent : agentList)
@@ -283,21 +295,6 @@ public abstract class Agent {
         return new Site[] {site0,site1} ;
     }
 
-    /**
-     * Multiple parameters needed as subclasses may have very elaborate schemes
-     * @param infectedAgent
-     * @param clearAgent
-     * @param infectionStatus
-     * @param infectedSite
-     * @param clearSite
-     * @return probability of infection passing from infectedSite to clearSite
-     */
-    public static double getInfectProbability(Agent infectedAgent, Agent clearAgent, int infectionStatus,
-    		Site infectedSite, Site clearSite)
-    {
-    	return 0.5 ;
-    }
-	
     /**
      * 
      * @param agent0
@@ -652,8 +649,8 @@ public abstract class Agent {
     /**
      * Initialises startAge of new Agents
      * @param startAge = -1, choose random startAge from 16 to 65, for initialising community
-                 = 0 , choose random startAge from 16 to 25, new agents entering sexual maturity
-                 > 0 , set startAge to startAge
+     *            = 0 , choose random startAge from 16 to 25, new agents entering sexual maturity
+     *            > 0 , set startAge to startAge
      */
     private int initAge(int startAge)
     {
@@ -994,7 +991,7 @@ public abstract class Agent {
     abstract public Site[] getSites() ;
     
     /**
-     * Used when choosing Site for sexual encounter
+     * Used when choosing Site for sexual contact.
      * @return randomly chosen available Site
      */
     abstract Site chooseSite() ;
@@ -1229,6 +1226,9 @@ public abstract class Agent {
         return screenCycle ;
     }
     
+    /**
+     * Decreases the remaining time until the next screen by one cycle.
+     */
     protected void decrementScreenTime()
     {
         screenTime-- ;
@@ -1482,7 +1482,7 @@ public abstract class Agent {
      * 
      * @param relationshipClazzName - name relationship subclass
      * @param partner - agent for sharing proposed relationship
-     * @return (Boolean) true if accept and false otherwise
+     * @return (boolean) true if accept and false otherwise
      */
     public boolean consent(String relationshipClazzName, Agent partner)
     {
@@ -1494,7 +1494,7 @@ public abstract class Agent {
         if (REGULAR.equals(relationshipClazzName))
             return available ;
         else    // Asking for Casual Relationship
-            return consentCasual(partner) ;
+            return true ; // consentCasual(partner) ;
         //return available ;
     }
     
@@ -1901,8 +1901,7 @@ public abstract class Agent {
     }
 
     /**
-     * Removes all Relationships of Agent. Called by death()
-     * TODO: Add code to properly keep track of Community.nbRelationships
+     * Removes all Relationships of Agent. Called by death().
      */
     final private void clearRelationships()
     {
