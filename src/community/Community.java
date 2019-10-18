@@ -116,19 +116,8 @@ public class Community {
     private int birthBase = (int) Math.floor(birthRate);
     private double birthRemainder = birthRate - birthBase ;
 
-    // Current number of relationships in the community
-    private int nbRelationships = 0; 
-    
-    // List of indices in agents of available agents. Repetition indicates promiscuity
-    //ArrayList<Integer> availableAgentsIds = new ArrayList<Integer>() ;
-
     //private ArrayList<Relationship> relationships = new ArrayList<Relationship>() ;
 
-//    /** The number of years covered in the simulation. */
-    //private static int year = 0 ;
-//    /** The number of cycles (days) since the current year began. */
-    //private static int cyclesModYear = 0 ;
-    
     public static String TRUE = "true" ;
     public static String FALSE = "false" ;
     
@@ -444,7 +433,7 @@ public class Community {
         LOGGER.info("At-risk incidence " + screeningReporter.prepareFinalAtRiskIncidentsRecord(siteNames, 0,"")) ;
         HashMap<Comparable,String> incidenceReport = new HashMap<Comparable,String>() ;
         if (DYNAMIC)
-            incidenceReport = screeningReporter.prepareYearsAtRiskIncidenceReport(siteNames, 3, 2012, "statusHIV") ;
+            incidenceReport = screeningReporter.prepareYearsAtRiskIncidenceReport(siteNames, 11, 2017, "statusHIV") ;
         LOGGER.info("by HIV-status " + screeningReporter.prepareFinalAtRiskIncidentsRecord(siteNames, 0,"statusHIV")) ;
         //String finalPrevalencesRecord = screeningReporter.prepareFinalPrevalencesSortedRecord(siteNames, "statusHIV") ;
         //LOGGER.log(Level.INFO, "prevalence {0}", finalPrevalencesRecord) ;
@@ -547,7 +536,7 @@ public class Community {
             this.initialRecord = "" ; 
             for (Agent agent : agents)
                 initialRecord += agent.getCensusReport() ;
-            nbRelationships = Relationship.REBOOT_RELATIONSHIPS(simName, agents) ;
+            Relationship.REBOOT_RELATIONSHIPS(simName, agents) ;
             scribe = new Scribe(SIM_NAME, new String[] {"relationship","encounter","infection", "population"}) ;
         }
     }
@@ -672,158 +661,20 @@ public class Community {
     }
 
     /**
-     * Generate relationships within the community. 
-     * The agents are shuffled and then split in half, with the first
-     * half in relationship proposals with the second half.
-     * 
-     * @return (String) report of Relationships generated
-     */
-    private String generateRelationshipsOld(boolean burnin)
-    {
-        String report = "" ;
-
-        Collections.shuffle(agents) ;
-        int halfAgents = Math.floorDiv(agents.size(), 2) ;
-        try
-        {
-            for (int index = 0 ; index < halfAgents ; index++ )
-            {
-                Agent agent0 = agents.get(index) ;
-                Agent agent1 = agents.get(index + halfAgents) ;
-
-                // Have only one Relationship between two given Agents
-                if (agent1.getCurrentPartnerIds().contains(agent0.getAgentId()))
-                        continue ;
-
-                // Tell Agents which type of Relationship is being proposed.
-                Class<?> relationshipClazz = Relationship.chooseRelationship(agent0, agent1) ;
-                if (burnin)    // Casual Relationships will dissolve before burn-in anyway, and take lots of time
-                    if (Casual.class.equals(relationshipClazz))
-                        continue ;
-                String relationshipClazzName = relationshipClazz.getSimpleName() ;
-
-                // Argument String[] for Agent.consent 
-                // TODO: Use Agent.consentArgs()
-                if (agent0.consent(relationshipClazzName,agent1) && agent1.consent(relationshipClazzName,agent0))
-                {
-                    //String enterMethodName = "enter" + relationshipClazzName ;
-                    //Method enterRelationshipMethod = Agent.class.getDeclaredMethod(enterMethodName, Relationship.class ) ;
-
-                    Relationship relationship = (Relationship) relationshipClazz.newInstance() ;
-                    nbRelationships++ ;
-                    report += relationship.addAgents(agent0, agent1);
-                    
-                    // These lines now called indirectly from relationship.addAgents() ;
-                    //report += enterRelationshipMethod.invoke(agent0, relationship) ;
-                    //enterRelationshipMethod.invoke(agent1, relationship) ;
-
-
-                    //report += relationship.getReport() + " " ;
-
-                }
-            }
-            //LOGGER.log(Level.INFO, "createRelationships {0}", new Object[]{nbRelationships});
-
-        }
-        catch ( IllegalAccessException iae )
-        {
-            LOGGER.info(iae.getMessage());
-        LOGGER.info("iae");
-        }
-        catch ( InstantiationException ie)
-        {
-            LOGGER.info(ie.getLocalizedMessage()) ;
-        LOGGER.info("ie");
-        }
-        
-        if (!burnin)
-            report += runGroupSex() ;
-
-        return report ;
-    }
-    
-   /**
-     * Generate relationships within the community. 
-     * The agents are shuffled and then paired off, starting at
-     * the end of the ArrayList. Those entering Relationships are removed.
-     * Process repeats for each Relationship Class until no more Relationships
-     * are formed.
+     * Generate relationships within the community 
+     * by calling appropriate static MSM Method.
      * 
      * @return (String) report of Relationships generated
      */
     private String generateRelationships()    // 
     {
-        String report = "" ;
-        Class<?> relationshipClazz ;
-        ArrayList availableAgents = (ArrayList<Agent>) agents.clone() ;
+        //String report = "" ;
+        ArrayList<Agent> availableAgents = (ArrayList<Agent>) agents.clone() ;
         
         String[] relationshipClazzNames ;
         relationshipClazzNames = new String[] {"Casual","Regular","Monogomous"} ;
-        for (String relationshipClazzName : relationshipClazzNames)
-        {
-            ArrayList<ArrayList<Agent>> agentLists = MSM.SEEKING_AGENTS(availableAgents,relationshipClazzName) ;
-            //ArrayList<ArrayList<Agent>> agentLists = seekingAgents(availableAgents,relationshipClazzName) ;
-            //MSM.SEEKING_AGENTS(availableAgents,relationshipClazzName) ;
-            
-            // Determine which Agents seek out which Relationship Class
-            for (ArrayList<Agent> seekingAgentList : agentLists) 
-            {
-                boolean unmatched ;
-                // Pair Agents, remove pairs, repeat until stuck
-                int oldListSize = 0 ;
-                int listSize = -1 ;
-                while (oldListSize > listSize)
-                {
-                    //Collections.shuffle(seekingAgentList) ;
-                    oldListSize =  seekingAgentList.size() ; 
-                    for (int index0 = oldListSize - 1 ; index0 > 0 ; index0 = index0 - 2 )
-                    {
-                        Agent agent0 = seekingAgentList.get(index0) ;
-                        unmatched = true ;
-                        for (int index1 = index0 - 1 ; index1 >=0 ; index1-- )
-                        {
-                            Agent agent1 = seekingAgentList.get(index1) ;
-
-
-                            // Have only one Relationship between two given Agents
-                            if (agent1.getCurrentPartnerIds().contains(agent0.getAgentId()))
-                                continue ;
-
-                            if (agent0.consent(relationshipClazzName,agent1) && agent1.consent(relationshipClazzName,agent0))
-                            {
-                                try
-                                {
-                                    relationshipClazz = Class.forName("community." + relationshipClazzName) ;
-                                    Relationship relationship = (Relationship) relationshipClazz.newInstance() ;
-                                    nbRelationships++ ;
-                                    report += relationship.addAgents(agent0, agent1);
-                                    //LOGGER.info(report) ;
-                                }
-                                catch( Exception e )
-                                {
-                                    LOGGER.severe(e.toString()) ;
-                                }
-                                seekingAgentList.remove(index0) ;
-                                seekingAgentList.remove(index1) ;
-                                unmatched = false ;
-                                break ;
-
-                                // No longer available for other Relationships
-                                //availableAgents.remove(agent0) ;
-                                //availableAgents.remove(agent1) ;
-                            }
-                        }
-                        if (unmatched)
-                            index0++ ;
-                    }
-                    listSize = seekingAgentList.size() ;
-                }
-                //if (listSize >= oldListSize)
-                  //  Collections.shuffle(seekingAgentList) ;
-//                    LOGGER.log(Level.INFO, "{0} {1}", new Object[] {relationshipClazzName,listSize});
-            }
-        }
-        return report ;
+        
+        return MSM.GENERATE_RELATIONSHIPS(availableAgents,relationshipClazzNames) ;
     }
     
     /**
@@ -904,8 +755,7 @@ public class Community {
                         continue ;    // Require two distinct Agents in a Relationship
                     Casual relationship = new Casual();
                     record += relationship.addAgents(agent0, agent1) ;
-                    nbRelationships++ ;
-
+    
                 }
             }
             gseAgentStart = gseAgentEnd ;
@@ -1002,7 +852,6 @@ public class Community {
             agent = agents.get(agentIndex) ; 
             if (agent.grimReaper())
             {
-                nbRelationships-= agent.getCurrentRelationships().size() ;
                 agents.remove(agent) ;
                 record += Reporter.ADD_REPORT_PROPERTY("agentId", agent.getAgentId()) ;
                 //record += Reporter.ADD_REPORT_PROPERTY("age", agent.getAge()) ;
@@ -1106,7 +955,6 @@ public class Community {
     {
         if (relationship.breakup())
         {
-            nbRelationships-- ;
             return relationship.endRelationship() ;
         }
         return "" ;
@@ -1464,7 +1312,6 @@ public class Community {
                 {
                     Relationship relationship = (Relationship) Class.forName(relationshipClazzName).newInstance();
                     relationship.setRelationshipId(Integer.valueOf(relationshipId)) ;
-                    nbRelationships++ ;
                     agentId0 = Integer.valueOf(Reporter.EXTRACT_VALUE(Reporter.AGENTID0,boundedString)) ;
                     agentId1 = Integer.valueOf(Reporter.EXTRACT_VALUE(Reporter.AGENTID1,boundedString)) ;
                     relationship.addAgents(agents.get(agentId0), agents.get(agentId1)) ;
