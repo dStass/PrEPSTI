@@ -4,6 +4,7 @@
 package agent;
 
 //import static agent.Agent.LOGGER;
+import community.Relationship;
 import reporter.Reporter ;
 
 import java.util.logging.Level;
@@ -99,7 +100,7 @@ public class MSM extends Agent {
      * virus blood concentration from year to year. If the probability increases 
      * then only MSM not on antiviral medication will change, and vice versa if the probability
      * decreases.
-     * Taken from Table 17 ARTB 2017 and Table 16 ARTB 2018
+     * Taken from Table 17 ARTB 2017 and Table 16 ARTB 2018.
      * @param agentList (ArrayList) List of Agents to undergo parameter change.
      * @param year (int) Year of simulation, starting from 0.
      * @throws java.lang.Exception 
@@ -436,7 +437,7 @@ public class MSM extends Agent {
      * 
      * @param year
      * @param hivStatus
-     * @return (double) The probability of an Agent be willing to have anal sex in 
+     * @return (double) The probability of an Agent being willing to have anal sex in 
      * any given year, assuming that changes over time, according to his HIV status.
      */
     static double PROPORTION_ANAL_SEX(int year, boolean hivStatus)
@@ -460,50 +461,145 @@ public class MSM extends Agent {
     }
     
     /**
-     * Returns an ArrayList of Agents seeking a relationshipClazzName Relationship.
-     * May be overridden to accomodate serosorting etc.
-     * @param agentList (ArrayList) List of Agents to be considered for specified Relationship.
-     * @param relationshipClazzName (String) Name of Relationship sub-Class. 
-     * @return (
+     * Generate relationships among the availableAgentList. 
+     * Serosorting MSM are treated first to ensure that they don't miss out unduly. 
+     * Those entering Relationships are removed.
+     * 
+     * @return (String) report of Relationships generated
      */
-    static public ArrayList<ArrayList<Agent>> SEEKING_AGENTS(ArrayList<Agent> agentList, String relationshipClazzName)
+    static public String GENERATE_RELATIONSHIPS(ArrayList<Agent> availableAgentList, String[] relationshipClazzNames)
     {
-        ArrayList<ArrayList<Agent>> seekingAgentListList = new ArrayList<ArrayList<Agent>>() ;
+        String report = "" ;
+        Class<?> relationshipClazz ;
+    
+        ArrayList<MSM> seroSortList ;
+        
+        for (String relationshipClazzName : relationshipClazzNames)
+        {
+            ArrayList<Agent> relationshipAgentList = MSM.SEEKING_AGENTS(availableAgentList,relationshipClazzName) ;
+        
+            seroSortList = new ArrayList<MSM>() ;
+            
+            // Sort seekers according to HIV and serosorting status
+            for (Agent agent : relationshipAgentList) 
+            {
+                MSM msm = (MSM) agent ;
+                if (msm.getSeroSort(relationshipClazzName))
+                    seroSortList.add(msm) ;
+            }
+
+            for (int index0 = seroSortList.size() - 1 ; index0 >= 0 ; index0-- )
+            {
+                MSM msm0 = seroSortList.get(index0) ;
+                relationshipAgentList.remove(msm0) ;
+                for (Agent agent : relationshipAgentList)
+                {
+                    MSM msm1 = (MSM) agent ;
+
+                    // Check seroconcordance
+                    if (msm1.statusHIV != msm0.statusHIV)
+                        continue ;
+
+                    // Have only one Relationship between two given MSM 
+                    if (msm1.getCurrentPartnerIds().contains(msm0.getAgentId()))
+                        continue ;
+
+                    //seroSortList.remove(msm0) ;
+                    relationshipAgentList.remove(agent) ;
+
+                    availableAgentList.remove(msm0) ;
+                    availableAgentList.remove(agent) ;
+
+                    if (seroSortList.contains(msm1))  // Same MSM ArrayList
+                    {
+                        seroSortList.remove(msm1) ;
+                        index0-- ;
+                    }
+
+                    try
+                    {
+                        relationshipClazz = Class.forName("community." + relationshipClazzName) ;
+                        Relationship relationship = (Relationship) relationshipClazz.newInstance() ;
+                        report += relationship.addAgents(msm0, msm1);
+                    }
+                    catch( Exception e )
+                    {
+                        LOGGER.severe(e.toString()) ;
+                    }
+                    break ;
+
+                    // No longer available for other Relationships
+                    //availableAgents.remove(agent0) ;
+                    //availableAgents.remove(agent1) ;
+                }
+            }
+
+            for (int index0 = relationshipAgentList.size() - 1 ; index0 > 0 ; index0--)
+            {
+                MSM msm0 = (MSM) relationshipAgentList.get(index0) ;
+                for (int index1 = index0 - 1 ; index1 >= 0 ; index1-- )
+                {
+                    MSM msm1 = (MSM) relationshipAgentList.get(index1) ;
+
+                    if (msm1.statusHIV != msm0.statusHIV) // First two ArrayList are serosorters
+                        continue ;
+
+                    // Have only one Relationship between two given MSM 
+                    if (msm1.getCurrentPartnerIds().contains(msm0.getAgentId()))
+                        continue ;
+
+                    relationshipAgentList.remove(index0) ;
+                    relationshipAgentList.remove(msm1) ;
+
+                    availableAgentList.remove(msm0) ;
+                    availableAgentList.remove(msm1) ;
+                    index0-- ;
+
+                    try
+                    {
+                        relationshipClazz = Class.forName("community." + relationshipClazzName) ;
+                        Relationship relationship = (Relationship) relationshipClazz.newInstance() ;
+                        //incrementNbRelationships() ;
+                        report += relationship.addAgents(msm0, msm1);
+                    }
+                    catch( Exception e )
+                    {
+                        LOGGER.severe(e.toString()) ;
+                    }
+                    break ;
+
+                    // No longer available for other Relationships
+                    //availableAgents.remove(agent0) ;
+                    //availableAgents.remove(agent1) ;
+                }
+            }
+
+            
+        }
+        return report ;
+    }
+    
+    /**
+     * Returns an ArrayList of Agents seeking a relationshipClazzName Relationship.
+     * 
+     * @param agentList (ArrayList) List of Agents to be considered for specified Relationship Class.
+     * @param relationshipClazzName (String) Name of Relationship sub-Class. 
+     * @return 
+     */
+    static public ArrayList<Agent> SEEKING_AGENTS(ArrayList<Agent> agentList, String relationshipClazzName)
+    {
         ArrayList<Agent> seekingAgentList = new ArrayList<Agent>() ;
         
-//        ArrayList<Agent> positiveHIV = new ArrayList<Agent>() ;
-//        ArrayList<Agent> negativeHIV = new ArrayList<Agent>() ;
-        
-        int index ;
         // Determine which Agents seek out which Relationship Class
-        Collections.shuffle(agentList) ;
         for (Agent agent : agentList)
         {
             MSM msm = (MSM) agent ;
             if (msm.seekRelationship(relationshipClazzName))
-            {
-                //if (RAND.nextDouble() > msm.consentCasualProbability)
-                if (msm.statusHIV && msm.getSeroSort(relationshipClazzName))
-                {
-//                    if (msm.seroSort)
-                        seekingAgentList.add(msm) ;
-                }
-                    else
-                        seekingAgentList.add(0,msm) ;
-                //}
-//                else
-//                {
-//                    if (msm.seroSort)
-//                        negativeHIV.add(msm) ;
-//                    else
-//                        negativeHIV.add(0,msm) ;
-//                }
-            }
+                seekingAgentList.add(msm) ;
         }
-        seekingAgentListList.add(seekingAgentList) ;
-        //seekingAgentListList.add(negativeHIV) ;
-
-        return seekingAgentListList ;    
+        Collections.shuffle(seekingAgentList) ;
+        
+        return seekingAgentList ;    
     }
     
     /**
@@ -597,11 +693,11 @@ public class MSM extends Agent {
     private boolean riskyStatus ;
     
     /** Transmission probabilities per sexual contact from Urethra to Rectum */
-    static double URETHRA_TO_RECTUM = 0.95 ; 
+    static double URETHRA_TO_RECTUM = 0.75 ; 
     /** Transmission probabilities sexual contact from Urethra to Pharynx. */
-    static double URETHRA_TO_PHARYNX = 0.70 ; 
+    static double URETHRA_TO_PHARYNX = 0.40 ; 
     /** Transmission probabilities sexual contact from Rectum to Urethra. */
-    static double RECTUM_TO_URETHRA = 0.050 ;
+    static double RECTUM_TO_URETHRA = 0.030 ;
     /** Transmission probabilities sexual contact from Rectum to Pharynx. */
     static double RECTUM_TO_PHARYNX = 0.050 ;
     /** Transmission probabilities sexual contact in Pharynx to Urethra intercourse. */
@@ -609,11 +705,11 @@ public class MSM extends Agent {
     /** Transmission probabilities sexual contact in Pharynx to Rectum intercourse. */
     static double PHARYNX_TO_RECTUM = 0.040 ; 
     /** Transmission probabilities sexual contact in Pharynx to Pharynx intercourse (kissing). */
-    static double PHARYNX_TO_PHARYNX = 0.060 ; 
+    static double PHARYNX_TO_PHARYNX = 0.040 ; 
     /** Transmission probabilities sexual contact in Urethra to Urethra intercourse (docking). */
     static double URETHRA_TO_URETHRA = 0.001 ; 
     /** Transmission probabilities sexual contact in Rectum to Rectum intercourse. */
-    static double RECTUM_TO_RECTUM = 0.010 ;
+    static double RECTUM_TO_RECTUM = 0.005 ;
 
     /** The probability of screening in a given cycle with statusHIV true. */
     static double SCREEN_PROBABILITY_HIV_POSITIVE = 0.0029 ;
@@ -820,7 +916,7 @@ public class MSM extends Agent {
     static double HIV_RISKY_CORRELATION = 2.0 ; // 1.0 ;	
     
     /**
-     * Choose whether MSM is RiskyMSM or SafeMSM
+     * Create new MSM and decide if he is RiskyMSM or SafeMSM
      * @param startAge - age of MSM at sexual 'birth'.
      * @return - one of subclass RiskyMSM or SafeMSM
      */
@@ -1745,7 +1841,7 @@ public class MSM extends Agent {
     
     /**
      * How would the MSM respond if asked to disclose their statusHIV
-     * @return String representation of statusHIV if (discloseStatusHIV), otherwise 'none'
+     * @return String representation of statusHIV if (discloseStatusHIV), otherwise 'none'.
      */
     @Override
     public String declareStatus()
