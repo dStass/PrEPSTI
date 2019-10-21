@@ -670,7 +670,7 @@ public class Community {
     {
         //String report = "" ;
         ArrayList<Agent> availableAgents = (ArrayList<Agent>) agents.clone() ;
-        
+        Collections.shuffle(availableAgents, RAND) ;
         String[] relationshipClazzNames ;
         relationshipClazzNames = new String[] {"Casual","Regular","Monogomous"} ;
         
