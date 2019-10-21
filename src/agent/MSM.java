@@ -167,16 +167,16 @@ public class MSM extends Agent {
     /**
      * Alters the willingness to trust U=U as protection against HIV on a year-by-year
      * basis.
-     * Data taken from Table 21 in GCPS 2017.
+     * Data taken from GCPS: Table 21 in GCPS 2017, Table 20 in 2018
      * @param agentList (ArrayList) List of Agents to undergo parameter change.
      * @param year (int) Year of simulation starting from year zero.
      */
     static protected void REINIT_TRUST_ANTIVIRAL(ArrayList<Agent> agentList, int year) 
     {
         double[] positiveTrustAntiViral = new double[] {0.0,0.0,0.0,0.0,0.0,0.0,0.483,0.772,
-            0.692, 0.742, 0.804} ;
+            0.692, 0.742, 0.804, 0.853} ;
         double[] negativeTrustAntiViral = new double[] {0.0,0.0,0.0,0.0,0.0,0.0,0.106,0.094,
-            0.129, 0.157, 0.203} ;
+            0.129, 0.157, 0.203, 0.231} ;
         
         double positiveLastProbability = positiveTrustAntiViral[year - 1] ;
         double positiveTrustProbability = positiveTrustAntiViral[year] ;
@@ -290,10 +290,10 @@ public class MSM extends Agent {
     {
         if (year == 0)
             return ;
-        // GCPS (Table 15, 2011) (Table 14, 2013) (Table 16, 2017)
+        // GCPS (Table 15, 2011) (Table 14, 2013) (Table 16, 2017-18)
         // Year-by-year rates of UAIC 
-        int[] newRiskyOdds = new int[] {290,293,369,345,331,340,364,350,362,409,520} ;
-        int[] newSafeOdds = new int[] {468,514,471,501,469,465,444,473,440,424,307} ;
+        int[] newRiskyOdds = new int[] {290,293,369,345,331,340,364,350,362,409,520,566} ;
+        int[] newSafeOdds = new int[] {468,514,471,501,469,465,444,473,440,424,307,264} ;
         // newRiskyProportions         {.38,.36,.44,.41,.41,.42,.45,.43,.45,.49,.63} ;
         // total_odds                 {758,807,840,846,800,805,808,823,802,831,827}
         SAFE_ODDS = newSafeOdds[year] ;
@@ -597,7 +597,7 @@ public class MSM extends Agent {
             if (msm.seekRelationship(relationshipClazzName))
                 seekingAgentList.add(msm) ;
         }
-        Collections.shuffle(seekingAgentList) ;
+        //Collections.shuffle(seekingAgentList) ;
         
         return seekingAgentList ;    
     }
@@ -697,15 +697,15 @@ public class MSM extends Agent {
     /** Transmission probabilities sexual contact from Urethra to Pharynx. */
     static double URETHRA_TO_PHARYNX = 0.40 ; 
     /** Transmission probabilities sexual contact from Rectum to Urethra. */
-    static double RECTUM_TO_URETHRA = 0.030 ;
+    static double RECTUM_TO_URETHRA = 0.02 ;
     /** Transmission probabilities sexual contact from Rectum to Pharynx. */
     static double RECTUM_TO_PHARYNX = 0.050 ;
     /** Transmission probabilities sexual contact in Pharynx to Urethra intercourse. */
-    static double PHARYNX_TO_URETHRA = 0.002 ; 
+    static double PHARYNX_TO_URETHRA = 0.02 ; 
     /** Transmission probabilities sexual contact in Pharynx to Rectum intercourse. */
-    static double PHARYNX_TO_RECTUM = 0.040 ; 
+    static double PHARYNX_TO_RECTUM = 0.010 ; 
     /** Transmission probabilities sexual contact in Pharynx to Pharynx intercourse (kissing). */
-    static double PHARYNX_TO_PHARYNX = 0.040 ; 
+    static double PHARYNX_TO_PHARYNX = 0.050 ; 
     /** Transmission probabilities sexual contact in Urethra to Urethra intercourse (docking). */
     static double URETHRA_TO_URETHRA = 0.001 ; 
     /** Transmission probabilities sexual contact in Rectum to Rectum intercourse. */
@@ -1626,6 +1626,10 @@ public class MSM extends Agent {
         discloseStatusHIV = disclose ;
     }
 
+    /**
+     * Getter of PrEP status
+     * @return 
+     */
     public boolean getPrepStatus()
     {
         return prepStatus ;
@@ -1693,35 +1697,6 @@ public class MSM extends Agent {
     }
     
     /**
-     * Adjusts per year the screening period.
-     * @param year
-     * @throws Exception 
-     */
-    @Override
-    public void reinitScreenCycle(int year) throws Exception
-    {
-        if (year == 0)
-            return ;
-        
-        // Go from 2007
-        // Tests, given by per 1000 per year, from 2007-2016
-        // Table 17 ARTB 2016
-        double[] testRates = new double[] {333,340,398,382,383,382,391,419,445,499} ;
-        double testBase ;
-        //testBase = testRates[0] ;
-        testBase = testRates[year-1] ;
-        
-        double ratio = testBase/testRates[year] ;
-        int newScreenCycle = (int) Math.ceil(ratio * getScreenCycle()) ;
-        setScreenCycle(newScreenCycle) ;
-
-        /*double ratio = testBase/testRates[year] ;
-        
-        // Do not reinitialise MSM on Prep
-        initScreenCycle(ratio) ;*/
-    }
-    
-    /**
      * Allow for re-initialisation of prepStatus during simulation while 
      * initPrepStatus() remains private. 
      * @param year
@@ -1729,7 +1704,8 @@ public class MSM extends Agent {
      */
     public void reinitPrepStatus(int year, double riskyProbability)
     {
-        double[] prepProbabilityArray = new double[] {0.0,0.0,0.0,0.011,0.014,0.014,0.039,0.139,0.19} ;
+        double[] prepProbabilityArray = new double[] {0.0,0.0,0.0,0.0,0.0,0.0,
+            0.011,0.014,0.014,0.039,0.139,0.19} ;
         boolean prep = false ;
         if (riskyStatus && (!statusHIV))
         {
@@ -1737,42 +1713,6 @@ public class MSM extends Agent {
             prep = RAND.nextDouble() < prepProbability ;
         }
         setPrepStatus(prep) ;
-    }
-    
-    /**
-     * Resets the probability of adjusting discloseStatusHIV according to changing 
-     * disclose probabilities each year.
-     * Probabilities taken from Table 9 of ARTB 2017.
-     * @param year
-     * @throws Exception 
-     */
-    public void reinitProbablityDiscloseHIV(int year) throws Exception
-    {
-        if (year == 0)
-            return ;
-        // Go from 2007
-        double[] discloseProbability ;
-        if (statusHIV)
-            discloseProbability = new double[] {0.201,0.296,0.327,0.286,0.312,0.384,0.349,0.398,0.430,0.395} ;
-        else
-            discloseProbability = new double[] {0.175,0.205,0.218,0.239,0.229,0.249,0.236,0.295,0.286,0.352} ;
-        
-        double newDiscloseProbability = discloseProbability[year] ;
-        double oldDiscloseProbability = discloseProbability[year-1] ;
-        double changeProbability ;
-        if (newDiscloseProbability > oldDiscloseProbability)
-        {
-            if (discloseStatusHIV)
-                return ;
-            changeProbability = (newDiscloseProbability - oldDiscloseProbability)/(1 - oldDiscloseProbability) ;
-        }
-        else    // if less likely to disclose
-        {
-            if (!discloseStatusHIV)
-                return ;
-            changeProbability = (oldDiscloseProbability - newDiscloseProbability)/oldDiscloseProbability ;
-        }
-        initSeroStatus(newDiscloseProbability * changeProbability) ;
     }
     
     /**
