@@ -78,7 +78,7 @@ public class MSM extends Agent {
     /** Probability of sero-positioning if HIV negative */
     static double PROBABILITY_NEGATIVE_SERO_POSITION = 0.154 ;
     /** The probability of being on antivirals, given positive HIV status */
-    static double PROBABILITY_ANTIVIRAL = 0.532 ; // 0.689 ; // 2010 value // 
+    static double PROPORTION_ANTIVIRAL = 0.532 ; // 0.689 ; // 2010 value // 
     
     /** 
      * Adjusts the probability of accepting a Casual relationship.
@@ -87,12 +87,12 @@ public class MSM extends Agent {
     static double ADJUST_CASUAL_CONSENT = 1.0 ;
     
     /**
-     * Used to change the value of PROBABILITY_ANTIVIRAL
+     * Used to change the value of PROPORTION_ANTIVIRAL
      * @param antiViral 
      */
     static void SET_PROBABILITY_ANTIVIRAL(double antiViral)
     {
-        PROBABILITY_ANTIVIRAL = antiViral ;
+        PROPORTION_ANTIVIRAL = antiViral ;
     }
     
     /**
@@ -693,15 +693,15 @@ public class MSM extends Agent {
     private boolean riskyStatus ;
     
     /** Transmission probabilities per sexual contact from Urethra to Rectum */
-    static double URETHRA_TO_RECTUM = 0.75 ; 
+    static double URETHRA_TO_RECTUM = 0.95 ; 
     /** Transmission probabilities sexual contact from Urethra to Pharynx. */
     static double URETHRA_TO_PHARYNX = 0.40 ; 
     /** Transmission probabilities sexual contact from Rectum to Urethra. */
-    static double RECTUM_TO_URETHRA = 0.02 ;
+    static double RECTUM_TO_URETHRA = 0.025 ;
     /** Transmission probabilities sexual contact from Rectum to Pharynx. */
     static double RECTUM_TO_PHARYNX = 0.050 ;
     /** Transmission probabilities sexual contact in Pharynx to Urethra intercourse. */
-    static double PHARYNX_TO_URETHRA = 0.02 ; 
+    static double PHARYNX_TO_URETHRA = 0.023 ; 
     /** Transmission probabilities sexual contact in Pharynx to Rectum intercourse. */
     static double PHARYNX_TO_RECTUM = 0.010 ; 
     /** Transmission probabilities sexual contact in Pharynx to Pharynx intercourse (kissing). */
@@ -1705,7 +1705,7 @@ public class MSM extends Agent {
     public void reinitPrepStatus(int year, double riskyProbability)
     {
         double[] prepProbabilityArray = new double[] {0.0,0.0,0.0,0.0,0.0,0.0,
-            0.011,0.014,0.014,0.039,0.139,0.19} ;
+            0.011,0.014,0.014,0.039,0.139,0.204} ;
         boolean prep = false ;
         if (riskyStatus && (!statusHIV))
         {
@@ -1813,7 +1813,7 @@ public class MSM extends Agent {
 
     final private double getAntiviralProbability()
     {
-        return PROBABILITY_ANTIVIRAL ;
+        return PROPORTION_ANTIVIRAL ;
     }
     
     /**
