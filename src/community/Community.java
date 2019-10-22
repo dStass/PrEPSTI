@@ -432,8 +432,12 @@ public class Community {
 
         LOGGER.info("At-risk incidence " + screeningReporter.prepareFinalAtRiskIncidentsRecord(siteNames, 0,"")) ;
         HashMap<Comparable,String> incidenceReport = new HashMap<Comparable,String>() ;
+        HashMap<Comparable,String> incidenceReportPrep = new HashMap<Comparable,String>() ;
         if (DYNAMIC)
-            incidenceReport = screeningReporter.prepareYearsAtRiskIncidenceReport(siteNames, 11, 2017, "statusHIV") ;
+        {
+            incidenceReport = screeningReporter.prepareYearsAtRiskIncidenceReport(siteNames, 12, 2018, "statusHIV") ;
+            incidenceReportPrep = screeningReporter.prepareYearsAtRiskIncidenceReport(siteNames, 12, 2018, "prepStatus") ;
+        }
         LOGGER.info("by HIV-status " + screeningReporter.prepareFinalAtRiskIncidentsRecord(siteNames, 0,"statusHIV")) ;
         //String finalPrevalencesRecord = screeningReporter.prepareFinalPrevalencesSortedRecord(siteNames, "statusHIV") ;
         //LOGGER.log(Level.INFO, "prevalence {0}", finalPrevalencesRecord) ;
@@ -462,7 +466,10 @@ public class Community {
         //PopulationPresenter populationPresenter = new PopulationPresenter("deaths per cycle","deaths per cycle",populationReporter) ;
         //populationPresenter.plotDeathsPerCycle();
         if (!incidenceReport.isEmpty())
+        {
             Reporter.dumpOutput("riskyIncidence",SIM_NAME,FILE_PATH,incidenceReport);
+            Reporter.dumpOutput("riskyIncidencePrep",SIM_NAME,FILE_PATH,incidenceReportPrep);
+        }
         }
     }
 
