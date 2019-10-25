@@ -127,21 +127,29 @@ public abstract class Agent {
      * @param year
      * @return 
      */
-    static public boolean REINIT(ArrayList<Agent> agentList, int year) 
+    static public String REINIT(ArrayList<Agent> agentList, int year) 
     {
+        String report = "" ;
         //boolean successful = true ;
+        String CHANGE = "change" ;
         String methodName = "" ;
         try
         {
             methodName = "screen" ;
             REINIT_SCREEN_CYCLE(agentList, year) ;
             //REINIT_NB_RELATIONSHIPS(agentList, year) ;
+            
             methodName = "antiviral" ;
-            MSM.REINIT_PROBABILITY_ANTIVIRAL(agentList, year) ;
+            report += Reporter.ADD_REPORT_PROPERTY(CHANGE, methodName) ;
+            report += MSM.REINIT_PROBABILITY_ANTIVIRAL(agentList, year) ;
+            
             methodName = "disclosure" ;
             MSM.REINIT_PROBABILITY_DISCLOSURE_HIV(agentList, year) ;
+            
             methodName = "riskiness" ;
-            MSM.REINIT_RISK_ODDS(agentList, year) ;
+            report += Reporter.ADD_REPORT_PROPERTY(CHANGE, methodName) ;
+            report += MSM.REINIT_RISK_ODDS(agentList, year) ;
+            
             methodName = "trust_antiviral" ;
             MSM.REINIT_TRUST_ANTIVIRAL(agentList, year) ;
             //MSM.REINIT_USE_GSN(agentList, year) ;
@@ -149,17 +157,20 @@ public abstract class Agent {
         catch ( Exception e )
         {
             LOGGER.severe(e.toString() + " in method " + methodName) ;
-            return false ;
+            //return false ;
         }
-        return true ;
+        return report.concat("!") ;
     }
     /**
      * Adjusts per year the screening period.
-     * @param year
+     * TODO: Implement reporting of changes.
+     * @param (ArrayList) List of Agents to be changed.
+     * @param (int) year
      * @throws Exception 
      */
-    static private void REINIT_SCREEN_CYCLE(ArrayList<Agent> agentList, int year) throws Exception
+    static private String REINIT_SCREEN_CYCLE(ArrayList<Agent> agentList, int year) throws Exception
     {
+        String report = "" ;
         // Go from 2007
         // Tests, given by per 1000 per year, from 2007-2018
         // Table 14 ARTB 2018
@@ -179,6 +190,7 @@ public abstract class Agent {
         
             // Do not reinitialise MSM on Prep
         }
+        return report ;
     }
     
     /**
@@ -186,13 +198,13 @@ public abstract class Agent {
      * @param agentList
      * @param year 
      */
-    static final void REINIT_NB_RELATIONSHIPS(ArrayList<Agent> agentList, int year)
+    static final String REINIT_NB_RELATIONSHIPS(ArrayList<Agent> agentList, int year)
     {
         //for (Agent agent : agentList)
         {
             // agent.setConcurrency(value)
         }
-        MSM.REINIT_CONSENT_CASUAL_PROBABILITY(agentList, year);
+        return MSM.REINIT_CONSENT_CASUAL_PROBABILITY(agentList, year);
     }
     
 
@@ -855,7 +867,7 @@ public abstract class Agent {
     private void initInfidelity()
     {
         int maximum = getMaxRelationships() ;
-        infidelity = 0.1 * RAND.nextInt(maximum)/maximum ;
+        infidelity = 0.01 * RAND.nextInt(maximum)/maximum ;
     }
     
     /**
@@ -1051,9 +1063,10 @@ public abstract class Agent {
      * Rescales the probability of using a condom by factor scale
      * @param scale
      */
-    public void scaleProbabilityUseCondom(double scale) 
+    public double scaleProbabilityUseCondom(double scale) 
     {
         probabilityUseCondom *= scale ;
+        return probabilityUseCondom ;
     }
     
     /**
