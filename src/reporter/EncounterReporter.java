@@ -4,8 +4,6 @@
 package reporter ;
 
 import agent.MSM;
-import community.* ;
-import site.* ;
 /**
 * @author Michael Walker
 */
@@ -21,7 +19,6 @@ import java.util.Set ;
 //import java.util.Comparator;
 import java.util.HashMap ;
 import java.util.logging.Level;
-import static reporter.Reporter.EXTRACT_ARRAYLIST;
 import static reporter.Reporter.EXTRACT_ARRAYLIST;
 
 
@@ -954,6 +951,7 @@ public class EncounterReporter extends Reporter {
             PopulationReporter populationReporter = new PopulationReporter(simName,getFolderPath()) ;
             sortedAgentReport = populationReporter.agentIdSorted(sortingProperty) ;
         }
+        LOGGER.info("sortedAgentReport " + sortedAgentReport.toString()) ;
         
         for (String relationshipClazzName : relationshipClassNames)
         {
@@ -978,10 +976,8 @@ public class EncounterReporter extends Reporter {
                     = relationshipReporter.prepareNumberRelationshipsReport(clazzList, backYears, backMonths, backDays, endCycle, sortedAgents) ;
 
                 property = relationshipClazzName ;
-                LOGGER.info(uniqueAgentList.toString());
                 if ("" != sortingValue)
                 {
-                LOGGER.info(uniqueAgentList.toString());
                     uniqueAgentList.retainAll(sortedAgents) ;
                     property += "_" + sortingValue ;
                 }
