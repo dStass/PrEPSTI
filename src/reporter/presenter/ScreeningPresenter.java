@@ -101,8 +101,8 @@ public class ScreeningPresenter extends Presenter {
         
         //String simName =  "noSortRisk18aPop40000Cycles1460" ;
         //String simName = "sameScreen29aPop40000Cycles3190" ;
-        //String simName = "u70symp15bPop40000Cycles1095" ;
-        String simName = "to2017newSort17aaPop40000Cycles5110" ;
+        String simName = "u70symp20aPop40000Cycles1095" ;
+        //String simName = "to2017newSort17aaPop40000Cycles5110" ;
         //String simName = "to2012max3sameScreen34cPop40000Cycles4380" ;
         //String simName = "to2014agentAdjust29aPop40000Cycles4920" ;
         //String simName = "newSortRisk15aPop40000Cycles730" ;
