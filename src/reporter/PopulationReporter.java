@@ -7,10 +7,11 @@ package reporter;
 
 import community.Community ;
 
-import java.util.ArrayList;
-import java.util.Collections;
+import java.util.ArrayList ;
+import java.util.HashSet ;
+import java.util.Collections ;
 import java.util.HashMap ;
-import java.util.logging.Level;
+import java.util.logging.Level ;
 
 
 /**
@@ -130,27 +131,30 @@ public class PopulationReporter extends Reporter {
      */
     protected HashMap<Object,ArrayList<Object>> agentIdSorted(String sortingProperty)
     {
+        return agentIdSorted(sortingProperty,getMaxCycles()) ;
+    }
+    
+    /**
+     * 
+     * @param endCycle (int) The cycle at which the values of sortingProperty are of interest.
+     * @param sortingProperty (String) the property we are sorting the Agents by.
+     * @return HashMap of sortingProperty's values to ArrayList of agentIds with
+     * the appropriate sortingProperty value. 
+     */
+    protected HashMap<Object,ArrayList<Object>> agentIdSorted(String sortingProperty, int endCycle)
+    {
         HashMap<Object,ArrayList<Object>> sortedHashMap = new HashMap<Object,ArrayList<Object>>() ;
         //LOGGER.info("birthReport");
         
-        ArrayList<String> birthReport = prepareBirthReport() ;
-        for (String record : birthReport)
+        HashMap<Object,String> propertyReport = prepareCensusPropertyReport(sortingProperty,endCycle) ;
+        for (Object agentId : propertyReport.keySet())
         {
-            //LOGGER.info(record);
-            ArrayList<String> censusArray = EXTRACT_ARRAYLIST(record,AGENTID) ;
-            for (String birth : censusArray)
-            {
-                String agentId = EXTRACT_VALUE(AGENTID,birth) ;
-                //LOGGER.info(agentId) ;
-                String sortingValue = EXTRACT_VALUE(sortingProperty,birth) ;
-                if (!sortedHashMap.containsKey(sortingValue))
-                    sortedHashMap.put(sortingValue, new ArrayList<Object>()) ;
-                ArrayList<Object> agentIdList = (ArrayList<Object>) sortedHashMap.get(sortingValue).clone() ;
-                agentIdList.add(agentId) ;
-                sortedHashMap.put(sortingValue, (ArrayList<Object>) agentIdList.clone()) ;
-                //break ;
-            }
-            //break ;
+            String sortingValue = propertyReport.get(agentId) ;
+            if (!sortedHashMap.containsKey(sortingValue))
+                sortedHashMap.put(sortingValue, new ArrayList<Object>()) ;
+            ArrayList<Object> agentIdList = (ArrayList<Object>) sortedHashMap.get(sortingValue).clone() ;
+            agentIdList.add(agentId) ;
+            sortedHashMap.put(sortingValue, (ArrayList<Object>) agentIdList.clone()) ;
         }
         //LOGGER.log(Level.INFO,"{0}", sortedHashMap) ;
         return sortedHashMap ;
@@ -375,12 +379,11 @@ public class PopulationReporter extends Reporter {
         
         for (int recordNb = 0 ; recordNb < deathReport.size() ; recordNb++ )
         {
-            ArrayList<Object> agentDeathRecord = new ArrayList<Object>() ;  //.clear();
             String record = deathReport.get(recordNb) ;
             //LOGGER.info(record);
-            ArrayList<String> deathRecords = EXTRACT_ARRAYLIST(record, DEATH) ;
-            for (String deathRecord : deathRecords)
-                agentDeathReport.add(EXTRACT_ALL_VALUES(AGENTID,deathRecord,0)) ;
+//            ArrayList<String> deathRecords = EXTRACT_ARRAYLIST(record, DEATH) ;
+//            for (String deathRecord : deathRecords)
+            agentDeathReport.add(EXTRACT_ALL_VALUES(AGENTID,record,0)) ;
         }
         return agentDeathReport ;
     }
@@ -541,16 +544,104 @@ public class PopulationReporter extends Reporter {
         ArrayList<String> birthReport = new ArrayList<String>() ;
         
         String record ;
-        
+        int endIndex ;
         //int backCycles = getBackCycles(backYears, backMonths, backDays) ;
         ArrayList<String> backCyclesReport = getBackCyclesReport(backYears, backMonths, backDays, endCycle) ;
         for (int reportNb = 0 ; reportNb < backCyclesReport.size() ; reportNb += outputCycle )
         {
             record = backCyclesReport.get(reportNb) ;
-            birthReport.add(record.substring(INDEX_OF_PROPERTY("birth",record),INDEX_OF_PROPERTY("death",record))) ;
+            endIndex = record.indexOf("!") ;
+            if (endIndex < 0)
+                endIndex = record.length() ;
+            birthReport.add(record.substring(INDEX_OF_PROPERTY("birth",record),endIndex)) ;
         }
         
         return birthReport ;
+    }
+    
+    /**
+     * 
+     * @return (ArrayList(String)) report of which agentIds were changed in which cycle
+     */
+    public ArrayList<String> prepareChangeReport()
+    {
+        int maxCycles = getMaxCycles() ;
+        return prepareChangeReport(maxCycles) ;
+    }
+    
+    /**
+     * 
+     * @param endCycle
+     * @return (ArrayList(String)) report of which agentId changes up to which cycle
+     */
+    public ArrayList<String> prepareChangeReport(int endCycle)
+    {
+        ArrayList<String> changeReport = new ArrayList<String>() ;
+        
+        String record ;
+        int changeIndex ;
+        
+        //int backCycles = getBackCycles(backYears, backMonths, backDays) ;
+        ArrayList<String> backCyclesReport = getBackCyclesReport(0, 0, endCycle, endCycle) ;
+        for (int reportNb = 0 ; reportNb < backCyclesReport.size() ; reportNb += outputCycle )
+        {
+            record = backCyclesReport.get(reportNb) ;
+            //LOGGER.info(record);
+            changeIndex = INDEX_OF_PROPERTY("change",record) ;
+            if (changeIndex < 0)
+                break ;
+            changeReport.add(record.substring(changeIndex,record.indexOf("!"))) ;
+        }
+        
+        return changeReport ;
+    }
+    
+    
+    /**
+     * 
+     * @param propertyName
+     * @param endCycle
+     * @return (ArrayList(String)) report of which agentId changes up to which cycle
+     */
+    public ArrayList<String> prepareChangeReport(String propertyName, int endCycle)
+    {
+        ArrayList<String> propertyChangeReport = new ArrayList<String>() ;
+        
+        Class[] parameterClasses = new Class[] {int.class} ;
+        Object[] parameterArray = new Object[] {endCycle} ;
+        ArrayList<String> changeReport = prepareChangeReport(endCycle) ;
+        //(ArrayList<String>) getReport("change",this,parameterClasses,parameterArray) ; 
+        
+        String propertyRecord ;
+        int propertyIndex ;
+        int endPropertyIndex ;
+        
+        for (String record : changeReport)
+        {
+            propertyIndex = record.indexOf(propertyName) ;
+            if (propertyIndex < 0)
+            {
+                LOGGER.severe("Change report has no record of " + propertyName) ;
+                break ;
+            }
+            endPropertyIndex = INDEX_OF_PROPERTY("change",propertyIndex,record) ; // record.indexOf("change:",propertyIndex) ;
+            if (endPropertyIndex < 0)
+                endPropertyIndex = record.indexOf("!", propertyIndex) ;
+            propertyRecord = record.substring(propertyIndex + propertyName.length() + 2, endPropertyIndex) ;
+            propertyChangeReport.add(propertyRecord) ;
+        }
+        
+        return propertyChangeReport ;
+    }
+    
+    /**
+     * 
+     * @param propertyName
+     * @return (ArrayList(String)) report of which agentId changes up to which cycle
+     */
+    public ArrayList<String> prepareChangeReport(String propertyName)
+    {
+        return prepareChangeReport(propertyName,getMaxCycles()) ;
     }
     
     /**
@@ -670,8 +761,6 @@ public class PopulationReporter extends Reporter {
         
         ArrayList<String>  birthReport = prepareBirthReport() ;
         
-        int nbCycles = birthReport.size() ;
-        
         for (String birthRecord : birthReport)
         {
             ArrayList<String> birthArray = EXTRACT_ARRAYLIST(birthRecord,AGENTID) ;
@@ -682,6 +771,47 @@ public class PopulationReporter extends Reporter {
                 censusPropertyReport.put(agentId, propertyValue) ;
             }
         }
+        return censusPropertyReport ;
+    }
+    
+    /**
+     * 
+     * @param propertyName
+     * @param endCycle
+     * @return (HashMap) agentId maps to value of propertyName at cycle endCycle.
+     */
+    public HashMap<Object,String> prepareCensusPropertyReport(String propertyName, int endCycle)
+    {
+        HashMap<Object,String> censusPropertyReport = new HashMap<Object,String>() ;
+        
+        // Census at birth
+        HashMap<Object,String>  birthReport = prepareCensusPropertyReport(propertyName) ;
+        HashSet<Object> agentIdSet = new HashSet<Object>() ;
+        Collections.addAll(agentIdSet, birthReport.keySet().toArray()) ;
+        
+        ArrayList<String> changeReport = prepareChangeReport(propertyName,endCycle) ;
+    
+        // changeReport.size() is zero if no changes are made
+        for (int index = changeReport.size() - 1 ; index >= 0 ; index-- )
+        {
+            String changeRecord = changeReport.get(index) ;
+            
+            ArrayList<String> changeAgentIds = IDENTIFY_PROPERTIES(changeRecord) ;
+            changeAgentIds.retainAll(agentIdSet) ;
+            
+            for (Object agentId : changeAgentIds)
+            {
+                String value = EXTRACT_VALUE(agentId.toString(),changeRecord) ;
+                censusPropertyReport.put(agentId, value) ;
+                agentIdSet.remove(agentId) ;
+            }
+            if (agentIdSet.isEmpty())
+                break ;
+        }
+        
+        for (Object agentId : agentIdSet)
+            censusPropertyReport.put(agentId, birthReport.get(agentId)) ;
+        
         return censusPropertyReport ;
     }
     
