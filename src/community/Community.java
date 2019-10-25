@@ -308,7 +308,7 @@ public class Community {
               //  LOGGER.log(Level.INFO, "Cycle no. {0}", cycleString);
 
             if (DYNAMIC)
-                community.interveneCommunity(cycle) ;
+                populationRecord += community.interveneCommunity(cycle) ;
             
             //LOGGER.log(Level.INFO,"{0} {1}", new Object[] {Relationship.NB_RELATIONSHIPS,Relationship.NB_RELATIONSHIPS_CREATED});
             // update relationships and perform sexual encounters, report them
@@ -554,7 +554,7 @@ public class Community {
     private String initialiseCommunity()
     {
         String report = "" ;
-        initialRecord = "" ;
+        initialRecord = "!" ;
         scribe = new Scribe(SIM_NAME, new String[] {"relationship","encounter","infection", "population"}) ;
         for (int id = 0 ; id <  population ; id++ ) 
         {
@@ -570,7 +570,7 @@ public class Community {
             agents.add(newAgent) ;
 
             // Record newAgent for later reporting
-            initialRecord += newAgent.getCensusReport() ;
+            initialRecord = newAgent.getCensusReport() + initialRecord ;
             //LOGGER.info(initialRecord);
         }
         
@@ -618,10 +618,7 @@ public class Community {
         String report = "" ;
         if (year * 365 == (cycle - startCycle))
         {
-            //if (year == 3)
-              //  for (Agent agent : agents)
-                //    agent.scaleProbabilityUseCondom(0.5);
-            Agent.REINIT(agents, year) ;
+            report += Agent.REINIT(agents, year) ;
             //unchangedAgents = (ArrayList<Agent>) agents.clone() ;
             //LOGGER.info(String.valueOf(year)) ;
         }
@@ -643,9 +640,9 @@ public class Community {
             changeAgents.addAll(unchangedAgents) ;
 
         // Make changes
-        Agent.REINIT(changeAgents, year) ;
+        report += Agent.REINIT(changeAgents, year) ;
         
-        report = "parameters adjusted according to ARTB" ;  // PrEP introduced" ; // gradually" ;
+        //report = "parameters adjusted according to ARTB" ;  // PrEP introduced" ; // gradually" ;
 
         return report ;
     }
@@ -826,14 +823,10 @@ public class Community {
             newAgent = generateAgent(0) ; // MSM.BIRTH_MSM(0) ;
             agents.add(newAgent) ;
             record += newAgent.getCensusReport() ;
-            //record += Reporter.ADD_REPORT_PROPERTY("agentId",newAgent.getAgentId()) ;
-            //record += Reporter.ADD_REPORT_PROPERTY("age",newAgent.getAge()) ; 
             //currentPopulation++ ;
         }
-        //record += Reporter.ADD_REPORT_PROPERTY("currentPopulation",currentPopulation) ;
 
-
-        return record ;
+        return record.concat("!") ;
     }
 
     /**
@@ -845,7 +838,7 @@ public class Community {
      */
     private String grimReaper()
     {
-        String record = "" ;
+        String record = "death:" ;
         Agent agent ;
         /*int deaths = (agents.size() - population) ;
         if (deaths < birthRate)
@@ -865,8 +858,6 @@ public class Community {
                 //currentPopulation-- ;
             }
         }
-        //prepare record
-        record = "death:" + record ;
 
         return record ;
     }
