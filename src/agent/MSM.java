@@ -105,10 +105,11 @@ public class MSM extends Agent {
      * @param year (int) Year of simulation, starting from 0.
      * @throws java.lang.Exception 
      */
-    static protected void REINIT_PROBABILITY_ANTIVIRAL(ArrayList<Agent> agentList, int year) throws Exception
+    static protected String REINIT_PROBABILITY_ANTIVIRAL(ArrayList<Agent> agentList, int year) throws Exception
     {
+        String report = "antiviral," ;
         if (year == 0)
-            return ;
+            return report ;
         
         // years 2007 onwards
         double[] probabilityAntiViral = new double[] {0.532, 0.706, 0.735, 0.689, 0.706, 0.802, 0.766, 0.830, 0.818, 0.854, 0.890} ;
@@ -118,6 +119,7 @@ public class MSM extends Agent {
         double newProbability = probabilityAntiViral[year] ;
         double oldProbability = probabilityAntiViral[year-1] ;
         double changeProbability ;
+        boolean newStatus ;
         MSM msm ;
         for (Agent agent : agentList)
         {
@@ -130,7 +132,9 @@ public class MSM extends Agent {
                 if (!msm.antiViralStatus)
                 {
                     changeProbability = (newProbability - oldProbability)/(1 - oldProbability) ;
-                    msm.setAntiViralStatus(RAND.nextDouble() < changeProbability) ;
+                    newStatus = RAND.nextDouble() < changeProbability ;
+                    msm.setAntiViralStatus(newStatus) ;
+                    report += Reporter.ADD_REPORT_PROPERTY(String.valueOf(msm.getAgentId()), newStatus) ;
                     continue ;
                 }
             }
@@ -139,40 +143,29 @@ public class MSM extends Agent {
                 if (msm.antiViralStatus)
                 {
                     changeProbability = (oldProbability - newProbability)/oldProbability ;
-                    msm.setAntiViralStatus(RAND.nextDouble() < changeProbability) ;
+                    newStatus = RAND.nextDouble() < changeProbability ;
+                    msm.setAntiViralStatus(newStatus) ;
+                    report += Reporter.ADD_REPORT_PROPERTY(String.valueOf(msm.getAgentId()), newStatus) ;
                     continue ;
                 }
             }
             //newProbability *= changeProbability ;
         }
 
-        /*
-        if (year == 5)    // During year 2012
-        {
-            for (Agent agent : agentList)
-            {
-                msm = (MSM) agent ;
-                msm.resetChemoProphylaxis(true) ;
-                msm.setChemoPartner(true) ;
-                if (msm.statusHIV)
-                {
-                    msm.seroSortRegular = false ;
-                    msm.seroSortCasual = true ;
-                }
-                
-            }
-        }*/
+        return report ;
     }
     
     /**
      * Alters the willingness to trust U=U as protection against HIV on a year-by-year
      * basis.
+     * TODO: Implement reporting of changes.
      * Data taken from GCPS: Table 21 in GCPS 2017, Table 20 in 2018
      * @param agentList (ArrayList) List of Agents to undergo parameter change.
      * @param year (int) Year of simulation starting from year zero.
      */
-    static protected void REINIT_TRUST_ANTIVIRAL(ArrayList<Agent> agentList, int year) 
+    static protected String REINIT_TRUST_ANTIVIRAL(ArrayList<Agent> agentList, int year) 
     {
+        String report = "" ;
         double[] positiveTrustAntiViral = new double[] {0.0,0.0,0.0,0.0,0.0,0.0,0.483,0.772,
             0.692, 0.742, 0.804, 0.853} ;
         double[] negativeTrustAntiViral = new double[] {0.0,0.0,0.0,0.0,0.0,0.0,0.106,0.094,
@@ -217,18 +210,21 @@ public class MSM extends Agent {
                 msm.setChemoProphylaxis(RAND.nextDouble() > changeProbability) ;
             }
         }
+        return report ;
     }
     
     /**
      * Resets the probability of adjusting discloseStatusHIV according to changing 
      * disclose probabilities each year.
+     * TODO: Implement reporting of changes.
      * Probabilities taken from Table 9 of ARTB 2017
      * and Table 8 of ARTB 2018.
      * @param agentList (ArrayList) List of Agents to undergo parameter change.
      * @param year (int) Year of simulation, starting from zero.
      */
-    static protected void REINIT_PROBABILITY_DISCLOSURE_HIV(ArrayList<Agent> agentList, int year) //throws Exception
+    static protected String REINIT_PROBABILITY_DISCLOSURE_HIV(ArrayList<Agent> agentList, int year) //throws Exception
     {
+        String report = "" ;
         // Go from 2007
         double newDiscloseProbability ;
         double oldDiscloseProbability ;
@@ -277,6 +273,7 @@ public class MSM extends Agent {
             }
             
         }
+        return report ;
     }
     
     /**
@@ -284,12 +281,14 @@ public class MSM extends Agent {
      * Rates taken from GCPS 2011 Table 16, 2014 Table 15, 
      * @param agentList (ArrayList) List of Agents to undergo parameter change.
      * @param year (int) Year of simulation, starting from zero.
+     * @return (String) report of changes made to MSM.probabilityUseCondom .
      * @throws java.lang.Exception (Exception)
      */
-    static protected void REINIT_RISK_ODDS(ArrayList<Agent> agentList, int year) throws Exception
+    static protected String REINIT_RISK_ODDS(ArrayList<Agent> agentList, int year) throws Exception
     {
+        String report = "" ;
         if (year == 0)
-            return ;
+            return report ;
         // GCPS (Table 15, 2011) (Table 14, 2013) (Table 16, 2017-18)
         // Year-by-year rates of UAIC 
         int[] newRiskyOdds = new int[] {290,293,369,345,331,340,364,350,362,409,520,566} ;
@@ -311,13 +310,15 @@ public class MSM extends Agent {
         
         boolean moreRisky = (lastProbabilityRisk < riskyProbability) ;
         double adjustProbabilityUseCondom = safeProbability/lastProbabilitySafe ; // SAFE_ODDS/newSafeOdds[year-1] ;
-        
+        boolean newStatus ;
+        double newProbability ;
                                                                     // see comments below
         
         //riskyProbability *= changeProbability ;
         //double riskyProbabilityPositive = riskyProbability ; //* HIV_RISKY_CORRELATION ;
         //double riskyProbabilityNegative = riskyProbability ; //* (1.0 - PROPORTION_HIV * HIV_RISKY_CORRELATION)/(1.0 - PROPORTION_HIV) ;
         double hivFactor ;
+        String record ;
         MSM msm ;
         for (Agent agent : agentList)
         {
@@ -333,7 +334,8 @@ public class MSM extends Agent {
                 changeProbability = riskyProbability/lastProbabilityRisk ; //(lastProbability - riskyProbability)/lastProbability ;
 
         
-            msm.scaleProbabilityUseCondom(adjustProbabilityUseCondom) ;
+            record = String.valueOf(msm.scaleProbabilityUseCondom(adjustProbabilityUseCondom)) ;
+            record += "-" ;
             
             if (moreRisky) 
             {
@@ -351,7 +353,10 @@ public class MSM extends Agent {
                 msm.setRiskyStatus(RAND.nextDouble() < changeProbability) ; 
                 msm.prepStatus = false ;
             }
+            record += String.valueOf(msm.prepStatus) ;
+            report += Reporter.ADD_REPORT_PROPERTY(String.valueOf(msm.getAgentId()), record) ;
         }
+        return report ;
     }
     
     /**
@@ -415,8 +420,9 @@ public class MSM extends Agent {
      * @param agentList (ArrayList) List of Agents to undergo parameter change.
      * @param year (int) Year of simulation, starting from zero.
      */
-    static protected void REINIT_CONSENT_CASUAL_PROBABILITY(ArrayList<Agent> agentList, int year)
+    static protected String REINIT_CONSENT_CASUAL_PROBABILITY(ArrayList<Agent> agentList, int year)
     {
+        String report = "" ;
         double[] positiveProbabilities = new double[] {1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0} ;
         double[] negativeProbabilities = new double[] {1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0} ;
         
@@ -431,6 +437,7 @@ public class MSM extends Agent {
             msm.setConsentCasualProbability(consentProbability);
             // May change to msm.rescaleConsentCasualProbability(consentStatus[year]/consentStatus[year-1]) ;
         }
+        return report ;
     }
     
     /**
@@ -693,19 +700,19 @@ public class MSM extends Agent {
     private boolean riskyStatus ;
     
     /** Transmission probabilities per sexual contact from Urethra to Rectum */
-    static double URETHRA_TO_RECTUM = 0.95 ; 
+    static double URETHRA_TO_RECTUM = 0.85 ; 
     /** Transmission probabilities sexual contact from Urethra to Pharynx. */
     static double URETHRA_TO_PHARYNX = 0.40 ; 
     /** Transmission probabilities sexual contact from Rectum to Urethra. */
-    static double RECTUM_TO_URETHRA = 0.025 ;
+    static double RECTUM_TO_URETHRA = 0.015 ;
     /** Transmission probabilities sexual contact from Rectum to Pharynx. */
     static double RECTUM_TO_PHARYNX = 0.050 ;
     /** Transmission probabilities sexual contact in Pharynx to Urethra intercourse. */
-    static double PHARYNX_TO_URETHRA = 0.023 ; 
+    static double PHARYNX_TO_URETHRA = 0.020 ; 
     /** Transmission probabilities sexual contact in Pharynx to Rectum intercourse. */
-    static double PHARYNX_TO_RECTUM = 0.010 ; 
+    static double PHARYNX_TO_RECTUM = 0.020 ; 
     /** Transmission probabilities sexual contact in Pharynx to Pharynx intercourse (kissing). */
-    static double PHARYNX_TO_PHARYNX = 0.050 ; 
+    static double PHARYNX_TO_PHARYNX = 0.040 ; 
     /** Transmission probabilities sexual contact in Urethra to Urethra intercourse (docking). */
     static double URETHRA_TO_URETHRA = 0.001 ; 
     /** Transmission probabilities sexual contact in Rectum to Rectum intercourse. */
