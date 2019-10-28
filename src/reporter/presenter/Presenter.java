@@ -1525,7 +1525,7 @@ public class Presenter {
         ArrayList<String> sortedNames = Reporter.IDENTIFY_PROPERTIES(record) ;
         for (String name : sortedNames)
         {
-            LOGGER.info(name);
+            //LOGGER.info(name);
             String[] nameParts = name.split(GROUP) ;
             String property = nameParts[0] ;
             
