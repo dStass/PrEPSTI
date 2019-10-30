@@ -1293,10 +1293,6 @@ public class ScreeningReporter extends Reporter {
         HashMap<Comparable,String> incidentRateReport = new HashMap<Comparable,String>() ;
         //HashMap<Object,Number[]> percentAgentCondomlessYears = new HashMap<Object,Number[]>() ;
     
-        int maxCycles = getMaxCycles() ;
-            
-        int endCycle ;
-        
         for (int year = 0 ; year < backYears ; year++ )
         {
             String yearlyNumberAgentsEnteredRelationship ;
@@ -1344,9 +1340,9 @@ public class ScreeningReporter extends Reporter {
         if (!sortingProperty.isEmpty())
         {
             PopulationReporter populationReporter = new PopulationReporter(simName,getFolderPath()) ;
-            sortedAgentsReport = populationReporter.agentIdSorted(sortingProperty) ;
+            sortedAgentsReport = populationReporter.agentIdSorted(sortingProperty,endCycle) ;
             Collections.addAll(sortingProperties,sortedAgentsReport.keySet().toArray()) ;
-            //LOGGER.info(sortedAgentsReport.keySet().toString());
+            LOGGER.info(sortedAgentsReport.keySet().toString());
         }
         else
             sortingProperties.add("") ;
