@@ -329,7 +329,8 @@ public class EncounterReporter extends Reporter {
         ArrayList<String> finalIncidentsReport = getBackCyclesReport(0, backMonths, backDays, endCycle) ;
         
         RelationshipReporter relationshipReporter = new RelationshipReporter(simName,getFolderPath()) ;
-        HashMap<Object,String[]> relationshipAgentReport = (HashMap<Object,String[]>) getReport("relationshipAgent",relationshipReporter) ; //  relationshipReporter.prepareRelationshipAgentReport() ;
+        HashMap<Object,String[]> relationshipAgentReport = relationshipReporter.prepareRelationshipAgentReport() ;
+                //(HashMap<Object,String[]>) getReport("relationshipAgent",relationshipReporter) ; //  
         
         PopulationReporter populationReporter = new PopulationReporter(simName,getFolderPath()) ;
         HashMap<Object,ArrayList<Object>> sortedAgentReport = populationReporter.agentIdSorted(sortingProperty) ;
@@ -714,7 +715,8 @@ public class EncounterReporter extends Reporter {
                 = new HashMap<String,HashMap<Object,ArrayList<Object>>>() ;
         
         RelationshipReporter relationshipReporter = new RelationshipReporter(simName,getFolderPath()) ;
-        HashMap<Object,String[]> relationshipAgentReport = (HashMap<Object,String[]>) getReport("relationshipAgent",relationshipReporter) ; //  relationshipReporter.prepareRelationshipAgentReport() ;
+        HashMap<Object,String[]> relationshipAgentReport = relationshipReporter.prepareRelationshipAgentReport() ;
+                // (HashMap<Object,String[]>) getReport("relationshipAgent",relationshipReporter) ; //  
         //LOGGER.log(Level.INFO, "relationshipAgentReport {0}", relationshipAgentReport);
         
         int maxCycles = getMaxCycles() ;
@@ -820,7 +822,8 @@ public class EncounterReporter extends Reporter {
         HashMap<Object,ArrayList<Object>> agentCondomlessIntercourse = new HashMap<Object,ArrayList<Object>>() ;
         
         RelationshipReporter relationshipReporter = new RelationshipReporter(simName,getFolderPath()) ;
-        HashMap<Object,String[]> relationshipAgentReport = (HashMap<Object,String[]>) getReport("relationshipAgent",relationshipReporter) ; //  relationshipReporter.prepareRelationshipAgentReport() ;
+        HashMap<Object,String[]> relationshipAgentReport = relationshipReporter.prepareRelationshipAgentReport() ;
+                //(HashMap<Object,String[]>) getReport("relationshipAgent",relationshipReporter) ; //  
         
         int backCycles = GET_BACK_CYCLES(backYears, backMonths, backDays, endCycle) ;
         int startCycle = endCycle - backCycles ;
@@ -857,7 +860,8 @@ public class EncounterReporter extends Reporter {
         HashMap<Object,ArrayList<Object>> agentCondomlessIntercourse = new HashMap<Object,ArrayList<Object>>() ;
         
         RelationshipReporter relationshipReporter = new RelationshipReporter(simName,getFolderPath()) ;
-        HashMap<Object,String[]> relationshipAgentReport = (HashMap<Object,String[]>) getReport("relationshipAgent",relationshipReporter) ; //  relationshipReporter.prepareRelationshipAgentReport() ;
+        HashMap<Object,String[]> relationshipAgentReport = relationshipReporter.prepareRelationshipAgentReport() ;
+                //(HashMap<Object,String[]>) getReport("relationshipAgent",relationshipReporter) ; //  
         
         int positionIndex = -1 ;
         if ("insertive".equals(position))
@@ -1164,7 +1168,8 @@ public class EncounterReporter extends Reporter {
         String protectionRecord ;
         
         RelationshipReporter relationshipReporter = new RelationshipReporter(simName,getFolderPath()) ;
-        HashMap<Object,String[]> relationshipAgentReport = (HashMap<Object,String[]>) getReport("relationshipAgent",relationshipReporter) ; //  relationshipReporter.prepareRelationshipAgentReport() ;
+        HashMap<Object,String[]> relationshipAgentReport = relationshipReporter.prepareRelationshipAgentReport() ;
+                //(HashMap<Object,String[]>) getReport("relationshipAgent",relationshipReporter) ; //  
         
         int condomOnly ;
         int onlySeroSort ;
@@ -1290,7 +1295,8 @@ public class EncounterReporter extends Reporter {
         HashMap<Object,ArrayList<Object>> transmissionRecord = new HashMap<Object,ArrayList<Object>>() ;
         
         RelationshipReporter relationshipReporter = new RelationshipReporter(simName,getFolderPath()) ;
-        HashMap<Object,String[]> relationshipAgentReport = (HashMap<Object,String[]>) getReport("relationshipAgent",relationshipReporter) ; //   relationshipReporter.prepareRelationshipAgentReport() ;
+        HashMap<Object,String[]> relationshipAgentReport = relationshipReporter.prepareRelationshipAgentReport() ;
+                //(HashMap<Object,String[]>) getReport("relationshipAgent",relationshipReporter) ; //   
         
         // Only consider contacts where transmission occurred
         ArrayList<String> transmissionReport = prepareTransmissionReport() ;
@@ -1343,8 +1349,8 @@ public class EncounterReporter extends Reporter {
                             new HashMap<Object,HashMap<Object,ArrayList<Object>>>() ;
         
         RelationshipReporter relationshipReporter = new RelationshipReporter(simName,getFolderPath()) ;
-        HashMap<Object,String[]> relationshipAgentReport = (HashMap<Object,String[]>) getReport("relationshipAgent",relationshipReporter) ; //  relationshipReporter.prepareRelationshipAgentReport() ;
-        
+        HashMap<Object,String[]> relationshipAgentReport = relationshipReporter.prepareRelationshipAgentReport() ; 
+        // (HashMap<Object,String[]>) getReport("relationshipAgent",relationshipReporter) ;
         
         // Only consider contacts where transmission occurred
         ArrayList<String> transmissionReport = prepareTransmissionReport() ;
