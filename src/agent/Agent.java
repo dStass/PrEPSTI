@@ -131,7 +131,7 @@ public abstract class Agent {
     {
         String report = "" ;
         //boolean successful = true ;
-        String CHANGE = "change" ;
+        String change = "change" ;
         String methodName = "" ;
         try
         {
@@ -140,14 +140,14 @@ public abstract class Agent {
             //REINIT_NB_RELATIONSHIPS(agentList, year) ;
             
             methodName = "antiviral" ;
-            report += Reporter.ADD_REPORT_PROPERTY(CHANGE, methodName) ;
+            report += Reporter.ADD_REPORT_PROPERTY(change, methodName) ;
             report += MSM.REINIT_PROBABILITY_ANTIVIRAL(agentList, year) ;
             
             methodName = "disclosure" ;
             MSM.REINIT_PROBABILITY_DISCLOSURE_HIV(agentList, year) ;
             
             methodName = "riskiness" ;
-            report += Reporter.ADD_REPORT_PROPERTY(CHANGE, methodName) ;
+            report += Reporter.ADD_REPORT_PROPERTY(change, methodName) ;
             report += MSM.REINIT_RISK_ODDS(agentList, year) ;
             
             methodName = "trust_antiviral" ;
@@ -159,8 +159,14 @@ public abstract class Agent {
             LOGGER.severe(e.toString() + " in method " + methodName) ;
             //return false ;
         }
+        
+        //TODO: Automate detection of MSM subClass with reflect
+        // Update MSM variables
+        report += MSM.REINIT(agentList, year) ;
+        
         return report.concat("!") ;
     }
+    
     /**
      * Adjusts per year the screening period.
      * TODO: Implement reporting of changes.
@@ -897,7 +903,7 @@ public abstract class Agent {
     {
         String censusReport = "" ;
         censusReport += Reporter.ADD_REPORT_PROPERTY("agentId",agentId) ;
-        censusReport += Reporter.ADD_REPORT_PROPERTY("agent",agent) ;
+        //censusReport += Reporter.ADD_REPORT_PROPERTY("agent",agent) ;
         censusReport += Reporter.ADD_REPORT_PROPERTY("age",getAge()) ;  // Reporter.ADD_REPORT_PROPERTY("startAge", getAge()) ;
         censusReport += Reporter.ADD_REPORT_PROPERTY("concurrency",concurrency) ;
         censusReport += Reporter.ADD_REPORT_PROPERTY("infidelity",infidelity) ;
