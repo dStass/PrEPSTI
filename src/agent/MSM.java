@@ -78,7 +78,7 @@ public class MSM extends Agent {
     /** Probability of sero-positioning if HIV negative */
     static double PROBABILITY_NEGATIVE_SERO_POSITION = 0.154 ;
     /** The probability of being on antivirals, given positive HIV status */
-    static double PROPORTION_ANTIVIRAL = 0.532 ; // 0.689 ; // 2010 value // 
+    static double PROPORTION_ANTIVIRAL = 0.566 ;
     
     /** 
      * Adjusts the probability of accepting a Casual relationship.
@@ -93,6 +93,44 @@ public class MSM extends Agent {
     static void SET_PROBABILITY_ANTIVIRAL(double antiViral)
     {
         PROPORTION_ANTIVIRAL = antiViral ;
+    }
+    
+    /**
+     * Coordinates the reinitialisation of Agent parameters when they change 
+     * year-by-year.
+     * @param agentList
+     * @param year
+     * @return 
+     */
+    static public String REINIT(ArrayList<Agent> agentList, int year) 
+    {
+        String report = "" ;
+        //boolean successful = true ;
+        String change = "change" ;
+        String methodName = "" ;
+        try
+        {
+            methodName = "antiviral" ;
+            report += Reporter.ADD_REPORT_PROPERTY(change, methodName) ;
+            report += REINIT_PROBABILITY_ANTIVIRAL(agentList, year) ;
+            
+            methodName = "disclosure" ;
+            REINIT_PROBABILITY_DISCLOSURE_HIV(agentList, year) ;
+            
+            methodName = "riskiness" ;
+            report += Reporter.ADD_REPORT_PROPERTY(change, methodName) ;
+            report += REINIT_RISK_ODDS(agentList, year) ;
+            
+            methodName = "trust_antiviral" ;
+            REINIT_TRUST_ANTIVIRAL(agentList, year) ;
+            //REINIT_USE_GSN(agentList, year) ;
+        }
+        catch ( Exception e )
+        {
+            LOGGER.severe(e.toString() + " in method " + methodName) ;
+            //return false ;
+        }
+        return report ;
     }
     
     /**
@@ -112,7 +150,8 @@ public class MSM extends Agent {
             return report ;
         
         // years 2007 onwards
-        double[] probabilityAntiViral = new double[] {0.532, 0.706, 0.735, 0.689, 0.706, 0.802, 0.766, 0.830, 0.818, 0.854, 0.890} ;
+        //double[] probabilityAntiViral = new double[] {0.532, 0.706, 0.735, 0.689, 0.706, 0.802, 0.766, 0.830, 0.818, 0.854, 0.890, 0.890, 0.890} ;
+        double[] probabilityAntiViral = new double[] {0.566, 0.647, 0.701, 0.723, 0.747, 0.816, 0.734, 0.808, 0.856, 0.847, 0.918, 0.918, 0.918} ;
         // years 2007-2009
         // 0.532, 0.706, 0.735, 
         
@@ -158,7 +197,7 @@ public class MSM extends Agent {
     /**
      * Alters the willingness to trust U=U as protection against HIV on a year-by-year
      * basis.
-     * TODO: Implement reporting of changes.
+     * FIXME: Implement reporting of changes.
      * Data taken from GCPS: Table 21 in GCPS 2017, Table 20 in 2018
      * @param agentList (ArrayList) List of Agents to undergo parameter change.
      * @param year (int) Year of simulation starting from year zero.
@@ -167,9 +206,9 @@ public class MSM extends Agent {
     {
         String report = "" ;
         double[] positiveTrustAntiViral = new double[] {0.0,0.0,0.0,0.0,0.0,0.0,0.483,0.772,
-            0.692, 0.742, 0.804, 0.853} ;
+            0.692, 0.742, 0.804, 0.853, 0.853} ;
         double[] negativeTrustAntiViral = new double[] {0.0,0.0,0.0,0.0,0.0,0.0,0.106,0.094,
-            0.129, 0.157, 0.203, 0.231} ;
+            0.129, 0.157, 0.203, 0.231, 0.231} ;
         
         double positiveLastProbability = positiveTrustAntiViral[year - 1] ;
         double positiveTrustProbability = positiveTrustAntiViral[year] ;
@@ -214,9 +253,9 @@ public class MSM extends Agent {
     }
     
     /**
-     * Resets the probability of adjusting discloseStatusHIV according to changing 
+     * Resets the probability of discloseStatusHIV according to changing 
      * disclose probabilities each year.
-     * TODO: Implement reporting of changes.
+     * FIXME: Implement reporting of changes.
      * Probabilities taken from Table 9 of ARTB 2017
      * and Table 8 of ARTB 2018.
      * @param agentList (ArrayList) List of Agents to undergo parameter change.
@@ -230,9 +269,9 @@ public class MSM extends Agent {
         double oldDiscloseProbability ;
         double changeProbability ;
         //if (statusHIV)
-        double[] positiveDiscloseProbability = new double[] {0.201,0.296,0.327,0.286,0.312,0.384,0.349,0.398,0.430,0.395,0.461} ;
+        double[] positiveDiscloseProbability = new double[] {0.201,0.296,0.327,0.286,0.312,0.384,0.349,0.398,0.430,0.395,0.461,0.461,0.461} ;
         //else
-        double[] negativeDiscloseProbability = new double[] {0.175,0.205,0.218,0.239,0.229,0.249,0.236,0.295,0.286,0.352,0.391} ;
+        double[] negativeDiscloseProbability = new double[] {0.175,0.205,0.218,0.239,0.229,0.249,0.236,0.295,0.286,0.352,0.391,0.391,0.391} ;
         // 2007 - 2009
         // positive 0.201,0.296,0.327,    negative 0.175,0.205,0.218,
         double positiveNewDiscloseProbability = positiveDiscloseProbability[year] ;
@@ -291,8 +330,8 @@ public class MSM extends Agent {
             return report ;
         // GCPS (Table 15, 2011) (Table 14, 2013) (Table 16, 2017-18)
         // Year-by-year rates of UAIC 
-        int[] newRiskyOdds = new int[] {290,293,369,345,331,340,364,350,362,409,520,566} ;
-        int[] newSafeOdds = new int[] {468,514,471,501,469,465,444,473,440,424,307,264} ;
+        int[] newRiskyOdds = new int[] {290,293,369,345,331,340,364,350,362,409,520,566,566} ;
+        int[] newSafeOdds = new int[] {468,514,471,501,469,465,444,473,440,424,307,264,264} ;
         // newRiskyProportions         {.38,.36,.44,.41,.41,.42,.45,.43,.45,.49,.63} ;
         // total_odds                 {758,807,840,846,800,805,808,823,802,831,827}
         SAFE_ODDS = newSafeOdds[year] ;
@@ -702,21 +741,21 @@ public class MSM extends Agent {
     /** Transmission probabilities per sexual contact from Urethra to Rectum */
     static double URETHRA_TO_RECTUM = 0.85 ; 
     /** Transmission probabilities sexual contact from Urethra to Pharynx. */
-    static double URETHRA_TO_PHARYNX = 0.35 ; 
+    static double URETHRA_TO_PHARYNX = 0.55 ; 
     /** Transmission probabilities sexual contact from Rectum to Urethra. */
     static double RECTUM_TO_URETHRA = 0.010 ;
     /** Transmission probabilities sexual contact from Rectum to Pharynx. */
-    static double RECTUM_TO_PHARYNX = 0.040 ;
+    static double RECTUM_TO_PHARYNX = 0.020 ;
     /** Transmission probabilities sexual contact in Pharynx to Urethra intercourse. */
-    static double PHARYNX_TO_URETHRA = 0.020 ; 
+    static double PHARYNX_TO_URETHRA = 0.015 ; 
     /** Transmission probabilities sexual contact in Pharynx to Rectum intercourse. */
     static double PHARYNX_TO_RECTUM = 0.020 ; 
     /** Transmission probabilities sexual contact in Pharynx to Pharynx intercourse (kissing). */
-    static double PHARYNX_TO_PHARYNX = 0.035 ; 
+    static double PHARYNX_TO_PHARYNX = 0.055 ; 
     /** Transmission probabilities sexual contact in Urethra to Urethra intercourse (docking). */
-    static double URETHRA_TO_URETHRA = 0.001 ; 
+    static double URETHRA_TO_URETHRA = 0.020 ; 
     /** Transmission probabilities sexual contact in Rectum to Rectum intercourse. */
-    static double RECTUM_TO_RECTUM = 0.005 ;
+    static double RECTUM_TO_RECTUM = 0.020 ;
 
     /** The probability of screening in a given cycle with statusHIV true. */
     static double SCREEN_PROBABILITY_HIV_POSITIVE = 0.0029 ;
@@ -1140,7 +1179,7 @@ public class MSM extends Agent {
         
         //double adjustConsent = 0.8 ;    
         // Logically /2.0 because two Agents in every Relationship, also requires sqrt, but better results without them.
-        consentCasualProbability = consentProbability ;    // Math.sqrt(ADJUST_CASUAL_CONSENT * consentProbability/2.0) ;
+        consentCasualProbability = consentProbability ;    // * ADJUST_CASUAL_CONSENT  ;
     }
     
     /**
@@ -1198,6 +1237,10 @@ public class MSM extends Agent {
         censusReport += Reporter.ADD_REPORT_PROPERTY("trustAntiViral", trustAntiViral) ;
         censusReport += Reporter.ADD_REPORT_PROPERTY("trustPrep", trustPrep) ;
         censusReport += Reporter.ADD_REPORT_PROPERTY("consentCasualProbability", consentCasualProbability) ;
+        
+//        censusReport += Reporter.ADD_REPORT_PROPERTY("",) ;
+//        censusReport += Reporter.ADD_REPORT_PROPERTY("",) ;
+//        censusReport += Reporter.ADD_REPORT_PROPERTY("",) ;
         
         for (Site site : sites)
             censusReport += site.getCensusReport() ;
@@ -1754,7 +1797,7 @@ public class MSM extends Agent {
     }
     
     /**
-     * //TODO: Find justifiable values for regularOdds and monogomousOdds
+     * FIXME: Find justifiable values for regularOdds and monogomousOdds
      * @param relationshipClazzName
      * @return (double) probability of MSM seeking out Relationship of class
      * relationshipClazzName.
