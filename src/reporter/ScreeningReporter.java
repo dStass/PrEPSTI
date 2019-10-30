@@ -791,7 +791,7 @@ public class ScreeningReporter extends Reporter {
             }
             //LOGGER.log(Level.INFO, "{0} {1}", new Object[] {prevalence,population});
             prevalencesRecord += ADD_REPORT_PROPERTY("all" + "_" + key.toString(),prevalence/population) ;
-            LOGGER.info(prevalencesRecord);
+            //LOGGER.info(prevalencesRecord);
             //finalPrevalencesSortedRecord.put(key, prevalencesRecord) ;
         }
         return prevalencesRecord ;
@@ -1346,10 +1346,12 @@ public class ScreeningReporter extends Reporter {
             PopulationReporter populationReporter = new PopulationReporter(simName,getFolderPath()) ;
             sortedAgentsReport = populationReporter.agentIdSorted(sortingProperty) ;
             Collections.addAll(sortingProperties,sortedAgentsReport.keySet().toArray()) ;
+            //LOGGER.info(sortedAgentsReport.keySet().toString());
         }
         else
             sortingProperties.add("") ;
-        
+        //LOGGER.info(sortedAgentsReport.keySet().toString());
+        //LOGGER.log(Level.INFO, "false:{0} true:{1}", new Object[] {sortedAgentsReport.get("false").size(),sortedAgentsReport.get("true").size()});
             
         HashMap<Object,ArrayList<Object>> agentTestingReport = prepareAgentTestingReport(backYears, backMonths, backDays, endCycle) ; 
         HashMap<Object,HashMap<Object,ArrayList<Object>>> agentTreatedReport = prepareAgentTreatedReport(siteNames, backYears, backMonths, backDays, endCycle) ; 
@@ -1369,7 +1371,7 @@ public class ScreeningReporter extends Reporter {
                 int intervalRisk ;
 
                 HashMap<Object,ArrayList<Object>> treatedRecord = agentTreatedReport.get(siteName) ;
-                    //OGGER.info(treatedRecord.keySet().toString());
+                    //LOGGER.info(treatedRecord.keySet().toString());
                 HashMap<Object,ArrayList<Integer>> atRiskReport = timeAtRiskReport.get(siteName) ;
 
                 // Sort agentIds by sortingProperty if one is given.
