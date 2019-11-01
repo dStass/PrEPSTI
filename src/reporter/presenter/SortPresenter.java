@@ -40,7 +40,7 @@ public class SortPresenter extends Presenter {
         //sortPresenter.plotSortIncidence(5,1,3,0,0) ;    // nbRelationships, binSize, backYears, backMonths, backDays
         //SortPresenter sortPresenter = new SortPresenter(simName,chartTitle,reportFileName,"encounter","population") ;
         //sortPresenter.plotSortConcurrencyIncidence(3,2,0,0) ;    // nbRelationships, backYears, backMonths, backDays
-        SortPresenter sortPresenter = new SortPresenter(simName,chartTitle,reportFileName,"infection","relationship") ;
+        SortPresenter sortPresenter = new SortPresenter(simName,chartTitle,reportFileName,"screening","relationship") ;
         sortPresenter.plotSortPrevalence(Presenter.PROPORTION,5,1,0,6,0) ;    // scoreName, nbRelationships, binSize, backYears, backMonths, backDays
         //SortPresenter sortPresenter = new SortPresenter(simName,chartTitle,reportFileName,"relationship","population") ;
         //sortPresenter.plotAgeNumberEnteredRelationshipRecord(new String[] {"Casual","Regular","Monogomous"}) ;
