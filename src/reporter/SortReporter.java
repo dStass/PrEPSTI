@@ -49,15 +49,15 @@ public class SortReporter extends Reporter {
     public SortReporter(String simName, String reportFilePath, String unsortedName, String sortingName)
     {
         String unsortedClassName = "" ;
-        if ("infection".equals(unsortedName))
-            unsortedClassName = "Screening" ;
-        else
+//        if ("infection".equals(unsortedName))
+//            unsortedClassName = "Screening" ;
+//        else
             unsortedClassName = unsortedName.substring(0,1).toUpperCase() + unsortedName.substring(1).toLowerCase() ;
         unsortedClassName = "reporter." + unsortedClassName + "Reporter" ;
         String sortingClassName ;
-        if ("infection".equals(sortingName))
-            sortingClassName = "Screening" ;
-        else
+//        if ("infection".equals(sortingName))
+//            sortingClassName = "Screening" ;
+//        else
             sortingClassName = sortingName.substring(0,1).toUpperCase() + sortingName.substring(1).toLowerCase() ;
         sortingClassName = "reporter." + sortingClassName + "Reporter" ;
         
