@@ -110,9 +110,9 @@ public class MSM extends Agent {
         String methodName = "" ;
         try
         {
-            methodName = "antiviral" ;
+            methodName = "undetectable" ;
             report += Reporter.ADD_REPORT_PROPERTY(change, methodName) ;
-            report += REINIT_PROBABILITY_ANTIVIRAL(agentList, year) ;
+            report += REINIT_PROPORTION_UNDETECTABLE(agentList, year) ;
             
             methodName = "disclosure" ;
             REINIT_PROBABILITY_DISCLOSURE_HIV(agentList, year) ;
@@ -121,8 +121,8 @@ public class MSM extends Agent {
             report += Reporter.ADD_REPORT_PROPERTY(change, methodName) ;
             report += REINIT_RISK_ODDS(agentList, year) ;
             
-            methodName = "trust_antiviral" ;
-            REINIT_TRUST_ANTIVIRAL(agentList, year) ;
+            methodName = "trust_undetectable" ;
+            REINIT_TRUST_UNDETECTABLE(agentList, year) ;
             //REINIT_USE_GSN(agentList, year) ;
         }
         catch ( Exception e )
@@ -143,20 +143,20 @@ public class MSM extends Agent {
      * @param year (int) Year of simulation, starting from 0.
      * @throws java.lang.Exception 
      */
-    static protected String REINIT_PROBABILITY_ANTIVIRAL(ArrayList<Agent> agentList, int year) throws Exception
+    static protected String REINIT_PROPORTION_UNDETECTABLE(ArrayList<Agent> agentList, int year) throws Exception
     {
-        String report = "antiviral," ;
+        String report = "" ;
         if (year == 0)
             return report ;
         
         // years 2007 onwards
         //double[] probabilityAntiViral = new double[] {0.532, 0.706, 0.735, 0.689, 0.706, 0.802, 0.766, 0.830, 0.818, 0.854, 0.890, 0.890, 0.890} ;
-        double[] probabilityAntiViral = new double[] {0.566, 0.647, 0.701, 0.723, 0.747, 0.816, 0.734, 0.808, 0.856, 0.847, 0.918, 0.918, 0.918} ;
+        double[] probabilityUndetectable = new double[] {0.566, 0.647, 0.701, 0.723, 0.747, 0.816, 0.734, 0.808, 0.856, 0.847, 0.918, 0.918, 0.918} ;
         // years 2007-2009
         // 0.532, 0.706, 0.735, 
         
-        double newProbability = probabilityAntiViral[year] ;
-        double oldProbability = probabilityAntiViral[year-1] ;
+        double newProbability = probabilityUndetectable[year] ;
+        double oldProbability = probabilityUndetectable[year-1] ;
         double changeProbability ;
         boolean newStatus ;
         MSM msm ;
@@ -168,22 +168,22 @@ public class MSM extends Agent {
             
             if (newProbability > oldProbability)
             {
-                if (!msm.antiViralStatus)
+                if (!msm.undetectableStatus)
                 {
                     changeProbability = (newProbability - oldProbability)/(1 - oldProbability) ;
                     newStatus = RAND.nextDouble() < changeProbability ;
-                    msm.setAntiViralStatus(newStatus) ;
+                    msm.setUndetectableStatus(newStatus) ;
                     report += Reporter.ADD_REPORT_PROPERTY(String.valueOf(msm.getAgentId()), newStatus) ;
                     continue ;
                 }
             }
             else    // Probability of being on antiViral medication decreases.
             {
-                if (msm.antiViralStatus)
+                if (msm.undetectableStatus)
                 {
                     changeProbability = (oldProbability - newProbability)/oldProbability ;
                     newStatus = RAND.nextDouble() < changeProbability ;
-                    msm.setAntiViralStatus(newStatus) ;
+                    msm.setUndetectableStatus(newStatus) ;
                     report += Reporter.ADD_REPORT_PROPERTY(String.valueOf(msm.getAgentId()), newStatus) ;
                     continue ;
                 }
@@ -202,18 +202,18 @@ public class MSM extends Agent {
      * @param agentList (ArrayList) List of Agents to undergo parameter change.
      * @param year (int) Year of simulation starting from year zero.
      */
-    static protected String REINIT_TRUST_ANTIVIRAL(ArrayList<Agent> agentList, int year) 
+    static protected String REINIT_TRUST_UNDETECTABLE(ArrayList<Agent> agentList, int year) 
     {
         String report = "" ;
-        double[] positiveTrustAntiViral = new double[] {0.0,0.0,0.0,0.0,0.0,0.0,0.483,0.772,
+        double[] positiveTrustUndetectable = new double[] {0.0,0.0,0.0,0.0,0.0,0.0,0.483,0.772,
             0.692, 0.742, 0.804, 0.853, 0.853} ;
-        double[] negativeTrustAntiViral = new double[] {0.0,0.0,0.0,0.0,0.0,0.0,0.106,0.094,
+        double[] negativeTrustUndetectable = new double[] {0.0,0.0,0.0,0.0,0.0,0.0,0.106,0.094,
             0.129, 0.157, 0.203, 0.231, 0.231} ;
         
-        double positiveLastProbability = positiveTrustAntiViral[year - 1] ;
-        double positiveTrustProbability = positiveTrustAntiViral[year] ;
-        double negativeLastProbability = negativeTrustAntiViral[year - 1] ;
-        double negativeTrustProbability = negativeTrustAntiViral[year] ;
+        double positiveLastProbability = positiveTrustUndetectable[year - 1] ;
+        double positiveTrustProbability = positiveTrustUndetectable[year] ;
+        double negativeLastProbability = negativeTrustUndetectable[year - 1] ;
+        double negativeTrustProbability = negativeTrustUndetectable[year] ;
         double changeProbability ; 
         
         for (Agent agent : agentList)
@@ -236,14 +236,14 @@ public class MSM extends Agent {
             
             if (trustProbability > lastProbability)
             {
-                if (msm.trustAntiViral)
+                if (msm.trustUndetectable)
                     continue ;
                 changeProbability = (trustProbability - lastProbability)/(1 - lastProbability) ;
                 msm.setChemoProphylaxis(RAND.nextDouble() < changeProbability);
             }
             else
             {
-                if (!msm.trustAntiViral)
+                if (!msm.trustUndetectable)
                     continue ;
                 changeProbability = (lastProbability - trustProbability)/lastProbability ;
                 msm.setChemoProphylaxis(RAND.nextDouble() > changeProbability) ;
@@ -357,7 +357,7 @@ public class MSM extends Agent {
         //double riskyProbabilityPositive = riskyProbability ; //* HIV_RISKY_CORRELATION ;
         //double riskyProbabilityNegative = riskyProbability ; //* (1.0 - PROPORTION_HIV * HIV_RISKY_CORRELATION)/(1.0 - PROPORTION_HIV) ;
         double hivFactor ;
-        String record ;
+        HashMap<String,String> record = new HashMap<String,String>() ;
         MSM msm ;
         for (Agent agent : agentList)
         {
@@ -373,27 +373,38 @@ public class MSM extends Agent {
                 changeProbability = riskyProbability/lastProbabilityRisk ; //(lastProbability - riskyProbability)/lastProbability ;
 
         
-            record = String.valueOf(msm.scaleProbabilityUseCondom(adjustProbabilityUseCondom)) ;
-            record += "-" ;
+            record.put("probabilityUseCondom",String.valueOf(msm.scaleProbabilityUseCondom(adjustProbabilityUseCondom))) ;
             
             if (moreRisky) 
             {
                 if (msm.getRiskyStatus()) // if risky already
                     continue ;    // we don't change it
                 msm.setRiskyStatus(RAND.nextDouble() < changeProbability) ;
+                
+                // Record changes
+                if (msm.riskyStatus)
+                    record.put("riskyStatus", String.valueOf(msm.riskyStatus)) ;
                 hivFactor = GET_HIV_RISKY_CORRELATION(msm.statusHIV) ;
-                msm.reinitPrepStatus(year, riskyProbability * hivFactor) ;
+                if (msm.reinitPrepStatus(year, riskyProbability * hivFactor))
+                    record.put("prepStatus", String.valueOf(msm.prepStatus)) ;
             }
             else    // riskyProbability has gone down
             {
                 if (!msm.getRiskyStatus()) // if safe already
                     continue ;    // we don't change it
-                // equivalent to correct calculation: RAND > (1 - changeProbability)
+                
+// equivalent to correct calculation: RAND > (1 - changeProbability)
                 msm.setRiskyStatus(RAND.nextDouble() < changeProbability) ; 
-                msm.prepStatus = false ;
+                
+                // Record changes
+                if (!msm.riskyStatus)
+                    record.put("riskyStatus", String.valueOf(msm.riskyStatus)) ;
+                hivFactor = GET_HIV_RISKY_CORRELATION(msm.statusHIV) ;
+                if (msm.reinitPrepStatus(year, riskyProbability * hivFactor))
+                    record.put("prepStatus", String.valueOf(msm.prepStatus)) ;
             }
-            record += String.valueOf(msm.prepStatus) ;
-            report += Reporter.ADD_REPORT_PROPERTY(String.valueOf(msm.getAgentId()), record) ;
+            report += Reporter.ADD_REPORT_PROPERTY(String.valueOf(msm.getAgentId()), record.toString()) ;
+            record.clear() ;
         }
         return report ;
     }
@@ -510,6 +521,7 @@ public class MSM extends Agent {
      * Generate relationships among the availableAgentList. 
      * Serosorting MSM are treated first to ensure that they don't miss out unduly. 
      * Those entering Relationships are removed.
+     * FIXME: Not robust against reordering of relationshipClazzNames
      * 
      * @return (String) report of Relationships generated
      */
@@ -721,8 +733,8 @@ public class MSM extends Agent {
     
     /** Status for HIV infection. */
     private boolean statusHIV ;
-    /** Whether currently being treated with antiretroviral medication. */
-    private boolean antiViralStatus ;
+    /** Whether currently has an undetectable viral load given HIV +ve status */
+    private boolean undetectableStatus ;
     /** Whether discloses HIV +ve status. */
     private boolean discloseStatusHIV ;
     /** Whether currently taking PrEP. */
@@ -731,8 +743,8 @@ public class MSM extends Agent {
     private boolean chemoProphylaxis ;
     /** Whether uses partner's PrEP or viral suppression as prophylaxis */
     private boolean chemoPartner ;
-    /** Whether uses viral suppression as prophylaxis */
-    private boolean trustAntiViral ;
+    /** Whether willing uses viral suppression as prophylaxis */
+    private boolean trustUndetectable ;
     /** Whether trusts PrEP as prophylaxis */
     private boolean trustPrep ;
     /** Whether MSM is Risky, Safe otherwise. */
@@ -741,11 +753,11 @@ public class MSM extends Agent {
     /** Transmission probabilities per sexual contact from Urethra to Rectum */
     static double URETHRA_TO_RECTUM = 0.85 ; 
     /** Transmission probabilities sexual contact from Urethra to Pharynx. */
-    static double URETHRA_TO_PHARYNX = 0.55 ; 
+    static double URETHRA_TO_PHARYNX = 0.50 ; 
     /** Transmission probabilities sexual contact from Rectum to Urethra. */
     static double RECTUM_TO_URETHRA = 0.010 ;
     /** Transmission probabilities sexual contact from Rectum to Pharynx. */
-    static double RECTUM_TO_PHARYNX = 0.020 ;
+    static double RECTUM_TO_PHARYNX = 0.025 ;
     /** Transmission probabilities sexual contact in Pharynx to Urethra intercourse. */
     static double PHARYNX_TO_URETHRA = 0.015 ; 
     /** Transmission probabilities sexual contact in Pharynx to Rectum intercourse. */
@@ -1017,7 +1029,7 @@ public class MSM extends Agent {
         statusHIV = (RAND.nextDouble() < getProportionHIV()) ;
 
         // Sets antiViral status, ensuring it is true only if statusHIV is true
-        setAntiViralStatus(RAND.nextDouble() < getAntiviralProbability()) ;
+        setUndetectableStatus(RAND.nextDouble() < getAntiviralProbability()) ;
 
         // Randomly set PrEP status, ensuring it is true only if statusHIV is false
         // Now called within initRiskiness()
@@ -1028,7 +1040,7 @@ public class MSM extends Agent {
         
         chemoProphylaxis = false ;
         chemoPartner = false ;
-        trustAntiViral = false ;
+        trustUndetectable = false ;
         trustPrep = false ;
         
         // Initialises infectedStatus at beginning of simulation, 
@@ -1231,10 +1243,10 @@ public class MSM extends Agent {
         censusReport += Reporter.ADD_REPORT_PROPERTY("seroSortMonogomous", seroSortMonogomous) ;
         censusReport += Reporter.ADD_REPORT_PROPERTY("seroPosition", seroPosition) ;
         censusReport += Reporter.ADD_REPORT_PROPERTY("riskyStatus", riskyStatus) ;
-        censusReport += Reporter.ADD_REPORT_PROPERTY("antiViralStatus", antiViralStatus) ;
+        censusReport += Reporter.ADD_REPORT_PROPERTY("undetectableStatus", undetectableStatus) ;
         censusReport += Reporter.ADD_REPORT_PROPERTY("chemoProphylaxis", chemoProphylaxis) ;
         censusReport += Reporter.ADD_REPORT_PROPERTY("chemoPartner", chemoPartner) ;
-        censusReport += Reporter.ADD_REPORT_PROPERTY("trustAntiViral", trustAntiViral) ;
+        censusReport += Reporter.ADD_REPORT_PROPERTY("trustUndetectable", trustUndetectable) ;
         censusReport += Reporter.ADD_REPORT_PROPERTY("trustPrep", trustPrep) ;
         censusReport += Reporter.ADD_REPORT_PROPERTY("consentCasualProbability", consentCasualProbability) ;
         
@@ -1423,7 +1435,7 @@ public class MSM extends Agent {
     
     /**
      * Setter of statusHIV.
-     * Also ensures that prepStatus and antiViralStatus do not have
+     * Also ensures that prepStatus and undetectableStatus do not have
      * inappropriate values.
      * @param status (boolean)
      */
@@ -1433,7 +1445,7 @@ public class MSM extends Agent {
         if (status)
             setPrepStatus(false) ;
         else
-            setAntiViralStatus(false) ;
+            setUndetectableStatus(false) ;
     }
 
     /**
@@ -1550,22 +1562,22 @@ public class MSM extends Agent {
     }
     
     /**
-     * Getter for antiViralStatus.
-     * @return (boolean) antiViralStatus
+     * Getter for undetectableStatus.
+     * @return (boolean) undetectableStatus
      */
-    public boolean getAntiViralStatus()
+    public boolean getUndetectableStatus()
     {
-        return antiViralStatus ;
+        return undetectableStatus ;
     }
     
     /**
-     * Setter of antiViralStatus. 
+     * Setter of undetectableStatus. 
      * Will only set it to true if statusHIV is true.
      * @param status (boolean)
      */
-    public void setAntiViralStatus(boolean status)
+    public void setUndetectableStatus(boolean status)
     {
-        antiViralStatus = status && statusHIV ;
+        undetectableStatus = status && statusHIV ;
     }
 
     /**
@@ -1587,7 +1599,7 @@ public class MSM extends Agent {
         if (statusHIV)
         {
             if (antiViral)
-                chemoProphylaxis = antiViralStatus ;
+                chemoProphylaxis = undetectableStatus ;
         }
         else    // HIV negative
             chemoProphylaxis = prepStatus ;
@@ -1623,21 +1635,21 @@ public class MSM extends Agent {
     }
 
     /**
-     * Getter for trustAntiViral.
-     * @return (boolean) trustAntiViral.
+     * Getter for trustUndetectable.
+     * @return (boolean) trustUndetectable.
      */
-    public boolean getTrustAntiViral()
+    public boolean getTrustUndetectable()
     {
-        return trustAntiViral ;
+        return trustUndetectable ;
     }
     
     /**
-     * Setter of trustAntiViral.
+     * Setter of trustUndetectable.
      * @param status (boolean)
      */
-    public void setTrustAntiViral(boolean status)
+    public void setTrustUndetectable(boolean status)
     {
-        trustAntiViral = status ;
+        trustUndetectable = status ;
     }
 
     /**
@@ -1720,7 +1732,7 @@ public class MSM extends Agent {
     protected void initScreenCycle(double rescale)
     {
         if (getPrepStatus())
-            setScreenCycle(((int) new GammaDistribution(31,1).sample()) + 61) ;
+            setScreenCycle((sampleGamma(31,1,rescale)) + 61) ;
         else
         {
             //int firstScreenCycle = (int) new GammaDistribution(7,55).sample() ; 
@@ -1733,6 +1745,31 @@ public class MSM extends Agent {
         }
         // Randomly set timer for first STI screen 
         setScreenTime(RAND.nextInt(getScreenCycle()) + 1) ;
+    }
+    
+    /**
+     * Initialises screenCycle from a Gamma distribution to determine how often 
+     * an MSM is screened, and then starts the cycle in a random place so that 
+     * not every MSM gets screened at the same time.
+     * @param rescale
+     */
+    @Override
+    protected void reInitScreenCycle(double rescale)
+    {
+        if (getPrepStatus())
+            setScreenCycle((sampleGamma(31,1,rescale)) + 61) ;
+        else
+        {
+            //int firstScreenCycle = (int) new GammaDistribution(7,55).sample() ; 
+            //setScreenCycle(firstScreenCycle) ;  // 49.9% screen within a year 2016
+            if (statusHIV)
+                setScreenCycle(sampleGamma(6,71,rescale)) ;  // 41% screen within a year
+            else
+                setScreenCycle(sampleGamma(6,85.5,rescale)) ;  // 26% screen within a year
+            
+        }
+        // Randomly set timer for first STI screen 
+        setScreenTime(getScreenCycle()) ;
     }
     
     /**
@@ -1752,17 +1789,18 @@ public class MSM extends Agent {
      * @param year
      * @param riskyProbability
      */
-    public void reinitPrepStatus(int year, double riskyProbability)
+    public boolean reinitPrepStatus(int year, double riskyProbability)
     {
         double[] prepProbabilityArray = new double[] {0.0,0.0,0.0,0.0,0.0,0.0,
-            0.011,0.014,0.014,0.039,0.139,0.204} ;
-        boolean prep = false ;
+            0.011,0.014,0.014,0.039,0.139,0.204,0.204} ;
+        boolean prep = prepStatus ;
         if (riskyStatus && (!statusHIV))
         {
             double prepProbability = prepProbabilityArray[year] / riskyProbability ;
-            prep = RAND.nextDouble() < prepProbability ;
+            setPrepStatus(RAND.nextDouble() < prepProbability) ;
         }
-        setPrepStatus(prep) ;
+        
+        return (prep != prepStatus) ;
     }
     
     /**
@@ -1951,7 +1989,7 @@ public class MSM extends Agent {
             if (prepStatus)
                 return false ;
             
-            if (antiViralStatus && trustAntiViral)
+            if (undetectableStatus && trustUndetectable)
                 return false ;
             
             //if (useGSN && partner.useGSN) // && partner.riskyStatus))
@@ -1964,7 +2002,7 @@ public class MSM extends Agent {
                 if (partner.prepStatus)
                     return false ;
                     
-                if (partner.antiViralStatus && trustAntiViral)
+                if (partner.undetectableStatus && trustUndetectable)
                     return false ;
 
                 if (seroPosition && partner.seroPosition)
@@ -1985,7 +2023,7 @@ public class MSM extends Agent {
                     return (RAND.nextDouble() < probabilityUseCondom ) ;
                 else if (partner.statusHIV)
                 {
-                    if ((!partner.antiViralStatus) || (!trustAntiViral))
+                    if ((!partner.undetectableStatus) || (!trustUndetectable))
                         return true ;
                 }
                 else if ((!partner.prepStatus) || (!trustPrep))    // partner HIV negative
