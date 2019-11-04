@@ -566,7 +566,7 @@ public class PopulationReporter extends Reporter {
     public ArrayList<String> prepareChangeReport()
     {
         int maxCycles = getMaxCycles() ;
-        return prepareChangeReport(maxCycles) ;
+        return prepareChangeReport(0,0,maxCycles-1,maxCycles) ;
     }
     
     /**
@@ -574,23 +574,29 @@ public class PopulationReporter extends Reporter {
      * @param endCycle
      * @return (ArrayList(String)) report of which agentId changes up to which cycle
      */
-    public ArrayList<String> prepareChangeReport(int endCycle)
+    public ArrayList<String> prepareChangeReport(int backYears, int backMonths, int backDays, int endCycle)
     {
         ArrayList<String> changeReport = new ArrayList<String>() ;
         
         String record ;
         int changeIndex ;
+        int deathIndex ;
         
         //int backCycles = getBackCycles(backYears, backMonths, backDays) ;
-        ArrayList<String> backCyclesReport = getBackCyclesReport(0, 0, endCycle, endCycle) ;
+        ArrayList<String> backCyclesReport = getBackCyclesReport(backYears, backMonths, backDays, endCycle) ;
         for (int reportNb = 0 ; reportNb < backCyclesReport.size() ; reportNb += outputCycle )
         {
             record = backCyclesReport.get(reportNb) ;
-            //LOGGER.info(record);
             changeIndex = INDEX_OF_PROPERTY("change",record) ;
             if (changeIndex < 0)
-                break ;
-            changeReport.add(record.substring(changeIndex,record.indexOf("!"))) ;
+                changeReport.add("") ;
+            else
+            {
+                deathIndex = record.indexOf("death") ;
+                if (deathIndex < 0)
+                    deathIndex = record.length() ;
+                changeReport.add(record.substring(changeIndex,deathIndex)) ;
+            }
         }
         
         return changeReport ;
@@ -609,19 +615,24 @@ public class PopulationReporter extends Reporter {
         
         Class[] parameterClasses = new Class[] {int.class} ;
         Object[] parameterArray = new Object[] {endCycle} ;
-        ArrayList<String> changeReport = prepareChangeReport(endCycle) ;
+        ArrayList<String> changeReport = prepareChangeReport(0,0,endCycle-1,endCycle) ;
         //(ArrayList<String>) getReport("change",this,parameterClasses,parameterArray) ; 
         
         String propertyRecord ;
         int propertyIndex ;
         int endPropertyIndex ;
+        ArrayList<String> riskyList = new ArrayList<String>() ;
+        Collections.addAll(riskyList, new String[] {"probabilityUseCondom","prepStatus","riskyStatus"}) ;
+        
+        if (riskyList.contains(propertyName))
+            propertyName = "riskiness" ;
         
         for (String record : changeReport)
         {
             propertyIndex = record.indexOf(propertyName) ;
             if (propertyIndex < 0)
             {
-                LOGGER.severe("Change report has no record of " + propertyName) ;
+                LOGGER.info("Change report has no record of " + propertyName) ;
                 break ;
             }
             endPropertyIndex = INDEX_OF_PROPERTY("change",propertyIndex,record) ; // record.indexOf("change:",propertyIndex) ;
@@ -790,6 +801,7 @@ public class PopulationReporter extends Reporter {
         Collections.addAll(agentIdSet, birthReport.keySet().toArray()) ;
         
         ArrayList<String> changeReport = prepareChangeReport(propertyName,endCycle) ;
+        //LOGGER.info(changeReport.toString());
     
         // changeReport.size() is zero if no changes are made
         for (int index = changeReport.size() - 1 ; index >= 0 ; index-- )
@@ -802,6 +814,15 @@ public class PopulationReporter extends Reporter {
             for (Object agentId : changeAgentIds)
             {
                 String value = EXTRACT_VALUE(agentId.toString(),changeRecord) ;
+                
+                // Might be HashMap of values
+                if (value.startsWith("{"))
+                {
+                    if (!value.contains(propertyName))
+                        continue ;
+                    value.replace("=", ":") ;
+                    value = EXTRACT_VALUE(propertyName,value) ;
+                }
                 censusPropertyReport.put(agentId, value) ;
                 agentIdSet.remove(agentId) ;
             }
