@@ -882,7 +882,7 @@ public abstract class Agent {
     {
         String censusReport = "" ;
         censusReport += Reporter.ADD_REPORT_PROPERTY("agentId",agentId) ;
-        //censusReport += Reporter.ADD_REPORT_PROPERTY("agent",agent) ;
+        censusReport += Reporter.ADD_REPORT_PROPERTY("agent",agent) ;
         censusReport += Reporter.ADD_REPORT_PROPERTY("age",getAge()) ;  // Reporter.ADD_REPORT_PROPERTY("startAge", getAge()) ;
         censusReport += Reporter.ADD_REPORT_PROPERTY("concurrency",concurrency) ;
         censusReport += Reporter.ADD_REPORT_PROPERTY("infidelity",infidelity) ;
