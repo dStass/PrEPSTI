@@ -1295,6 +1295,7 @@ public class ScreeningReporter extends Reporter {
     
         for (int year = 0 ; year < backYears ; year++ )
         {
+            //LOGGER.info("backYears:" + String.valueOf(year));
             String yearlyNumberAgentsEnteredRelationship ;
 
             //endCycle = maxCycles - year * DAYS_PER_YEAR ;
@@ -1342,7 +1343,7 @@ public class ScreeningReporter extends Reporter {
             PopulationReporter populationReporter = new PopulationReporter(simName,getFolderPath()) ;
             sortedAgentsReport = populationReporter.agentIdSorted(sortingProperty,endCycle) ;
             Collections.addAll(sortingProperties,sortedAgentsReport.keySet().toArray()) ;
-            LOGGER.info(sortedAgentsReport.keySet().toString());
+            //LOGGER.info(sortedAgentsReport.keySet().toString());
         }
         else
             sortingProperties.add("") ;
