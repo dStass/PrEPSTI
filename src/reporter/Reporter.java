@@ -1811,7 +1811,7 @@ public class Reporter {
     {
         HashMap<String,String> outputReport = new HashMap<String,String>() ;
         // 
-        String firstLine = scoreName.concat("_wild") + COMMA + scoreName.concat("_ASR") + COMMA ; 
+        String firstLine = "gono-gone-wild" + COMMA + "Ann. Surv. Rep." + COMMA ; 
         for (String simulationName : simNames)
         {
             try
@@ -2687,12 +2687,12 @@ public class Reporter {
         //String[] simNames = new String[] {"from2007seek27aPop40000Cycles5475","from2007seek27bPop40000Cycles5475","from2007seek27cPop40000Cycles5475","from2007seek27dPop40000Cycles5475","from2007seek27ePop40000Cycles5475",
         //"from2007seek27fPop40000Cycles5475","from2007seek27gPop40000Cycles5475","from2007seek27hPop40000Cycles5475","from2007seek27iPop40000Cycles5475","from2007seek27jPop40000Cycles5475"} ;
     
-        String prefix = "to2018u60symp39" ;
+        String prefix = "to2019u60gradual47" ;
         //String prefix = "to2017gradNoPrep17" ;
         String suffix = "Pop40000Cycles5475" ;
         ArrayList<String> simNameList = new ArrayList<String>() ;
         //String letter0 = "" ;
-        for (String letter0 : new String[] {"a","b","c","d","e","f","g","h","i","j"})
+        for (String letter0 : new String[] {"b","c","d","e","f","g","h","i"})
             for (String letter1 : new String[] {"a","b","c","d","e"})
                 simNameList.add(prefix + letter0 + letter1 + suffix) ;
         
@@ -2702,7 +2702,7 @@ public class Reporter {
     
         //String[] simNames = new String[] {"newSortRisk12aPop40000Cycles1825"} ;
         //String[] simNames = new String[] {"newSortRisk12aPop40000Cycles730","newSortRisk11aPop40000Cycles730","newSortRisk10aPop40000Cycles730","newSortRisk9aPop40000Cycles730","newSortRisk8aPop40000Cycles730"} ;
-        MULTI_WRITE_CSV(simNameList, "year", "Rectum_false", "riskyIncidence", folderPath) ; // "C:\\Users\\MichaelWalker\\OneDrive - UNSW\\gonorrhoeaPrEP\\simulator\\PrEPSTI\\output\\prep\\") ; // 
+        MULTI_WRITE_CSV(simNameList, "year", "all_false", "riskyIncidence", folderPath) ; // "C:\\Users\\MichaelWalker\\OneDrive - UNSW\\gonorrhoeaPrEP\\simulator\\PrEPSTI\\output\\prep\\") ; // 
         
         //PREPARE_GRAY_REPORT(simNames,folderPath,2007,2017) ;
     }
@@ -2730,8 +2730,6 @@ public class Reporter {
             this.simName = simName ;
             this.folderPath = filePath ;
             fileIndex = 0 ;
-            if ("screening".equals(reporterName))    // TODO: Remove need for this step
-                reporterName = "infection" ;
             fileNames = initFileNames(simName + reporterName) ;
             initMetaData() ;
             cyclesPerFile = initCyclesPerFile() ;
@@ -2897,7 +2895,7 @@ public class Reporter {
             {
                 int startCycle = endCycle - backCycles ;
                 // Open file
-                cycleFileIndex = startCycle/cyclesPerFile ;
+                cycleFileIndex = Math.floorDiv(startCycle,cyclesPerFile) ;
                 //getSpecificFile(startCycle) ;
                 BufferedReader fileReader = new BufferedReader(new FileReader(folderPath + fileNames.get(cycleFileIndex))) ;
                         
