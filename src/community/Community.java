@@ -87,7 +87,7 @@ public class Community {
      * (String) Name of previous simulation to reload.
      * Nothing reloaded if this is an empty string.
      */
-    static final String RELOAD_SIMULATION = "" ; // "rebootTestPop40000Cycles730" ; // 
+    static final String RELOAD_SIMULATION = "" ; // "test46aPop40000Cycles100" ; // "rebootTestPop40000Cycles730" ; // 
     
     static public String getFilePath()
     {
@@ -124,11 +124,11 @@ public class Community {
     private String initialRecord ;
     protected ArrayList<String> relationshipReport = new ArrayList<String>() ;
     protected ArrayList<String> encounterReport = new ArrayList<String>() ;
-    protected ArrayList<String> infectionReport = new ArrayList<String>() ;
+    protected ArrayList<String> screeningReport = new ArrayList<String>() ;
     protected ArrayList<String> populationReport = new ArrayList<String>() ;
     private Scribe scribe = new Scribe() ;
     // Define Scribe in full in Community() constructor
-    //private Scribe scribe = new Scribe(SIM_NAME, new String[] {"relationship","encounter","infection", "population"}) ;
+    //private Scribe scribe = new Scribe(SIM_NAME, new String[] {"relationship","encounter","screening", "population"}) ;
 
     // output to small file when cycling through parameter values
     static private String OUTPUT_RETURN = "" ;
@@ -232,7 +232,7 @@ public class Community {
         String relationshipRecord ;
         String encounterRecord ;
         //String clearanceRecord ;
-        String infectionRecord ;
+        String screeningRecord ;
         String populationRecord ;
         //String deathReport ;
         //String censusRecord ;
@@ -253,7 +253,19 @@ public class Community {
         
         if (!RELOAD_SIMULATION.isEmpty())
         {
-            // Do nothing here but avoid the alternatives.
+            boolean skipForNow = true ;
+            if (!skipForNow)
+            {
+            for (Agent agent : community.agents)
+            {
+                for (Relationship relationship : agent.getCurrentRelationships())
+                {
+                    if (relationship.getLowerIdAgent() == agent)
+                        Relationship.BURNIN_COMMENCE += relationship.getRecord() + Relationship.BURNIN_COMMENCE ;
+                }
+            }
+            }
+                
         }
         else if (RELOAD_BURNIN.isEmpty())
         {
@@ -324,7 +336,7 @@ public class Community {
             // treat symptomatic agents
             
             //LOGGER.info("progress");
-            infectionRecord = cycleString + community.progressInfection() ;
+            screeningRecord = cycleString + community.progressInfection() ;
             
             //deathRecord = cycleString
             int deltaPopulation = community.agents.size() ;  // Current population
@@ -338,7 +350,7 @@ public class Community {
             // How many births to maintain population?
             deltaPopulation = deltaPopulation - community.agents.size() ;
 
-            community.submitRecords(relationshipRecord,encounterRecord,infectionRecord,populationRecord) ;  // 
+            community.submitRecords(relationshipRecord,encounterRecord,screeningRecord,populationRecord) ;  // 
 
             // Deal with effects of aging.
             // To include in populationRecord move this above community.submitRecords()
@@ -358,7 +370,7 @@ public class Community {
         if (!PARTIAL_DUMP || (((Community.MAX_CYCLES)/DUMP_CYCLE) * DUMP_CYCLE) != Community.MAX_CYCLES )
             community.dump() ;
         community.dumpMetaData() ;
-        //community.dumpRebootData() ;
+        community.dumpRebootData() ;
         
         long elapsedTime = System.nanoTime() - startTime ;
         long milliTime = elapsedTime/1000000 ;
@@ -380,7 +392,7 @@ public class Community {
         //Reporter.WRITE_CSV(plotReport, "Number of Relationships", relationshipClassNames, "cumulativeRelationship", SIM_NAME, "output/test/") ;
         
         ScreeningReporter screeningReporter = new ScreeningReporter(SIM_NAME,FILE_PATH) ;
-                //new ScreeningReporter("prevalence",community.infectionReport) ;
+                //new ScreeningReporter("prevalence",community.screeningReport) ;
                 
         //ArrayList<Object> pharynxPrevalenceReport = screeningReporter.preparePrevalenceReport("Pharynx") ;
         //Reporter.WRITE_CSV(pharynxPrevalenceReport, "Pharynx", SIM_NAME, FILE_PATH);
@@ -544,7 +556,7 @@ public class Community {
             for (Agent agent : agents)
                 initialRecord += agent.getCensusReport() ;
             Relationship.REBOOT_RELATIONSHIPS(simName, agents) ;
-            scribe = new Scribe(SIM_NAME, new String[] {"relationship","encounter","infection", "population"}) ;
+            scribe = new Scribe(SIM_NAME, new String[] {"relationship","encounter","screening", "population"}) ;
         }
     }
 
@@ -555,7 +567,7 @@ public class Community {
     {
         String report = "" ;
         initialRecord = "!" ;
-        scribe = new Scribe(SIM_NAME, new String[] {"relationship","encounter","infection", "population"}) ;
+        scribe = new Scribe(SIM_NAME, new String[] {"relationship","encounter","screening", "population"}) ;
         for (int id = 0 ; id <  population ; id++ ) 
         {
             //Class<?> AgentClazz = Class.forName("MSM") ; 
@@ -565,8 +577,8 @@ public class Community {
             // Call generateAgent to get randomly chosen combination of Agent subclasses
             //and to impose initial conditions, such as prepStatus=false
             MSM newAgent = generateAgent(-1) ;  //new MSM(-1) ;
-            newAgent.setPrepStatus(false) ;
-            //newAgent.setPrepStatus(newAgent.getAgent().equals("RiskyMSM"));
+            //newAgent.setPrepStatus(false) ;
+            
             agents.add(newAgent) ;
 
             // Record newAgent for later reporting
@@ -581,7 +593,7 @@ public class Community {
 //        for (Agent agent : agents) 
 //        {
 //            // Start with RiskyMSM
-//            if (!agent.getAgent().equals("RiskyMSM"))
+//            if (!agent.toString().equals("RiskyMSM"))
 //                continue ;
 //            MSM msm = (MSM) agent ;
 //            
@@ -659,7 +671,6 @@ public class Community {
         //MSM newAgent = MSM.BIRTH_MSM(startAge);
         
         // Impose initial condition here
-        newAgent.setPrepStatus(false) ;
             
         return newAgent ;
     }
@@ -981,6 +992,7 @@ public class Community {
     {
         String record = "" ;
         boolean infected ;
+        boolean anyInfected = false ;
         //long startTime = System.nanoTime() ;
 
         for (Agent agent : agents)
@@ -989,6 +1001,7 @@ public class Community {
             //LOGGER.log(Level.INFO,"infected:{0}",agent.getAgentId());
             //record += Reporter.ADD_REPORT_PROPERTY("agentId",agent.getAgentId()) ;
             infected = agent.getInfectedStatus();
+            anyInfected = anyInfected || infected ;
             //record += Reporter.ADD_REPORT_PROPERTY("infected", infected) ;
             
             // Due for an STI screen?
@@ -1016,7 +1029,6 @@ public class Community {
             }
             else if (infected)
             {
-                //LOGGER.log(Level.INFO, "infected:{0}", agent.getAgentId());
                 record += Reporter.ADD_REPORT_PROPERTY("agentId",agent.getAgentId()) ;
                 for (Site site : agent.getSites())
                 {
@@ -1034,7 +1046,6 @@ public class Community {
                 }
                 else if (agent.getSymptomatic())
                 {
-                    //LOGGER.info("Symptomatic" + String.valueOf(agent.getAgentId()));
                     if (agent.treatSymptomatic())  
                     {
                         //record += Reporter.ADD_REPORT_LABEL("tested") ;
@@ -1044,7 +1055,7 @@ public class Community {
                 }
             }
         }
-        //LOGGER.info(record)
+        //LOGGER.info(record) ;
         return record ;
     }
 
@@ -1164,7 +1175,7 @@ public class Community {
     }
 
     private void submitRecords(String generateRecord, String encounterRecord, //String clearRecord, 
-            String infectionRecord, String populationRecord)
+            String screeningRecord, String populationRecord)
     {
             relationshipReport.add(generateRecord) ;
             //LOGGER.info(encounterRecord);
@@ -1172,7 +1183,7 @@ public class Community {
             //encounterScribe.writeRecord(encounterRecord);
 
             //clearReport.add(clearRecord) ;
-            infectionReport.add(infectionRecord) ;
+            screeningReport.add(screeningRecord) ;
             populationReport.add(populationRecord) ;
     }
 
@@ -1201,7 +1212,6 @@ public class Community {
      */
     private void dumpMetaData()
     {
-        LOGGER.info(TRUE) ;
         ArrayList<String> metaLabels = new ArrayList<String>() ; 
         ArrayList<Object> metaData = new ArrayList<Object>() ; 
         metaLabels.add("Community.NAME_ROOT") ;
