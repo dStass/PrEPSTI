@@ -13,8 +13,6 @@ import java.util.ArrayList ;
 import java.util.Arrays;
 //import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet ;
-import java.util.Collection ;
 import java.util.logging.Level;
 
 /**
@@ -26,17 +24,16 @@ public class RelationshipPresenter extends Presenter{
     
     private RelationshipReporter reporter ;
     
-    //static String simName = "burnin20000aPop40000Cycles730" ;
-    static String simName = "casual5000Pop40000Cycles730" ;
-    //static String simName = "nbRelationships3Pop40000Cycles730" ;
-    //static String simName = "serosortPop10000Cycles1095" ;
+    static String simName = "u60symp41bPop40000Cycles730" ;
+    //static String simName = "relationshipLT2aPop40000Cycles730" ;
+    //static String simName = "seek58noSerosortaPop40000Cycles1825" ;
     //static String simName = "noGSNpostHolt3aPop40000Cycles5475" ; // "testPlotCondomUsePop4000Cycles500" ; // args[0] ;
         
     public static void main(String[] args)
     {
         //String chartTitle = "Nb_Agents_had_given_relationships" ; // args[1] ;
-        //String chartTitle = "cumulative_relationships" ; // args[1] ;
-        String chartTitle = "mean_nb_relationships" ;
+        String chartTitle = "cumulative_relationships" ; // args[1] ;
+        //String chartTitle = "mean_nb_relationships" ;
         //String chartTitle = "breakups" ;
         //String chartTitle = "agents_in_relationships" ;
         //String chartTitle = "agents_entered_relationships" ;
@@ -54,12 +51,12 @@ public class RelationshipPresenter extends Presenter{
         //relationshipPresenter.plotCumulativeRelationshipGaps() ;
         //relationshipPresenter.plotCumulativeRelationships("Casual",0, 6, 0) ;
         //relationshipPresenter.plotCumulativeRelationships(new String[] {"Casual","Regular","Monogomous"}, 0, 6, 0) ;
-        //relationshipPresenter.plotCumulativeRelationships(10, new String[] {"Casual","Regular","Monogomous"}, 0, 6, 0) ;
+        relationshipPresenter.plotCumulativeRelationships(100, new String[] {"Casual","Regular","Monogomous"}, 0, 6, 0) ;
         //relationshipPresenter.plotCumulativeRelationshipLengths() ;
         //relationshipPresenter.plotRelationshipCumulativeTransmissions() ;
-        relationshipPresenter.plotMeanNumberRelationshipsReport(relationshipClazzNames);
+        //relationshipPresenter.plotMeanNumberRelationshipsReport(relationshipClazzNames);
         //relationshipPresenter.plotAgentRelationshipsMeanYears(relationshipClazzNames, 3, 6, 0, 2017) ;
-        //relationshipPresenter.plotAgentRelationshipsMean(new String[] {"Casual","Regular","Monogomous"}, 1, 0, 0, "statusHIV") ;
+        //relationshipPresenter.plotAgentRelationshipsMean(new String[] {"Casual","Regular","Monogomous"}, 0, 6, 0) ;
         //relationshipPresenter.plotRelationshipLength() ;
         //relationshipPresenter.plotRecentRelationshipsReport(relationshipClazzNames,0,6,0) ;
         //relationshipPresenter.plotNumberRelationships(new String[] {"Casual","Regular","Monogomous"}, 0, 6, 0) ;
@@ -218,8 +215,8 @@ public class RelationshipPresenter extends Presenter{
         // Relationships of given class per agentId involved in during given time period).
         String agentRelationshipsMean
             = reporter.prepareAgentRelationshipsMean(relationshipClassNames, backYears, backMonths, backDays, sortingProperty) ;
-        LOGGER.info(agentRelationshipsMean.toString());
         
+        LOGGER.info(agentRelationshipsMean.toString());
         String timePeriod = GET_TIME_PERIOD_STRING(backYears, backMonths, backDays) ;
         
         //String[] legend = new String[relationshipClassNames.length * agentRelationshipsMean.size()] ;
