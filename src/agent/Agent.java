@@ -133,25 +133,21 @@ public abstract class Agent {
         //boolean successful = true ;
         String change = "change" ;
         String methodName = "" ;
+        
+        
+        //TODO: Automate detection of MSM subClass with reflect
+        // Update MSM variables
+        report += MSM.REINIT(agentList, year) ;
+        
         try
         {
+            // Needs to be called after MSM.REINIT() specifically MSM.REINIT_RISK_ODDS()
+            // due to its updating prepStatus.
             methodName = "screen" ;
+            report += Reporter.ADD_REPORT_PROPERTY(change, methodName) ;
             REINIT_SCREEN_CYCLE(agentList, year) ;
             //REINIT_NB_RELATIONSHIPS(agentList, year) ;
             
-            methodName = "antiviral" ;
-            report += Reporter.ADD_REPORT_PROPERTY(change, methodName) ;
-            report += MSM.REINIT_PROBABILITY_ANTIVIRAL(agentList, year) ;
-            
-            methodName = "disclosure" ;
-            MSM.REINIT_PROBABILITY_DISCLOSURE_HIV(agentList, year) ;
-            
-            methodName = "riskiness" ;
-            report += Reporter.ADD_REPORT_PROPERTY(change, methodName) ;
-            report += MSM.REINIT_RISK_ODDS(agentList, year) ;
-            
-            methodName = "trust_antiviral" ;
-            MSM.REINIT_TRUST_ANTIVIRAL(agentList, year) ;
             //MSM.REINIT_USE_GSN(agentList, year) ;
         }
         catch ( Exception e )
@@ -159,10 +155,6 @@ public abstract class Agent {
             LOGGER.severe(e.toString() + " in method " + methodName) ;
             //return false ;
         }
-        
-        //TODO: Automate detection of MSM subClass with reflect
-        // Update MSM variables
-        report += MSM.REINIT(agentList, year) ;
         
         return report.concat("!") ;
     }
@@ -180,7 +172,7 @@ public abstract class Agent {
         // Go from 2007
         // Tests, given by per 1000 per year, from 2007-2018
         // Table 14 ARTB 2018
-        double[] testRates = new double[] {333,340,398,382,383,382,391,419,445,499,488,488} ;
+        double[] testRates = new double[] {333,340,398,382,383,382,391,419,445,499,488,488,488} ;
         // 2007 - 2009
         // 333,340,398,
         
@@ -199,21 +191,6 @@ public abstract class Agent {
         return report ;
     }
     
-    /**
-     * Reinitialises Agents' Relationship-relevant parameter changes year-by-year.
-     * @param agentList
-     * @param year 
-     */
-    static final String REINIT_NB_RELATIONSHIPS(ArrayList<Agent> agentList, int year)
-    {
-        //for (Agent agent : agentList)
-        {
-            // agent.setConcurrency(value)
-        }
-        return MSM.REINIT_CONSENT_CASUAL_PROBABILITY(agentList, year);
-    }
-    
-
     // number of relationships willing to maintain at once
     private int concurrency ;
 
@@ -848,6 +825,8 @@ public abstract class Agent {
      * not every Agent gets screened at the same time.
      */
     abstract void initScreenCycle(double rescale) ;
+    
+    abstract void reInitScreenCycle(double rescale) ;
     
     protected int sampleGamma(double shape, double scale, double rescale)
     {
@@ -1923,9 +1902,9 @@ public abstract class Agent {
      * 
      * @return subclass.getName() of agent type
      */
-    public String getAgent()
+    public String toString()
     {
-            return agent ;
+            return Reporter.ADD_REPORT_PROPERTY(agent, agentId) ;
     }
 
     
