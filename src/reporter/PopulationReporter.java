@@ -632,13 +632,16 @@ public class PopulationReporter extends Reporter {
             propertyIndex = record.indexOf(propertyName) ;
             if (propertyIndex < 0)
             {
-                LOGGER.info("Change report has no record of " + propertyName) ;
-                break ;
+                //LOGGER.info("Change report has no record of " + propertyName) ;
+                propertyChangeReport.add(EMPTY) ;
+                continue ;
             }
             endPropertyIndex = INDEX_OF_PROPERTY("change",propertyIndex,record) ; // record.indexOf("change:",propertyIndex) ;
             if (endPropertyIndex < 0)
                 endPropertyIndex = record.indexOf("!", propertyIndex) ;
-            propertyRecord = record.substring(propertyIndex + propertyName.length() + 2, endPropertyIndex) ;
+            propertyRecord = record.substring(propertyIndex + propertyName.length() + 1, endPropertyIndex) ;
+//            if ("riskiness".equals(propertyName))
+//                LOGGER.info(propertyRecord);
             propertyChangeReport.add(propertyRecord) ;
         }
         
@@ -799,7 +802,7 @@ public class PopulationReporter extends Reporter {
         HashMap<Object,String>  birthReport = prepareCensusPropertyReport(propertyName) ;
         HashSet<Object> agentIdSet = new HashSet<Object>() ;
         Collections.addAll(agentIdSet, birthReport.keySet().toArray()) ;
-        
+        //LOGGER.info(agentIdSet.toString());
         ArrayList<String> changeReport = prepareChangeReport(propertyName,endCycle) ;
         //LOGGER.info(changeReport.toString());
     
@@ -809,6 +812,7 @@ public class PopulationReporter extends Reporter {
             String changeRecord = changeReport.get(index) ;
             
             ArrayList<String> changeAgentIds = IDENTIFY_PROPERTIES(changeRecord) ;
+            //LOGGER.info(changeAgentIds.toString()) ;
             changeAgentIds.retainAll(agentIdSet) ;
             
             for (Object agentId : changeAgentIds)
