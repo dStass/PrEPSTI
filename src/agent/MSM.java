@@ -155,6 +155,9 @@ public class MSM extends Agent {
         // years 2007-2009
         // 0.532, 0.706, 0.735, 
         
+        if (year >= probabilityUndetectable.length)
+            year = probabilityUndetectable.length - 1 ;
+        
         double newProbability = probabilityUndetectable[year] ;
         double oldProbability = probabilityUndetectable[year-1] ;
         double changeProbability ;
@@ -209,6 +212,9 @@ public class MSM extends Agent {
             0.692, 0.742, 0.804, 0.853, 0.853} ;
         double[] negativeTrustUndetectable = new double[] {0.0,0.0,0.0,0.0,0.0,0.0,0.106,0.094,
             0.129, 0.157, 0.203, 0.231, 0.231} ;
+        
+        if (year >= positiveTrustUndetectable.length)
+            year = positiveTrustUndetectable.length - 1 ;
         
         double positiveLastProbability = positiveTrustUndetectable[year - 1] ;
         double positiveTrustProbability = positiveTrustUndetectable[year] ;
@@ -273,6 +279,8 @@ public class MSM extends Agent {
         //else
         double[] negativeDiscloseProbability = new double[] {0.175,0.205,0.218,0.239,0.229,0.249,0.236,0.295,0.286,0.352,0.391,0.391,0.391} ;
         // 2007 - 2009
+        if (year >= positiveDiscloseProbability.length)
+            year = positiveDiscloseProbability.length - 1 ;
         // positive 0.201,0.296,0.327,    negative 0.175,0.205,0.218,
         double positiveNewDiscloseProbability = positiveDiscloseProbability[year] ;
         double positiveOldDiscloseProbability = positiveDiscloseProbability[year-1] ;
@@ -332,6 +340,9 @@ public class MSM extends Agent {
         // Year-by-year rates of UAIC 
         int[] newRiskyOdds = new int[] {290,293,369,345,331,340,364,350,362,409,520,566,566} ;
         int[] newSafeOdds = new int[] {468,514,471,501,469,465,444,473,440,424,307,264,264} ;
+        
+        if (year >= newRiskyOdds.length)
+            year = newRiskyOdds.length - 1 ;
         // newRiskyProportions         {.38,.36,.44,.41,.41,.42,.45,.43,.45,.49,.63} ;
         // total_odds                 {758,807,840,846,800,805,808,823,802,831,827}
         SAFE_ODDS = newSafeOdds[year] ;
@@ -349,8 +360,7 @@ public class MSM extends Agent {
         
         boolean moreRisky = (lastProbabilityRisk < riskyProbability) ;
         double adjustProbabilityUseCondom = safeProbability/lastProbabilitySafe ; // SAFE_ODDS/newSafeOdds[year-1] ;
-        boolean newStatus ;
-        double newProbability ;
+        double screeningRatio = Agent.TEST_RATES[0]/Agent.TEST_RATES[year - 1] ;
                                                                     // see comments below
         
         //riskyProbability *= changeProbability ;
@@ -386,7 +396,10 @@ public class MSM extends Agent {
                     record.put("riskyStatus", String.valueOf(msm.riskyStatus)) ;
                 hivFactor = GET_HIV_RISKY_CORRELATION(msm.statusHIV) ;
                 if (msm.reinitPrepStatus(year, riskyProbability * hivFactor))
+                {
                     record.put("prepStatus", String.valueOf(msm.prepStatus)) ;
+                    msm.reInitScreenCycle(1.0) ;
+                }
             }
             else    // riskyProbability has gone down
             {
@@ -401,7 +414,10 @@ public class MSM extends Agent {
                     record.put("riskyStatus", String.valueOf(msm.riskyStatus)) ;
                 hivFactor = GET_HIV_RISKY_CORRELATION(msm.statusHIV) ;
                 if (msm.reinitPrepStatus(year, riskyProbability * hivFactor))
+                {
                     record.put("prepStatus", String.valueOf(msm.prepStatus)) ;
+                    msm.reInitScreenCycle(screeningRatio) ;
+                }
             }
             report += Reporter.ADD_REPORT_PROPERTY(String.valueOf(msm.getAgentId()), record.toString()) ;
             record.clear() ;
@@ -973,30 +989,6 @@ public class MSM extends Agent {
      */
     static double HIV_RISKY_CORRELATION = 2.0 ; // 1.0 ;	
     
-    /**
-     * Create new MSM and decide if he is RiskyMSM or SafeMSM
-     * @param startAge - age of MSM at sexual 'birth'.
-     * @return - one of subclass RiskyMSM or SafeMSM
-     */
-    public static MSM BIRTH_MSM(int startAge)
-    {
-        Class clazz ;
-        int choice = RAND.nextInt(TOTAL_ODDS) ;
-    	if (choice < RISKY_ODDS)
-            clazz = RiskyMSM.class ;
-        else 
-            clazz = SafeMSM.class ;
-        try
-        {
-            return (MSM) clazz.getConstructor(int.class).newInstance(startAge);
-        }
-        catch ( Exception e )
-        {
-            LOGGER.log(Level.SEVERE, "{0} {1}", new Object[]{e.getClass().getCanonicalName(), clazz.getCanonicalName()});
-        }
-        return new SafeMSM(-1) ;
-    }
-   
     /**
      * 
      * Specifies Agent subclass Men having Sex with Men. Necessary to call super()
@@ -1720,6 +1712,7 @@ public class MSM extends Agent {
             //prep = RAND.nextDouble() < prepProbability ;
         }
         setPrepStatus(prep) ;
+        initScreenCycle(1.0) ; // (382.0/333.0) ;    // Rescale for 2010
     }
     
     /**
@@ -1732,7 +1725,7 @@ public class MSM extends Agent {
     protected void initScreenCycle(double rescale)
     {
         if (getPrepStatus())
-            setScreenCycle((sampleGamma(31,1,rescale)) + 61) ;
+            setScreenCycle((sampleGamma(31,1,1)) + 61) ;
         else
         {
             //int firstScreenCycle = (int) new GammaDistribution(7,55).sample() ; 
@@ -1757,7 +1750,7 @@ public class MSM extends Agent {
     protected void reInitScreenCycle(double rescale)
     {
         if (getPrepStatus())
-            setScreenCycle((sampleGamma(31,1,rescale)) + 61) ;
+            setScreenCycle((sampleGamma(31,1,1)) + 61) ;
         else
         {
             //int firstScreenCycle = (int) new GammaDistribution(7,55).sample() ; 
@@ -1793,6 +1786,9 @@ public class MSM extends Agent {
     {
         double[] prepProbabilityArray = new double[] {0.0,0.0,0.0,0.0,0.0,0.0,
             0.011,0.014,0.014,0.039,0.139,0.204,0.204} ;
+        if (year >= prepProbabilityArray.length)
+            year = prepProbabilityArray.length - 1 ;
+        
         boolean prep = prepStatus ;
         if (riskyStatus && (!statusHIV))
         {
@@ -1811,7 +1807,6 @@ public class MSM extends Agent {
     public void setPrepStatus(boolean prep)
     {
         prepStatus = prep && (!statusHIV) ;
-        initScreenCycle(1.0) ; // (382.0/333.0) ;    // Rescale for 2010
     }
     
     /**
