@@ -70,7 +70,7 @@ public class Community {
     //static public String FILE_PATH = "/short/is14/mw7704/prepsti/output/year2007/" ;
     
     /** Whether parameters change throughout simulation. */
-    static boolean DYNAMIC = false ;
+    static boolean DYNAMIC = true ;
     
     /** Dump reports to disk after this many cycles. */
     static int DUMP_CYCLE = 250 ; // ((int) Math.pow(10, 7))/POPULATION ;
@@ -87,7 +87,7 @@ public class Community {
      * (String) Name of previous simulation to reload.
      * Nothing reloaded if this is an empty string.
      */
-    static final String RELOAD_SIMULATION = "" ; // "test46aPop40000Cycles100" ; // "rebootTestPop40000Cycles730" ; // 
+    static final String RELOAD_SIMULATION = "" ; // "test46aPop40000Cycles730" ; // "rebootTestPop40000Cycles730" ; // 
     
     static public String getFilePath()
     {
@@ -253,7 +253,7 @@ public class Community {
         
         if (!RELOAD_SIMULATION.isEmpty())
         {
-            boolean skipForNow = true ;
+            boolean skipForNow = false ;
             if (!skipForNow)
             {
             for (Agent agent : community.agents)
@@ -261,7 +261,7 @@ public class Community {
                 for (Relationship relationship : agent.getCurrentRelationships())
                 {
                     if (relationship.getLowerIdAgent() == agent)
-                        Relationship.BURNIN_COMMENCE += relationship.getRecord() + Relationship.BURNIN_COMMENCE ;
+                        Relationship.BURNIN_COMMENCE = relationship.getRecord() + Relationship.BURNIN_COMMENCE ;
                 }
             }
             }
@@ -447,8 +447,8 @@ public class Community {
         HashMap<Comparable,String> incidenceReportPrep = new HashMap<Comparable,String>() ;
         if (DYNAMIC)
         {
-            incidenceReport = screeningReporter.prepareYearsAtRiskIncidenceReport(siteNames, 12, 2018, "statusHIV") ;
-            incidenceReportPrep = screeningReporter.prepareYearsAtRiskIncidenceReport(siteNames, 12, 2018, "prepStatus") ;
+            incidenceReport = screeningReporter.prepareYearsAtRiskIncidenceReport(siteNames, 16, 2022, "statusHIV") ;
+            //incidenceReportPrep = screeningReporter.prepareYearsAtRiskIncidenceReport(siteNames, 16, 2022, "prepStatus") ;
         }
         LOGGER.info("by HIV-status " + screeningReporter.prepareFinalAtRiskIncidentsRecord(siteNames, 0,"statusHIV")) ;
         //String finalPrevalencesRecord = screeningReporter.prepareFinalPrevalencesSortedRecord(siteNames, "statusHIV") ;
@@ -617,7 +617,7 @@ public class Community {
     private String interveneCommunity(int cycle)
     {
         // When to end burn-in
-        int startCycle = 365 ;
+        int startCycle = 365 * 2 ;
         if ((cycle < startCycle))
             return "" ;
         
