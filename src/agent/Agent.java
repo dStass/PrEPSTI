@@ -160,6 +160,12 @@ public abstract class Agent {
     }
     
     /**
+     * Tests, given by per 1000 per year, from 2007-2018
+     * Table 14 ARTB 2018
+     */
+    static double[] TEST_RATES = {333,340,398,382,383,382,391,419,445,499,488,488,488} ;
+    
+    /**
      * Adjusts per year the screening period.
      * TODO: Implement reporting of changes.
      * @param (ArrayList) List of Agents to be changed.
@@ -169,21 +175,23 @@ public abstract class Agent {
     static private String REINIT_SCREEN_CYCLE(ArrayList<Agent> agentList, int year) throws Exception
     {
         String report = "" ;
-        // Go from 2007
-        // Tests, given by per 1000 per year, from 2007-2018
-        // Table 14 ARTB 2018
-        double[] testRates = new double[] {333,340,398,382,383,382,391,419,445,499,488,488,488} ;
+        //double[] testRates = new double[] {333,340,398,382,383,382,391,419,445,499,488,488,488} ;
         // 2007 - 2009
         // 333,340,398,
         
+        int newScreenCycle ;
+        
+        if (year >= TEST_RATES.length)
+            year = TEST_RATES.length - 1 ;
+        
         double testBase ;
         //testBase = testRates[0] ;
-        testBase = testRates[year-1] ;
+        testBase = TEST_RATES[year-1] ;
         
-        double ratio = testBase/testRates[year] ;
+        double ratio = testBase/TEST_RATES[year] ;
         for (Agent agent : agentList)
         {
-            int newScreenCycle = (int) Math.ceil(ratio * agent.getScreenCycle()) ;
+            newScreenCycle = (int) Math.ceil(ratio * agent.getScreenCycle()) ;
             agent.setScreenCycle(newScreenCycle) ;
         
             // Do not reinitialise MSM on Prep
