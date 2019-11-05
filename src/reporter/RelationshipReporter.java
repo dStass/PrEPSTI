@@ -7,7 +7,6 @@ package reporter;
 
 import community.Relationship ;
 
-import java.lang.reflect.*;
 import java.util.ArrayList;
 import java.util.Arrays ;
 import java.util.HashMap ;
@@ -1249,7 +1248,7 @@ public class RelationshipReporter extends Reporter {
     public HashMap<Object,Number> prepareNumberRelationshipsReport(String[] relationshipClassNames, int backYears, int backMonths, int backDays, int endCycle, ArrayList<Object> agentList )
     {
         HashMap<Object,Number> numberRelationshipsReport = new HashMap<Object,Number>() ;
-        LOGGER.info(agentList.toString());
+        
         // Prepare agentRelationshipsRecord
 //        Class[] parameterClazzes = new Class[] {String[].class,int.class,int.class,int.class,int.class} ;
 //        Object[] parameters = new Object[] {relationshipClassNames, backYears, backMonths, backDays, endCycle} ;
@@ -1257,6 +1256,7 @@ public class RelationshipReporter extends Reporter {
             = (HashMap<Object,HashMap<Object,ArrayList<Object>>>) prepareAgentRelationshipsRecord(relationshipClassNames, backYears, backMonths, backDays) ;
         // getRecord("agentRelationships",this,parameterClazzes,parameters) ;
         HashMap<Object,String> relationshipClazzReport = prepareRelationshipClazzReport() ;
+        // (HashMap<Object,String>) getReport("relationshipClazz",this) ;   // 
         
         ArrayList<Object> totalAgents = new ArrayList<Object>() ;
         ArrayList<Object> relationshipClazzAgents ;
@@ -1282,7 +1282,6 @@ public class RelationshipReporter extends Reporter {
             // Consider only sorted Agents from agentList
             if (!agentList.isEmpty())
                 relationshipClazzAgents.retainAll(agentList) ;
-            LOGGER.info(relationshipClazzAgents.toString());
             
             numberRelationshipsReport.put(relationshipClassName, relationshipClazzAgents.size()) ;
             
