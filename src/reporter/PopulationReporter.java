@@ -613,6 +613,7 @@ public class PopulationReporter extends Reporter {
     {
         ArrayList<String> propertyChangeReport = new ArrayList<String>() ;
         
+        String findPropertyName = propertyName ;
         Class[] parameterClasses = new Class[] {int.class} ;
         Object[] parameterArray = new Object[] {endCycle} ;
         ArrayList<String> changeReport = prepareChangeReport(0,0,endCycle-1,endCycle) ;
@@ -625,11 +626,11 @@ public class PopulationReporter extends Reporter {
         Collections.addAll(riskyList, new String[] {"probabilityUseCondom","prepStatus","riskyStatus"}) ;
         
         if (riskyList.contains(propertyName))
-            propertyName = "riskiness" ;
+            findPropertyName = "riskiness" ;
         
         for (String record : changeReport)
         {
-            propertyIndex = record.indexOf(propertyName) ;
+            propertyIndex = record.indexOf(findPropertyName) ;
             if (propertyIndex < 0)
             {
                 //LOGGER.info("Change report has no record of " + propertyName) ;
@@ -639,7 +640,7 @@ public class PopulationReporter extends Reporter {
             endPropertyIndex = INDEX_OF_PROPERTY("change",propertyIndex,record) ; // record.indexOf("change:",propertyIndex) ;
             if (endPropertyIndex < 0)
                 endPropertyIndex = record.indexOf("!", propertyIndex) ;
-            propertyRecord = record.substring(propertyIndex + propertyName.length() + 1, endPropertyIndex) ;
+            propertyRecord = record.substring(propertyIndex + findPropertyName.length() + 1, endPropertyIndex) ;
 //            if ("riskiness".equals(propertyName))
 //                LOGGER.info(propertyRecord);
             propertyChangeReport.add(propertyRecord) ;
@@ -741,8 +742,6 @@ public class PopulationReporter extends Reporter {
         
         ArrayList<String>  birthReport = prepareBirthReport() ;
         
-        int nbCycles = birthReport.size() ;
-        
         for (String birthRecord : birthReport)
         {
             ArrayList<String> birthArray = EXTRACT_ARRAYLIST(birthRecord,AGENTID) ;
@@ -810,22 +809,29 @@ public class PopulationReporter extends Reporter {
         for (int index = changeReport.size() - 1 ; index >= 0 ; index-- )
         {
             String changeRecord = changeReport.get(index) ;
-            
             ArrayList<String> changeAgentIds = IDENTIFY_PROPERTIES(changeRecord) ;
             //LOGGER.info(changeAgentIds.toString()) ;
             changeAgentIds.retainAll(agentIdSet) ;
             
             for (Object agentId : changeAgentIds)
             {
-                String value = EXTRACT_VALUE(agentId.toString(),changeRecord) ;
+                int agentIndex = INDEX_OF_PROPERTY(agentId.toString(),changeRecord) ;
+                int colonIndex = changeRecord.indexOf(":",agentIndex) ;
+                int nextColonIndex = changeRecord.indexOf(":",colonIndex + 1) ;
+                int spaceIndex = changeRecord.lastIndexOf(SPACE, nextColonIndex) ;
+                if (spaceIndex < 0)
+                    spaceIndex = changeRecord.length() ;
+                String value = changeRecord.substring(colonIndex + 1, spaceIndex) ;
                 
+                //LOGGER.info(value) ;
                 // Might be HashMap of values
                 if (value.startsWith("{"))
                 {
                     if (!value.contains(propertyName))
                         continue ;
-                    value.replace("=", ":") ;
+                    value = value.replace("=", ":") ;
                     value = EXTRACT_VALUE(propertyName,value) ;
+                    value = value.substring(0, value.length() - 1) ;
                 }
                 censusPropertyReport.put(agentId, value) ;
                 agentIdSet.remove(agentId) ;
