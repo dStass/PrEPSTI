@@ -23,29 +23,16 @@ import java.util.logging.Level;
 
 public class EncounterPresenter extends Presenter {
     
-    //static String[] simNames = new String[] {"seek1cPop40000Cycles5475","seek1dPop40000Cycles5475","seek1ePop40000Cycles5475",
-      //  "seek1fPop40000Cycles5475","seek1gPop40000Cycles5475","seek1hPop40000Cycles5475","seek1iPop40000Cycles5475","seek1jPop40000Cycles5475"} ;
-    //static String[] simNames = new String[] {"from2007seek54aPop40000Cycles5475","from2007seek54bPop40000Cycles5475","from2007seek54cPop40000Cycles5475","from2007seek54dPop40000Cycles5475"} ; //,"from2007seek54ePop40000Cycles5475",
-        //"from2007seek54fPop40000Cycles5475","from2007seek54gPop40000Cycles5475","from2007seek54hPop40000Cycles5475","from2007seek54iPop40000Cycles5475","from2007seek54jPop40000Cycles5475"} ;
     //static private String[] simNames = new String[] {"serosort2Pop10000Cycles2190"} ; //,"from2007symptom9gPop40000Cycles5840"} ;
     //static String[] simNames = new String[] {"newSortCasual2aPop40000Cycles730"} ; //,"seek68bPop40000Cycles1825","seek68cPop40000Cycles1825","seek68dPop40000Cycles1825"} ; //,"seek53ePop40000Cycles1825",
       //      "seek53fPop40000Cycles1825","seek53gPop40000Cycles1825","seek53hPop40000Cycles1825","seek53iPop40000Cycles1825","seek53jPop40000Cycles1825"} ;
     //static String[] simNames = new String[] {"to2017seek71aPop40000Cycles5475","to2017seek65bPop40000Cycles5475","to2017seek65cPop40000Cycles5475","to2017seek65dPop40000Cycles5475","to2017seek65ePop40000Cycles5475",
-    static String[] simNames = new String[] {"to2017seek68aaPop40000Cycles5475","to2017seek68baPop40000Cycles5475","to2017seek68daPop40000Cycles5475"} ;
-      //      "to2017seek65fPop40000Cycles5475","to2017seek65gPop40000Cycles5475","to2017seek65hPop40000Cycles5475","to2017seek65iPop40000Cycles5475","to2017seek65jPop40000Cycles5475"} ;
+    static String[] simNames ;
     
     private EncounterReporter reporter ;
     
     public static void main(String[] args)
     {
-        //String simName = "TestPop40000Cycles100" ; // Community.SIM_NAME ; // "introPrepCalibration48Pop40000Cycles7000" ; // args[0] ;
-        //String simName =  "to2014max3contact93dPop40000Cycles4380" ;
-        //String[] simNames = new String[] {"serosort2Pop10000Cycles2190"} ;
-        //String[] simNames = new String[] {"noGSNpostHolt3aPop40000Cycles5475"} ;
-        String simName = simNames[0] ; 
-        //String simName = "neutral_calibration2Pop40000Cycles4000" ;
-        //String simName = "RelationshipCalibrationPop40000Cycles200" ; // "NoPrepCalibration86Pop40000Cycles5000" ; // "introPrepCalibration48Pop40000Cycles7000" ; // args[0] ;
-        //String simName = "AllSexualContactsPop40000Cycles1200" ;
         //String chartTitle = "infections_of_PrEP_users" ; // args[1] ;
         //String chartTitle = "proportion_of_Agents_had_discordant_CLAI" ; // args[1] ;
         //String chartTitle = "condom use universal" ;
@@ -63,6 +50,18 @@ public class EncounterPresenter extends Presenter {
         LOGGER.info(chartTitle) ;
         String[] siteNames  = new String[] {"Pharynx","Rectum","Urethra"} ;
         
+        String prefix = "to2019u60gradual49" ;
+        String suffix = "Pop40000Cycles5475" ;
+        ArrayList<String> simNameList = new ArrayList<String>() ;
+        //String letter0 = "" ;
+        for (String letter0 : new String[] {"a","b","c","d","e","f","g","h","i","j"})
+            for (String letter1 : new String[] {"a","b","c","d","e"})
+                simNameList.add(prefix + letter0 + letter1 + suffix) ;
+        
+        simNames = simNameList.toArray(new String[] {}) ;
+        
+        //String simName = "AllSexualContactsPop40000Cycles1200" ;
+        String simName = simNames[0] ;
 
         EncounterPresenter encounterPresenter = new EncounterPresenter(simName,chartTitle,reportFileName) ;
         //encounterPresenter.plotYearsCondomUseReport(6,2012) ;
@@ -73,7 +72,7 @@ public class EncounterPresenter extends Presenter {
         //encounterPresenter.plotFinalIncidenceRecord(siteNames, 0, Reporter.DAYS_PER_YEAR) ;
         //encounterPresenter.plotSortedFinalIncidenceRecord(siteNames, 0, Reporter.DAYS_PER_YEAR,"statusHIV") ;
         //encounterPresenter.plotCumulativeAgentTransmissionReport() ;
-        encounterPresenter.plotIncidenceYears(siteNames, 11, 2017, "statusHIV") ;
+        encounterPresenter.plotIncidenceYears(siteNames, 13, 2019, "statusHIV") ;
         //encounterPresenter.plotNumberCondomlessYears(3, 0, 0, 2017, new String[] {"Casual","Regular","Monogomous"}) ;
         //encounterPresenter.plotNumberCondomlessReport(0, 6, 0, new String[] {"Casual","Regular","Monogomous"}) ;
         //encounterPresenter.plotPercentAgentCondomlessReport(new String[] {"Casual","Regular","Monogomous"}, 0, 6, 0, "", false) ;
