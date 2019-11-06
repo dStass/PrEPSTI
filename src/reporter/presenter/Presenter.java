@@ -113,6 +113,42 @@ public class Presenter {
         return timeString ;
     }
     
+    /**
+     * Generates a suitable label for plots involving a sorting property 
+     * such as HIV status. Assumes label has form propertyName_sortingValue .
+     * @param sortingProperty
+     * @param propertyValue
+     * @return (String) 
+     */
+    static protected String GENERATE_SORTED_LABEL(String label, String sortingProperty)
+    {
+        // Replace label only if a sortingProperty is included
+        if (sortingProperty.isEmpty())
+            return label ;
+        
+        String[] labelParts = label.split("_") ;
+        
+        // Represent value of sortingProperty
+        String valueString = labelParts[labelParts.length - 1] ;
+        if ("true".equals(valueString))
+            valueString = "positive" ;
+        else if ("false".equals(valueString))
+            valueString = "negative" ;
+        
+        // Represent name of sortingProperty
+        if (sortingProperty.endsWith("Status"))
+            sortingProperty = sortingProperty.substring(0, sortingProperty.indexOf("Status")) ;
+        else if (sortingProperty.startsWith("status"))
+            sortingProperty = sortingProperty.substring(6) ;    // "status".length() = 6
+        
+        return String.join("_", labelParts[0], sortingProperty, valueString) ;
+    }
+    
+    /**
+     * Generate a label for the y-axis from the scoreNames.
+     * @param scoreNames
+     * @return (String)
+     */
     static private String GET_Y_LABEL(String[] scoreNames)
     {
         String scoreName = "" ;
@@ -453,7 +489,7 @@ public class Presenter {
         //screeningPresenter.plotHashMap("year", siteNames, averagedHashMap) ;
         /*
         ScreeningReporter screeningReporter = 
-                //new ScreeningReporter("prevalence",community.infectionReport) ;
+                //new ScreeningReporter("prevalence",community.screeningReport) ;
                 new ScreeningReporter(simName,folder) ;
         ArrayList<Object> pharynxPrevalenceReport = screeningReporter.preparePrevalenceReport("Pharynx") ;
         LOGGER.log(Level.INFO, "{0}", pharynxPrevalenceReport.get(0));
