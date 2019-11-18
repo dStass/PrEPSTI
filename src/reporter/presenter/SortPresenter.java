@@ -214,10 +214,10 @@ public class SortPresenter extends Presenter {
      */
     public void plotAgeNumberEnteredRelationshipRecord(String[] relationshipClassNames)
     {
-        HashMap<Object,HashMap<Object,Number>> ageNumberEnteredRelationshipRecord 
+        HashMap<Object,HashMap<Comparable,Number>> ageNumberEnteredRelationshipRecord 
                 = reporter.prepareAgeNumberEnteredRelationshipRecord(relationshipClassNames) ;
         
-        HashMap<Object,Number[]> invertedHashMap 
+        HashMap<Comparable,Number[]> invertedHashMap 
                 = Reporter.INVERT_HASHMAP_ARRAY(ageNumberEnteredRelationshipRecord,relationshipClassNames) ;
         
             
