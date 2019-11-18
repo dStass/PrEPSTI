@@ -35,6 +35,7 @@ public class EncounterPresenter extends Presenter {
     {
         //String chartTitle = "infections_of_PrEP_users" ; // args[1] ;
         //String chartTitle = "proportion_of_Agents_had_discordant_CLAI" ; // args[1] ;
+        //String chartTitle = "proportion_of_Agents_had_CLAI" ; // args[1] ;
         //String chartTitle = "condom use universal" ;
         //String chartTitle = "new infections" ;
         String chartTitle = "incidence_rate (per 100 MSM)" ;
@@ -72,10 +73,11 @@ public class EncounterPresenter extends Presenter {
         //encounterPresenter.plotFinalIncidenceRecord(siteNames, 0, Reporter.DAYS_PER_YEAR) ;
         //encounterPresenter.plotSortedFinalIncidenceRecord(siteNames, 0, Reporter.DAYS_PER_YEAR,"statusHIV") ;
         //encounterPresenter.plotCumulativeAgentTransmissionReport() ;
-        encounterPresenter.plotIncidenceYears(siteNames, 13, 2019, "statusHIV") ;
+        encounterPresenter.plotIncidenceYears(siteNames, 13, 2019, "") ;
         //encounterPresenter.plotNumberCondomlessYears(3, 0, 0, 2017, new String[] {"Casual","Regular","Monogomous"}) ;
         //encounterPresenter.plotNumberCondomlessReport(0, 6, 0, new String[] {"Casual","Regular","Monogomous"}) ;
-        //encounterPresenter.plotPercentAgentCondomlessReport(new String[] {"Casual","Regular","Monogomous"}, 0, 6, 0, "", false) ;
+        //encounterPresenter.plotPercentAgentCondomlessReport(new String[] {"Casual","Regular","Monogomous"}, 0, 6, 0, "", false,"") ;
+        //encounterPresenter.plotYearsCondomUseReport(13, 2019, new String[] {PROPORTION}) ;
         //encounterPresenter.plotPercentAgentCondomlessReport(new String[] {"Casual","Regular","Monogomous"}, 0, 6, 0, "statusHIV", true) ; 
         //encounterPresenter.plotPercentAgentCondomlessYears(new String[] {"Casual","Regular","Monogomous"}, 3, 2017, "statusHIV", false, "statusHIV") ; 
         //encounterPresenter.plotNumberAgentTransmissionReport("statusHIV") ;
@@ -128,7 +130,7 @@ public class EncounterPresenter extends Presenter {
     public void plotTransmittingSites(String[] siteNames)
     {
         // HashMap to be plotted
-        HashMap<Object,Number> transmittingSites = new HashMap<Object,Number>() ;
+        HashMap<Comparable,Number> transmittingSites = new HashMap<Comparable,Number>() ;
         for (String name : siteNames)
             transmittingSites.put(name, 0) ;
 
@@ -136,7 +138,7 @@ public class EncounterPresenter extends Presenter {
         int count ;
         
         // To record whether given Site was responsible for transmission
-        ArrayList<Object> infectedStatus ;
+        ArrayList<Comparable> infectedStatus ;
         
         ArrayList<String> transmissionReport = reporter.prepareTransmissionReport() ;
         
@@ -163,7 +165,7 @@ public class EncounterPresenter extends Presenter {
     {
         // HashMap to be plotted
         // (String) key has format infectedsiteToReceivingsite
-        HashMap<Object,Number> fromSiteToSiteReport = reporter.prepareFromSiteToSiteReport(siteNames) ;
+        HashMap<Comparable,Number> fromSiteToSiteReport = reporter.prepareFromSiteToSiteReport(siteNames) ;
         LOGGER.log(Level.INFO,"{0}",fromSiteToSiteReport) ;
         plotHashMap("Site to Site","transmissions",fromSiteToSiteReport) ;        
     }
@@ -173,7 +175,7 @@ public class EncounterPresenter extends Presenter {
      */
     public void plotNumberAgentTransmissionReport()
     {
-        HashMap<Object,Number> numberAgentTransmissionReport = reporter.prepareNumberAgentTransmissionReport() ;
+        HashMap<Comparable,Number> numberAgentTransmissionReport = reporter.prepareNumberAgentTransmissionReport() ;
         
         plotSpline("Number of transmissions","No of agents",numberAgentTransmissionReport) ;
     }
@@ -184,12 +186,12 @@ public class EncounterPresenter extends Presenter {
      */
     public void plotNumberAgentTransmissionReport(String sortingProperty)
     {
-        HashMap<Object,HashMap<Object,Number>> numberAgentTransmissionReport = reporter.prepareNumberAgentTransmissionReport(sortingProperty) ;
+        HashMap<Comparable,HashMap<Comparable,Number>> numberAgentTransmissionReport = reporter.prepareNumberAgentTransmissionReport(sortingProperty) ;
         LOGGER.log(Level.INFO, "{0}", numberAgentTransmissionReport);
         
         //(HashMap) unsortedKey maps to (Number[]) values in order determined by 
         // looping through keySet.
-        HashMap<Object,Number[]> plotHashMap = prepareSortedHashMap(numberAgentTransmissionReport) ;
+        HashMap<Comparable,Number[]> plotHashMap = prepareSortedHashMap(numberAgentTransmissionReport) ;
         LOGGER.log(Level.INFO, "{0}", plotHashMap);
         
         String[] legend = new String[numberAgentTransmissionReport.keySet().size()] ;
@@ -208,7 +210,7 @@ public class EncounterPresenter extends Presenter {
      */
     public void plotCumulativeAgentTransmissionReport()
     {
-        HashMap<Object,Number> cumulativeAgentTransmissionReport = reporter.prepareCumulativeAgentTransmissionReport() ;
+        HashMap<Comparable,Number> cumulativeAgentTransmissionReport = reporter.prepareCumulativeAgentTransmissionReport() ;
         
         plotSpline("Cumulative number of transmissions","No of agents",cumulativeAgentTransmissionReport) ;
     }
@@ -277,7 +279,7 @@ public class EncounterPresenter extends Presenter {
             HashMap<Comparable,String> report = encounterReporter.prepareYearsIncidenceReport(siteNames, backYears, lastYear, sortingProperty) ;
             Reporter.CLEAR_REPORT_LIST() ; 
             reports.add((HashMap<Comparable,String>) report.clone()) ;
-            Reporter.dumpOutput(EncounterReporter.INCIDENCE,simulation,reporter.getFolderPath(),report);
+            Reporter.DUMP_OUTPUT(EncounterReporter.INCIDENCE,simulation,reporter.getFolderPath(),report);
             //LOGGER.info(report.toString());
         }
         Reporter.WRITE_CSV_DISTRIBUTION(reports, EncounterReporter.INCIDENCE, simNames[0], "output/prep/") ;
@@ -313,7 +315,7 @@ public class EncounterPresenter extends Presenter {
      */
     public void plotFinalTransmissions(String[] siteNames)
     {
-        HashMap<Object,Number> finalTransmissionsRecord = reporter.prepareFinalTransmissionsRecord(siteNames) ;
+        HashMap<Comparable,Number> finalTransmissionsRecord = reporter.prepareFinalTransmissionsRecord(siteNames) ;
             
         LOGGER.log(Level.INFO, "{0}", finalTransmissionsRecord);
         plotHashMap("Sites","prevalence",finalTransmissionsRecord) ;        
@@ -336,16 +338,16 @@ public class EncounterPresenter extends Presenter {
      */
     public void plotTransmissionsPerCycle(String siteName)
     {
-        ArrayList<Object> nbTransmissionReport = new ArrayList<Object>() ;
+        ArrayList<String> nbTransmissionReport = new ArrayList<String>() ;
         //reporter.prepareTransmissionCountReport(siteName) ;
         
-        ArrayList<ArrayList<Object>> reports = new ArrayList<ArrayList<Object>>() ;
+        ArrayList<ArrayList<String>> reports = new ArrayList<ArrayList<String>>() ;
         for (String simulation : simNames)
         {
             EncounterReporter encounterReporter = new EncounterReporter(simulation,reporter.getFolderPath()) ;
-            ArrayList<Object> transmissionReport = encounterReporter.prepareTransmissionCountReport(siteName) ;
+            ArrayList<String> transmissionReport = encounterReporter.prepareTransmissionCountReport(siteName) ;
             
-            reports.add((ArrayList<Object>) transmissionReport.clone()) ;
+            reports.add((ArrayList<String>) transmissionReport.clone()) ;
         }
         nbTransmissionReport = Reporter.AVERAGED_REPORT(reports,"transmission") ;
         
@@ -358,11 +360,11 @@ public class EncounterPresenter extends Presenter {
      */
     public void plotTransmissionsPerCycle(String[] siteNames)
     {
-        ArrayList<ArrayList<Object>> nbTransmissionsReports = new ArrayList<ArrayList<Object>>() ;
+        ArrayList<ArrayList<String>> nbTransmissionsReports = new ArrayList<ArrayList<String>>() ;
         
         for (String siteName : siteNames)
         {
-            ArrayList<ArrayList<Object>> reports = new ArrayList<ArrayList<Object>>() ;
+            ArrayList<ArrayList<String>> reports = new ArrayList<ArrayList<String>>() ;
             for (String simulation : simNames)
             {
                 EncounterReporter encounterReporter = new EncounterReporter(simulation,reporter.getFolderPath()) ;
@@ -381,14 +383,14 @@ public class EncounterPresenter extends Presenter {
      */
     public void plotCondomUse()
     {
-        ArrayList<ArrayList<Object>> condomReports = new ArrayList<ArrayList<Object>>() ;
+        ArrayList<ArrayList<String>> condomReports = new ArrayList<ArrayList<String>>() ;
         for (String simName : simNames)
         {
             EncounterReporter encounterReporter = new EncounterReporter(simName,reporter.getFolderPath()) ;
             condomReports.add(encounterReporter.prepareCondomUseReport()) ;
             //coplotNames.add("prevalence") ;
         }
-        ArrayList<Object> meanCondomReport ;
+        ArrayList<String> meanCondomReport ;
         if (simNames.length > 1)
             meanCondomReport = Reporter.AVERAGED_REPORT(condomReports, PROPORTION) ;
         else
@@ -402,11 +404,24 @@ public class EncounterPresenter extends Presenter {
      * @param backYears
      * @param lastYear 
      */
-    private void plotYearsCondomUseReport(int backYears, int lastYear) 
+    private void plotYearsCondomUseReport(int backYears, int lastYear, String[] reportProperties) 
     {
-        ArrayList<Object> yearsCondomUseReport = reporter.prepareYearsCondomUseRecord(backYears, lastYear) ;
+        ArrayList<HashMap<Comparable,String>> reports = new ArrayList<HashMap<Comparable,String>>() ;
+        HashMap<Comparable,String> hashMapReport = new HashMap<Comparable,String>() ;
+        for (String simulation : simNames)
+        {
+            EncounterReporter encounterReporter = new EncounterReporter(simulation,reporter.getFolderPath()) ;
+            ArrayList<String> report = encounterReporter.prepareYearsCondomUseRecord(backYears, lastYear) ;
+            Reporter.CLEAR_REPORT_LIST() ; 
+            hashMapReport = Reporter.ARRAY_TO_HASHMAP(report, lastYear) ;
+            reports.add((HashMap<Comparable,String>) hashMapReport.clone()) ;
+            Reporter.DUMP_OUTPUT("condomUse",simulation,reporter.getFolderPath(),report);
+        }
+        //Reporter.WRITE_CSV_DISTRIBUTION(reports, "at-risk incidence-rate", simNames[0], "output/prep/") ;
+        
+        HashMap<Comparable,String> yearsCondomUseReport = Reporter.PREPARE_MEAN_HASHMAP_REPORT(reports,"year","condomUse",simNames[0]) ;
         LOGGER.log(Level.INFO, "{0}", yearsCondomUseReport) ;
-        multiBarPlotValue(PROPORTION,yearsCondomUseReport) ;
+        plotHashMapString(yearsCondomUseReport,"","year",reportProperties) ;
     }
     
     public void plotProtection()
@@ -438,7 +453,7 @@ public class EncounterPresenter extends Presenter {
      */
     public void plotProtection(ArrayList<String> census, ArrayList<String> practices)
     {
-        ArrayList<Object> protectionReport = reporter.prepareProtectionReport(census) ;
+        ArrayList<String> protectionReport = reporter.prepareProtectionReport(census) ;
         
         multiPlotCycleValue(practices, protectionReport) ;
     }
@@ -454,8 +469,8 @@ public class EncounterPresenter extends Presenter {
         practices.add("unprotected") ;
         //LOGGER.log(Level.INFO, "{0}", practices);
         
-        ArrayList<Object> meanProtectionReport ;
-        ArrayList<ArrayList<Object>> protectionList = new ArrayList<ArrayList<Object>>() ;
+        ArrayList<String> meanProtectionReport ;
+        ArrayList<ArrayList<String>> protectionList = new ArrayList<ArrayList<String>>() ;
         
         PopulationReporter populationReporter = new PopulationReporter(applicationTitle,reporter.getFolderPath()) ;
         ArrayList<String> census = populationReporter.prepareBirthReport() ;
@@ -475,7 +490,7 @@ public class EncounterPresenter extends Presenter {
      */
     public void plotAgentToAgent()
     {
-        HashMap<Object,ArrayList<Object>> transmittingAgentsReport = reporter.prepareAgentToAgentRecord() ;
+        HashMap<Comparable,ArrayList<Comparable>> transmittingAgentsReport = reporter.prepareAgentToAgentRecord() ;
         plotHashMapScatter("infectious agent", "receiving agent", transmittingAgentsReport ) ;
     }
     
@@ -566,13 +581,13 @@ public class EncounterPresenter extends Presenter {
         HashMap<Comparable,HashMap<Object,String>> 
     numberCondomlessYears = reporter.prepareNumberCondomlessYears(relationshipClazzNames, backYears, backMonths, backDays, lastYear) ;
         
-        HashMap<Object,Number[]> yearlyReport = new HashMap<Object,Number[]>() ;
+        HashMap<Comparable,Number[]> yearlyReport = new HashMap<Comparable,Number[]>() ;
         
         String[] condomStati = new String[] {"always","not_always","no_AI"} ;
         
         String[] scoreNames = new String[3*relationshipClazzNames.length] ;
         
-        for (Object yearKey : numberCondomlessYears.keySet())
+        for (Comparable yearKey : numberCondomlessYears.keySet())
         {
             HashMap<Object,String> numberCondomlessRelationship = numberCondomlessYears.get(yearKey) ;
             Number[] scores = new Number[scoreNames.length] ;
@@ -609,11 +624,11 @@ public class EncounterPresenter extends Presenter {
      */
     public void plotAgentToAgentNetwork()
     {
-        HashMap<Object,HashMap<Object,ArrayList<Object>>> transmittingAgentsReport = reporter.prepareAgentToAgentReport() ;
-        HashMap<Object,HashMap<Object,ArrayList<Object>>> invertedTransmittingAgentsReport 
+        HashMap<Comparable,HashMap<Comparable,ArrayList<Comparable>>> transmittingAgentsReport = reporter.prepareAgentToAgentReport() ;
+        HashMap<Comparable,HashMap<Comparable,ArrayList<Comparable>>> invertedTransmittingAgentsReport 
                 = Reporter.INVERT_HASHMAP_HASHMAP(transmittingAgentsReport) ;
         
-        ArrayList<HashMap<Object,ArrayList<Object>>> plottingAgentsReport = new ArrayList<HashMap<Object,ArrayList<Object>>>() ;
+        ArrayList<HashMap<Comparable,ArrayList<Comparable>>> plottingAgentsReport = new ArrayList<HashMap<Comparable,ArrayList<Comparable>>>() ;
         for (int cycle = 0 ; cycle < invertedTransmittingAgentsReport.keySet().size() ; cycle++ )
         {
             if (invertedTransmittingAgentsReport.keySet().contains(cycle))
@@ -622,7 +637,7 @@ public class EncounterPresenter extends Presenter {
                 //LOGGER.log(Level.INFO, "{0} {1}", new Object[] {cycle,invertedTransmittingAgentsReport.get(cycle)});
             }
             else
-                plottingAgentsReport.add(new HashMap<Object,ArrayList<Object>>()) ;
+                plottingAgentsReport.add(new HashMap<Comparable,ArrayList<Comparable>>()) ;
         }
         //LOGGER.log(Level.INFO, "{0}", transmittingAgentsReport);
         plotNetwork("cycle", "agentId", plottingAgentsReport) ;    // (HashMap<Number,HashMap<Number,ArrayList<Number>>>) 
@@ -640,13 +655,13 @@ public class EncounterPresenter extends Presenter {
     public void plotReceiveSortPrepStatusReport(String value)
     {
         LOGGER.info("prepareReceiveSortPrepStatusReport");
-        HashMap<Object,HashMap<Object,ArrayList<Object>>> receiveSortPrepStatusReport 
+        HashMap<Comparable,HashMap<Comparable,ArrayList<Comparable>>> receiveSortPrepStatusReport 
                 = reporter.prepareReceiveSortPrepStatusReport(value) ;
         LOGGER.log(Level.INFO, "{0}", receiveSortPrepStatusReport);
-        HashMap<Object,HashMap<Object,ArrayList<Object>>> invertedPrepStatusReport 
+        HashMap<Comparable,HashMap<Comparable,ArrayList<Comparable>>> invertedPrepStatusReport 
                 = SortReporter.INVERT_HASHMAP_HASHMAP(receiveSortPrepStatusReport) ;
         LOGGER.info("prepareTransmissionCountReport");
-        ArrayList<ArrayList<Object>> nbTransmissionReport 
+        ArrayList<ArrayList<Comparable>> nbTransmissionReport 
                 = reporter.prepareReceiveCountReport(invertedPrepStatusReport) ;
         LOGGER.log(Level.INFO, "{0}", nbTransmissionReport);
         LOGGER.info("plotCycleValue");
