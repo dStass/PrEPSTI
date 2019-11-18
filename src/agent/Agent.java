@@ -324,7 +324,7 @@ public abstract class Agent {
         
         // Needed if rebootFile == false
         ArrayList<String> birthReport = new ArrayList<String>() ;
-        ArrayList<ArrayList<Object>> agentDeathReport = new ArrayList<ArrayList<Object>>() ;
+        ArrayList<ArrayList<Comparable>> agentDeathReport = new ArrayList<ArrayList<Comparable>>() ;
         String screeningRecord = "" ;
         if (rebootFile)
         {
@@ -332,7 +332,7 @@ public abstract class Agent {
             try
             {
                 BufferedReader fileReader = new BufferedReader(new FileReader(folderPath + rebootFileName)) ;
-                // Find last line
+                // Find Agents line in -REBOOT.txt file . Should be the first line
                 for (String record = "" ;  record != null ; record = fileReader.readLine() )
                 {
                     int agentIndex = record.indexOf(Reporter.AGENTID) ;
@@ -377,17 +377,16 @@ public abstract class Agent {
         
         ArrayList deadAgentIds = new ArrayList<Object>() ; // Get ArrayList of dead Agents so we don't waste time reading their data
         if (!rebootFile)
-            for (ArrayList<Object> agentDeathRecord : agentDeathReport)
+            for (ArrayList<Comparable> agentDeathRecord : agentDeathReport)
                 deadAgentIds.addAll(agentDeathRecord) ;
         
         // Reboot saved Agent data 
-        int birthIndex = 0 ;
+        int maxAgentId = 0 ;
         for (String birthRecord : birthReport)
         {
             ArrayList<String> birthList = Reporter.EXTRACT_ARRAYLIST(birthRecord,AGENTID) ;
             if (birthList.isEmpty()) 
                 continue ;
-            birthIndex += birthList.size() ;
             ArrayList<String> properties = Reporter.IDENTIFY_PROPERTIES(birthList.get(0).substring(0, birthList.get(0).indexOf(SITE))) ;
             
             for (String birth : birthList)
@@ -405,6 +404,8 @@ public abstract class Agent {
                     //clazz = Class.forName(className);
                     MSM newAgent = new MSM(startAge) ;
                     REBOOT_AGENT(newAgent, birth, properties) ;
+                    if (maxAgentId < newAgent.getAgentId())
+                        maxAgentId = newAgent.getAgentId() ;
                     newAgent.clearInfection();
                     agents.add(newAgent) ;
                     
@@ -536,7 +537,7 @@ public abstract class Agent {
                 }
             }
         }
-        NB_AGENTS_CREATED = birthIndex ;
+        NB_AGENTS_CREATED = maxAgentId + 1;
         
         return agents ;
     }
