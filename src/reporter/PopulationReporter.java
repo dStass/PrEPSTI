@@ -49,13 +49,13 @@ public class PopulationReporter extends Reporter {
      * 
      * @return Report showing population in each cycle.
      */
-    public ArrayList<Object> preparePopulationReport()
+    public ArrayList<String> preparePopulationReport()
     {
-        ArrayList<Object> populationReport = new ArrayList<Object>() ;
+        ArrayList<String> populationReport = new ArrayList<String>() ;
         ArrayList<Integer> countBirthReport = new ArrayList<Integer>() ;
         
-        ArrayList<ArrayList<Object>> agentBirthReport = prepareAgentBirthReport() ;
-        ArrayList<ArrayList<Object>> agentDeathReport = prepareAgentDeathReport() ;
+        ArrayList<ArrayList<Comparable>> agentBirthReport = prepareAgentBirthReport() ;
+        ArrayList<ArrayList<Comparable>> agentDeathReport = prepareAgentDeathReport() ;
         
         int reportSize = agentBirthReport.size() ;
         
@@ -64,7 +64,7 @@ public class PopulationReporter extends Reporter {
             
         for (int recordIndex = 0 ; recordIndex < reportSize; recordIndex++ )
         {
-            ArrayList<Object> birthRecordObject = agentBirthReport.get(recordIndex) ;
+            ArrayList<Comparable> birthRecordObject = agentBirthReport.get(recordIndex) ;
             ArrayList<String> birthRecord = new ArrayList<String>() ; 
             if (!birthRecordObject.isEmpty())
             {
@@ -81,7 +81,7 @@ public class PopulationReporter extends Reporter {
         int nbDeaths = 0 ;
         for (int recordIndex = 0 ; recordIndex < reportSize ; recordIndex++ )
         {
-            ArrayList<Object> deathRecord = agentDeathReport.get(recordIndex) ;
+            ArrayList<Comparable> deathRecord = agentDeathReport.get(recordIndex) ;
             nbDeaths += deathRecord.size() ;
             String record = "Population:" ;
             int currentValue = countBirthReport.get(recordIndex + 1) ;
@@ -129,7 +129,7 @@ public class PopulationReporter extends Reporter {
      * @return HashMap of sortingProperty's values to ArrayList of agentIds with
      * the appropriate sortingProperty value. 
      */
-    protected HashMap<Object,ArrayList<Object>> agentIdSorted(String sortingProperty)
+    protected HashMap<Object,ArrayList<String>> agentIdSorted(String sortingProperty)
     {
         return agentIdSorted(sortingProperty,getMaxCycles()) ;
     }
@@ -141,20 +141,20 @@ public class PopulationReporter extends Reporter {
      * @return HashMap of sortingProperty's values to ArrayList of agentIds with
      * the appropriate sortingProperty value. 
      */
-    protected HashMap<Object,ArrayList<Object>> agentIdSorted(String sortingProperty, int endCycle)
+    protected HashMap<Object,ArrayList<String>> agentIdSorted(String sortingProperty, int endCycle)
     {
-        HashMap<Object,ArrayList<Object>> sortedHashMap = new HashMap<Object,ArrayList<Object>>() ;
+        HashMap<Object,ArrayList<String>> sortedHashMap = new HashMap<Object,ArrayList<String>>() ;
         //LOGGER.info("birthReport");
         
-        HashMap<Object,String> propertyReport = prepareCensusPropertyReport(sortingProperty,endCycle) ;
-        for (Object agentId : propertyReport.keySet())
+        HashMap<String,String> propertyReport = prepareCensusPropertyReport(sortingProperty,endCycle) ;
+        for (String agentId : propertyReport.keySet())
         {
             String sortingValue = propertyReport.get(agentId) ;
             if (!sortedHashMap.containsKey(sortingValue))
-                sortedHashMap.put(sortingValue, new ArrayList<Object>()) ;
-            ArrayList<Object> agentIdList = (ArrayList<Object>) sortedHashMap.get(sortingValue).clone() ;
+                sortedHashMap.put(sortingValue, new ArrayList<String>()) ;
+            ArrayList<String> agentIdList = (ArrayList<String>) sortedHashMap.get(sortingValue).clone() ;
             agentIdList.add(agentId) ;
-            sortedHashMap.put(sortingValue, (ArrayList<Object>) agentIdList.clone()) ;
+            sortedHashMap.put(sortingValue, (ArrayList<String>) agentIdList.clone()) ;
         }
         //LOGGER.log(Level.INFO,"{0}", sortedHashMap) ;
         return sortedHashMap ;
@@ -214,12 +214,12 @@ public class PopulationReporter extends Reporter {
      * @param recordNb
      * @return List of agentIds of Agents living at recordNb.
      */
-    public ArrayList<Object> prepareAgentsAliveRecord(int recordNb)
+    public ArrayList<String> prepareAgentsAliveRecord(int recordNb)
     {
-        ArrayList<Object> agentsAliveRecord = new ArrayList<Object>() ;
+        ArrayList<String> agentsAliveRecord = new ArrayList<String>() ;
         
         int maxAgentId = getMaxAgentId() ;
-        ArrayList<Object> agentsDeadRecord = prepareAgentsDeadRecord(recordNb) ;
+        ArrayList<Comparable> agentsDeadRecord = prepareAgentsDeadRecord(recordNb) ;
         
         // Cycle through all born and keep those who haven't died.
         for (int agentAlive = 0 ; agentAlive <= maxAgentId ; agentAlive++ )
@@ -245,7 +245,7 @@ public class PopulationReporter extends Reporter {
         
         String filteredRecord ;
         
-        HashMap<Object,String> censusPropertyReport = prepareCensusPropertyReport(propertyName) ;
+        HashMap<String,String> censusPropertyReport = prepareCensusPropertyReport(propertyName) ;
         
         String agentString ;
         if (fullReport.get(0).contains(AGENTID))
@@ -310,16 +310,16 @@ public class PopulationReporter extends Reporter {
      * @param recordNb
      * @return List of agentIds of dead Agents.
      */
-    public ArrayList<Object> prepareAgentsDeadRecord(int recordNb)
+    public ArrayList<Comparable> prepareAgentsDeadRecord(int recordNb)
     {
-        ArrayList<Object> agentsDeadRecord = new ArrayList<Object>() ;
+        ArrayList<Comparable> agentsDeadRecord = new ArrayList<Comparable>() ;
         
         ArrayList<String> deathReport = prepareDeathReport() ;
         
         for (int recordIndex = 0 ; recordIndex < recordNb ; recordIndex++ )
         {
             String record = deathReport.get(recordIndex) ;
-            ArrayList<Object> deadAgentList = EXTRACT_ALL_VALUES(AGENTID, record) ;
+            ArrayList<Comparable> deadAgentList = EXTRACT_ALL_VALUES(AGENTID, record) ;
             agentsDeadRecord.addAll(deadAgentList) ;
         }
             
@@ -330,9 +330,9 @@ public class PopulationReporter extends Reporter {
      * @return ArrayList of ArrayLists of (String) agentIds of agents 'born'
      * in each cycle
      */
-    public ArrayList<ArrayList<Object>> prepareAgentBirthReport()
+    public ArrayList<ArrayList<Comparable>> prepareAgentBirthReport()
     {
-        ArrayList<ArrayList<Object>> agentBirthReport = new ArrayList<ArrayList<Object>>() ;
+        ArrayList<ArrayList<Comparable>> agentBirthReport = new ArrayList<ArrayList<Comparable>>() ;
         
         ArrayList<String> birthReport = prepareBirthReport() ;
         int startIndex ;
@@ -351,9 +351,9 @@ public class PopulationReporter extends Reporter {
      * @return ArrayList of ArrayLists of (String) ages-at-birth of agents 'born'
      * in each cycle
      */
-    public ArrayList<ArrayList<Object>> prepareAgeBirthReport()
+    public ArrayList<ArrayList<Comparable>> prepareAgeBirthReport()
     {
-        ArrayList<ArrayList<Object>> ageBirthReport = new ArrayList<ArrayList<Object>>() ;
+        ArrayList<ArrayList<Comparable>> ageBirthReport = new ArrayList<ArrayList<Comparable>>() ;
         
         ArrayList<String> birthReport = prepareBirthReport() ;
         
@@ -371,9 +371,9 @@ public class PopulationReporter extends Reporter {
      * @return ArrayList of ArrayLists of (String) agentIds of agents who died 
      * in each cycle
      */
-    public ArrayList<ArrayList<Object>> prepareAgentDeathReport()
+    public ArrayList<ArrayList<Comparable>> prepareAgentDeathReport()
     {
-        ArrayList<ArrayList<Object>> agentDeathReport = new ArrayList<ArrayList<Object>>() ;
+        ArrayList<ArrayList<Comparable>> agentDeathReport = new ArrayList<ArrayList<Comparable>>() ;
         
         ArrayList<String> deathReport = prepareDeathReport() ;
         
@@ -410,7 +410,7 @@ public class PopulationReporter extends Reporter {
         {
             ageDeathRecord = new ArrayList<Object>() ;  //.clear();
             String record = deathReport.get(reportNb) ;
-            ArrayList<Object> agentIds = EXTRACT_ALL_VALUES(AGENTID,record) ;
+            ArrayList<Comparable> agentIds = EXTRACT_ALL_VALUES(AGENTID,record) ;
             for (Object agentId : agentIds)
                 agentAgeHashMap.put(agentId, reportNb/daysInYear) ;
         }
@@ -437,9 +437,9 @@ public class PopulationReporter extends Reporter {
      * @return (HashMap) key is String.valueOf(age) and value is the number to
      * die at that age.
      */
-    public HashMap<Object,Number> prepareAgeAtDeathReport()
+    public HashMap<Comparable,Number> prepareAgeAtDeathReport()
     {
-        HashMap<Object,Number> ageAtDeathMap = new HashMap<Object,Number>() ;
+        HashMap<Comparable,Number> ageAtDeathMap = new HashMap<Comparable,Number>() ;
         
         // Contains age-at-death data
         HashMap<Object,Integer> ageDeathReport = prepareAgeDeathReport() ;
@@ -456,15 +456,15 @@ public class PopulationReporter extends Reporter {
      * cycle maps to (ArrayList) agentIds
      * @return (ArrayList) report of (ArrayList) of agentId who dies in each cycle.
      */
-    public ArrayList<ArrayList<Object>> prepareDeathsPerCycleReport()
+    public ArrayList<ArrayList<Comparable>> prepareDeathsPerCycleReport()
     {
-        ArrayList<ArrayList<Object>> deathsPerCycleReport = new ArrayList<ArrayList<Object>>() ;
+        ArrayList<ArrayList<Comparable>> deathsPerCycleReport = new ArrayList<ArrayList<Comparable>>() ;
         
         ArrayList<String> deathReport = prepareDeathReport() ;
         for (String record : deathReport)
         {
             ArrayList<String> stringArray = EXTRACT_ARRAYLIST(record,AGENTID);
-            deathsPerCycleReport.add((ArrayList<Object>) stringArray.clone()) ;
+            deathsPerCycleReport.add((ArrayList<Comparable>) stringArray.clone()) ;
         }
         return deathsPerCycleReport ;
         
@@ -485,7 +485,7 @@ public class PopulationReporter extends Reporter {
         
         for (int recordNb = startRecordNb ; recordNb < endRecordNb ; recordNb++ )
         {
-            ArrayList<Object> stringArray = EXTRACT_ALL_VALUES(AGENTID,deathReport.get(recordNb),0) ;
+            ArrayList<Comparable> stringArray = EXTRACT_ALL_VALUES(AGENTID,deathReport.get(recordNb),0) ;
             deathsDuringPeriodReport.addAll(stringArray) ;
         }
         
@@ -718,7 +718,7 @@ public class PopulationReporter extends Reporter {
     {
         HashMap<String[],Boolean> concordants = new HashMap<String[],Boolean>() ;
         
-        HashMap<Object,String> censusPropertyReport = prepareCensusPropertyReport(propertyName) ;
+        HashMap<String,String> censusPropertyReport = prepareCensusPropertyReport(propertyName) ;
         
         String status0 ;
         String status1 ;
@@ -768,9 +768,9 @@ public class PopulationReporter extends Reporter {
      * @param propertyName
      * @return (HashMap) agentId maps to (String) value of propertyName
      */
-    public HashMap<Object,String> prepareCensusPropertyReport(String propertyName)
+    public HashMap<String,String> prepareCensusPropertyReport(String propertyName)
     {
-        HashMap<Object,String> censusPropertyReport = new HashMap<Object,String>() ;
+        HashMap<String,String> censusPropertyReport = new HashMap<String,String>() ;
         
         ArrayList<String>  birthReport = prepareBirthReport() ;
         
@@ -779,7 +779,7 @@ public class PopulationReporter extends Reporter {
             ArrayList<String> birthArray = EXTRACT_ARRAYLIST(birthRecord,AGENTID) ;
             for (String birthAgent : birthArray)
             {
-                Object agentId = EXTRACT_VALUE(AGENTID,birthAgent) ;
+                String agentId = EXTRACT_VALUE(AGENTID,birthAgent) ;
                 String propertyValue = EXTRACT_VALUE(propertyName,birthAgent) ;
                 censusPropertyReport.put(agentId, propertyValue) ;
             }
@@ -793,14 +793,14 @@ public class PopulationReporter extends Reporter {
      * @param endCycle
      * @return (HashMap) agentId maps to value of propertyName at cycle endCycle.
      */
-    public HashMap<Object,String> prepareCensusPropertyReport(String propertyName, int endCycle)
+    public HashMap<String,String> prepareCensusPropertyReport(String propertyName, int endCycle)
     {
-        HashMap<Object,String> censusPropertyReport = new HashMap<Object,String>() ;
+        HashMap<String,String> censusPropertyReport = new HashMap<String,String>() ;
         
         // Census at birth
-        HashMap<Object,String>  birthReport = prepareCensusPropertyReport(propertyName) ;
-        HashSet<Object> agentIdSet = new HashSet<Object>() ;
-        Collections.addAll(agentIdSet, birthReport.keySet().toArray()) ;
+        HashMap<String,String>  birthReport = prepareCensusPropertyReport(propertyName) ;
+        HashSet<String> agentIdSet = new HashSet<String>() ;
+        Collections.addAll(agentIdSet, birthReport.keySet().toArray(new String[0])) ;
         //LOGGER.info(agentIdSet.toString());
         ArrayList<String> changeReport = prepareChangeReport(propertyName,endCycle) ;
         //LOGGER.info(changeReport.toString());
@@ -813,7 +813,7 @@ public class PopulationReporter extends Reporter {
             //LOGGER.info(changeAgentIds.toString()) ;
             changeAgentIds.retainAll(agentIdSet) ;
             
-            for (Object agentId : changeAgentIds)
+            for (String agentId : changeAgentIds)
             {
                 int agentIndex = INDEX_OF_PROPERTY(agentId.toString(),changeRecord) ;
                 int colonIndex = changeRecord.indexOf(":",agentIndex) ;
@@ -840,7 +840,7 @@ public class PopulationReporter extends Reporter {
                 break ;
         }
         
-        for (Object agentId : agentIdSet)
+        for (String agentId : agentIdSet)
             censusPropertyReport.put(agentId, birthReport.get(agentId)) ;
         
         return censusPropertyReport ;
@@ -850,7 +850,7 @@ public class PopulationReporter extends Reporter {
      * 
      * @return (HashMap) key: prepStatus, value: ArrayList of agentIds
      */
-    public HashMap<Object,ArrayList<Object>> sortPrepStatus()
+    public HashMap<Comparable,ArrayList<Comparable>> sortPrepStatus()
     {
         ArrayList<String> openingArray = new ArrayList<String>() ;
         openingArray.add(input.get(0)) ;
@@ -862,7 +862,7 @@ public class PopulationReporter extends Reporter {
      * 
      * @return (HashMap) key: prepStatus, value: ArrayList of agentIds
      */
-    public HashMap<Object,ArrayList<Object>> sortStatusHIV()
+    public HashMap<Comparable,ArrayList<Comparable>> sortStatusHIV()
     {
         return SORT_BOUNDED_STRING_ARRAY("statusHIV", 
                 new String[] {TRUE,FALSE}, AGENTID, input ) ;
