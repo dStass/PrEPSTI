@@ -87,7 +87,7 @@ public class Community {
      * (String) Name of previous simulation to reload.
      * Nothing reloaded if this is an empty string.
      */
-    static final String RELOAD_SIMULATION = "" ; // "test46aPop40000Cycles730" ; // "rebootTestPop40000Cycles730" ; // 
+    static final String RELOAD_SIMULATION = "" ; // "testPop20000Cycles365" ;
     
     static public String getFilePath()
     {
@@ -275,7 +275,7 @@ public class Community {
             String relationshipId ;
             HashMap<Object,String> commenceMap = new HashMap<Object,String>() ;
             ArrayList<String> commenceList = new ArrayList<String>() ;
-            ArrayList<Object> breakupList ;
+            ArrayList<Comparable> breakupList ;
             
             LOGGER.info("burning in Relationships") ;
             for (int burnin = 0 ; burnin < 2500 ; burnin++ ) // 20000
@@ -293,7 +293,7 @@ public class Community {
 
                 breakupString = community.clearRelationships(); // .substring(6) ;
                 breakupList = Reporter.EXTRACT_ALL_VALUES(Reporter.RELATIONSHIPID, breakupString) ;
-                for (Object breakup : breakupList)
+                for (Comparable breakup : breakupList)
                     if (commenceMap.containsKey(breakup))
                         commenceMap.remove(breakup) ;
             }
@@ -385,7 +385,12 @@ public class Community {
         {
         String[] relationshipClassNames = new String[] {"Casual","Regular","Monogomous"} ; // "Casual","Regular","Monogomous"
         
-        //RelationshipReporter relationshipReporter = new RelationshipReporter(Community.SIM_NAME,Community.FILE_PATH) ;
+//        RelationshipReporter relationshipReporter = new RelationshipReporter(Community.SIM_NAME,Community.FILE_PATH) ;
+//        LOGGER.info(relationshipReporter.prepareCumulativeRelationshipRecord(1, relationshipClassNames, 0, 6, 0).get("Casual").toString()) ;
+//        LOGGER.info(relationshipReporter.prepareCumulativeRelationshipRecord(2, relationshipClassNames, 0, 6, 0).get("Casual").toString()) ;
+//        LOGGER.info(relationshipReporter.prepareCumulativeRelationshipRecord(11, relationshipClassNames, 0, 6, 0).get("Casual").toString()) ;
+//        LOGGER.info(relationshipReporter.prepareCumulativeRelationshipRecord(51, relationshipClassNames, 0, 6, 0).get("Casual").toString()) ;
+//        LOGGER.info(relationshipReporter.prepareCumulativeRelationshipRecord(100, relationshipClassNames, 0, 6, 0).get("Casual").toString()) ;
         //HashMap<Object,HashMap<Object,Number>> relationshipReport 
           //      = relationshipReporter.prepareCumulativeRelationshipRecord(-1, relationshipClassNames, 0, 6, 0) ;
         //HashMap<Object,Number[]> plotReport = Reporter.INVERT_HASHMAP_LIST(relationshipReport, relationshipClassNames) ;
@@ -432,7 +437,7 @@ public class Community {
         String[] siteNames = new String[] {"Pharynx","Rectum","Urethra"} ;
         screeningReporter = new ScreeningReporter(SIM_NAME,FILE_PATH) ;
         //String prevalenceReports = "" ;
-        ArrayList<Object> prevalenceReport ;
+        ArrayList<String> prevalenceReport ;
         for (String siteName : siteNames)
         {
             prevalenceReport = screeningReporter.preparePrevalenceReport(siteName) ;
@@ -447,7 +452,7 @@ public class Community {
         HashMap<Comparable,String> incidenceReportPrep = new HashMap<Comparable,String>() ;
         if (DYNAMIC)
         {
-            incidenceReport = screeningReporter.prepareYearsAtRiskIncidenceReport(siteNames, 16, 2022, "statusHIV") ;
+            incidenceReport = screeningReporter.prepareYearsAtRiskIncidenceReport(siteNames, 1, 2022, "statusHIV") ;
             //incidenceReportPrep = screeningReporter.prepareYearsAtRiskIncidenceReport(siteNames, 16, 2022, "prepStatus") ;
         }
         LOGGER.info("by HIV-status " + screeningReporter.prepareFinalAtRiskIncidentsRecord(siteNames, 0,"statusHIV")) ;
@@ -479,8 +484,8 @@ public class Community {
         //populationPresenter.plotDeathsPerCycle();
         if (!incidenceReport.isEmpty())
         {
-            Reporter.dumpOutput("riskyIncidence",SIM_NAME,FILE_PATH,incidenceReport);
-            Reporter.dumpOutput("riskyIncidencePrep",SIM_NAME,FILE_PATH,incidenceReportPrep);
+            Reporter.DUMP_OUTPUT("riskyIncidence",SIM_NAME,FILE_PATH,incidenceReport);
+            //Reporter.DUMP_OUTPUT("riskyIncidencePrep",SIM_NAME,FILE_PATH,incidenceReportPrep);
         }
         }
     }
@@ -1025,6 +1030,8 @@ public class Community {
                         record += Reporter.ADD_REPORT_LABEL("treated") ;
                     }
                 }
+                else
+                    record += "clear" ;
                 record += " " ;
             }
             else if (infected)
@@ -1300,7 +1307,7 @@ public class Community {
         Reporter reporter = new Reporter(Community.RELOAD_BURNIN, Community.FILE_PATH) ;
         
         String breakupString = reporter.getMetaDatum("Relationship.BURNIN_BREAKUP") ;
-        ArrayList<Object> breakupList = Reporter.EXTRACT_ALL_VALUES(Relationship.RELATIONSHIP_ID, breakupString) ;
+        ArrayList<Comparable> breakupList = Reporter.EXTRACT_ALL_VALUES(Relationship.RELATIONSHIP_ID, breakupString) ;
         String commenceString = reporter.getMetaDatum("Relationship.BURNIN_COMMENCE") ;
         String returnString = "" ;
         
