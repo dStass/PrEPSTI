@@ -91,11 +91,11 @@ public class SortReporter extends Reporter {
      * TODO: Sort out Object vs String both here and related Methods.
      * @return HashMap of records sorted according to values.
      */
-    public HashMap<Object,HashMap<Object,ArrayList<Object>>> prepareReceiveSortPrepStatusRecord(String[] values)
+    public HashMap<Object,HashMap<Comparable,ArrayList<Comparable>>> prepareReceiveSortPrepStatusRecord(String[] values)
     {
-        HashMap<Object,ArrayList<Object>> transmissionRecord = ((EncounterReporter) unsortedReporter).prepareAgentToAgentRecord() ;
+        HashMap<Comparable,ArrayList<Comparable>> transmissionRecord = ((EncounterReporter) unsortedReporter).prepareAgentToAgentRecord() ;
         
-        HashMap<Object,ArrayList<Object>> sortingReport = ((PopulationReporter) sortingReporter).sortPrepStatus() ;
+        HashMap<Comparable,ArrayList<Comparable>> sortingReport = ((PopulationReporter) sortingReporter).sortPrepStatus() ;
         
         //String[] values = new String[] {TRUE, FALSE} ;
         
@@ -108,30 +108,30 @@ public class SortReporter extends Reporter {
      * that age. Calculated from final age of each Agent, meaning age-at-death or
      * age at end of simulation.
      */
-    public HashMap<Object,HashMap<Object,Number>> prepareAgeNumberEnteredRelationshipRecord(String[] relationshipClassNames)
+    public HashMap<Object,HashMap<Comparable,Number>> prepareAgeNumberEnteredRelationshipRecord(String[] relationshipClassNames)
     {
-        HashMap<Object,HashMap<Object,Number>> ageNumberEnteredRelationshipRecord 
-                = new HashMap<Object,HashMap<Object,Number>>() ;
+        HashMap<Object,HashMap<Comparable,Number>> ageNumberEnteredRelationshipRecord 
+                = new HashMap<Object,HashMap<Comparable,Number>>() ;
         for (String relationshipClassName : relationshipClassNames)
-            ageNumberEnteredRelationshipRecord.put(relationshipClassName, new HashMap<Object,Number>()) ;
+            ageNumberEnteredRelationshipRecord.put(relationshipClassName, new HashMap<Comparable,Number>()) ;
         
 
         // key:age value:ArrayList of new Relationships for each Agent, sums to 
         //total number of new Relationships formed by that age.
-        HashMap<Object,HashMap<Object,ArrayList<Object>>> ageEnteredRelationshipRecord 
-                = new HashMap<Object,HashMap<Object,ArrayList<Object>>>() ;
+        HashMap<Object,HashMap<Comparable,ArrayList<Comparable>>> ageEnteredRelationshipRecord 
+                = new HashMap<Object,HashMap<Comparable,ArrayList<Comparable>>>() ;
         for (String relationshipClassName : relationshipClassNames)
-            ageEnteredRelationshipRecord.put(relationshipClassName, new HashMap<Object,ArrayList<Object>>()) ;
+            ageEnteredRelationshipRecord.put(relationshipClassName, new HashMap<Comparable,ArrayList<Comparable>>()) ;
         
         //key:agentId value: Age for final record in report or at death
         HashMap<Object,Integer> sortAgeRecord = ((PopulationReporter) sortingReporter).sortAgeRecord() ;
         
         // Each record is a HashMap indicating new relationshipIds for relevant (key) Agents
-        ArrayList<HashMap<Object,HashMap<Object,ArrayList<Object>>>> agentsEnteredRelationshipReport 
+        ArrayList<HashMap<Comparable,HashMap<Comparable,ArrayList<Comparable>>>> agentsEnteredRelationshipReport 
                 = ((RelationshipReporter) unsortedReporter).prepareAgentsEnteredRelationshipReport(relationshipClassNames) ;
         
         // Find Relationships entered by Agents with given final age.
-        for (HashMap<Object,HashMap<Object,ArrayList<Object>>> enteredRelationshipRecord : agentsEnteredRelationshipReport)
+        for (HashMap<Comparable,HashMap<Comparable,ArrayList<Comparable>>> enteredRelationshipRecord : agentsEnteredRelationshipReport)
             for (Object relationshipClassName : enteredRelationshipRecord.keySet())
                 for (Object agentId : enteredRelationshipRecord.get(relationshipClassName).keySet())
                     ageEnteredRelationshipRecord.put(relationshipClassName,
@@ -139,9 +139,9 @@ public class SortReporter extends Reporter {
                                     enteredRelationshipRecord.get(relationshipClassName).get(agentId).size(),ageEnteredRelationshipRecord.get(relationshipClassName))) ; 
 
         for (Object relationshipClassName : ageEnteredRelationshipRecord.keySet())
-            for (Object ageKey : ageEnteredRelationshipRecord.get(relationshipClassName).keySet())
+            for (Comparable ageKey : ageEnteredRelationshipRecord.get(relationshipClassName).keySet())
             {
-                ArrayList<Object> ageRecord = (ArrayList<Object>) ageEnteredRelationshipRecord.get(relationshipClassName).get(ageKey) ;
+                ArrayList<Comparable> ageRecord = ageEnteredRelationshipRecord.get(relationshipClassName).get(ageKey) ;
                 //LOGGER.log(Level.INFO, "ageKey:{0} ageRecord:{1}", new Object[] {ageKey,ageRecord});
 
                 // Count Agents of final age ageKey 
@@ -195,7 +195,7 @@ public class SortReporter extends Reporter {
             referencePopulation += screenSortAgentNewPartnersReport.get(binIndex).size() ;
         
         // Report of agentIds maps to number of incidents in given time
-        HashMap<Object,Number> sortAgentIncidentReport 
+        HashMap<Comparable,Number> sortAgentIncidentReport 
                 = prepareSortAgentIncidentsReport(backYears, backMonths, backDays) ;
         // HashMap (binned) numbers of new Relationships maps to total incidence
         // of all corresponding agentIds
@@ -267,7 +267,7 @@ public class SortReporter extends Reporter {
         double referencePopulation = sortAgentConcurrencyReport.get(0).size() ;
         
         // Report of agentIds maps to number of incidents in given time
-        HashMap<Object,Number> sortAgentIncidentReport 
+        HashMap<Comparable,Number> sortAgentIncidentReport 
                 = prepareSortAgentIncidentsReport(backYears, backMonths, backDays) ; // Removed binSize=1
         // HashMap (binned) numbers of new Relationships maps to total incidence
         // of all corresponding agentIds
@@ -293,7 +293,7 @@ public class SortReporter extends Reporter {
         for (int concurrency = 0 ; concurrency < maxConcurrency ; concurrency++ )    // No zero concurrency!
             agentConcurrencyReport.add(new ArrayList<Object>()) ;
         
-        ArrayList<Object> agentsAlive = ((PopulationReporter) sortingReporter).prepareAgentsAliveRecord(recordIndex) ;
+        ArrayList<String> agentsAlive = ((PopulationReporter) sortingReporter).prepareAgentsAliveRecord(recordIndex) ;
         
         ArrayList<String> birthReport = ((PopulationReporter) sortingReporter).prepareBirthReport() ;
         for (String record : birthReport)
@@ -318,20 +318,20 @@ public class SortReporter extends Reporter {
      * @param backDays
      * @return report where agentId maps to incidents in the last backYears. backMonths and backDays
      */
-    public HashMap<Object,Number> prepareSortAgentIncidentsReport(int backYears, int backMonths, int backDays)
+    public HashMap<Comparable,Number> prepareSortAgentIncidentsReport(int backYears, int backMonths, int backDays)
     {
-        HashMap<Object,Number> agentIncidenceCount = new HashMap<Object,Number>() ;
+        HashMap<Comparable,Number> agentIncidenceCount = new HashMap<Comparable,Number>() ;
         
         
         int finalRecordNb = Integer.valueOf(sortingReporter.getMetaDatum("Community.MAX_CYCLES")) - 1 ;
         int recordIndex = finalRecordNb ;    // TODO: Generalize to arbitrary recordIndex.
         
         // transmitting agentId maps to receiving agentId maps to (ArrayList) cycle of infection
-        HashMap<Object,HashMap<Object,ArrayList<Object>>> agentToAgentReport = ((EncounterReporter) unsortedReporter).prepareAgentToAgentReport() ;
+        HashMap<Comparable,HashMap<Comparable,ArrayList<Comparable>>> agentToAgentReport = ((EncounterReporter) unsortedReporter).prepareAgentToAgentReport() ;
         // Inverts to Cycle maps to infecting agentId maps to (ArrayList) infected AgentIds
-        HashMap<Object,HashMap<Object,ArrayList<Object>>> invertedHashMap = EncounterReporter.INVERT_HASHMAP_HASHMAP(agentToAgentReport) ;
+        HashMap<Comparable,HashMap<Comparable,ArrayList<Comparable>>> invertedHashMap = EncounterReporter.INVERT_HASHMAP_HASHMAP(agentToAgentReport) ;
         
-        ArrayList<ArrayList<Object>> unsortedReport = ((EncounterReporter) unsortedReporter).prepareReceiveCountReport(invertedHashMap) ;
+        ArrayList<ArrayList<Comparable>> unsortedReport = ((EncounterReporter) unsortedReporter).prepareReceiveCountReport(invertedHashMap) ;
         
         // New partners per agentId
 
@@ -352,8 +352,8 @@ public class SortReporter extends Reporter {
         // Count new relationships for each Agent over past backYears years
         for (int cycle = 0 ; cycle < backCycles ; cycle++)
         {
-            ArrayList<Object> receivingAgentIds = unsortedReport.get(recordIndex - cycle) ;
-            for (Object agentId : receivingAgentIds)
+            ArrayList<Comparable> receivingAgentIds = unsortedReport.get(recordIndex - cycle) ;
+            for (Comparable agentId : receivingAgentIds)
                 agentIncidenceCount = INCREMENT_HASHMAP(agentId,agentIncidenceCount) ;
         }
         return agentIncidenceCount ;
@@ -469,10 +469,10 @@ public class SortReporter extends Reporter {
         int daysPerYear = 365 ;
         int daysPerMonth = 31 ;
         
-        ArrayList<ArrayList<Object>> sortingReport = ((RelationshipReporter) sortingReporter).prepareAgentCommenceReport() ;
+        ArrayList<ArrayList<Comparable>> sortingReport = ((RelationshipReporter) sortingReporter).prepareAgentCommenceReport() ;
         
         // New partners per agentId
-        HashMap<Object,Number> agentCommenceCount = new HashMap<Object,Number>() ;
+        HashMap<Comparable,Number> agentCommenceCount = new HashMap<Comparable,Number>() ;
 
         // Modify backYears if necessary so you don't go past beginning of simulation
         if (daysPerYear*backYears > recordIndex)
@@ -487,12 +487,12 @@ public class SortReporter extends Reporter {
         
         // Count new relationships for each Agent over past backYears years
         for (int cycle = 0 ; cycle < backCycles ; cycle++)
-            for (Object agentId : sortingReport.get(recordIndex-cycle))
+            for (Comparable agentId : sortingReport.get(recordIndex-cycle))
                 agentCommenceCount = INCREMENT_HASHMAP(agentId,agentCommenceCount) ;
         //LOGGER.log(Level.INFO, "{0}", agentCommenceCount);
 
         PopulationReporter populationReporter = new PopulationReporter(sortingReporter.simName,sortingReporter.getFolderPath()) ;
-        ArrayList<Object> agentsAlive = populationReporter.prepareAgentsAliveRecord(recordIndex) ;
+        ArrayList<String> agentsAlive = populationReporter.prepareAgentsAliveRecord(recordIndex) ;
         
         // Which Agents have had Array_position new Relationships in last backYears
         for (Object agentKey : agentsAlive)    
