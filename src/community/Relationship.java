@@ -12,6 +12,8 @@ import java.util.Random ;
 //import java.util.logging.Logger;
 import java.lang.reflect.*;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet ;
 import java.util.HashMap ;
 import java.util.logging.Level;
 //import java.util.logging.Level;
@@ -174,7 +176,7 @@ public class Relationship {
                 = relationshipReporter.prepareRelationshipAgentReport() ;
         
         String[] relationshipClassNames = new String[] {"Regular","Monogomous"} ; // "Casual",
-        HashMap<Object,HashMap<Object,ArrayList<Object>>> relationshipsRecord 
+        HashMap<Comparable,HashMap<Comparable,ArrayList<Comparable>>> relationshipsRecord 
                 = relationshipReporter.prepareAgentRelationshipsRecord(relationshipClassNames, 0, 0, 1) ;
         ArrayList<Object> currentRelationshipIds = new ArrayList<Object>() ;
         String[] agentIds = new String[2] ;
@@ -186,7 +188,7 @@ public class Relationship {
             for (String relationshipName : relationshipClassNames)
             {
                 Class relationshipClazz = Class.forName("community.".concat(relationshipName)) ;
-                for (ArrayList<Object> relationshipIdList : relationshipsRecord.get(relationshipName).values())
+                for (ArrayList<Comparable> relationshipIdList : relationshipsRecord.get(relationshipName).values())
                 {
                     for (Object relationshipId : relationshipIdList)
                     {
@@ -225,12 +227,12 @@ public class Relationship {
      */
     static public int REBOOT_RELATIONSHIPS(String simName, ArrayList<Agent> agents)
     {
-        int nbRelationships = 0 ;
+        NB_RELATIONSHIPS = 0 ;
         String folderPath = FOLDER_PATH ;
         
         String relationshipRecord  = "" ;
-        String relationshipId ;
-        ArrayList<Object> currentRelationshipIds = new ArrayList<Object>() ;
+        Integer relationshipId ;
+        ArrayList<Integer> currentRelationshipIds = new ArrayList<Integer>() ;
         
         String rebootFileName = simName.concat("-REBOOT.txt") ;
         //ArrayList<String> nameArray = new ArrayList<String>() ;
@@ -260,10 +262,10 @@ public class Relationship {
        
             for (String relationshipString : relationshipIdList)
             {
-                relationshipId = Reporter.EXTRACT_VALUE(Reporter.RELATIONSHIPID, relationshipString) ;
+                relationshipId = Integer.valueOf(Reporter.EXTRACT_VALUE(Reporter.RELATIONSHIPID, relationshipString)) ;
                 if (currentRelationshipIds.contains(relationshipId))
                 {
-                    LOGGER.severe(String.valueOf(relationshipId) + " found again!");
+                    LOGGER.severe(relationshipId + " found again!");
                     continue ;
                 }
                 currentRelationshipIds.add(relationshipId) ;
@@ -296,15 +298,17 @@ public class Relationship {
 
                 Relationship relationship = (Relationship) relationshipClazz.newInstance();
                 relationship.addAgents(agents.get(agentIndex0), agents.get(agentIndex1)) ;
-                nbRelationships++ ;
+                NB_RELATIONSHIPS++ ;
+                relationship.setRelationshipId(relationshipId) ;
             }
-            LOGGER.info("nbRelationships:".concat(String.valueOf(nbRelationships)));
+            LOGGER.info("nbRelationships:".concat(String.valueOf(NB_RELATIONSHIPS)));
         }
         catch ( Exception e )
         {
             LOGGER.severe(e.toString()) ;
         }
-        return nbRelationships ;
+        NB_RELATIONSHIPS_CREATED = 1 + ((Integer) Collections.max(new HashSet(currentRelationshipIds))) ;
+        return NB_RELATIONSHIPS ;
     }
     
     /**
