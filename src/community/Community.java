@@ -253,9 +253,6 @@ public class Community {
         
         if (!RELOAD_SIMULATION.isEmpty())
         {
-            boolean skipForNow = false ;
-            if (!skipForNow)
-            {
             for (Agent agent : community.agents)
             {
                 for (Relationship relationship : agent.getCurrentRelationships())
@@ -264,8 +261,6 @@ public class Community {
                         Relationship.BURNIN_COMMENCE = relationship.getRecord() + Relationship.BURNIN_COMMENCE ;
                 }
             }
-            }
-                
         }
         else if (RELOAD_BURNIN.isEmpty())
         {
@@ -622,7 +617,7 @@ public class Community {
     private String interveneCommunity(int cycle)
     {
         // When to end burn-in
-        int startCycle = 365 * 2 ;
+        int startCycle = 365 * 3 ;
         if ((cycle < startCycle))
             return "" ;
         
@@ -635,29 +630,23 @@ public class Community {
         String report = "" ;
         if (year * 365 == (cycle - startCycle))
         {
-            report += Agent.REINIT(agents, year) ;
-            //unchangedAgents = (ArrayList<Agent>) agents.clone() ;
+            //report += Agent.REINIT(agents, year) ;
+            unchangedAgents = (ArrayList<Agent>) agents.clone() ;
             //LOGGER.info(String.valueOf(year)) ;
         }
-        //else
-            //unchangedAgents.retainAll(agents) ;    // Remove dead Agents
-          //  return report ;
+        else
+            unchangedAgents.retainAll(agents) ;    // Remove dead Agents
           
-        if (2>0)
-            return report ;
         // Choose Agents to change that day
         ArrayList<Agent> changeAgents = new ArrayList<Agent>() ;
         if (unchangedAgents.size() >= AGENTS_PER_DAY)
-        {
             changeAgents = new ArrayList<Agent>(unchangedAgents.subList(0, AGENTS_PER_DAY)) ;
-            unchangedAgents.removeAll(changeAgents) ;
-        }
-        // Clean the leftovers
-        if (unchangedAgents.size() < AGENTS_PER_DAY)
+        else    // if (unchangedAgents.size() < AGENTS_PER_DAY)    // Clean the leftovers  
             changeAgents.addAll(unchangedAgents) ;
+        unchangedAgents.removeAll(changeAgents) ;
 
         // Make changes
-        report += Agent.REINIT(changeAgents, year) ;
+        report += Agent.REINIT(changeAgents, year + 1) ;
         
         //report = "parameters adjusted according to ARTB" ;  // PrEP introduced" ; // gradually" ;
 
