@@ -384,15 +384,14 @@ public class MSM extends Agent {
 
         
             record.put("probabilityUseCondom",String.valueOf(msm.scaleProbabilityUseCondom(adjustProbabilityUseCondom))) ;
-            
+            boolean currentRisky = msm.riskyStatus ;
             if (moreRisky) 
             {
-                if (msm.getRiskyStatus()) // if risky already
-                    continue ;    // we don't change it
-                msm.setRiskyStatus(RAND.nextDouble() < changeProbability) ;
+                if (!msm.getRiskyStatus()) // if risky already we don't change it
+                    msm.setRiskyStatus(RAND.nextDouble() < changeProbability) ;
                 
                 // Record changes
-                if (msm.riskyStatus)
+                if (msm.riskyStatus != currentRisky)
                     record.put("riskyStatus", String.valueOf(msm.riskyStatus)) ;
                 hivFactor = GET_HIV_RISKY_CORRELATION(msm.statusHIV) ;
                 if (msm.reinitPrepStatus(year, riskyProbability * hivFactor))
@@ -403,14 +402,14 @@ public class MSM extends Agent {
             }
             else    // riskyProbability has gone down
             {
-                if (!msm.getRiskyStatus()) // if safe already
-                    continue ;    // we don't change it
-                
-// equivalent to correct calculation: RAND > (1 - changeProbability)
-                msm.setRiskyStatus(RAND.nextDouble() < changeProbability) ; 
+                if (msm.getRiskyStatus()) // if safe already we don't change it
+                {
+                    // equivalent to correct calculation: RAND > (1 - changeProbability)
+                    msm.setRiskyStatus(RAND.nextDouble() < changeProbability) ; 
+                }
                 
                 // Record changes
-                if (!msm.riskyStatus)
+                if (msm.riskyStatus != currentRisky)
                     record.put("riskyStatus", String.valueOf(msm.riskyStatus)) ;
                 hivFactor = GET_HIV_RISKY_CORRELATION(msm.statusHIV) ;
                 if (msm.reinitPrepStatus(year, riskyProbability * hivFactor))
@@ -671,7 +670,7 @@ public class MSM extends Agent {
             if (msm.seekRelationship(relationshipClazzName))
                 seekingAgentList.add(msm) ;
         }
-        //Collections.shuffle(seekingAgentList) ;
+        //Collections.shuffle(seekingAgentList,RAND) ;
         
         return seekingAgentList ;    
     }
@@ -1126,6 +1125,8 @@ public class MSM extends Agent {
             lowerBounds = new int[] {0,1,2,11,51,100} ;
             proportions = new double[] {0.1345, 0.2301, 0.4022, 0.1761, 0.0372, 0.02} ;
             cumulative = new double[] {0.1345, 0.1345, 0.1345, 0.1345, 0.1345, 0.1345} ;
+            double offset1 = 0.15 ;
+            cumulative[1] += offset1 ;
             timeAverage = 183.0 ;
         }
         // Now loop over proportions at each cumulIndex to fill out cumulative Array.
@@ -1162,7 +1163,7 @@ public class MSM extends Agent {
         {
             // Choose in range, take 92 days in 3 months
             double lowerProb = lowerBounds[rangeIndex]/timeAverage ;
-            double upperProb = (lowerBounds[rangeIndex+1] - 1)/timeAverage ;
+            double upperProb = (lowerBounds[rangeIndex+1])/timeAverage ;
             if (upperProb <= lowerProb)    // for bins of width one, assumed to be clustered near zero
             {
                 upperProb = lowerBounds[rangeIndex+1]/timeAverage ;
