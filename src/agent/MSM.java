@@ -80,12 +80,6 @@ public class MSM extends Agent {
     /** The probability of being on antivirals, given positive HIV status */
     static double PROPORTION_ANTIVIRAL = 0.566 ;
     
-    /** 
-     * Adjusts the probability of accepting a Casual relationship.
-     * Value chosen to match the GCPS.
-     */
-    static double ADJUST_CASUAL_CONSENT = 1.0 ;
-    
     /**
      * Used to change the value of PROPORTION_ANTIVIRAL
      * @param antiViral 
@@ -245,14 +239,12 @@ public class MSM extends Agent {
                 if (msm.trustUndetectable)
                     continue ;
                 changeProbability = (trustProbability - lastProbability)/(1 - lastProbability) ;
-                msm.setChemoProphylaxis(RAND.nextDouble() < changeProbability);
             }
             else
             {
                 if (!msm.trustUndetectable)
                     continue ;
                 changeProbability = (lastProbability - trustProbability)/lastProbability ;
-                msm.setChemoProphylaxis(RAND.nextDouble() > changeProbability) ;
             }
         }
         return report ;
@@ -754,10 +746,6 @@ public class MSM extends Agent {
     private boolean discloseStatusHIV ;
     /** Whether currently taking PrEP. */
     private boolean prepStatus ;
-    /** Whether uses own PrEP or viral suppression as prophylaxis */
-    private boolean chemoProphylaxis ;
-    /** Whether uses partner's PrEP or viral suppression as prophylaxis */
-    private boolean chemoPartner ;
     /** Whether willing uses viral suppression as prophylaxis */
     private boolean trustUndetectable ;
     /** Whether trusts PrEP as prophylaxis */
@@ -1029,8 +1017,6 @@ public class MSM extends Agent {
         
         initRiskiness() ;
         
-        chemoProphylaxis = false ;
-        chemoPartner = false ;
         trustUndetectable = false ;
         trustPrep = false ;
         
@@ -1237,8 +1223,6 @@ public class MSM extends Agent {
         censusReport += Reporter.ADD_REPORT_PROPERTY("seroPosition", seroPosition) ;
         censusReport += Reporter.ADD_REPORT_PROPERTY("riskyStatus", riskyStatus) ;
         censusReport += Reporter.ADD_REPORT_PROPERTY("undetectableStatus", undetectableStatus) ;
-        censusReport += Reporter.ADD_REPORT_PROPERTY("chemoProphylaxis", chemoProphylaxis) ;
-        censusReport += Reporter.ADD_REPORT_PROPERTY("chemoPartner", chemoPartner) ;
         censusReport += Reporter.ADD_REPORT_PROPERTY("trustUndetectable", trustUndetectable) ;
         censusReport += Reporter.ADD_REPORT_PROPERTY("trustPrep", trustPrep) ;
         censusReport += Reporter.ADD_REPORT_PROPERTY("consentCasualProbability", consentCasualProbability) ;
@@ -1474,6 +1458,36 @@ public class MSM extends Agent {
     }
     
     /**
+     * Getter of seroSortRegular
+     * @return seroSortRegular (boolean) Whether MSM uses serosorting for risk-reduction in 
+     * regular relationships.
+     */
+    public boolean getSeroSortRegular()
+    {
+        return seroSortRegular ;
+    }
+
+    /**
+     * Getter of seroSortCasual
+     * @return seroSortCasual (boolean) Whether MSM uses serosorting for risk-reduction in 
+     * casual relationships.
+     */
+    public boolean getSeroSortCasual()
+    {
+        return seroSortCasual ;
+    }
+
+    /**
+     * Getter of seroSortMonogomous
+     * @return seroSortMonogomous (boolean) Whether MSM uses serosorting for risk-reduction in 
+     * monogomous relationships.
+     */
+    public boolean getSeroSortMonogomous()
+    {
+        return seroSortMonogomous ;
+    }
+
+    /**
      * Setter of seroSort, used for unit testing
      * @param sort (boolean) Whether MSM uses serosorting for risk-reduction.
      */
@@ -1571,60 +1585,6 @@ public class MSM extends Agent {
     public void setUndetectableStatus(boolean status)
     {
         undetectableStatus = status && statusHIV ;
-    }
-
-    /**
-     * Getter for chemoProphylaxis.
-     * @return (boolean) chemoProphylaxis
-     */
-    public boolean getChemoProphylaxis()
-    {
-        return chemoProphylaxis ;
-    }
-    
-    /**
-     * Allows resetting of chemoProphylaxis according to strict rules.
-     * It always equals prepStatus for the HIV negative.
-     * @param antiViral 
-     */
-    private void resetChemoProphylaxis(boolean antiViral)
-    {
-        if (statusHIV)
-        {
-            if (antiViral)
-                chemoProphylaxis = undetectableStatus ;
-        }
-        else    // HIV negative
-            chemoProphylaxis = prepStatus ;
-    }
-    
-    /**
-     * Setter of chemoProphylaxis. 
-     * Will only set it to true if statusHIV is true.
-     * @param status (boolean)
-     */
-    public void setChemoProphylaxis(boolean status)
-    {
-        chemoProphylaxis = status ;
-    }
-
-    /**
-     * Getter for chemoPartner.
-     * @return (boolean) chemoPartner.
-     */
-    public boolean getChemoPartner()
-    {
-        return chemoPartner ;
-    }
-    
-    /**
-     * Setter of chemoProphylaxis. 
-     * Will only set it to true if statusHIV is true.
-     * @param status (boolean)
-     */
-    public void setChemoPartner(boolean status)
-    {
-        chemoPartner = status ;
     }
 
     /**
@@ -1995,7 +1955,7 @@ public class MSM extends Agent {
             {
                 if (statusHIV == partner.statusHIV)
                         return false ;
-                if (partner.prepStatus)
+                if (partner.prepStatus && trustPrep)
                     return false ;
                     
                 if (partner.undetectableStatus && trustUndetectable)
@@ -2144,11 +2104,6 @@ public class MSM extends Agent {
     {
         return "" ;
     
-    }
-    
-    static public void SET_ADJUST_CASUAL_CONSENT(double adjustCasual)
-    {
-        ADJUST_CASUAL_CONSENT = adjustCasual ;
     }
     
     static public void TEST_SET_INFECT_PROBABILITY()
