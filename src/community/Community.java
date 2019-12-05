@@ -176,7 +176,12 @@ public class Community {
         if (args.length > argIndex)
         {
             LOGGER.info(args[argIndex]);
-            if (args[argIndex].equals("raijin"))
+            if (args[argIndex].equals("gaijin"))
+            {
+                FILE_PATH = "/scratch/is14/mw7704/prepsti/" + FILE_PATH ;
+                DUMP_CYCLE = 500 ;
+            }
+            else if (args[argIndex].equals("raijin"))
             {
                 FILE_PATH = "/short/is14/mw7704/prepsti/" + FILE_PATH ;
                 DUMP_CYCLE = 500 ;
