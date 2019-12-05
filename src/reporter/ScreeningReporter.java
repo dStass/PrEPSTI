@@ -938,6 +938,85 @@ public class ScreeningReporter extends Reporter {
     /**
      * 
      * @param backYears
+     * @param lastYear
+     * @param sortingProperty
+     * @return (HashMap) Year-by-year report of the number of tests per Agent per year,
+     * where the Agents are sorted according to sorting property, if given.
+     */
+    public HashMap<Comparable,HashMap<Object,Number>> prepareYearsTestingRateReport(int backYears, int lastYear, String sortingProperty)
+    {
+        HashMap<Comparable,HashMap<Object,Number>> yearsTestingRateReport = new HashMap<Comparable,HashMap<Object,Number>>() ;
+            
+            int maxCycles = getMaxCycles() ;
+            int endCycle ;
+            
+            for (int year = 0 ; year < backYears ; year++ )
+            {  
+                endCycle = maxCycles - year * DAYS_PER_YEAR ;
+                
+                yearsTestingRateReport.put(lastYear - year, prepareTestingRateReport(1,0,0,endCycle,sortingProperty)) ;
+              
+            }
+        return yearsTestingRateReport ;
+    }
+    
+    /**
+     * Finds the testing rate over the backYears years, backMonths months and backDays days
+     * leading up to day endCycle, with Agents sorted by sortingProperty. If sortingProperty 
+     * is an empty String then the Agents remain unsorted.
+     * @param backYears
+     * @param backMonths
+     * @param backDays
+     * @param endCycle
+     * @param sortingProperty
+     * @return (HashMap) where value of sortingProperty maps to (Number) of tests per Agent per year.
+     */
+    public HashMap<Object,Number> prepareTestingRateReport(int backYears, int backMonths, int backDays, int endCycle, String sortingProperty)
+    {
+        HashMap<Object,Number> testingRateReport = new HashMap<Object,Number>() ; 
+        
+        ArrayList<String> sortedAgentIds ;
+        ArrayList<Object> sortingValues = new ArrayList<Object>() ;
+        HashMap<Object,ArrayList<String>> sortedAgentReport = new HashMap<Object,ArrayList<String>>() ;
+        if (sortingProperty.isEmpty())
+            sortingValues.add("") ;
+        else
+        {
+            PopulationReporter populationReporter = new PopulationReporter(simName,getFolderPath()) ;
+            sortedAgentReport = populationReporter.agentIdSorted(sortingProperty) ;
+            sortingValues = new ArrayList<Object>(sortedAgentReport.keySet()) ;
+        }
+        
+        for (Object value : sortingValues)
+        {
+            if (sortingProperty.isEmpty())    
+                sortedAgentIds = new ArrayList<String>() ;
+            else
+                sortedAgentIds = sortedAgentReport.get(value) ;
+            
+            HashMap<Comparable,Number> numberAgentTestingReport = prepareNumberAgentTestingReport(backYears,backMonths, backDays, endCycle, sortedAgentIds) ;
+
+            Double testedAgents = 0.0 ;
+            Integer totalTests = 0 ;
+            for (Comparable nbTests : numberAgentTestingReport.keySet())        
+            {
+                totalTests += Integer.valueOf(String.valueOf(nbTests)) ;
+                testedAgents += numberAgentTestingReport.get(nbTests).intValue() ;
+            }
+
+            // per Agents per YEAR
+            Double denominator = testedAgents * GET_BACK_CYCLES(backYears, backMonths, backDays, endCycle)/DAYS_PER_YEAR ;
+
+            testingRateReport.put(value,totalTests/denominator) ;
+        }
+        
+        return testingRateReport ;
+    }
+    
+
+    /**
+     * 
+     * @param backYears
      * @param backMonths
      * @param backDays
      * @return (HashMap) Report number of tests maps to number of Agents taking 
