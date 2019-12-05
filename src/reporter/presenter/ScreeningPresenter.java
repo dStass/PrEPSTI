@@ -285,6 +285,46 @@ public class ScreeningPresenter extends Presenter {
         //plotHashMap("Year", siteAllNames, notificationsRecordYears) ;
     }
     
+    public void plotYearsTestingRateReport(int backYears, int backMonths, int backDays, int lastYear, String sortingProperty)
+    {
+        ArrayList<HashMap<Comparable,String>> reports = new ArrayList<HashMap<Comparable,String>>() ;
+        String reportOutput ;
+        String label ;
+        
+        for (String simulation : simNames)
+        {
+            ScreeningReporter screeningReporter = new ScreeningReporter(simulation,reporter.getFolderPath()) ;
+            HashMap<Comparable,HashMap<Object,Number>> numberReport = screeningReporter.prepareYearsTestingRateReport(backYears, lastYear, sortingProperty) ;
+            ArrayList<Comparable> sortedYears = new ArrayList<Comparable>(numberReport.keySet()) ; 
+            Collections.sort(sortedYears) ;
+            HashMap<Comparable,String> stringReport = new HashMap<Comparable,String>() ;
+            for (Comparable year : numberReport.keySet())
+            {
+                reportOutput = "" ;
+                HashMap<Object,Number> valueReport = numberReport.get(year) ;
+                for (Object sortingValue : valueReport.keySet())
+                {
+                    label = "test-rate" ;
+                    if (!"".equals(sortingValue))
+                        label += "__" + sortingValue.toString() ;
+                    reportOutput += Reporter.ADD_REPORT_PROPERTY(label,valueReport.get(sortingValue)) ;
+                }
+                stringReport.put(year, reportOutput) ;
+            }
+            
+            Reporter.CLEAR_REPORT_LIST() ; 
+            reports.add((HashMap<Comparable,String>) stringReport.clone()) ;
+            Reporter.DUMP_OUTPUT(GENERATE_SORTED_LABEL("test-rate",sortingProperty),simulation,reporter.getFolderPath(),stringReport);
+        }
+        
+        HashMap<Comparable,String> yearsBeenTestedReport = Reporter.PREPARE_MEAN_HASHMAP_REPORT(reports,"year","test-rate",simNames[0]) ;
+        
+        String yLabel = "Test-rate in last " + GET_TIME_PERIOD_STRING(backYears, backMonths, backDays) ;
+//        
+        plotHashMapString(yearsBeenTestedReport,yLabel,"year",new String[] {""}) ;
+    }
+    
+    
     /**
      * Plots bar chart showing incidence at each Site for each of the last backYears
      * years counting back from lastYear.
