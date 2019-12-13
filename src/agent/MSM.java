@@ -111,9 +111,13 @@ public class MSM extends Agent {
             methodName = "disclosure" ;
             REINIT_PROBABILITY_DISCLOSURE_HIV(agentList, year) ;
             
-            methodName = "riskiness" ;
+            methodName = "riskinessCasual" ;
             report += Reporter.ADD_REPORT_PROPERTY(change, methodName) ;
-            report += REINIT_RISK_ODDS(agentList, year) ;
+            report += REINIT_RISK_CASUAL(agentList, year) ;
+            
+            methodName = "riskinessRegular" ;
+            report += Reporter.ADD_REPORT_PROPERTY(change, methodName) ;
+            report += REINIT_RISK_REGULAR(agentList, year) ;
             
             methodName = "trust_undetectable" ;
             REINIT_TRUST_UNDETECTABLE(agentList, year) ;
@@ -144,8 +148,10 @@ public class MSM extends Agent {
             return report ;
         
         // years 2007 onwards
-        //double[] probabilityAntiViral = new double[] {0.532, 0.706, 0.735, 0.689, 0.706, 0.802, 0.766, 0.830, 0.818, 0.854, 0.890, 0.890, 0.890} ;
-        double[] probabilityUndetectable = new double[] {0.566, 0.647, 0.701, 0.723, 0.747, 0.816, 0.734, 0.808, 0.856, 0.847, 0.918, 0.918, 0.918} ;
+        //double[] probabilityAntiViral = new double[] {0.532, 0.706, 0.735, 0.689, 0.706, 0.802, 0.766, 0.830, 
+        // 0.818, 0.854, 0.890, 0.890, 0.890} ;
+        double[] probabilityUndetectable = new double[] {0.566, 0.647, 0.701, 0.723, 0.747, 0.816, 0.734, 0.808, 
+            0.856, 0.847, 0.918, 0.918, 0.918} ;
         // years 2007-2009
         // 0.532, 0.706, 0.735, 
         
@@ -267,9 +273,11 @@ public class MSM extends Agent {
         double oldDiscloseProbability ;
         double changeProbability ;
         //if (statusHIV)
-        double[] positiveDiscloseProbability = new double[] {0.201,0.296,0.327,0.286,0.312,0.384,0.349,0.398,0.430,0.395,0.461,0.461,0.461} ;
+        double[] positiveDiscloseProbability = new double[] {0.201,0.296,0.327,0.286,0.312,0.384,0.349,0.398,
+            0.430,0.395,0.461,0.461,0.461} ;
         //else
-        double[] negativeDiscloseProbability = new double[] {0.175,0.205,0.218,0.239,0.229,0.249,0.236,0.295,0.286,0.352,0.391,0.391,0.391} ;
+        double[] negativeDiscloseProbability = new double[] {0.175,0.205,0.218,0.239,0.229,0.249,0.236,0.295,
+            0.286,0.352,0.391,0.391,0.391} ;
         // 2007 - 2009
         if (year >= positiveDiscloseProbability.length)
             year = positiveDiscloseProbability.length - 1 ;
@@ -323,29 +331,29 @@ public class MSM extends Agent {
      * @return (String) report of changes made to MSM.probabilityUseCondom .
      * @throws java.lang.Exception (Exception)
      */
-    static protected String REINIT_RISK_ODDS(ArrayList<Agent> agentList, int year) throws Exception
+    static protected String REINIT_RISK_CASUAL(ArrayList<Agent> agentList, int year) throws Exception
     {
         String report = "" ;
         if (year == 0)
             return report ;
         // GCPS (Table 15, 2011) (Table 14, 2013) (Table 16, 2017-18)
         // Year-by-year rates of UAIC 
-        int[] newRiskyOdds = new int[] {290,293,369,345,331,340,364,350,362,409,520,566,566} ;
-        int[] newSafeOdds = new int[] {468,514,471,501,469,465,444,473,440,424,307,264,264} ;
+        int[] newRiskyCasual = new int[] {290,293,369,345,331,340,364,350,362,409,520,566,566} ;
+        int[] newSafeCasual = new int[] {468,514,471,501,469,465,444,473,440,424,307,264,264} ;
         
-        if (year >= newRiskyOdds.length)
-            year = newRiskyOdds.length - 1 ;
+        if (year >= newRiskyCasual.length)
+            year = newRiskyCasual.length - 1 ;
         // newRiskyProportions         {.38,.36,.44,.41,.41,.42,.45,.43,.45,.49,.63} ;
         // total_odds                 {758,807,840,846,800,805,808,823,802,831,827}
-        SAFE_ODDS = newSafeOdds[year] ;
-        RISKY_ODDS = newRiskyOdds[year] ;
+        SAFE_ODDS_CASUAL = newSafeCasual[year] ;
+        RISKY_ODDS_CASUAL = newRiskyCasual[year] ;
         
-        int totalOdds = SAFE_ODDS + RISKY_ODDS ;
-        int lastRisky = newRiskyOdds[year-1] ;
-        int lastSafe = newSafeOdds[year-1] ;
+        int totalOdds = SAFE_ODDS_CASUAL + RISKY_ODDS_CASUAL ;
+        int lastRisky = newRiskyCasual[year-1] ;
+        int lastSafe = newSafeCasual[year-1] ;
         int lastTotal = lastSafe + lastRisky ;
-        double riskyProbability = ((double) RISKY_ODDS)/totalOdds ;
-        double safeProbability = ((double) SAFE_ODDS)/totalOdds ;
+        double riskyProbability = ((double) RISKY_ODDS_CASUAL)/totalOdds ;
+        double safeProbability = ((double) SAFE_ODDS_CASUAL)/totalOdds ;
         double lastProbabilityRisk = ((double) lastRisky)/lastTotal ;
         double lastProbabilitySafe = ((double) lastSafe)/lastTotal ;
         double changeProbability ;
@@ -376,15 +384,15 @@ public class MSM extends Agent {
 
         
             record.put("probabilityUseCondom",String.valueOf(msm.scaleProbabilityUseCondom(adjustProbabilityUseCondom))) ;
-            boolean currentRisky = msm.riskyStatus ;
+            boolean currentRisky = msm.riskyStatusCasual ;
             if (moreRisky) 
             {
-                if (!msm.getRiskyStatus()) // if risky already we don't change it
-                    msm.setRiskyStatus(RAND.nextDouble() < changeProbability) ;
+                if (!msm.getRiskyStatusCasual()) // if risky already we don't change it
+                    msm.setRiskyStatusCasual(RAND.nextDouble() < changeProbability) ;
                 
                 // Record changes
-                if (msm.riskyStatus != currentRisky)
-                    record.put("riskyStatus", String.valueOf(msm.riskyStatus)) ;
+                if (msm.riskyStatusCasual != currentRisky)
+                    record.put("riskyStatus", String.valueOf(msm.riskyStatusCasual)) ;
                 hivFactor = GET_HIV_RISKY_CORRELATION(msm.statusHIV) ;
                 if (msm.reinitPrepStatus(year, riskyProbability * hivFactor))
                 {
@@ -394,21 +402,122 @@ public class MSM extends Agent {
             }
             else    // riskyProbability has gone down
             {
-                if (msm.getRiskyStatus()) // if safe already we don't change it
+                if (msm.getRiskyStatusCasual()) // if safe already we don't change it
                 {
                     // equivalent to correct calculation: RAND > (1 - changeProbability)
-                    msm.setRiskyStatus(RAND.nextDouble() < changeProbability) ; 
+                    msm.setRiskyStatusCasual(RAND.nextDouble() < changeProbability) ; 
                 }
                 
                 // Record changes
-                if (msm.riskyStatus != currentRisky)
-                    record.put("riskyStatus", String.valueOf(msm.riskyStatus)) ;
+                if (msm.riskyStatusCasual != currentRisky)
+                    record.put("riskyStatus", String.valueOf(msm.riskyStatusCasual)) ;
                 hivFactor = GET_HIV_RISKY_CORRELATION(msm.statusHIV) ;
                 if (msm.reinitPrepStatus(year, riskyProbability * hivFactor))
                 {
                     record.put("prepStatus", String.valueOf(msm.prepStatus)) ;
                     msm.reInitScreenCycle(screeningRatio) ;
                 }
+            }
+            report += Reporter.ADD_REPORT_PROPERTY(String.valueOf(msm.getAgentId()), record.toString()) ;
+            record.clear() ;
+        }
+        return report ;
+    }
+    
+    /**
+     * Resets the probability of Risky vs Safe behaviour according to the year.
+     * Rates taken from GCPS 2011 Table 16, 2014 Table 15, 
+     * @param agentList (ArrayList) List of Agents to undergo parameter change.
+     * @param year (int) Year of simulation, starting from zero.
+     * @return (String) report of changes made to MSM.probabilityUseCondom .
+     * @throws java.lang.Exception (Exception)
+     */
+    static protected String REINIT_RISK_REGULAR(ArrayList<Agent> agentList, int year) throws Exception
+    {
+        String report = "" ;
+        if (year == 0)
+            return report ;
+        // GCPS (Table 15, 2011) (Table 14, 2013) (Table 16, 2017-18)
+        // Year-by-year rates of UAIC 
+        int[] newRiskyRegular = new int[] {538,540,538,604,493,513,503,520,576,557,618,650,685} ;
+        int[] newSafeRegular = new int[] {300,300,300,296,279,247,257,248,239,203,157,131,108} ;
+        
+        if (year >= newRiskyRegular.length)
+            year = newRiskyRegular.length - 1 ;
+        // newRiskyProportions         {.38,.36,.44,.41,.41,.42,.45,.43,.45,.49,.63} ;
+        // total_odds                 {758,807,840,846,800,805,808,823,802,831,827}
+        SAFE_ODDS_REGULAR = newSafeRegular[year] ;
+        RISKY_ODDS_REGULAR = newRiskyRegular[year] ;
+        
+        int totalOdds = SAFE_ODDS_REGULAR + RISKY_ODDS_REGULAR ;
+        int lastRisky = newRiskyRegular[year-1] ;
+        int lastSafe = newSafeRegular[year-1] ;
+        int lastTotal = lastSafe + lastRisky ;
+        double riskyProbability = ((double) RISKY_ODDS_REGULAR)/totalOdds ;
+        double safeProbability = ((double) SAFE_ODDS_REGULAR)/totalOdds ;
+        double lastProbabilityRisk = ((double) lastRisky)/lastTotal ;
+        double lastProbabilitySafe = ((double) lastSafe)/lastTotal ;
+        double changeProbability ;
+        
+        boolean moreRisky = (lastProbabilityRisk < riskyProbability) ;
+        double adjustProbabilityUseCondom = safeProbability/lastProbabilitySafe ; // SAFE_ODDS/newSafeOdds[year-1] ;
+        //double screeningRatio = Agent.TEST_RATES[0]/Agent.TEST_RATES[year - 1] ;
+                                                                    // see comments below
+        
+        //riskyProbability *= changeProbability ;
+        //double riskyProbabilityPositive = riskyProbability ; //* HIV_RISKY_CORRELATION ;
+        //double riskyProbabilityNegative = riskyProbability ; //* (1.0 - PROPORTION_HIV * HIV_RISKY_CORRELATION)/(1.0 - PROPORTION_HIV) ;
+        double hivFactor ;
+        HashMap<String,String> record = new HashMap<String,String>() ;
+        MSM msm ;
+        for (Agent agent : agentList)
+        {
+            msm = (MSM) agent ;
+            
+            // Compensates for allowing only change in one direction.
+            if (moreRisky) 
+            {
+                hivFactor = GET_HIV_RISKY_CORRELATION(msm.statusHIV) ;
+                changeProbability = hivFactor * (riskyProbability - lastProbabilityRisk)/(1-lastProbabilityRisk * hivFactor) ;
+            }
+            else
+                changeProbability = riskyProbability/lastProbabilityRisk ; //(lastProbability - riskyProbability)/lastProbability ;
+
+        
+            record.put("probabilityUseCondomRegular",String.valueOf(msm.scaleProbabilityUseCondomRegular(adjustProbabilityUseCondom))) ;
+            boolean currentRisky = msm.riskyStatusRegular ;
+            if (moreRisky) 
+            {
+                if (!msm.getRiskyStatusRegular()) // if risky already we don't change it
+                    msm.setRiskyStatusRegular(RAND.nextDouble() < changeProbability) ;
+                
+                // Record changes
+                if (msm.riskyStatusRegular != currentRisky)
+                    record.put("riskyStatus", String.valueOf(msm.riskyStatusRegular)) ;
+                hivFactor = GET_HIV_RISKY_CORRELATION(msm.statusHIV) ;
+//                if (msm.reinitPrepStatus(year, riskyProbability * hivFactor))
+//                {
+//                    record.put("prepStatus", String.valueOf(msm.prepStatus)) ;
+//                    msm.reInitScreenCycle(1.0) ;
+//                }
+            }
+            else    // riskyProbability has gone down
+            {
+                if (msm.getRiskyStatusRegular()) // if safe already we don't change it
+                {
+                    // equivalent to correct calculation: RAND > (1 - changeProbability)
+                    msm.setRiskyStatusRegular(RAND.nextDouble() < changeProbability) ; 
+                }
+                
+                // Record changes
+                if (msm.riskyStatusRegular != currentRisky)
+                    record.put("riskyStatus", String.valueOf(msm.riskyStatusRegular)) ;
+                hivFactor = GET_HIV_RISKY_CORRELATION(msm.statusHIV) ;
+//                if (msm.reinitPrepStatus(year, riskyProbability * hivFactor))
+//                {
+//                    record.put("prepStatus", String.valueOf(msm.prepStatus)) ;
+//                    msm.reInitScreenCycle(screeningRatio) ;
+//                }
             }
             report += Reporter.ADD_REPORT_PROPERTY(String.valueOf(msm.getAgentId()), record.toString()) ;
             record.clear() ;
@@ -752,6 +861,10 @@ public class MSM extends Agent {
     private boolean trustPrep ;
     /** Whether MSM is Risky, Safe otherwise. */
     private boolean riskyStatus ;
+    /** Whether MSM is Risky within Casual Relationships, Safe otherwise. */
+    private boolean riskyStatusCasual ;
+    /** Whether MSM is Risky within Regular Relationships, Safe otherwise. */
+    private boolean riskyStatusRegular ;
     
     /** Transmission probabilities per sexual contact from Urethra to Rectum */
     static double URETHRA_TO_RECTUM = 0.85 ; 
@@ -762,7 +875,7 @@ public class MSM extends Agent {
     /** Transmission probabilities sexual contact from Rectum to Pharynx. */
     static double RECTUM_TO_PHARYNX = 0.025 ;
     /** Transmission probabilities sexual contact in Pharynx to Urethra intercourse. */
-    static double PHARYNX_TO_URETHRA = 0.015 ; 
+    static double PHARYNX_TO_URETHRA = 0.010 ; 
     /** Transmission probabilities sexual contact in Pharynx to Rectum intercourse. */
     static double PHARYNX_TO_RECTUM = 0.020 ; 
     /** Transmission probabilities sexual contact in Pharynx to Pharynx intercourse (kissing). */
@@ -968,7 +1081,19 @@ public class MSM extends Agent {
     static int TOTAL_ODDS = RISKY_ODDS + SAFE_ODDS ;
 //        int[] newSafeOdds = new int[] {468,514,471,501,469,465,444,473,440,424,307} ;
 //       int[] newRiskyOdds = new int[] {290,293,369,345,331,340,364,350,362,409,520} ;
-        
+
+        static int SAFE_ODDS_CASUAL = 468 ;
+    // Odds of an MSM being riskyMSM
+    static int RISKY_ODDS_CASUAL = 290 ;
+    // Sum of safeOdds and riskyOdds
+    static int TOTAL_ODDS_CASUAL = RISKY_ODDS_CASUAL + SAFE_ODDS_CASUAL ;
+    
+    static int SAFE_ODDS_REGULAR = 300 ;
+    // Odds of an MSM being riskyMSM
+    static int RISKY_ODDS_REGULAR = 568 ;
+    // Sum of safeOdds and riskyOdds
+    static int TOTAL_ODDS_REGULAR = RISKY_ODDS_REGULAR + SAFE_ODDS_REGULAR ;
+
 
     /** 
      * Describes correlation between statusHIV and riskyStatus.
@@ -1043,10 +1168,22 @@ public class MSM extends Agent {
         riskyProbability *= GET_HIV_RISKY_CORRELATION(statusHIV) ;
         
         probabilityUseCondom = RAND.nextDouble() ; // sampleGamma(4, 0.1, 1) ; // Gamma2 * (1 - riskyProbability) * RAND.nextDouble() ;
-        //if (probabilityUseCondom > 1)
-          //  probabilityUseCondom = 1 ;
+        
+        int totalOddsCasual = SAFE_ODDS_CASUAL + RISKY_ODDS_CASUAL ;
+        double riskyProbabilityCasual = ((double) RISKY_ODDS_CASUAL)/totalOddsCasual ;
+        riskyProbabilityCasual *= GET_HIV_RISKY_CORRELATION(statusHIV) ;
+        
+        probabilityUseCondomCasual = RAND.nextDouble() ; // sampleGamma(4, 0.1, 1) ; // Gamma2 * (1 - riskyProbability) * RAND.nextDouble() ;
+        
+        int totalOddsRegular = SAFE_ODDS_REGULAR + RISKY_ODDS_REGULAR ;
+        double riskyProbabilityRegular = ((double) RISKY_ODDS_REGULAR)/totalOddsRegular ;
+        riskyProbabilityRegular *= GET_HIV_RISKY_CORRELATION(statusHIV) ;
+        
+        probabilityUseCondomRegular = RAND.nextDouble() ; // sampleGamma(4, 0.1, 1) ; // Gamma2 * (1 - riskyProbability) * RAND.nextDouble() ;
         
         riskyStatus = (RAND.nextDouble() < riskyProbability) ;
+        riskyStatusCasual = (RAND.nextDouble() < riskyProbabilityCasual) ;
+        riskyStatusRegular = (RAND.nextDouble() < riskyProbabilityRegular) ;
         
         // Initialise PrEP status depending on adjusted riskyProbability.
         initPrepStatus(riskyProbability) ;
@@ -1222,6 +1359,8 @@ public class MSM extends Agent {
         censusReport += Reporter.ADD_REPORT_PROPERTY("seroSortMonogomous", seroSortMonogomous) ;
         censusReport += Reporter.ADD_REPORT_PROPERTY("seroPosition", seroPosition) ;
         censusReport += Reporter.ADD_REPORT_PROPERTY("riskyStatus", riskyStatus) ;
+        censusReport += Reporter.ADD_REPORT_PROPERTY("riskyStatusCasual", riskyStatusCasual) ;
+        censusReport += Reporter.ADD_REPORT_PROPERTY("riskyStatusRegular", riskyStatusRegular) ;
         censusReport += Reporter.ADD_REPORT_PROPERTY("undetectableStatus", undetectableStatus) ;
         censusReport += Reporter.ADD_REPORT_PROPERTY("trustUndetectable", trustUndetectable) ;
         censusReport += Reporter.ADD_REPORT_PROPERTY("trustPrep", trustPrep) ;
@@ -1433,6 +1572,26 @@ public class MSM extends Agent {
     public void setRiskyStatus(boolean risky)
     {
         riskyStatus = risky ;
+    }
+    
+    /**
+     * Setter for riskyStatusCasual.
+     * @param risky (boolean) new value for riskyStatusCasual.
+     */
+    @Override
+    public void setRiskyStatusCasual(boolean risky)
+    {
+        riskyStatusCasual = risky ;
+    }
+    
+    /**
+     * Setter for riskyStatusRegular.
+     * @param risky (boolean) new value for riskyStatusRegular.
+     */
+    @Override
+    public void setRiskyStatusRegular(boolean risky)
+    {
+        riskyStatusRegular = risky ;
     }
     
     /**
@@ -1658,6 +1817,26 @@ public class MSM extends Agent {
     public boolean getRiskyStatus()
     {
         return riskyStatus ;
+    }
+    
+    /**
+     * Getter for riskyStatusCasual.
+     * @return 
+     */
+    @Override
+    public boolean getRiskyStatusCasual()
+    {
+        return riskyStatusCasual ;
+    }
+    
+    /**
+     * Getter for riskyStatusRegular.
+     * @return 
+     */
+    @Override
+    public boolean getRiskyStatusRegular()
+    {
+        return riskyStatusRegular ;
     }
     
     /**
@@ -1936,8 +2115,22 @@ public class MSM extends Agent {
         //boolean testCondom = false ;
         //if (testCondom)
           //  return (RAND.nextDouble() < probabilityUseCondom ) ;
+        
+        boolean localRiskyStatus ; // = false ;
+        double localProbabilityUseCondom ;
+        if ("Casual".equals(relationshipClazzName))
+        {
+            localRiskyStatus = riskyStatusCasual ;
+            localProbabilityUseCondom = probabilityUseCondomCasual ;
+        }
+        else
+        {
+            localRiskyStatus = riskyStatusRegular ;
+            localProbabilityUseCondom = probabilityUseCondomRegular ;
+        }
+        
         MSM partner = (MSM) agentPartner ;
-        if (riskyStatus)
+        if (localRiskyStatus)
         {
             //Boolean partnerSeroPosition = partner.getSeroPosition() ;
 
@@ -1964,31 +2157,33 @@ public class MSM extends Agent {
                 if (seroPosition && partner.seroPosition)
                     return false; // (RAND.nextDouble() < probabilityUseCondom ) ;
             }
-            return (RAND.nextDouble() < probabilityUseCondom ) ;
+            return (RAND.nextDouble() < localProbabilityUseCondom ) ;
         }
         else    // if not risky
         {
             //if (2 > 0)
               //  return true ;
             if (prepStatus)
-                return (RAND.nextDouble() < probabilityUseCondom ) ;
+                return (RAND.nextDouble() < localProbabilityUseCondom ) ;
             
             if (partner.discloseStatusHIV || discloseStatusHIV)
             {
                 if (statusHIV == partner.statusHIV) 
-                    return (RAND.nextDouble() < probabilityUseCondom ) ;
+                    return (RAND.nextDouble() < localProbabilityUseCondom ) ;
                 else if (partner.statusHIV)
                 {
                     if ((!partner.undetectableStatus) || (!trustUndetectable))
                         return true ;
                 }
+                else if (undetectableStatus && trustUndetectable)
+                    return (RAND.nextDouble() < localProbabilityUseCondom ) ;  
                 else if ((!partner.prepStatus) || (!trustPrep))    // partner HIV negative
                     return true ;
             }
             else
                 return true ;
             
-            return (RAND.nextDouble() < probabilityUseCondom ) ;  //TODO: Should there be subset who always use?
+            return (RAND.nextDouble() < localProbabilityUseCondom ) ;  //TODO: Should there be subset who always use?
         }
     }
     
@@ -2009,7 +2204,8 @@ public class MSM extends Agent {
     @Override
     public double getJoinGroupSexEventProbability()
     {
-        if (riskyStatus)
+        riskyStatusCasual = riskyStatus ;
+        if (riskyStatusCasual)
             return 1.0/(3 * 184) ; // RiskyMSM.JOIN_GSE_PROBABILITY ;
         return 0.0 ; // SafeMSM.JOIN_GSE_PROBABILITY ;
     }
