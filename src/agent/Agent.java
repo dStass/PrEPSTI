@@ -252,6 +252,12 @@ public abstract class Agent {
     /** probability of using condom even when apparently safe (PrEP, TasP, etc) */
     protected double probabilityUseCondom = RAND.nextDouble() ;
     
+    /** probability of using condom even when apparently safe (PrEP, TasP, etc) */
+    protected double probabilityUseCondomCasual = RAND.nextDouble() ;
+    
+    /** probability of using condom even when apparently safe (PrEP, TasP, etc) */
+    protected double probabilityUseCondomRegular = RAND.nextDouble() ;
+    
     /** Does the Agent use a GeoSpatial Network (eg Grindr) */
     protected boolean useGSN = false ;
 
@@ -850,10 +856,36 @@ public abstract class Agent {
     abstract public boolean getRiskyStatus() ;
     
     /**
+     * Getter for riskyStatusCasual
+     * @return riskyStatusCasual (boolean) whether the Agent practices risky behaviour 
+     * regarding condom use within Casual Relationships.
+     */
+    abstract public boolean getRiskyStatusCasual() ;
+    
+    /**
+     * Getter for riskyStatusRegular
+     * @return riskyStatusRegular (boolean) whether the Agent practices risky behaviour 
+     * regarding condom use within Regular Relationships.
+     */
+    abstract public boolean getRiskyStatusRegular() ;
+    
+    /**
      * Setter for riskyStatus.
      * @param risky (boolean) new value for riskyStatus.
      */
     abstract public void setRiskyStatus(boolean risky) ;
+    
+    /**
+     * Setter for riskyStatusCasual.
+     * @param risky (boolean) new value for riskyStatusCasual.
+     */
+    abstract public void setRiskyStatusCasual(boolean risky) ;
+    
+    /**
+     * Setter for riskyStatusRegular.
+     * @param risky (boolean) new value for riskyStatusRegular.
+     */
+    abstract public void setRiskyStatusRegular(boolean risky) ;
     
     /**
      * Randomly choose the agent's probability of cheating on a Monogomous spouse.
@@ -896,6 +928,8 @@ public abstract class Agent {
         censusReport += Reporter.ADD_REPORT_PROPERTY("concurrency",concurrency) ;
         censusReport += Reporter.ADD_REPORT_PROPERTY("infidelity",infidelity) ;
         censusReport += Reporter.ADD_REPORT_PROPERTY("probabilityUseCondom",probabilityUseCondom) ;
+        censusReport += Reporter.ADD_REPORT_PROPERTY("probabilityUseCondomCasual",probabilityUseCondomCasual) ;
+        censusReport += Reporter.ADD_REPORT_PROPERTY("probabilityUseCondomRegular",probabilityUseCondomRegular) ;
         censusReport += Reporter.ADD_REPORT_PROPERTY("screenCycle",getScreenCycle()) ;
         censusReport += Reporter.ADD_REPORT_PROPERTY("screenTime",screenTime) ;
         
@@ -1015,6 +1049,22 @@ public abstract class Agent {
     }
     
     /**
+     * Randomly scales down probabilityUseCondom to reflect behavioural trends
+     */
+    public void adjustProbabilityUseCondomCasual()
+    {
+        probabilityUseCondomCasual *= RAND.nextDouble() ;
+    }
+    
+    /**
+     * Randomly scales down probabilityUseCondom to reflect behavioural trends
+     */
+    public void adjustProbabilityUseCondomRegular()
+    {
+        probabilityUseCondomRegular *= RAND.nextDouble() ;
+    }
+    
+    /**
      * Called to adjust condom use to reflect behavioural trends.
      * @param parameter (double) Factor between zero and one for scaling down
      * the probability of using a condom.
@@ -1061,6 +1111,28 @@ public abstract class Agent {
     {
         probabilityUseCondom *= scale ;
         return probabilityUseCondom ;
+    }
+    
+    /**
+     *
+     * Rescales the probability of using a condom in a Casual Relationship by factor scale
+     * @param scale
+     */
+    public double scaleProbabilityUseCondomCasual(double scale) 
+    {
+        probabilityUseCondomCasual *= scale ;
+        return probabilityUseCondomCasual ;
+    }
+    
+    /**
+     *
+     * Rescales the probability of using a condom by factor scale
+     * @param scale
+     */
+    public double scaleProbabilityUseCondomRegular(double scale) 
+    {
+        probabilityUseCondomRegular *= scale ;
+        return probabilityUseCondomRegular ;
     }
     
     /**
