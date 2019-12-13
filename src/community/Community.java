@@ -70,7 +70,7 @@ public class Community {
     //static public String FILE_PATH = "/short/is14/mw7704/prepsti/output/year2007/" ;
     
     /** Whether parameters change throughout simulation. */
-    static boolean DYNAMIC = true ;
+    static boolean DYNAMIC = false ;
     
     /** Dump reports to disk after this many cycles. */
     static int DUMP_CYCLE = 250 ; // ((int) Math.pow(10, 7))/POPULATION ;
@@ -176,7 +176,7 @@ public class Community {
         if (args.length > argIndex)
         {
             LOGGER.info(args[argIndex]);
-            if (args[argIndex].equals("gaijin"))
+            if (args[argIndex].equals("gadi"))
             {
                 FILE_PATH = "/scratch/is14/mw7704/prepsti/" + FILE_PATH ;
                 DUMP_CYCLE = 500 ;
