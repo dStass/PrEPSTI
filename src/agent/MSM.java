@@ -383,7 +383,7 @@ public class MSM extends Agent {
                 changeProbability = riskyProbability/lastProbabilityRisk ; //(lastProbability - riskyProbability)/lastProbability ;
 
         
-            record.put("probabilityUseCondom",String.valueOf(msm.scaleProbabilityUseCondom(adjustProbabilityUseCondom))) ;
+            record.put("probabilityUseCondomCasual",String.valueOf(msm.scaleProbabilityUseCondomCasual(adjustProbabilityUseCondom))) ;
             boolean currentRisky = msm.riskyStatusCasual ;
             if (moreRisky) 
             {
@@ -2104,7 +2104,7 @@ public class MSM extends Agent {
     
     /**
      * Decides probabilistically whether MSM chooses to use a condom in a given encounter.
-     * RiskyMSM choose use strategies other than condoms
+     * Risky MSM are more likely to use strategies other than condoms.
      * @param relationshipClazzName
      * @param agentPartner
      * @return true if condom is to be used, false otherwise
@@ -2128,7 +2128,7 @@ public class MSM extends Agent {
             localRiskyStatus = riskyStatusRegular ;
             localProbabilityUseCondom = probabilityUseCondomRegular ;
         }
-        
+        //localProbabilityUseCondom *= 3 ;
         MSM partner = (MSM) agentPartner ;
         if (localRiskyStatus)
         {
