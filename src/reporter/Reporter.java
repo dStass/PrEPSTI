@@ -78,6 +78,8 @@ public class Reporter {
     static public String CLEAR = "clear" ;
     /** static String representation of ','. */
     static public String COMMA = "," ;
+    /** static String representation of '.csv'. */
+    static public String CSV = ".csv" ;
     /** static String representation of 'agentId'. */
     static public String AGENTID = "agentId" ;
     /** static String representation of 'agentId0'. */
@@ -1854,7 +1856,7 @@ public class Reporter {
                 int paramIndex = fileLine.indexOf("{",10) ;
                 if (paramIndex < 0)
                     paramIndex = 0 ;
-                int paramIndex2 = fileLine.indexOf("}", paramIndex + 1) ;
+                
                 int keyIndex = fileLine.indexOf("=",paramIndex) ;
                 int spaceIndex = paramIndex ;
                 int keyIndex2 ;
@@ -1922,6 +1924,160 @@ public class Reporter {
         
         return true ;
         
+    }
+    
+    /**
+     * Sums residuals between the simulations given by simNames and the data in file
+     * referenceFileName and sorts simNames accordingly.
+     * Assumes that categoryName heads the first column.
+     * @param simNames
+     * @param categoryName
+     * @param scoreName
+     * @param reportName
+     * @param referenceFileName
+     * @param folderPath
+     * @return 
+     */
+    static public ArrayList<String> CLOSEST_SIMULATIONS(ArrayList<String> simNames, String categoryName, String scoreName, String reportName, String referenceFileName, String folderPath)
+    {
+        ArrayList<String> sortedSimNames = new ArrayList<String>() ;
+        
+        HashMap<Double,ArrayList<String>> comparisonReport = new HashMap<Double,ArrayList<String>>() ;
+        
+        // Read in data to compare against
+        HashMap<Comparable,String[]> referenceReport = READ_CSV_STRING(referenceFileName, folderPath) ;
+        ArrayList<String> scoreNames = (ArrayList<String>) Arrays.asList(referenceReport.get(categoryName)) ;
+        int scoreIndex = scoreNames.indexOf(scoreName) ;
+        String[] referenceValues ;
+        Double referenceValue ;
+        
+        String simulationName ;
+        for (int simIndex = simNames.size() - 1 ; simIndex > -1 ; simIndex-- )
+        {
+            simulationName = simNames.get(simIndex) ;
+            try
+            {
+                BufferedReader fileReader 
+                    = new BufferedReader(new FileReader(folderPath + reportName + "_" + simulationName + ".txt")) ;
+                
+                // Read input file of simulationName
+                String fileLine = "" ; // fileReader.readLine() ;
+                String fileLine2 = fileReader.readLine() ;
+                //fileLine2 = fileReader.readLine() ;
+                while (fileLine2 != null)
+                {
+                    fileLine = fileLine2 ;
+                    fileLine2 = fileReader.readLine() ;
+                }
+                LOGGER.info(fileLine);
+                fileReader.close() ;
+                
+                Double scoreValue ;
+                Double residualSum = 0.0 ;
+
+                //ArrayList<String> keyValues = new ArrayList<String>() ;
+                int paramIndex = fileLine.indexOf("{",10) ;
+                if (paramIndex < 0)
+                    paramIndex = 0 ;
+                
+                int keyIndex = fileLine.indexOf("=",paramIndex) ;
+                int spaceIndex = paramIndex ;
+                int keyIndex2 ;
+                
+                //while (fileLine != null)
+                while (keyIndex < fileLine.length())
+                {
+                    String categoryValue = fileLine.substring(spaceIndex + 1, keyIndex) ;
+                    keyIndex2 = fileLine.indexOf("=",keyIndex + 1) ;
+                    if (keyIndex2 < 0)
+                        keyIndex2 = fileLine.length() ;
+                    String scoreString = fileLine.substring(keyIndex, keyIndex2) ;
+                    
+                    keyIndex = keyIndex2 ;
+                    
+                    scoreValue = Double.valueOf(EXTRACT_VALUE(scoreName,scoreString)) ;
+                    //LOGGER.log(Level.INFO, "year:{0} score:{1}", new Object[] {categoryValue,scoreString});
+                    
+
+                    // Select SPACE immediately before "="
+                    spaceIndex = fileLine.lastIndexOf(SPACE, keyIndex) ;
+                    // Initialise fileLine for Each categoryValue with "categoryValue"
+
+                    referenceValues = referenceReport.get(categoryValue) ;
+                    if (referenceValues.length <= scoreIndex)
+                        continue ;
+                    
+                    referenceValue = Double.valueOf(referenceValues[scoreIndex]) ;
+                    residualSum += Math.pow(referenceValue - scoreValue, 2) ;
+                }
+                if (!comparisonReport.containsKey(residualSum))
+                    comparisonReport.put(residualSum,new ArrayList<String>()) ;
+                comparisonReport.get(residualSum).add(simulationName) ;
+                LOGGER.info(comparisonReport.toString()) ;
+            }
+            catch ( Exception e )
+            {
+                LOGGER.info(e.toString());
+                simNames.remove(simIndex) ;
+            }
+
+        }
+        
+        // Sort keySet to get simNames in order of lowest sum-of-squares
+        ArrayList<Double> sortedResidualSums = new ArrayList<Double>(comparisonReport.keySet()) ;
+        Collections.sort(sortedResidualSums) ;
+        
+        for (Double residual : sortedResidualSums)
+            for (String simName : comparisonReport.get(residual))
+                sortedSimNames.add(simName) ;
+        
+        LOGGER.info(sortedSimNames.toString()) ;
+        
+        return sortedSimNames ;
+        
+    }
+    
+    /**
+     * Read .csv file and return its contents as a HashMap where String maps to 
+     * String[] .
+     * @param fileName
+     * @param folderPath
+     * @return 
+     */
+    static protected HashMap<Comparable,String[]> READ_CSV_STRING(String fileName, String folderPath)
+    {
+        HashMap<Comparable,String[]> report = new HashMap<Comparable,String[]>() ;
+        
+        String key ;
+        
+        try
+        {
+            BufferedReader fileReader 
+                    = new BufferedReader(new FileReader(folderPath + fileName + CSV)) ;
+            
+            // Find last line
+            String record = fileReader.readLine() ;  
+            
+            while ((record != null) && (!record.isEmpty()))
+            {
+                LOGGER.info(record);
+                String[] recordArray = record.split(COMMA) ;
+                key = recordArray[0] ;
+                if (recordArray.length > 1)
+                    report.put(key, (String[]) Arrays.asList(recordArray).subList(1, recordArray.length).toArray().clone()) ;
+                else
+                    report.put(key, new String[0]) ;
+
+                record = fileReader.readLine() ;
+            }
+            fileReader.close() ;
+        }
+        catch ( Exception e )
+        {
+            LOGGER.info(e.toString());
+        }
+     
+        return report ;
     }
     
     /**
@@ -2053,10 +2209,10 @@ public class Reporter {
                     reportValues.set(0, year.toString()) ;
                 }
                 for (int propertyIndex = 0 ; propertyIndex < properties.size() ; propertyIndex++ )
-                    {
-                        int recordIndex = reportIndex + propertyIndex * reportList.size() + 1 ;
-                        reportValues.set(recordIndex,EXTRACT_VALUE(properties.get(propertyIndex),yearlyOutput)) ;
-                    }
+                {
+                    int recordIndex = reportIndex + propertyIndex * reportList.size() + 1 ;
+                    reportValues.set(recordIndex,EXTRACT_VALUE(properties.get(propertyIndex),yearlyOutput)) ;
+                }
 
                 distribution.put(year, ((ArrayList<String>) reportValues.clone())) ;
             }
@@ -2725,13 +2881,13 @@ public class Reporter {
         //String[] simNames = new String[] {"from2007seek27aPop40000Cycles5475","from2007seek27bPop40000Cycles5475","from2007seek27cPop40000Cycles5475","from2007seek27dPop40000Cycles5475","from2007seek27ePop40000Cycles5475",
         //"from2007seek27fPop40000Cycles5475","from2007seek27gPop40000Cycles5475","from2007seek27hPop40000Cycles5475","from2007seek27iPop40000Cycles5475","from2007seek27jPop40000Cycles5475"} ;
     
-        String prefix = "to2019u60gradual49" ;
-        //String prefix = "to2017gradNoPrep17" ;
-        String suffix = "Pop40000Cycles5475" ;
+        String prefix = "to2019regularRisk39" ;
+        //String prefix = "to2019prepFreezeRisk49" ;
+        String suffix = "Pop40000Cycles6570" ;
         ArrayList<String> simNameList = new ArrayList<String>() ;
         //String letter0 = "" ;
         for (String letter0 : new String[] {"a","b","c","d","e","f","g","h","i","j"})
-            for (String letter1 : new String[] {"a","b","c","d","e"})
+            for (String letter1: new String[] {"a","b","c","d","e"})
                 simNameList.add(prefix + letter0 + letter1 + suffix) ;
         
         String[] simNames = simNameList.toArray(new String[] {}) ;
@@ -2741,7 +2897,7 @@ public class Reporter {
         //String[] simNames = new String[] {"newSortRisk12aPop40000Cycles1825"} ;
         //String[] simNames = new String[] {"newSortRisk12aPop40000Cycles730","newSortRisk11aPop40000Cycles730","newSortRisk10aPop40000Cycles730","newSortRisk9aPop40000Cycles730","newSortRisk8aPop40000Cycles730"} ;
         //MULTI_WRITE_CSV(simNameList, "condomUse", folderPath) ; // "C:\\Users\\MichaelWalker\\OneDrive - UNSW\\gonorrhoeaPrEP\\simulator\\PrEPSTI\\output\\prep\\") ; // 
-        MULTI_WRITE_CSV(simNameList, "year", "proportion__true", "testing_HIV", folderPath) ; // "C:\\Users\\MichaelWalker\\OneDrive - UNSW\\gonorrhoeaPrEP\\simulator\\PrEPSTI\\output\\prep\\") ; // 
+        MULTI_WRITE_CSV(simNameList, "year", "Pharynx_true", "riskyIncidence_HIV", folderPath) ; // "C:\\Users\\MichaelWalker\\OneDrive - UNSW\\gonorrhoeaPrEP\\simulator\\PrEPSTI\\output\\prep\\") ; // 
         
         //PREPARE_GRAY_REPORT(simNames,folderPath,2007,2017) ;
     }
