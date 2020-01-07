@@ -81,8 +81,9 @@ public class ScreeningPresenter extends Presenter {
     
     public static void main(String[] args)
     {
-        String prefix = "to2019u60gradual49" ;
-        String suffix = "Pop40000Cycles5475" ;
+        String prefix = "to2019regularRisk39" ;
+        //String prefix = "to2019prepFreezeRisk49" ;
+        String suffix = "Pop40000Cycles6570" ;
         ArrayList<String> simNameList = new ArrayList<String>() ;
         //String letter0 = "" ;
         for (String letter0 : new String[] {"a","b","c","d","e","f","g","h","i","j"})
@@ -96,16 +97,14 @@ public class ScreeningPresenter extends Presenter {
         //String simName = "to2017newSort17aaPop40000Cycles5110" ;
         //String simName = "to2012max3sameScreen34cPop40000Cycles4380" ;
         //String simName = "to2014agentAdjust29aPop40000Cycles4920" ;
-        //String simName = "newSortRisk15aPop40000Cycles730" ;
+        //String simName = "regularRisk32aaPop40000Cycles3285" ;
         String simName = simNames[0] ;
         
         boolean unique = false ;
-        int notifications = -1 ; 
-        String chartTitle ;
+        int notifications = 1 ; 
+        String chartTitle = "" ;
         if (unique && (notifications == 1))
             chartTitle = "unique " ;
-        else
-            chartTitle = "" ;
         if (notifications == 0)
         {
             chartTitle += "notification-rate" ;
@@ -116,9 +115,9 @@ public class ScreeningPresenter extends Presenter {
         else
         {
             //chartTitle += "screening rate"
-            chartTitle += "testing rate"
+            //chartTitle += "testing rate"
             //chartTitle += "mean_prevalence" 
-            //chartTitle += "multi-site prevalence" 
+            chartTitle += "multi-site prevalence" 
             //chartTitle += "multi-site symptomatic"
         
         + "" ;
@@ -161,8 +160,8 @@ public class ScreeningPresenter extends Presenter {
         //screeningPresenter.multiPlotScreening(new Object[] {"prevalence","prevalence",new String[] {"Pharynx","Rectum","Urethra"}});
         //screeningPresenter.plotIncidencePerCycle(siteNames) ;
         //screeningPresenter.plotFinalAtRiskIncidentsRecord(siteNames,0,"prepStatus") ;
-        //screeningPresenter.plotYearsAtRiskIncidenceReport(siteNames, 13, 2019, "prepStatus") ;
-        screeningPresenter.plotYearsBeenTestedReport(13, 0, 0, 2019, "statusHIV") ;
+        screeningPresenter.plotYearsAtRiskIncidenceReport(siteNames, 13, 2019, "statusHIV") ;
+        //screeningPresenter.plotYearsBeenTestedReport(13, 0, 0, 2019, "statusHIV") ;
         //screeningPresenter.plotNotificationsPerCycle(siteNames) ;
         //screeningPresenter.plotSitePrevalence(siteNames) ;
         //screeningPresenter.plotSiteSymptomPrevalence(siteNames) ;
@@ -819,14 +818,27 @@ public class ScreeningPresenter extends Presenter {
         multiPlotValues(atRiskIncidentsRecord,INCIDENCE,"Site") ;
     }
     
+    /**
+     * Generates a year-by-year plot of incidence-at-risk over backYears years up until 
+     * the year lastYear. If a sortingProperty is given then the plots are sorted according 
+     * to the values of sortingProperty.
+     * @param siteNames
+     * @param backYears
+     * @param lastYear
+     * @param sortingProperty 
+     */
     public void plotYearsAtRiskIncidenceReport(String[] siteNames, int backYears, int lastYear, String sortingProperty)
     {
         HashMap<Comparable,String> atRiskIncidenceReport ;
                // = reporter.prepareYearsAtRiskIncidenceReport(siteNames, backYears, lastYear, sortingProperty) ;
         ArrayList<HashMap<Comparable,String>> reports = new ArrayList<HashMap<Comparable,String>>() ;
+        String reportName = "riskyIncidence" ;
+        if (!sortingProperty.isEmpty())
+            reportName += "_" + sortingProperty ;
         
         for (String simulation : simNames)
         {
+            LOGGER.info(simulation);
             ScreeningReporter screeningReporter = new ScreeningReporter(simulation,reporter.getFolderPath()) ;
             HashMap<Comparable,String> report = screeningReporter.prepareYearsAtRiskIncidenceReport(siteNames, backYears, lastYear, sortingProperty) ;
             Reporter.CLEAR_REPORT_LIST() ; 
@@ -843,7 +855,7 @@ public class ScreeningPresenter extends Presenter {
             String property = legend[legendIndex] ;
             ArrayList<String> simNameList = new ArrayList<String>() ;
             Collections.addAll(simNameList, simNames) ;
-            Reporter.MULTI_WRITE_CSV(simNameList, "year", property, "riskyIncidence", reporter.getFolderPath()) ;
+            Reporter.MULTI_WRITE_CSV(simNameList, "year", property, reportName, reporter.getFolderPath()) ;
         }
         plotHashMapString(atRiskIncidenceReport,INCIDENCE,"year", legend) ;
     }
