@@ -47,9 +47,9 @@ public class Relationship {
      +  "output/test/" ;
     // +  "output/prePrEP/" ;
     
-    /** Random number generator. */
     /** Generate and record Random number seed. */
     static long RANDOM_SEED = System.nanoTime() ;
+    /** Random number generator. */
     static Random RAND = new Random(RANDOM_SEED) ;
     
     static public void SET_RAND(long seed)
@@ -58,11 +58,22 @@ public class Relationship {
         RAND = new Random(RANDOM_SEED) ;
     }
     
-    /** get RANDOM_SEED.
-     * @return  */
+    /** 
+     * get RANDOM_SEED.
+     * @return (long) 
+     */
     static public final long GET_RANDOM_SEED()
     {
         return RANDOM_SEED ;
+    }
+    
+    /**
+     * Generates seed for random number generator to use upon reboot.
+     * @return (long) seed for random number generation
+     */
+    static public final long GET_REBOOT_SEED()
+    {
+        return RAND.nextLong() ;
     }
     
     /** Site name of Rectum */
