@@ -39,6 +39,15 @@ abstract public class Site {
         RAND = new Random(RANDOM_SEED) ;
     }
     
+    /**
+     * Generates seed for random number generator to use upon reboot.
+     * @return (long) seed for random number generation
+     */
+    static public final long GET_REBOOT_SEED()
+    {
+        return RAND.nextLong() ;
+    }
+    
     
     //LOGGER
     static final java.util.logging.Logger LOGGER = java.util.logging.Logger.getLogger("relationship") ;
