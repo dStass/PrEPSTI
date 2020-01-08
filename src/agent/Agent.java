@@ -83,11 +83,22 @@ public abstract class Agent {
         RAND = new Random(RANDOM_SEED) ;
     }
     
-    /** get RANDOM_SEED.
-     * @return  */
+    /** 
+     * get RANDOM_SEED.
+     * @return RANDOM_SEED 
+     */
     static public final long GET_RANDOM_SEED()
     {
         return RANDOM_SEED ;
+    }
+    
+    /**
+     * Generates seed for random number generator to use upon reboot.
+     * @return (long) seed for random number generation
+     */
+    static public final long GET_REBOOT_SEED()
+    {
+        return RAND.nextLong() ;
     }
     
     /** String representation of "true". */
