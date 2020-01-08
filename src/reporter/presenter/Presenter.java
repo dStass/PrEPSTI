@@ -71,7 +71,7 @@ public class Presenter {
     static protected String INTERVAL = "interval" ;
     static protected String PROPORTION = "proportion" ;
     static protected String GROUP = "__" ;
-    static final String CSV = ".csv" ;
+    static final String CSV = Reporter.CSV ;
     static final String COMMA = Reporter.COMMA ;
 
     // Used for controlling if and what is co-plotted from file.
@@ -259,16 +259,16 @@ public class Presenter {
      * @param fileName
      * @return (HashMap) Report (Object) key maps to (Number) value
      */
-    static HashMap<Object,Number> READ_HASHMAP_NUMBER_CSV(String fileName)
+    static HashMap<Comparable,Number> READ_HASHMAP_NUMBER_CSV(String fileName)
     {
-        HashMap<Object,Number> hashMapNumber = new HashMap<Object,Number>() ;
+        HashMap<Comparable,Number> hashMapNumber = new HashMap<Comparable,Number>() ;
         
         String folder = "data_files/" ;
         String fileHeader ;
         String[] arrayHeader  = new String[] {} ;
         
         // Plotting Integer or Double?
-        Object key ;
+        Comparable key ;
         String[] recordArray ;
         Number[] valueArray ;
         int recordLength = 0 ;
