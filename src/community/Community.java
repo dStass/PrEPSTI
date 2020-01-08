@@ -452,7 +452,7 @@ public class Community {
         HashMap<Comparable,String> incidenceReportPrep = new HashMap<Comparable,String>() ;
         if (DYNAMIC)
         {
-            incidenceReport = screeningReporter.prepareYearsAtRiskIncidenceReport(siteNames, 1, 2022, "statusHIV") ;
+            incidenceReport = screeningReporter.prepareYearsAtRiskIncidenceReport(siteNames, 16, 2022, "statusHIV") ;
             //incidenceReportPrep = screeningReporter.prepareYearsAtRiskIncidenceReport(siteNames, 16, 2022, "prepStatus") ;
         }
         LOGGER.info("by HIV-status " + screeningReporter.prepareFinalAtRiskIncidentsRecord(siteNames, 0,"statusHIV")) ;
@@ -493,7 +493,6 @@ public class Community {
     /**
      * Community object containing all agent(s) and Relationships and methods 
      * for pairing agent(s) into relationship(s) and for ending relationship(s)
-     * TODO: Generalise to include agents other than MSM.
      */
     public Community() {
         // Populate community with agents
@@ -518,28 +517,39 @@ public class Community {
         */
     }
     
+    /**
+     * Reads seeds for random number generation from saved metadata of simName 
+     * and initialises them.
+     * @param simName 
+     */
+    private void rebootRandomSeeds(String simName)
+    {
+        Reporter reporter = new Reporter(simName,"output/test/") ;
+        long seed = Long.valueOf(reporter.getMetaDatum("Community.RANDOM_SEED")) ;
+        RANDOM_SEED = seed ;
+        RAND = new Random(seed) ;
+
+        seed = Long.valueOf(reporter.getMetaDatum("Agent.RANDOM_SEED")) ;
+        Agent.SET_RAND(seed) ;
+
+        seed = Long.valueOf(reporter.getMetaDatum("Site.RANDOM_SEED")) ;
+        Site.SET_RAND(seed) ;
+
+        seed = Long.valueOf(reporter.getMetaDatum("Relationship.RANDOM_SEED")) ;
+        Relationship.SET_RAND(seed) ;
+    }
+    
+    /**
+     * Initialises community based on previously saved simulation, if given.
+     * @param simName - Name of simulation to be reloaded.
+     * recommence simulation.
+     */
     public Community(String simName)
     {
         initialRecord = "" ;
 
         if (!simName.isEmpty())
-        {
-            //FIXME: Must ensure that random generator is properly calibrated after 
-            // generating new Agents, even after reloading seed.
-            Reporter reporter = new Reporter(simName,"output/test/") ;
-            long seed = Long.valueOf(reporter.getMetaDatum("Community.RANDOM_SEED")) ;
-            RANDOM_SEED = seed ;
-            RAND = new Random(seed) ;
-
-            seed = Long.valueOf(reporter.getMetaDatum("Agent.RANDOM_SEED")) ;
-            Agent.SET_RAND(seed) ;
-
-            seed = Long.valueOf(reporter.getMetaDatum("Site.RANDOM_SEED")) ;
-            Site.SET_RAND(seed) ;
-
-            seed = Long.valueOf(reporter.getMetaDatum("Relationship.RANDOM_SEED")) ;
-            Relationship.SET_RAND(seed) ;
-        }
+            rebootRandomSeeds(simName) ;
         System.out.println(initialiseCommunity()) ;
                 
     }
@@ -561,12 +571,15 @@ public class Community {
             for (Agent agent : agents)
                 initialRecord += agent.getCensusReport() ;
             Relationship.REBOOT_RELATIONSHIPS(simName, agents) ;
+            
+            rebootRandomSeeds(simName) ;
             scribe = new Scribe(SIM_NAME, new String[] {"relationship","encounter","screening", "population"}) ;
         }
     }
 
     /**
      * For setting up specific questions. Code will flux dramatically.
+     * TODO: Generalise to include agents other than MSM.
      */
     private String initialiseCommunity()
     {
@@ -1225,19 +1238,19 @@ public class Community {
         metaData.add(agents.size()) ;
         metaLabels.add("Community.MAX_CYCLES") ;
         metaData.add(Community.MAX_CYCLES) ;
-        metaLabels.add("Community.RANDOM_SEED") ;
-        metaData.add(RANDOM_SEED) ;
+        metaLabels.add("Community.REBOOT_SEED") ;
+        metaData.add(RAND.nextLong()) ;
         
         metaLabels.add("Agent.SITE_NAMES") ;
         metaData.add(Arrays.asList(MSM.SITE_NAMES)) ; //TODO: Use Agent.SITE_NAMES
         metaLabels.add("Agent.RANDOM_SEED") ;
-        metaData.add(Agent.GET_RANDOM_SEED()) ;
+        metaData.add(Agent.GET_REBOOT_SEED()) ;
         
         metaLabels.add("Site.RANDOM_SEED") ;
-        metaData.add(Site.GET_RANDOM_SEED()) ;
+        metaData.add(Site.GET_REBOOT_SEED()) ;
         
         metaLabels.add("Relationship.RANDOM_SEED") ;
-        metaData.add(Relationship.GET_RANDOM_SEED()) ;
+        metaData.add(Relationship.GET_REBOOT_SEED()) ;
         metaLabels.add("Relationship.BURNIN_COMMENCE") ;
         metaData.add(Relationship.BURNIN_COMMENCE) ;
         metaLabels.add("Relationship.BURNIN_BREAKUP") ;
