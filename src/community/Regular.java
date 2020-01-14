@@ -14,7 +14,7 @@ public class Regular extends Relationship {
     static public double BREAKUP_PROBABILITY = 0.005 ;
     
     /** Probability of sexual encounter in a given cycle. */
-    static double ENCOUNTER_PROBABILITY = 0.4 ; // 0.7 ;
+    static double ENCOUNTER_PROBABILITY = 0.6 ; // 0.4 ; // 0.7 ;
     
     public Regular()
     {
