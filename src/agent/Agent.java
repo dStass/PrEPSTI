@@ -1105,6 +1105,26 @@ public abstract class Agent {
     }
     
     /**
+     * Setter for probabilityUseCondomRegular.
+     * @param useCondomRegular (double) New probability of using a condom in a Regular 
+     * Relationship.
+     */
+    public void setProbabilityUseCondomRegular(double useCondomRegular)
+    {
+        probabilityUseCondomRegular = useCondomRegular ;
+    }
+    
+    /**
+     * Setter for probabilityUseCondomCasual.
+     * @param useCondomCasual (double) New probability of using a condom in a Casual
+     * Relationship.
+     */
+    public void setProbabilityUseCondomCasual(double useCondomCasual)
+    {
+        probabilityUseCondomCasual = useCondomCasual ;
+    }
+    
+    /**
      * Getter for probabilityUseCondom.
      * @return (double) The probably of choosing to use a condom when the choice is made.
      */
