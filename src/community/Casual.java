@@ -56,6 +56,8 @@ public class Casual extends Relationship {
         for (Agent agent : getAgents())
             agent.leaveRelationship(this) ;  
         
+        NB_CASUAL-- ;
+        
         return true ;
     }
 
