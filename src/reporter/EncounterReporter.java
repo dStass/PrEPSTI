@@ -34,7 +34,7 @@ public class EncounterReporter extends Reporter {
     static String RECTUM = "Rectum" ;
     static String URETHRA = "Urethra" ;
 
-    static boolean WRITE_REPORT = false ;
+    static boolean WRITE_REPORT = true ;
     
     public EncounterReporter()
     {
@@ -1610,6 +1610,10 @@ public class EncounterReporter extends Reporter {
                 }
             }
         }
+        if (WRITE_REPORT)
+            WRITE_CSV(fromSiteToSiteReport, "site_to_site", "transmissions", "site to site transmissions", simName, REPORT_FOLDER) ;
+        //             WRITE_CSV_STRING(fromSiteToSiteReport, categoryName, reportName, nameSimulation, REPORT_FOLDER) ;
+        
         return fromSiteToSiteReport ;
     }
 		
