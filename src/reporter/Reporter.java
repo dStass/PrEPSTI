@@ -1967,7 +1967,6 @@ public class Reporter {
         Collections.addAll(scoreNames, referenceReport.get(categoryName)) ;
         String dataSuffix = "_wild" ;
         int scoreIndex = scoreNames.indexOf(scoreName + dataSuffix) ;
-        
         // These are to read in values from referenceReport
         String[] referenceValues ;
         String referenceValue ;
@@ -2020,6 +2019,10 @@ public class Reporter {
                     spaceIndex = fileLine.lastIndexOf(SPACE, keyIndex) ;
                     // Initialise fileLine for Each categoryValue with "categoryValue"
 
+                    LOGGER.info("referenceValues " + categoryValue);
+                    // Check we have a comparison for categoryValue 
+                    if (!referenceReport.containsKey(categoryValue))
+                        continue ;
                     referenceValues = referenceReport.get(categoryValue) ;
                     if (referenceValues.length <= (scoreIndex + 1))
                         continue ;
@@ -2028,13 +2031,16 @@ public class Reporter {
                         continue ;
                     residualSum += Math.pow(Double.valueOf(referenceValue) - scoreValue, 2) ;
                 }
+                LOGGER.info("comparisonReport");
                 if (!comparisonReport.containsKey(residualSum))
                     comparisonReport.put(residualSum,new ArrayList<String>()) ;
                 comparisonReport.get(residualSum).add(simulationName) ;
+                LOGGER.info(comparisonReport.toString()) ;
             }
             catch ( Exception e )
             {
                 LOGGER.info(e.toString());
+                LOGGER.info(simulationName) ;
                 //simNames.remove(simIndex) ;
             }
 
@@ -2907,25 +2913,26 @@ public class Reporter {
         //String[] simNames = new String[] {"from2007seek27aPop40000Cycles5475","from2007seek27bPop40000Cycles5475","from2007seek27cPop40000Cycles5475","from2007seek27dPop40000Cycles5475","from2007seek27ePop40000Cycles5475",
         //"from2007seek27fPop40000Cycles5475","from2007seek27gPop40000Cycles5475","from2007seek27hPop40000Cycles5475","from2007seek27iPop40000Cycles5475","from2007seek27jPop40000Cycles5475"} ;
     
-        String prefix = "to2019regularRisk39" ;
+        String prefix = "to2019regularP4Risk45" ;
         //String prefix = "to2019prepFreezeRisk49" ;
         String suffix = "Pop40000Cycles6570" ;
         ArrayList<String> simNameList = new ArrayList<String>() ;
-        //String letter0 = "" ;
+        //String letter0 = "a" ;
         for (String letter0 : new String[] {"a","b","c","d","e","f","g","h","i","j"})
             for (String letter1: new String[] {"a","b","c","d","e"})
-                simNameList.add(prefix + letter0 + letter1 + suffix) ;
+                for (String letter2 : new String[] {""}) //,"B"})
+                    simNameList.add(prefix + letter2 + letter0 + letter1 + suffix) ;
         
         String[] simNames = simNameList.toArray(new String[] {}) ;
-        //simNames = new String[] {"to2017newSort17aaPop40000Cycles5110"} ;
+        //simNames = new String[] {"regularP6Risk47aaPop40000Cycles1825"} ;
         
     
         //String[] simNames = new String[] {"newSortRisk12aPop40000Cycles1825"} ;
         //String[] simNames = new String[] {"newSortRisk12aPop40000Cycles730","newSortRisk11aPop40000Cycles730","newSortRisk10aPop40000Cycles730","newSortRisk9aPop40000Cycles730","newSortRisk8aPop40000Cycles730"} ;
         //MULTI_WRITE_CSV(simNameList, "condomUse", folderPath) ; // "C:\\Users\\MichaelWalker\\OneDrive - UNSW\\gonorrhoeaPrEP\\simulator\\PrEPSTI\\output\\prep\\") ; // 
-        //MULTI_WRITE_CSV(simNameList, "year", "Pharynx_true", "riskyIncidence_HIV", folderPath) ; // "C:\\Users\\MichaelWalker\\OneDrive - UNSW\\gonorrhoeaPrEP\\simulator\\PrEPSTI\\output\\prep\\") ; // 
-        ArrayList<String> closestSimulations = CLOSEST_SIMULATIONS(simNameList, "year", "all_false", "riskyIncidence_HIV", folderPath, "gonoGoneWild", "data_files/") ;
-        LOGGER.info(closestSimulations.toString()) ;
+        MULTI_WRITE_CSV(simNameList, "year", "all_false", "riskyIncidence", folderPath) ; // "C:\\Users\\MichaelWalker\\OneDrive - UNSW\\gonorrhoeaPrEP\\simulator\\PrEPSTI\\output\\prep\\") ; // 
+        //ArrayList<String> closestSimulations = CLOSEST_SIMULATIONS(simNameList, "year", "all_false", "riskyIncidence", folderPath, "gonoGoneWild", "data_files/") ;
+        //LOGGER.info(closestSimulations.toString()) ;
         //PREPARE_GRAY_REPORT(simNames,folderPath,2007,2017) ;
     }
 
@@ -3127,6 +3134,7 @@ public class Reporter {
                 int startLine = startCycle % cyclesPerFile ;
                 int endLine = startLine + backCycles ;
                 int pauseLine ;
+                //LOGGER.log(Level.INFO, "startLine:{0} startCycle:{1} endLine:{2} fileName:{3}", new Object[] {startLine,startCycle,endLine,fileNames.get(cycleFileIndex)}) ;
                 
                 String outputString ;
 
@@ -3148,12 +3156,17 @@ public class Reporter {
                     if (pauseLine > cyclesPerFile)
                         pauseLine = cyclesPerFile ;
 
-                    //LOGGER.log(Level.INFO, "startLine:{0} pauseLine:{1} readLines:{2}", new Object[] {startLine,pauseLine,readLines});
+                    //LOGGER.log(Level.INFO, "startLine:{0} pauseLine:{1} readLines:{2} fileName:{3}", new Object[] {startLine,pauseLine,readLines,fileNames.get(cycleFileIndex)});
                     for (int lineNb = startLine ; lineNb < pauseLine ; lineNb++ )
                     {
                         outputString = fileReader.readLine() ;
-                        if (outputString == null)
+                        if (null == outputString)
+                        {
+                            LOGGER.severe(fileNames.get(cycleFileIndex) + " has null line " + String.valueOf(lineNb)) ;
+                            assert(2 < 0) ;
                             break ;
+                        }
+                        
                         outputList.add(outputString) ;
                         readLines++ ;
                     }
