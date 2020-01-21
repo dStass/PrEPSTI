@@ -513,37 +513,6 @@ public abstract class Agent {
                             LOGGER.severe(e.toString());
                             //LOGGER.log(Level.SEVERE, "{0} {1} {2}", new Object[] {propertyClazz, valueString}) ;
                         }
-        
-                        // Check infection/symptomatic status of site
-                        
-                        
-                        // siteName: indicates infected site
-                        /*siteIndex = infectionString.substring(infectionString.indexOf(siteString)).indexOf(site.toString()+":") ;
-                        if (siteIndex > 0)    // (infectionString.contains(site.toString()))
-                        {
-                            Boolean symptoms = Boolean.valueOf(Reporter.EXTRACT_VALUE(site.toString(),infectionString,siteIndex));
-                            if (rebootFile)
-                            {
-                                newAgent.receiveInfection(1.1,site) ;
-                                //newAgent.setInfectedStatus(true) ;
-                                
-                                // Set symptomatic, or not
-                                if (symptoms)
-                                    newAgent.setSymptomatic(true,site) ;
-                                else
-                                    newAgent.setSymptomatic(false,site) ;
-                                //newAgent.chooseSymptomatic(site) ;
-                                
-                                // Set remaining infectionTime
-                                //infectionTime = Reporter.EXTRACT_VALUE("screenTime", infectionString, siteIndex) ;
-                                //site.setInfectionTime(Integer.valueOf(infectionTime)) ;
-                            }
-                            else
-                            {
-                                newAgent.reinitInfectedStatus(symptoms, site) ;
-                            }
-                        //uninfected = false ;
-                        }*/
                     }
                     //if (uninfected)
                     //LOGGER.info(infectionString) ; // (String.valueOf(newAgent.getInfectedStatus()));
@@ -1137,6 +1106,7 @@ public abstract class Agent {
      *
      * Rescales the probability of using a condom by factor scale
      * @param scale
+     * @return (double) new value of probabilityUseCondom
      */
     public double scaleProbabilityUseCondom(double scale) 
     {
