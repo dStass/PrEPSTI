@@ -87,7 +87,7 @@ public class Community {
      * (String) Name of previous simulation to reload.
      * Nothing reloaded if this is an empty string.
      */
-    static final String RELOAD_SIMULATION = "" ; // "testPop20000Cycles365" ;
+    static final String RELOAD_SIMULATION = "" ; // "testRegularP5Risk6aaPop40000Cycles1825" "testRegularP5Risk6adPop40000Cycles1825" "testRegularP5Risk6aaPop40000Cycles1825"
     
     static public String getFilePath()
     {
@@ -408,6 +408,7 @@ public class Community {
           //      = new ScreeningPresenter("prevalence",Community.SIM_NAME,screeningReporter) ;
         //screeningPresenter2.plotPrevalence();
         //screeningPresenter2.plotNotificationsPerCycle();
+        LOGGER.info(MSM.TRANSMISSION_PROBABILITY_REPORT()) ;    
         if (TO_PLOT)
         {
             ScreeningPresenter screeningPresenter3 
@@ -450,7 +451,7 @@ public class Community {
         LOGGER.info("At-risk incidence " + screeningReporter.prepareFinalAtRiskIncidentsRecord(siteNames, 0,"")) ;
         HashMap<Comparable,String> incidenceReport = new HashMap<Comparable,String>() ;
         HashMap<Comparable,String> incidenceReportPrep = new HashMap<Comparable,String>() ;
-        if (DYNAMIC)
+        if (DYNAMIC && (2<0))
         {
             incidenceReport = screeningReporter.prepareYearsAtRiskIncidenceReport(siteNames, 16, 2022, "statusHIV") ;
             //incidenceReportPrep = screeningReporter.prepareYearsAtRiskIncidenceReport(siteNames, 16, 2022, "prepStatus") ;
@@ -484,7 +485,7 @@ public class Community {
         //populationPresenter.plotDeathsPerCycle();
         if (!incidenceReport.isEmpty())
         {
-            Reporter.DUMP_OUTPUT("riskyIncidence",SIM_NAME,FILE_PATH,incidenceReport);
+            Reporter.DUMP_OUTPUT("riskyIncidence_HIV",SIM_NAME,FILE_PATH,incidenceReport);
             //Reporter.DUMP_OUTPUT("riskyIncidencePrep",SIM_NAME,FILE_PATH,incidenceReportPrep);
         }
         }
@@ -525,17 +526,17 @@ public class Community {
     private void rebootRandomSeeds(String simName)
     {
         Reporter reporter = new Reporter(simName,"output/test/") ;
-        long seed = Long.valueOf(reporter.getMetaDatum("Community.RANDOM_SEED")) ;
+        long seed = Long.valueOf(reporter.getMetaDatum("Community.REBOOT_SEED")) ;
         RANDOM_SEED = seed ;
         RAND = new Random(seed) ;
 
-        seed = Long.valueOf(reporter.getMetaDatum("Agent.RANDOM_SEED")) ;
+        seed = Long.valueOf(reporter.getMetaDatum("Agent.REBOOT_SEED")) ;
         Agent.SET_RAND(seed) ;
 
-        seed = Long.valueOf(reporter.getMetaDatum("Site.RANDOM_SEED")) ;
+        seed = Long.valueOf(reporter.getMetaDatum("Site.REBOOT_SEED")) ;
         Site.SET_RAND(seed) ;
 
-        seed = Long.valueOf(reporter.getMetaDatum("Relationship.RANDOM_SEED")) ;
+        seed = Long.valueOf(reporter.getMetaDatum("Relationship.REBOOT_SEED")) ;
         Relationship.SET_RAND(seed) ;
     }
     
@@ -1243,13 +1244,13 @@ public class Community {
         
         metaLabels.add("Agent.SITE_NAMES") ;
         metaData.add(Arrays.asList(MSM.SITE_NAMES)) ; //TODO: Use Agent.SITE_NAMES
-        metaLabels.add("Agent.RANDOM_SEED") ;
+        metaLabels.add("Agent.REBOOT_SEED") ;
         metaData.add(Agent.GET_REBOOT_SEED()) ;
         
-        metaLabels.add("Site.RANDOM_SEED") ;
+        metaLabels.add("Site.REBOOT_SEED") ;
         metaData.add(Site.GET_REBOOT_SEED()) ;
         
-        metaLabels.add("Relationship.RANDOM_SEED") ;
+        metaLabels.add("Relationship.REBOOT_SEED") ;
         metaData.add(Relationship.GET_REBOOT_SEED()) ;
         metaLabels.add("Relationship.BURNIN_COMMENCE") ;
         metaData.add(Relationship.BURNIN_COMMENCE) ;
