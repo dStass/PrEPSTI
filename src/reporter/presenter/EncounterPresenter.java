@@ -38,13 +38,14 @@ public class EncounterPresenter extends Presenter {
         //String chartTitle = "proportion_of_Agents_had_CLAI" ; // args[1] ;
         //String chartTitle = "condom use universal" ;
         //String chartTitle = "new infections" ;
-        String chartTitle = "incidence_rate (per 100 MSM)" ;
+        //String chartTitle = "incidence_rate (per 100 MSM)" ;
+        String chartTitle = "site to site transmission" ;
         //String chartTitle = "protection" ; // args[1] ;
         //String chartTitle = "condom_coverage" ; // args[1] ;
         //String reportFileName = "output/untouchable/" ; // args[2] ;
-        //String reportFileName = "output/test/" ; // args[2] ;
+        String reportFileName = "output/test/" ; // args[2] ;
         //String reportFileName = "output/prePrEP/" ; // args[2] ;
-        String reportFileName = "output/prep/" ; // args[2] ;
+        //String reportFileName = "output/prep/" ; // args[2] ;
         //String reportFileName = "output/year2007/" ; // args[2] ;
         //String reportFileName = "output/year2010/" ; // args[2] ;
         //String reportFileName = "output/year2012/" ; // args[2] ;
@@ -52,7 +53,9 @@ public class EncounterPresenter extends Presenter {
         String[] siteNames  = new String[] {"Pharynx","Rectum","Urethra"} ;
         
         String prefix = "to2019u60gradual49" ;
-        String suffix = "Pop40000Cycles5475" ;
+        String suffix = "Pop40000Cycles1460" ;
+        //String prefix = "to2019u60gradual49" ;
+        //String suffix = "Pop40000Cycles5475" ;
         ArrayList<String> simNameList = new ArrayList<String>() ;
         //String letter0 = "" ;
         for (String letter0 : new String[] {"a","b","c","d","e","f","g","h","i","j"})
@@ -61,8 +64,8 @@ public class EncounterPresenter extends Presenter {
         
         simNames = simNameList.toArray(new String[] {}) ;
         
-        //String simName = "AllSexualContactsPop40000Cycles1200" ;
-        String simName = simNames[0] ;
+        String simName = "Qibin1p0aPop40000Cycles1460" ;
+        //String simName = simNames[0] ;
 
         EncounterPresenter encounterPresenter = new EncounterPresenter(simName,chartTitle,reportFileName) ;
         //encounterPresenter.plotYearsCondomUseReport(6,2012) ;
@@ -73,7 +76,7 @@ public class EncounterPresenter extends Presenter {
         //encounterPresenter.plotFinalIncidenceRecord(siteNames, 0, Reporter.DAYS_PER_YEAR) ;
         //encounterPresenter.plotSortedFinalIncidenceRecord(siteNames, 0, Reporter.DAYS_PER_YEAR,"statusHIV") ;
         //encounterPresenter.plotCumulativeAgentTransmissionReport() ;
-        encounterPresenter.plotIncidenceYears(siteNames, 13, 2019, "") ;
+        //encounterPresenter.plotIncidenceYears(siteNames, 13, 2019, "") ;
         //encounterPresenter.plotNumberCondomlessYears(3, 0, 0, 2017, new String[] {"Casual","Regular","Monogomous"}) ;
         //encounterPresenter.plotNumberCondomlessReport(0, 6, 0, new String[] {"Casual","Regular","Monogomous"}) ;
         //encounterPresenter.plotPercentAgentCondomlessReport(new String[] {"Casual","Regular","Monogomous"}, 0, 6, 0, "", false,"") ;
@@ -81,7 +84,7 @@ public class EncounterPresenter extends Presenter {
         //encounterPresenter.plotPercentAgentCondomlessReport(new String[] {"Casual","Regular","Monogomous"}, 0, 6, 0, "statusHIV", true) ; 
         //encounterPresenter.plotPercentAgentCondomlessYears(new String[] {"Casual","Regular","Monogomous"}, 3, 2017, "statusHIV", false, "statusHIV") ; 
         //encounterPresenter.plotNumberAgentTransmissionReport("statusHIV") ;
-        //encounterPresenter.plotFromSiteToSite(siteNames) ; // (new String[] {"Rectum","Urethra"});
+        encounterPresenter.plotFromSiteToSite(siteNames) ; // (new String[] {"Rectum","Urethra"});
         //encounterPresenter.plotReceiveSortPrepStatusReport("true") ;
 
         //String methodName = args[3] ;
@@ -122,8 +125,7 @@ public class EncounterPresenter extends Presenter {
     }
 
     /**
-     * Generates HashMap whose keys are Site names (String) and values the
-     * number of times an infection has been transmitted from that site
+     * Plots the number of times an infection has been transmitted from each site
      * TODO: use Agent.getSiteNames() to automatically generate Site names
      * @param siteNames (String[]) names of body Sites to consider
      */
