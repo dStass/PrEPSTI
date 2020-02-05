@@ -2019,7 +2019,7 @@ public class Reporter {
                     spaceIndex = fileLine.lastIndexOf(SPACE, keyIndex) ;
                     // Initialise fileLine for Each categoryValue with "categoryValue"
 
-                    LOGGER.info("referenceValues " + categoryValue);
+                    //LOGGER.info("referenceValues " + categoryValue);
                     // Check we have a comparison for categoryValue 
                     if (!referenceReport.containsKey(categoryValue))
                         continue ;
@@ -2031,7 +2031,6 @@ public class Reporter {
                         continue ;
                     residualSum += Math.pow(Double.valueOf(referenceValue) - scoreValue, 2) ;
                 }
-                LOGGER.info("comparisonReport");
                 if (!comparisonReport.containsKey(residualSum))
                     comparisonReport.put(residualSum,new ArrayList<String>()) ;
                 comparisonReport.get(residualSum).add(simulationName) ;
@@ -2191,7 +2190,6 @@ public class Reporter {
     /**
      * 
      * @param reportList
-     * @param categoryName
      * @param reportName
      * @param simName
      * @param folderPath
@@ -2908,31 +2906,33 @@ public class Reporter {
     public static void main(String[] args)
     {
         String folderPath = "output/prep/" ;
+        //String folderPath = "output/prePrEP/" ;
         //String[] simNames = new String[] {"to2017newSort17aaPop40000Cycles5110", "to2017newSort17baPop40000Cycles5110","to2017newSort17caPop40000Cycles5110","to2017newSort17daPop40000Cycles5110","to2017newSort17eaPop40000Cycles5110",
           //  "to2017newSort17faPop40000Cycles5110", "to2017newSort17gaPop40000Cycles5110","to2017newSort17haPop40000Cycles5110","to2017newSort17iaPop40000Cycles5110","to2017newSort17jaPop40000Cycles5110"} ;
         //String[] simNames = new String[] {"from2007seek27aPop40000Cycles5475","from2007seek27bPop40000Cycles5475","from2007seek27cPop40000Cycles5475","from2007seek27dPop40000Cycles5475","from2007seek27ePop40000Cycles5475",
         //"from2007seek27fPop40000Cycles5475","from2007seek27gPop40000Cycles5475","from2007seek27hPop40000Cycles5475","from2007seek27iPop40000Cycles5475","from2007seek27jPop40000Cycles5475"} ;
     
-        String prefix = "to2019regularP4Risk45" ;
-        //String prefix = "to2019prepFreezeRisk49" ;
+        String prefix = "to2019corr1p6P5Risk37" ;
+        //String prefix = "from2014regularP5Risk6" ;
         String suffix = "Pop40000Cycles6570" ;
         ArrayList<String> simNameList = new ArrayList<String>() ;
         //String letter0 = "a" ;
         for (String letter0 : new String[] {"a","b","c","d","e","f","g","h","i","j"})
-            for (String letter1: new String[] {"a","b","c","d","e"})
+            for (String letter1: new String[] {"a","b","c","d"})
                 for (String letter2 : new String[] {""}) //,"B"})
                     simNameList.add(prefix + letter2 + letter0 + letter1 + suffix) ;
         
         String[] simNames = simNameList.toArray(new String[] {}) ;
         //simNames = new String[] {"regularP6Risk47aaPop40000Cycles1825"} ;
         
-    
         //String[] simNames = new String[] {"newSortRisk12aPop40000Cycles1825"} ;
         //String[] simNames = new String[] {"newSortRisk12aPop40000Cycles730","newSortRisk11aPop40000Cycles730","newSortRisk10aPop40000Cycles730","newSortRisk9aPop40000Cycles730","newSortRisk8aPop40000Cycles730"} ;
+        //ArrayList<String> closestSimulations
+        simNameList = CLOSEST_SIMULATIONS(simNameList, "year", "all_false", "riskyIncidence_HIV", folderPath, "gonoGoneWild", "data_files/") ;
+        LOGGER.info(String.valueOf(simNameList.size()) + " simulations included.") ;
         //MULTI_WRITE_CSV(simNameList, "condomUse", folderPath) ; // "C:\\Users\\MichaelWalker\\OneDrive - UNSW\\gonorrhoeaPrEP\\simulator\\PrEPSTI\\output\\prep\\") ; // 
-        MULTI_WRITE_CSV(simNameList, "year", "all_false", "riskyIncidence", folderPath) ; // "C:\\Users\\MichaelWalker\\OneDrive - UNSW\\gonorrhoeaPrEP\\simulator\\PrEPSTI\\output\\prep\\") ; // 
-        //ArrayList<String> closestSimulations = CLOSEST_SIMULATIONS(simNameList, "year", "all_false", "riskyIncidence", folderPath, "gonoGoneWild", "data_files/") ;
-        //LOGGER.info(closestSimulations.toString()) ;
+        MULTI_WRITE_CSV(simNameList, "year", "all_false", "riskyIncidence_HIV", folderPath) ; // "C:\\Users\\MichaelWalker\\OneDrive - UNSW\\gonorrhoeaPrEP\\simulator\\PrEPSTI\\output\\prep\\") ; // 
+        LOGGER.info(String.valueOf(simNameList.size()) + " simulations included.") ;
         //PREPARE_GRAY_REPORT(simNames,folderPath,2007,2017) ;
     }
 
