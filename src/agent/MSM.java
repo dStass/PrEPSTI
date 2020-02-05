@@ -329,7 +329,8 @@ public class MSM extends Agent {
     }
     
     /**
-     * Resets the probability of Risky vs Safe behaviour according to the year.
+     * Resets the probability of Risky vs Safe behaviour within Casual Relationships 
+     * according to the year.
      * Rates taken from GCPS 2011 Table 16, 2014 Table 15, 
      * @param agentList (ArrayList) List of Agents to undergo parameter change.
      * @param year (int) Year of simulation, starting from zero.
@@ -430,7 +431,8 @@ public class MSM extends Agent {
     }
     
     /**
-     * Resets the probability of Risky vs Safe behaviour according to the year.
+     * Resets the probability of Risky vs Safe behaviour within Regular Relationships 
+     * according to the year.
      * Rates taken from GCPS 2011 Table 16, 2014 Table 15, 
      * @param agentList (ArrayList) List of Agents to undergo parameter change.
      * @param year (int) Year of simulation, starting from zero.
@@ -1923,8 +1925,9 @@ public class MSM extends Agent {
     /**
      * Allow for re-initialisation of prepStatus during simulation while 
      * initPrepStatus() remains private. 
-     * @param year
-     * @param riskyProbability
+     * @param year (int) Which year of the simulation we are switching to.
+     * @param riskyProbability (double) The proportion of MSM with riskyStatus true.
+     * @return (boolean) Whether or not the MSM is now on PrEP.
      */
     public boolean reinitPrepStatus(int year, double riskyProbability)
     {
@@ -1975,7 +1978,7 @@ public class MSM extends Agent {
     
     /**
      * FIXME: Find justifiable values for regularOdds and monogomousOdds
-     * @param relationshipClazzName
+     * @param relationshipClazzName (String) The Class of Relationship being considered.
      * @return (double) probability of MSM seeking out Relationship of class
      * relationshipClazzName.
      */
@@ -1995,7 +1998,7 @@ public class MSM extends Agent {
      * Affected by useGFN in such a way that MSM are more likely to accept if 
      * both partners use a GFN, with more active MSM more strongly affected than 
      * less active MSM.
-     * @param partner
+     * @param partner (Agent) The Agent with whom a Casual Relationship is being considered.
      * @return (boolean) whether to enter proposed Casual Relationship.
      */
     @Override
@@ -2099,9 +2102,9 @@ public class MSM extends Agent {
      * Decides probabilistically whether MSM chooses to use a condom in a given encounter.
      * Choice is based on type of Relationship and properties of msm
      * Risky MSM are more likely to use strategies other than condoms.
-     * @param relationshipClazzName
-     * @param agentPartner
-     * @return true if condom is to be used, false otherwise
+     * @param relationshipClazzName (String) The name of the Class of Relationship within which this encounter is happening.
+     * @param agentPartner (Agent) the sexual partner with whom a condom might be used.
+     * @return (boolean) true if condom is to be used, false otherwise
      */
     @Override
     protected boolean chooseCondom(String relationshipClazzName, Agent agentPartner) 
@@ -2142,11 +2145,15 @@ public class MSM extends Agent {
             {
                 if (statusHIV == partner.statusHIV)
                         return false ;
-                if (partner.prepStatus && trustPrep)
-                    return false ;
-                    
-                if (partner.undetectableStatus && trustUndetectable)
-                    return false ;
+                
+                if (partner.statusHIV)
+                    if (partner.undetectableStatus && trustUndetectable)
+                        return false ;
+                
+                if (statusHIV)
+                    if (partner.prepStatus && trustPrep)
+                        return false ;
+               
 
                 if (seroPosition && partner.seroPosition)
                     return false; // (RAND.nextDouble() < probabilityUseCondom ) ;
@@ -2205,10 +2212,11 @@ public class MSM extends Agent {
     }
     
     /**
-     * Probability of MSM screening on that day. Depends on prepStatus and statusHIV.
-     * @param args
-     * @return for PrEP users, 1.0 if cycle multiple of screenCycle, 0.0 otherwise
-     *     for non-PrEP users, random double between 0.0 and 1.0 .
+     * Probability of MSM screening on that day. Binary output according to whether 
+     * the screening cycle has completed. 
+     * @param args (Object[])
+     * @return (double) users, 1.1 if screening is due and -0.1 if not. Extra 0.1
+     *     to guard against round-off errors.
      */    
     @Override
     public double getScreenProbability(Object[] args)
@@ -2232,7 +2240,7 @@ public class MSM extends Agent {
     /**
      * Call getScreenProbability for each Site and choose to screen if 
      * any Site call chooses to screen. 
-     * @param args
+     * @param args (Object[])
      * @return Probability of screening. Values outside of range 0 - 1 used 
      * to protect against roundoff error.
      */
@@ -2285,10 +2293,6 @@ public class MSM extends Agent {
         return 1 - noRisk ;
     }
     
-    /**
-     * Incorporate the effects of aging on sexual activity.
-     * @return 
-     */
     @Override
     protected String ageEffects() 
     {
