@@ -818,6 +818,7 @@ public abstract class Agent {
      * Initialises screenCycle from a Gamma distribution to determine how often 
      * an Agent is screened, and then starts the cycle in a random place so that 
      * not every Agent gets screened at the same time.
+     * @param rescale (double) Factor by which the screening cycle is rescaled.
      */
     abstract void initScreenCycle(double rescale) ;
     
@@ -1145,9 +1146,10 @@ public abstract class Agent {
     }
     
     /**
+     * Incorporate the effects of aging on sexual activity.
      * Concurrency and infidelity decrease from startAge == 30
      * 
-     * @return String description of any altered quantities if any, empty otherwise
+     * @return (String) Description of any altered quantities if any, empty otherwise
      */
     protected String ageEffects()
     {
