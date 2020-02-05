@@ -451,9 +451,9 @@ public class Community {
         LOGGER.info("At-risk incidence " + screeningReporter.prepareFinalAtRiskIncidentsRecord(siteNames, 0,"")) ;
         HashMap<Comparable,String> incidenceReport = new HashMap<Comparable,String>() ;
         HashMap<Comparable,String> incidenceReportPrep = new HashMap<Comparable,String>() ;
-        if (DYNAMIC && (2<0))
+        if (DYNAMIC)
         {
-            incidenceReport = screeningReporter.prepareYearsAtRiskIncidenceReport(siteNames, 16, 2022, "statusHIV") ;
+            incidenceReport = screeningReporter.prepareYearsAtRiskIncidenceReport(siteNames, 18, 2019, "statusHIV") ;
             //incidenceReportPrep = screeningReporter.prepareYearsAtRiskIncidenceReport(siteNames, 16, 2022, "prepStatus") ;
         }
         LOGGER.info("by HIV-status " + screeningReporter.prepareFinalAtRiskIncidentsRecord(siteNames, 0,"statusHIV")) ;
@@ -636,18 +636,20 @@ public class Community {
     private String interveneCommunity(int cycle)
     {
         // When to end burn-in
-        int startCycle = 365 * 3 ;
+        int startCycle = 365 * 5 ;
         if ((cycle < startCycle))
             return "" ;
         
+        int startYear = 0 ;
+        
         // Run through year 0
-        int year = (cycle - startCycle)/365 ;
+        int year = (cycle - startCycle)/365 + startYear ;
         if (year == 0)
             return "" ;
         
         // Things to do at the start of each year
         String report = "" ;
-        if (year * 365 == (cycle - startCycle))
+        if ((year - startYear) * 365 == (cycle - startCycle))
         {
             //report += Agent.REINIT(agents, year) ;
             unchangedAgents = (ArrayList<Agent>) agents.clone() ;
