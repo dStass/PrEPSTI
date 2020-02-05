@@ -26,7 +26,7 @@ abstract public class Site {
     
     /** 
      * getter for RANDOM_SEED.
-     * @return  
+     * @return (long) The static RANDOM_SEED.
      */
     static public final long GET_RANDOM_SEED()
     {
@@ -139,16 +139,25 @@ abstract public class Site {
         return false ;
     }
     
+    /**
+     * Initialises screenCycle from a Gamma distribution to determine how often 
+     * Rectum is screened, and then starts the cycle in a random place so that 
+     * not every Agent screens their Rectum at the same time.
+     * @param statusHIV (boolean) Whether Agent has HIV.
+     * @param prepStatus (boolean) Whether Agent is in PrEP.
+     * @param rescale (double) Factor by which GammaDistribution is rescaled.
+     */
     abstract public void initScreenCycle(boolean statusHIV, boolean prepStatus, double rescale) ;
     
     /**
      * Returns a sample from a Gamma Distribution specified by the parameters shape
      * and scale * rescale. The rescale parameter allows easy adjustment of the 
      * distribution from year-to-year.
-     * @param shape
-     * @param scale
-     * @param rescale
-     * @return 
+     * @param shape (double) Shape parameter of GammaDistribution
+     * @param scale (double) Scale parameter of GammaDistribution
+     * @param rescale (double) Factor by which GammaDistribution is rescaled.
+     * Used to change probability distribution in response to yearly data.
+     * @return (int) A sample from a Gamma Distribution 
      */
     protected int sampleGamma(double shape, double scale, double rescale)
     {
@@ -201,9 +210,9 @@ abstract public class Site {
     }
 
     /**
-     * Set whether Site is symptomatic given the symptomaticProbability.
-     * @param symptomaticProbability
-     * @return 
+     * Probabilitistically chooses whether Site is symptomatic.
+     * @param symptomaticProbability (double) The probability of choosing the Site to be symptomatic.
+     * @return (boolean) Whether the site is now symptomatic.
      */
     public boolean chooseSymptomatic(double symptomaticProbability)
     {
@@ -212,8 +221,8 @@ abstract public class Site {
     
     /**
      * Setter of symptomatic
-     * @param siteSymptomatic
-     * @return 
+     * @param siteSymptomatic (boolean) Whether the site is now symptomatic.
+     * @return (boolean) The new value for symptomatic.
      */
     public boolean setSymptomatic(boolean siteSymptomatic)
     {
@@ -313,22 +322,26 @@ abstract public class Site {
         setScreenTime(getScreenCycle()) ;
     }
     
-    /** screenTime setter().
-     * @param time */
+    /**
+     * setter for screenTime
+     * @param time (int) Cycles remaining until the next screening.
+     */
     abstract public void setScreenTime(int time);
 
-    /** screenTime getter().
-     * @return  
+    /** 
+     * screenTime getter().
+     * @return (int) The  number of cycles between screenings.
      */
     abstract public int getScreenTime() ;
 
     /** 
      * screenCycle setter().
-     * @param screen 
+     * @param screen (int) The number of cycles between screenings
      */
     abstract public void setScreenCycle(int screen) ;
 
-    /** screenCycle getter().
+    /** 
+     * screenCycle getter().
      * @return screenCycle 
      */
     abstract public int getScreenCycle() ;
@@ -340,7 +353,7 @@ abstract public class Site {
 
     /**
      * Probability of MSM screening on that day. Depends on prepStatus and statusHIV.
-     * @param args
+     * @param args (Object[])
      * @return for PrEP users, 1.0 if cycle multiple of screenCycle, 0.0 otherwise
      *     for non-PrEP users, random double between 0.0 and 1.0 .
      */    
