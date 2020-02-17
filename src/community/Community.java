@@ -633,7 +633,7 @@ public class Community {
         int startCycle = 365 * 5 ;
         
         int startYear = 2007 ;
-        startYear =- 2007 ;
+        startYear -= 2007 ;
         // No more burn-in if starting at a later date than 2007
         if (startYear > 0)
             startCycle = 0 ;
