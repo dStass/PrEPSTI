@@ -662,6 +662,7 @@ public class ScreeningReporter extends Reporter {
     /**
      * 
      * @param siteNames
+     * @param endCycle
      * @return Records of final prevalences for specified siteNames and in total.
      */
     public String prepareFinalPrevalencesRecord(String[] siteNames, int endCycle)
@@ -1565,8 +1566,6 @@ public class ScreeningReporter extends Reporter {
      * 
      * @param siteNames
      * @param backYears
-     * @param backMonths
-     * @param backDays
      * @return atRiskIncidenceReport from year leading up to backYears years ago.
      */
     public String prepareFinalAtRiskIncidentsRecord(String[] siteNames, int backYears, String sortingProperty)
@@ -1578,6 +1577,12 @@ public class ScreeningReporter extends Reporter {
     
     /**
      * 
+     * @param siteNames
+     * @param backYears
+     * @param backMonths
+     * @param backDays
+     * @param endCycle
+     * @param sortingProperty
      * @return Report of incidence calculated by number of positive tests following
      * negative tests, per time-at-risk being the time between such tests.
      */
@@ -1705,8 +1710,8 @@ public class ScreeningReporter extends Reporter {
                 for (Object cycle : agentTestingRecord )
                 {
                     day = Integer.valueOf(String.valueOf(cycle)) ;
-                    if (day == previousTest)
-                        LOGGER.log(Level.SEVERE, "day:{3} agentId:{0} site:{1} record:{2}", new Object[] {agentId,siteName,agentTestingRecord,day});
+                    //if (day == previousTest)
+                      //  LOGGER.log(Level.SEVERE, "day:{3} agentId:{0} site:{1} record:{2}", new Object[] {agentId,siteName,agentTestingRecord,day});
 
                     if (!previousResult)    // If last test positive
                         daysAtRisk = day - previousTest ;    // Add days-at-risk to agentRecord
