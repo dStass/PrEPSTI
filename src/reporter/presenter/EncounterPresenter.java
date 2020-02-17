@@ -84,7 +84,7 @@ public class EncounterPresenter extends Presenter {
         //encounterPresenter.plotPercentAgentCondomlessReport(new String[] {"Casual","Regular","Monogomous"}, 0, 6, 0, "statusHIV", true) ; 
         //encounterPresenter.plotPercentAgentCondomlessYears(new String[] {"Casual","Regular","Monogomous"}, 3, 2017, "statusHIV", false, "statusHIV") ; 
         //encounterPresenter.plotNumberAgentTransmissionReport("statusHIV") ;
-        encounterPresenter.plotFromSiteToSite(siteNames) ; // (new String[] {"Rectum","Urethra"});
+        encounterPresenter.plotFromSiteToSite(siteNames, 730) ; // (new String[] {"Rectum","Urethra"});
         //encounterPresenter.plotReceiveSortPrepStatusReport("true") ;
 
         //String methodName = args[3] ;
@@ -162,12 +162,13 @@ public class EncounterPresenter extends Presenter {
     /**
      * Plots the number of site-specific transmissions
      * @param siteNames - The Sites to be considered in this plot.
+     * @param startCycle - The cycle to start counting transmission from.
      */
-    public void plotFromSiteToSite(String[] siteNames)
+    public void plotFromSiteToSite(String[] siteNames, int startCycle)
     {
         // HashMap to be plotted
         // (String) key has format infectedsiteToReceivingsite
-        HashMap<Comparable,Number> fromSiteToSiteReport = reporter.prepareFromSiteToSiteReport(siteNames) ;
+        HashMap<Comparable,Number> fromSiteToSiteReport = reporter.prepareFromSiteToSiteReport(siteNames, startCycle) ;
         LOGGER.log(Level.INFO,"{0}",fromSiteToSiteReport) ;
         plotHashMap("Site to Site","transmissions",fromSiteToSiteReport) ;        
     }
