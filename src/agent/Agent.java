@@ -263,19 +263,26 @@ public abstract class Agent {
     /** probability of using condom even when apparently safe (PrEP, TasP, etc) */
     protected double probabilityUseCondom = RAND.nextDouble() ;
     
-    /** probability of using condom even when apparently safe (PrEP, TasP, etc) */
+    /** 
+     * probability of using condom in a Casual Relationship 
+     * even when apparently safe (PrEP, TasP, etc) 
+     */
     protected double probabilityUseCondomCasual = RAND.nextDouble() ;
     
-    /** probability of using condom even when apparently safe (PrEP, TasP, etc) */
+    /** 
+     * probability of using condom in a Regular Relationship 
+     * even when apparently safe (PrEP, TasP, etc) 
+     */
     protected double probabilityUseCondomRegular = RAND.nextDouble() ;
+    
+    /** 
+     * probability of using condom in a Monogomous Relationship 
+     * even when apparently safe (PrEP, TasP, etc) 
+     */
+    protected double probabilityUseCondomMonogomous = RAND.nextDouble() ;
     
     /** Does the Agent use a GeoSpatial Network (eg Grindr) */
     protected boolean useGSN = false ;
-
-    // names of fields of interest to the census.
-    private String[] censusFieldNames = {"agentId","agent","concurrency","infidelity"} ;
-            //"symptomatic","available","inMonogomous","regularNumber","casualNumber",
-            //"nbRelationships","screenCycle"
 
     static final java.util.logging.Logger LOGGER = java.util.logging.Logger.getLogger("agent") ;
 
@@ -330,10 +337,9 @@ public abstract class Agent {
     /**
      * Reloads Agents from a saved simulation to continue it.
      * @param simName 
-     * @param rebootFile 
      * @return  
      */
-    static public ArrayList<Agent> REBOOT_AGENTS(String simName, boolean rebootFile)
+    static public ArrayList<Agent> REBOOT_AGENTS(String simName)
     {
         ArrayList<Agent> agents = new ArrayList<Agent>() ;
         String folderPath = FOLDER_PATH ;
@@ -343,7 +349,6 @@ public abstract class Agent {
         ArrayList<String> birthReport = new ArrayList<String>() ;
         ArrayList<ArrayList<Comparable>> agentDeathReport = new ArrayList<ArrayList<Comparable>>() ;
         String screeningRecord = "" ;
-        if (rebootFile)
         {
             String rebootFileName = simName.concat("-REBOOT.txt") ;
             try
@@ -366,23 +371,7 @@ public abstract class Agent {
                 LOGGER.info(e.toString()) ;
             }
         }
-        else
-        {
-            PopulationReporter populationReporter = new PopulationReporter(simName,folderPath) ;
-            //PopulationReporter populationReporter = new PopulationReporter(simName,"/srv/scratch/z3524276/prepsti/output/test/") ;
-            //PopulationReporter populationReporter = new PopulationReporter(simName,"/short/is14/mw7704/prepsti/output/year2007/") ;
-
-            birthReport = populationReporter.prepareBirthReport() ;
-
-            agentDeathReport = populationReporter.prepareAgentDeathReport() ;
-
-            ScreeningReporter screeningReporter = new ScreeningReporter(simName,folderPath) ; // "output/prePrEP/") ;
-            //ScreeningReporter screeningReporter = new ScreeningReporter(simName,"/srv/scratch/z3524276/prepsti/output/test/") ;
-            //ScreeningReporter screeningReporter = new ScreeningReporter(simName,"/short/is14/mw7704/prepsti/output/year2007/") ;
-
-            screeningRecord = screeningReporter.getFinalRecord() ;
-        }
-        int infectionIndex ;
+        
         int startAge ;
         String id ;
                         
@@ -393,9 +382,6 @@ public abstract class Agent {
         //int daysPerYear = 365 ;
         
         ArrayList deadAgentIds = new ArrayList<Object>() ; // Get ArrayList of dead Agents so we don't waste time reading their data
-        if (!rebootFile)
-            for (ArrayList<Comparable> agentDeathRecord : agentDeathReport)
-                deadAgentIds.addAll(agentDeathRecord) ;
         
         // Reboot saved Agent data 
         int maxAgentId = 0 ;
@@ -427,15 +413,7 @@ public abstract class Agent {
                     agents.add(newAgent) ;
                     
                     // Reload infections
-                    if (rebootFile)
-                        infectionString = birth ;
-                    else
-                    {
-                        infectionIndex = screeningRecord.indexOf(Reporter.AGENTID.concat(":").concat(id).concat(" ")) ;
-                        if (infectionIndex < 0)
-                            continue ;
-                        infectionString = Reporter.EXTRACT_BOUNDED_STRING(Reporter.AGENTID, screeningRecord, infectionIndex);
-                    }
+                    infectionString = birth ;
                     
                     //LOGGER.info(infectionString);
                     sites = newAgent.getSites();
@@ -978,16 +956,6 @@ public abstract class Agent {
     
     /**
      * 
-     * @return (String[]) Names of MSM fields of relevance to a census.
-     */
-    protected String[] getCensusFieldNames()
-    {
-        return censusFieldNames ;
-    }
-
-   
-    /**
-     * 
      * @return Site[] sites
      */
     abstract public Site[] getSites() ;
@@ -1072,6 +1040,16 @@ public abstract class Agent {
     public void setProbabilityUseCondom(double useCondom)
     {
         probabilityUseCondom = useCondom ;
+    }
+    
+    /**
+     * Setter for probabilityUseCondomRegular.
+     * @param useCondomMonogomous(double) New probability of using a condom in a Regular 
+     * Relationship.
+     */
+    public void setProbabilityUseCondomMonogomous(double useCondomMonogomous)
+    {
+        probabilityUseCondomMonogomous = useCondomMonogomous ;
     }
     
     /**
