@@ -88,6 +88,10 @@ public class Relationship {
     static public String BURNIN_COMMENCE = "clear:" ;
     static public String BURNIN_BREAKUP = "" ;
     
+    /**
+     * Adds to the Relationship record the Relationships which ended due to death.
+     * @param record 
+     */
     static public void APPEND_DEATH_RECORD(String record)
     {
         DEATH_RECORD += record ;
