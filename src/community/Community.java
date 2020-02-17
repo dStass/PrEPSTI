@@ -181,11 +181,6 @@ public class Community {
                 FILE_PATH = "/scratch/is14/mw7704/prepsti/" + FILE_PATH ;
                 DUMP_CYCLE = 500 ;
             }
-            else if (args[argIndex].equals("raijin"))
-            {
-                FILE_PATH = "/short/is14/mw7704/prepsti/" + FILE_PATH ;
-                DUMP_CYCLE = 500 ;
-            }
             else if (args[argIndex].equals("katana"))
             {
                 FILE_PATH = "/srv/scratch/z3524276/prepsti/" + FILE_PATH ;
@@ -448,7 +443,6 @@ public class Community {
         prevalenceReport = screeningReporter.preparePrevalenceReport() ;
         LOGGER.log(Level.INFO,"{0} {1}", new Object[] {"all", prevalenceReport.get(prevalenceReport.size() - 1)}) ;
 
-        LOGGER.info("At-risk incidence " + screeningReporter.prepareFinalAtRiskIncidentsRecord(siteNames, 0,"")) ;
         HashMap<Comparable,String> incidenceReport = new HashMap<Comparable,String>() ;
         HashMap<Comparable,String> incidenceReportPrep = new HashMap<Comparable,String>() ;
         if (DYNAMIC)
@@ -567,7 +561,7 @@ public class Community {
             System.out.println(initialiseCommunity()) ;
         else
         {
-            this.agents = Agent.REBOOT_AGENTS(simName,true) ;
+            this.agents = Agent.REBOOT_AGENTS(simName) ;
             this.initialRecord = "" ; 
             for (Agent agent : agents)
                 initialRecord += agent.getCensusReport() ;
@@ -637,10 +631,16 @@ public class Community {
     {
         // When to end burn-in
         int startCycle = 365 * 5 ;
+        
+        int startYear = 2007 ;
+        startYear =- 2007 ;
+        // No more burn-in if starting at a later date than 2007
+        if (startYear > 0)
+            startCycle = 0 ;
+        
+        
         if ((cycle < startCycle))
             return "" ;
-        
-        int startYear = 0 ;
         
         // Run through year 0
         int year = (cycle - startCycle)/365 + startYear ;
