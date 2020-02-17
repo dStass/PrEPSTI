@@ -120,7 +120,13 @@ public class MSM extends Agent {
             report += REINIT_RISK_REGULAR(agentList, year) ;
             
             methodName = "trust_undetectable" ;
-            REINIT_TRUST_UNDETECTABLE(agentList, year) ;
+            report += Reporter.ADD_REPORT_PROPERTY(change, methodName) ;
+            report += REINIT_TRUST_UNDETECTABLE(agentList, year) ;
+            
+            methodName = "trust_prep" ;
+            report += Reporter.ADD_REPORT_PROPERTY(change, methodName) ;
+            report += REINIT_TRUST_PREP(agentList, year) ;
+            
             //REINIT_USE_GSN(agentList, year) ;
         }
         catch ( Exception e )
@@ -201,18 +207,24 @@ public class MSM extends Agent {
     /**
      * Alters the willingness to trust U=U as protection against HIV on a year-by-year
      * basis.
-     * FIXME: Implement reporting of changes.
-     * Data taken from GCPS: Table 21 in GCPS 2017, Table 20 in 2018
+     * Data taken from GCPS: Table 21 in GCPS 2017, Table 19 in 2019
+     * Where they conflict the later report is taken.
      * @param agentList (ArrayList) List of Agents to undergo parameter change.
      * @param year (int) Year of simulation starting from year zero.
      */
     static protected String REINIT_TRUST_UNDETECTABLE(ArrayList<Agent> agentList, int year) 
     {
         String report = "" ;
-        double[] positiveTrustUndetectable = new double[] {0.0,0.0,0.0,0.0,0.0,0.0,0.483,0.772,
-            0.692, 0.742, 0.804, 0.853, 0.853} ;
-        double[] negativeTrustUndetectable = new double[] {0.0,0.0,0.0,0.0,0.0,0.0,0.106,0.094,
-            0.129, 0.157, 0.203, 0.231, 0.231} ;
+        
+        // Trust is zero until 2013, which is year 6.
+        if (year < 6)
+            return report ;
+        year -= 6 ;
+        
+        double[] positiveTrustUndetectable = new double[] {0.483,0.772,
+            0.695, 0.720, 0.757, 0.830, 0.727} ;
+        double[] negativeTrustUndetectable = new double[] {0.106,0.094,
+            0.129, 0.154, 0.203, 0.231, 0.194} ;
         
         if (year >= positiveTrustUndetectable.length)
             year = positiveTrustUndetectable.length - 1 ;
@@ -247,6 +259,8 @@ public class MSM extends Agent {
                     continue ;
                 changeProbability = (trustProbability - lastProbability)/(1 - lastProbability) ;
                 msm.setTrustUndetectable(RAND.nextDouble() < changeProbability);
+                if (msm.trustUndetectable)    // if trustPrep has changed
+                    report += Reporter.ADD_REPORT_PROPERTY(String.valueOf(msm.getAgentId()), TRUE) ;
             }
             else
             {
@@ -255,6 +269,81 @@ public class MSM extends Agent {
                 changeProbability = trustProbability/lastProbability ; // (lastProbability - trustProbability)/lastProbability ;
                 // equivalent to correct calculation: RAND > (1 - changeProbability)
                 msm.setTrustUndetectable(RAND.nextDouble() < changeProbability) ; 
+                if (!msm.trustUndetectable)    // if trustPrep has changed
+                    report += Reporter.ADD_REPORT_PROPERTY(String.valueOf(msm.getAgentId()), FALSE) ;
+            }
+        }
+        return report ;
+    }
+    
+    /**
+     * Alters the willingness to trust partner's PrEP to protect them from HIV on a year-by-year
+     * basis.
+     * Data taken from GCPS: Table 19 in GCPS 2019
+     * @param agentList (ArrayList) List of Agents to undergo parameter change.
+     * @param year (int) Year of simulation starting from year zero.
+     */
+    static protected String REINIT_TRUST_PREP(ArrayList<Agent> agentList, int year) 
+    {
+        String report = "" ;
+        
+        // Trust is zero until 2017, which is year 10.
+        if (year < 10)
+            return report ;
+        year -= 10 ;
+        
+        // Proportion of HIV-positives willing to trust that PrEP will protect their HIV-negative partner
+        double[] positiveTrustPrep = new double[] {0.336, 0.467, 0.360} ;
+        
+        // Proportion of HIV-negatives willing to trust that PrEP ensures that their partner is HIV-negative
+        // Currently redundant as currently not modelling HIV status unknown or distrust
+        double[] negativeTrustPrep = new double[] {0.346, 0.491, 0.532} ;
+        
+        if (year >= positiveTrustPrep.length)
+            year = positiveTrustPrep.length - 1 ;
+        
+        double positiveLastProbability = positiveTrustPrep[year - 1] ;
+        double positiveTrustProbability = positiveTrustPrep[year] ;
+        double negativeLastProbability = negativeTrustPrep[year - 1] ;
+        double negativeTrustProbability = negativeTrustPrep[year] ;
+        double changeProbability ; 
+        
+        for (Agent agent : agentList)
+        {
+            MSM msm = (MSM) agent ;
+            
+            double lastProbability = 1.0 ; 
+            double trustProbability = 1.0 ;
+            
+            if (msm.statusHIV)
+            {
+                lastProbability = positiveLastProbability ;
+                trustProbability = positiveTrustProbability ;
+            }
+            else
+            {
+                lastProbability = negativeLastProbability ;
+                trustProbability = negativeTrustProbability ;
+            }
+            
+            if (trustProbability > lastProbability)
+            {
+                if (msm.trustPrep)
+                    continue ;
+                changeProbability = (trustProbability - lastProbability)/(1 - lastProbability) ;
+                msm.setTrustPrep(RAND.nextDouble() < changeProbability);
+                if (msm.trustPrep)    // if trustPrep has changed
+                    report += Reporter.ADD_REPORT_PROPERTY(String.valueOf(msm.getAgentId()), TRUE) ;
+            }
+            else
+            {
+                if (!msm.trustPrep)
+                    continue ;
+                changeProbability = trustProbability/lastProbability ; // (lastProbability - trustProbability)/lastProbability ;
+                // equivalent to correct calculation: RAND > (1 - changeProbability)
+                msm.setTrustPrep(RAND.nextDouble() < changeProbability) ; 
+                if (!msm.trustPrep)    // if trustPrep has changed
+                    report += Reporter.ADD_REPORT_PROPERTY(String.valueOf(msm.getAgentId()), FALSE) ;
             }
         }
         return report ;
@@ -445,8 +534,8 @@ public class MSM extends Agent {
         if (year == 0)
             return report ;
         // GCPS (Table 15, 2011) (Table 14, 2013) (Table 16, 2017-18)
-        // Year-by-year rates of UAIC 
-        int[] newRiskyRegular = new int[] {538,540,538,604,493,513,503,520,576,557,618,650,685} ;
+        // Year-by-year rates of UAIC     // 538?
+        int[] newRiskyRegular = new int[] {568,540,538,604,493,513,503,520,576,557,618,650,685} ;
         int[] newSafeRegular = new int[] {300,300,300,296,279,247,257,248,239,203,157,131,108} ;
         
         if (year >= newRiskyRegular.length)
@@ -849,8 +938,6 @@ public class MSM extends Agent {
     private boolean seroSortMonogomous ;
     /** Whether MSM seropositions, +ve statusHIV never inserts to -ve statusHIV. */
     private boolean seroPosition ;
-    /** Given seroSort or seroPosition, whether being on antiviral is sufficient. */
-    private boolean acceptAntiViral ;
     /** Probability of accepting proposed Casual Relationship */
     private double consentCasualProbability ; // = RAND.nextDouble() * 5/12 ; //* 0.999999 + 0.000001  ;
     
@@ -874,7 +961,7 @@ public class MSM extends Agent {
     private boolean riskyStatusRegular ;
     
     /** Transmission probabilities per sexual contact from Urethra to Rectum */
-    static double URETHRA_TO_RECTUM = 0.80 ; // 0.85 ; 
+    static double URETHRA_TO_RECTUM = 0.65 ; // 0.85 ; 
     /** Transmission probabilities sexual contact from Urethra to Pharynx. */
     static double URETHRA_TO_PHARYNX = 0.45 ; // 0.50 ; 
     /** Transmission probabilities sexual contact from Rectum to Urethra. */
@@ -886,7 +973,7 @@ public class MSM extends Agent {
     /** Transmission probabilities sexual contact in Pharynx to Rectum intercourse. */
     static double PHARYNX_TO_RECTUM = 0.025 ; // 0.020 ; 
     /** Transmission probabilities sexual contact in Pharynx to Pharynx intercourse (kissing). */
-    static double PHARYNX_TO_PHARYNX = 0.055 ; // 0.055 ; 
+    static double PHARYNX_TO_PHARYNX = 0.060 ; // 0.055 ; 
     /** Transmission probabilities sexual contact in Urethra to Urethra intercourse (docking). */
     static double URETHRA_TO_URETHRA = 0.001 ; // 0.020 ; 
     /** Transmission probabilities sexual contact in Rectum to Rectum intercourse. */
@@ -1104,7 +1191,7 @@ public class MSM extends Agent {
      * Describes correlation between statusHIV and riskyStatus.
      * Must be less than 1/PROPORTION_HIV OR initRiskiness() fails.
      */
-    static double HIV_RISKY_CORRELATION = 2.0 ; // 1.0 ;	
+    static double HIV_RISKY_CORRELATION = 3.0 ; // 2.0 ; // 1.0 ;	
     
     /**
      * 
@@ -1332,24 +1419,6 @@ public class MSM extends Agent {
     }*/
        
     /**
-     * Adds "prepStatus", "statusHIV" to censusFieldNames
-     * @return (String[]) Names of MSM fields of relevance to a census.
-     */
-    @Override
-    protected String[] getCensusFieldNames()
-    {
-        // Agent census names
-        String[] baseCensusNames = super.getCensusFieldNames() ;
-        String[] censusNames = new String[baseCensusNames.length + 2] ;
-        System.arraycopy(baseCensusNames, 0, censusNames, 0, baseCensusNames.length);
-        
-        // Uniquely MSM census names
-        censusNames[baseCensusNames.length] = "prepStatus" ;
-        censusNames[baseCensusNames.length + 1] = "statusHIV" ;
-        return censusNames ;
-    }
-
-    /**
      * 
      * @return (String) describing traits of Agent.
      */
@@ -1367,6 +1436,9 @@ public class MSM extends Agent {
         censusReport += Reporter.ADD_REPORT_PROPERTY("riskyStatus", riskyStatus) ;
         censusReport += Reporter.ADD_REPORT_PROPERTY("riskyStatusCasual", riskyStatusCasual) ;
         censusReport += Reporter.ADD_REPORT_PROPERTY("riskyStatusRegular", riskyStatusRegular) ;
+        censusReport += Reporter.ADD_REPORT_PROPERTY("probabilityUseCondom", probabilityUseCondom) ;
+        censusReport += Reporter.ADD_REPORT_PROPERTY("probabilityUseCondomCasual", probabilityUseCondomCasual) ;
+        censusReport += Reporter.ADD_REPORT_PROPERTY("probabilityUseCondomRegular", probabilityUseCondomRegular) ;
         censusReport += Reporter.ADD_REPORT_PROPERTY("undetectableStatus", undetectableStatus) ;
         censusReport += Reporter.ADD_REPORT_PROPERTY("trustUndetectable", trustUndetectable) ;
         censusReport += Reporter.ADD_REPORT_PROPERTY("trustPrep", trustPrep) ;
@@ -1925,19 +1997,31 @@ public class MSM extends Agent {
     /**
      * Allow for re-initialisation of prepStatus during simulation while 
      * initPrepStatus() remains private. 
+     * Taken from GCPS Table 30 2017, Table 26 2019.
+     * Where they disagree the later value is taken.
+     * 
      * @param year (int) Which year of the simulation we are switching to.
      * @param riskyProbability (double) The proportion of MSM with riskyStatus true.
      * @return (boolean) Whether or not the MSM is now on PrEP.
      */
     public boolean reinitPrepStatus(int year, double riskyProbability)
     {
-        double[] prepProbabilityArray = new double[] {0.0,0.0,0.0,0.0,0.0,0.0,
-            0.011,0.014,0.014,0.039,0.139,0.204,0.204} ;
+        //PrEP use begins in 2013 (after 6 years)
+        if (year < 6)
+            return false ;
+        year =- 6 ;
+        
+        // Values up to 2018
+        //double[] prepProbabilityArray = new double[] {0.011,0.014,0.014,0.039,0.139,0.204,0.204} ;
+        // Most recent
+        double[] prepProbabilityArray = new double[] {0.011,0.014,0.017,0.049,0.167,0.239,0.310  // 2013 to 2019
+                ,0.39,0.46,0.53,0.60,0.67,0.74    // 2020 to 2025
+        } ;
         if (year >= prepProbabilityArray.length)
             year = prepProbabilityArray.length - 1 ;
         
         boolean prep = prepStatus ;
-        if (riskyStatus && (!statusHIV))
+        if (riskyStatusCasual && (!statusHIV))
         {
             double prepProbability = prepProbabilityArray[year] / riskyProbability ;
             setPrepStatus(RAND.nextDouble() < prepProbability) ;
