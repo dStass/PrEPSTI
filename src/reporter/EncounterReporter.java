@@ -1529,7 +1529,16 @@ public class EncounterReporter extends Reporter {
      * @param siteNames (String[]) names of body sites in sexual contact
      * @return String[] report of sexual contacts where STI transmission occurred
      */    
-    public HashMap<Comparable,Number> prepareFromSiteToSiteReport(String siteNames[])
+    public HashMap<Comparable,Number> prepareFromSiteToSiteReport(String[] siteNames)
+    {
+        return prepareFromSiteToSiteReport(siteNames, 0) ;
+    }
+    
+    /**
+     * @param siteNames (String[]) names of body sites in sexual contact
+     * @return String[] report of sexual contacts where STI transmission occurred
+     */    
+    public HashMap<Comparable,Number> prepareFromSiteToSiteReport(String siteNames[], int startCycle)
     {
         // Output HashMap
         HashMap<Comparable,Number> fromSiteToSiteReport = new HashMap<Comparable,Number>() ;
