@@ -209,18 +209,19 @@ public class MSM extends Agent {
         // Trust is zero until 2013, which is year 6.
         if (year < 6)
             return report ;
-        year -= 6 ;
+        double lastUndetectable = PROPORTION_UNDETECTABLE[year - 1] ; 
+        double undetectableProportion = PROPORTION_UNDETECTABLE[year] ;
         
-        double[] positiveTrustUndetectable = new double[] {0.483,0.772,
+        year -= 5 ;
+        // Start from year 2012
+        double[] positiveTrustUndetectable = new double[] {0.0,0.483,0.772,
             0.695, 0.720, 0.757, 0.830, 0.727} ;
-        double[] negativeTrustUndetectable = new double[] {0.106,0.094,
+        double[] negativeTrustUndetectable = new double[] {0.0,0.106,0.094,
             0.129, 0.154, 0.203, 0.231, 0.194} ;
         
         if (year >= positiveTrustUndetectable.length)
             year = positiveTrustUndetectable.length - 1 ;
         
-        double lastUndetectable = PROPORTION_UNDETECTABLE[year - 1] ;
-        double undetectableProportion = PROPORTION_UNDETECTABLE[year] ;
         double positiveLastProbability = positiveTrustUndetectable[year - 1] ;
         double positiveTrustProbability = positiveTrustUndetectable[year] ;
         double negativeLastProbability = negativeTrustUndetectable[year - 1] ;
@@ -284,17 +285,17 @@ public class MSM extends Agent {
     {
         String report = "" ;
         
-        // Trust is zero until 2017, which is year 10.
+        // Trust is zero until 2016 inclusive, which is year 9.
         if (year < 10)
             return report ;
-        year -= 10 ;
+        year -= 9 ;
         
         // Proportion of HIV-positives willing to trust that PrEP will protect their HIV-negative partner
-        double[] positiveTrustPrep = new double[] {0.336, 0.467, 0.360} ;
+        double[] positiveTrustPrep = new double[] {0.0, 0.336, 0.467, 0.360} ;
         
         // Proportion of HIV-negatives willing to trust that PrEP ensures that their partner is HIV-negative
         // Currently redundant as currently not modelling HIV status unknown or distrust
-        double[] negativeTrustPrep = new double[] {0.346, 0.491, 0.532} ;
+        double[] negativeTrustPrep = new double[] {0.0, 0.346, 0.491, 0.532} ;
         
         if (year >= positiveTrustPrep.length)
             year = positiveTrustPrep.length - 1 ;
@@ -883,12 +884,6 @@ public class MSM extends Agent {
     
     /** The probability of being on PrEP, given negative HIV status */
     static double PROBABILITY_PREP = 0.0 ;
-    /** Probability of accepting seropositive partner on antiVirals, given 
-     * seroSort or seroPosition if HIV positive */
-    static double PROBABILITY_POSITIVE_ACCEPT_ANTIVIRAL = 0.5 ;
-    /** Probability of accepting seropositive partner on antiVirals, given 
-     * seroSort or seroPosition if HIV negative */
-    static double PROBABILITY_NEGATIVE_ACCEPT_ANTIVIRAL = 0.5 ;
     
     // Age-specific death rates (deaths per 1000 per year) from ABS.Stat
     static double RISK_60 = 8.0 ;
