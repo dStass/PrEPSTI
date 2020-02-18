@@ -77,17 +77,9 @@ public class MSM extends Agent {
     static double PROBABILITY_POSITIVE_SERO_POSITION = 0.25 ;
     /** Probability of sero-positioning if HIV negative */
     static double PROBABILITY_NEGATIVE_SERO_POSITION = 0.154 ;
-    /** The probability of being on antivirals, given positive HIV status */
-    static double PROPORTION_ANTIVIRAL = 0.566 ;
-    
-    /**
-     * Used to change the value of PROPORTION_ANTIVIRAL
-     * @param antiViral 
-     */
-    static void SET_PROBABILITY_ANTIVIRAL(double antiViral)
-    {
-        PROPORTION_ANTIVIRAL = antiViral ;
-    }
+    /** The proportion of HIV-positives whose viral load is undetectable, given positive HIV status */
+    static double[] PROPORTION_UNDETECTABLE = {0.566, 0.647, 0.701, 0.723, 0.747, 0.816, 0.734, 0.808, 
+            0.856, 0.847, 0.918, 0.918, 0.918} ;
     
     /**
      * Coordinates the reinitialisation of Agent parameters when they change 
@@ -154,18 +146,16 @@ public class MSM extends Agent {
             return report ;
         
         // years 2007 onwards
-        //double[] probabilityAntiViral = new double[] {0.532, 0.706, 0.735, 0.689, 0.706, 0.802, 0.766, 0.830, 
-        // 0.818, 0.854, 0.890, 0.890, 0.890} ;
-        double[] probabilityUndetectable = new double[] {0.566, 0.647, 0.701, 0.723, 0.747, 0.816, 0.734, 0.808, 
-            0.856, 0.847, 0.918, 0.918, 0.918} ;
+        //double[] probabilityUndetectable = new double[] {0.566, 0.647, 0.701, 0.723, 0.747, 0.816, 0.734, 0.808, 
+          //  0.856, 0.847, 0.918, 0.918, 0.918} ;
         // years 2007-2009
         // 0.532, 0.706, 0.735, 
         
-        if (year >= probabilityUndetectable.length)
-            year = probabilityUndetectable.length - 1 ;
+        if (year >= PROPORTION_UNDETECTABLE.length)
+            year = PROPORTION_UNDETECTABLE.length - 1 ;
         
-        double newProbability = probabilityUndetectable[year] ;
-        double oldProbability = probabilityUndetectable[year-1] ;
+        double newProbability = PROPORTION_UNDETECTABLE[year] ;
+        double oldProbability = PROPORTION_UNDETECTABLE[year-1] ;
         double changeProbability ;
         boolean newStatus ;
         MSM msm ;
@@ -229,6 +219,8 @@ public class MSM extends Agent {
         if (year >= positiveTrustUndetectable.length)
             year = positiveTrustUndetectable.length - 1 ;
         
+        double lastUndetectable = PROPORTION_UNDETECTABLE[year - 1] ;
+        double undetectableProportion = PROPORTION_UNDETECTABLE[year] ;
         double positiveLastProbability = positiveTrustUndetectable[year - 1] ;
         double positiveTrustProbability = positiveTrustUndetectable[year] ;
         double negativeLastProbability = negativeTrustUndetectable[year - 1] ;
@@ -239,15 +231,20 @@ public class MSM extends Agent {
         {
             MSM msm = (MSM) agent ;
             
-            double lastProbability = 1.0 ; 
-            double trustProbability = 1.0 ;
+            double lastProbability ;
+            double trustProbability ; 
             
             if (msm.statusHIV)
             {
-                lastProbability = positiveLastProbability ;
-                trustProbability = positiveTrustProbability ;
+                if (msm.undetectableStatus)    // Only the undetectable trust being undetectable
+                {
+                    lastProbability = positiveLastProbability/lastUndetectable ;
+                    trustProbability = positiveTrustProbability/undetectableProportion ;
+                }
+                else
+                    continue ;
             }
-            else
+            else    // msm HIV negative
             {
                 lastProbability = negativeLastProbability ;
                 trustProbability = negativeTrustProbability ;
@@ -1225,7 +1222,7 @@ public class MSM extends Agent {
         statusHIV = (RAND.nextDouble() < getProportionHIV()) ;
 
         // Sets antiViral status, ensuring it is true only if statusHIV is true
-        setUndetectableStatus(RAND.nextDouble() < getAntiviralProbability()) ;
+        setUndetectableStatus(RAND.nextDouble() < getProportionUndetectable(0)) ;
 
         // Randomly set PrEP status, ensuring it is true only if statusHIV is false
         // Now called within initRiskiness()
@@ -2009,7 +2006,7 @@ public class MSM extends Agent {
         //PrEP use begins in 2013 (after 6 years)
         if (year < 6)
             return false ;
-        year =- 6 ;
+        year -= 6 ;
         
         // Values up to 2018
         //double[] prepProbabilityArray = new double[] {0.011,0.014,0.014,0.039,0.139,0.204,0.204} ;
@@ -2125,9 +2122,9 @@ public class MSM extends Agent {
     }
     
 
-    final private double getAntiviralProbability()
+    final private double getProportionUndetectable(int index)
     {
-        return PROPORTION_ANTIVIRAL ;
+        return PROPORTION_UNDETECTABLE[index] ;
     }
     
     /**
@@ -2204,7 +2201,7 @@ public class MSM extends Agent {
             localRiskyStatus = riskyStatusCasual ;
             localProbabilityUseCondom = probabilityUseCondomCasual ;
         }
-        else
+        else    // Could do a separate if for Regular and Monogomous, but they are the same
         {
             localRiskyStatus = riskyStatusRegular ;
             localProbabilityUseCondom = probabilityUseCondomRegular ;
@@ -2219,12 +2216,6 @@ public class MSM extends Agent {
             if (prepStatus)
                 return false ;
             
-            if (undetectableStatus && trustUndetectable)
-                return false ;
-            
-            //if (useGSN && partner.useGSN) // && partner.riskyStatus))
-                //return false ;
-
             if (partner.discloseStatusHIV || discloseStatusHIV)
             {
                 if (statusHIV == partner.statusHIV)
@@ -2235,8 +2226,12 @@ public class MSM extends Agent {
                         return false ;
                 
                 if (statusHIV)
+                {
                     if (partner.prepStatus && trustPrep)
                         return false ;
+                    if (trustUndetectable)
+                        return false ;
+                }
                
 
                 if (seroPosition && partner.seroPosition)
@@ -2260,7 +2255,7 @@ public class MSM extends Agent {
                     if ((!partner.undetectableStatus) || (!trustUndetectable))
                         return true ;
                 }
-                else if (undetectableStatus && trustUndetectable)
+                else if (trustUndetectable)
                     return (RAND.nextDouble() < localProbabilityUseCondom ) ;  
                 else if ((!partner.prepStatus) || (!trustPrep))    // partner HIV negative
                     return true ;
