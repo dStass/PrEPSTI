@@ -8,6 +8,7 @@ import reporter.* ;
 import community.Community ;
 import java.awt.Color;
 import java.awt.Font ;
+import java.awt.Shape ;
 import java.awt.font.TextAttribute;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -26,6 +27,9 @@ import org.jfree.chart.plot.PlotOrientation ;
 import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.chart.ChartUtils ;
 import org.jfree.chart.renderer.category.GroupedStackedBarRenderer ;
+import org.jfree.chart.renderer.category.StackedBarRenderer ;
+import org.jfree.chart.renderer.category.BarRenderer ;
+import org.jfree.chart.renderer.category.StandardBarPainter ;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer ;
 import org.jfree.chart.annotations.XYTextAnnotation ;
 import org.jfree.data.KeyToGroupMap;
@@ -34,6 +38,7 @@ import org.jfree.data.category.* ;
 import org.jfree.data.xy.XYDataset; 
 import org.jfree.data.xy.XYSeries ;  
 import org.jfree.data.xy.XYSeriesCollection ;
+import org.jfree.util.* ;
 
 
 import java.lang.reflect.* ;
@@ -116,9 +121,10 @@ public class Presenter {
     /**
      * Generates a suitable label for plots involving a sorting property 
      * such as HIV status. Assumes label has form propertyName_sortingValue .
-     * @param sortingProperty
-     * @param propertyValue
-     * @return (String) 
+     * @param sortingProperty (String) The name of the property by which the Agents
+     * are sorted. Empty if Agents are not sorted.
+     * @param label
+     * @return (String) The generated label
      */
     static protected String GENERATE_SORTED_LABEL(String label, String sortingProperty)
     {
@@ -133,6 +139,8 @@ public class Presenter {
             sortingProperty = sortingProperty.substring(0, sortingProperty.indexOf("Status")) ;
         else if (sortingProperty.startsWith("status"))
             sortingProperty = sortingProperty.substring(6) ;    // "status".length() = 6
+        else
+            LOGGER.warning("sortingProperty:" + sortingProperty + ":") ;
         
         // Represent value of sortingProperty
         String valueString = labelParts[labelParts.length - 1] ;
@@ -2205,6 +2213,10 @@ public class Presenter {
 
             plot.setOutlineVisible(false) ;
             plot.setBackgroundPaint(Color.WHITE) ;
+            
+            ((BarRenderer) plot.getRenderer()).setBarPainter(new StandardBarPainter());
+            //((StackedBarRenderer) plot.getRenderer()).setBarPainter(new StandardBarPainter());
+            
             //LegendTitle legend = barChart.getLegend() ;
             //legend.setPosition(RectangleEdge.TOP) ;
             //plot.setFixedLegendItems(createLegendItems());
@@ -2286,6 +2298,9 @@ public class Presenter {
             }
             
             //lineChart.getPlot().setOutlineVisible(false);
+            
+            // David can use this to experiment with improving presentation.
+            //lineChart.getXYPlot().getRenderer().setSeriesShape(0, ShapeUtilities.createDiamond((float) 3)) ;
             
             //saveChart(lineChart) ;
             displayChart(lineChart) ;
