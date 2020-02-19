@@ -291,9 +291,9 @@ public abstract class Agent {
      * @param relationshipClazzName
      * @return Probabilistically chosen Site[2] of Sites for sexual contact.
      */
-    public static Site[] chooseSites(Agent agent0, Agent agent1, String relationshipClazzName)
+    public static Site[] CHOOSE_SITES(Agent agent0, Agent agent1, String relationshipClazzName)
     {
-        return CHOOSE_SITES(agent0, agent1) ;
+        return Agent.CHOOSE_SITES(agent0, agent1) ;
     }
     
     /**
@@ -303,9 +303,9 @@ public abstract class Agent {
      * @param relationshipClazzName
      * @return Probabilistically chosen Site[2] of Sites for sexual contact.
      */
-    public static Site[] chooseSitesNew(Agent agent0, Agent agent1, String relationshipClazzName)
+    public static Site[] CHOOSE_SITES_NEW(Agent agent0, Agent agent1, String relationshipClazzName)
     {
-        return chooseSites(agent0, agent1, relationshipClazzName) ;
+        return CHOOSE_SITES(agent0, agent1, relationshipClazzName) ;
     }
     
     /**
