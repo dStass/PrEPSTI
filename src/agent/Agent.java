@@ -7,7 +7,6 @@ import community.* ;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
-import reporter.* ;
 
 import reporter.Reporter ;
 import site.* ;
@@ -23,9 +22,8 @@ import java.util.Set ;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.apache.commons.math3.distribution.GammaDistribution;
-import static reporter.Reporter.AGENTID;
+import static reporter.Reporter.AGENTID ;
 
 /**
  * @author <a href = "mailto:mlwalker@kirby.unsw.edu.au">Michael Walker</a>
@@ -55,7 +53,7 @@ public abstract class Agent {
     
     
     /** Names of Sites for Agent*/ 
-    static public String[] SITE_NAMES = new String[] {} ;
+    //static public String[] SITE_NAMES = new String[] {} ;
     
     
     // Age-specific death rates from ABS.Stat
@@ -112,7 +110,7 @@ public abstract class Agent {
     /** String representation of "Casual". */
     static String CASUAL = "Casual" ;
     
-    // agentId of next Agent to be created, current number plus one
+    // agentId of next Agent to be created, current number created so far
     static public int NB_AGENTS_CREATED = 0 ;
 
     /** Probability of screening in a given cycle when symptomatic is false. */
@@ -295,7 +293,7 @@ public abstract class Agent {
      */
     public static Site[] chooseSites(Agent agent0, Agent agent1, String relationshipClazzName)
     {
-        return chooseSites(agent0, agent1) ;
+        return CHOOSE_SITES(agent0, agent1) ;
     }
     
     /**
@@ -315,7 +313,7 @@ public abstract class Agent {
      * @param agent1
      * @return Probabilistically chosen Site[2] of Sites for sexual contact.
      */
-    public static Site[] chooseSites(Agent agent0, Agent agent1)
+    public static Site[] CHOOSE_SITES(Agent agent0, Agent agent1)
     {
         Site site0 = agent0.chooseSite() ;
         Site site1 = agent1.chooseSite(site0) ;
@@ -1287,68 +1285,6 @@ public abstract class Agent {
     }
 
     /**
-     * Progresses course of STI in Agents who have one.
-     * Treats Agents who are symptomatic or randomly choose to be treated.
-     * Tracks if treatment was successful.
-     * Check if disease has run its course and clears it if so.
-     * @return (String) record in STIs progress
-     */
-    private String progressInfection(String[] args)
-    {
-        String record = "" ;
-        boolean infected ;
-        //long startTime = System.nanoTime() ;
-
-        {
-            //LOGGER.log(Level.INFO,"infected:{0}",agent.getAgentId());
-            //record += Reporter.ADD_REPORT_PROPERTY("agentId",agent.getAgentId()) ;
-            infected = getInfectedStatus();
-            //record += Reporter.ADD_REPORT_PROPERTY("infected", infected) ;
-            
-            // Due for an STI screen?
-            if (RAND.nextDouble() < getScreenProbability(args)) 
-            {
-                record += Reporter.ADD_REPORT_PROPERTY("agentId",agentId) ;
-                record += Reporter.ADD_REPORT_LABEL("tested") ;
-                if (infected)
-                {
-                    //LOGGER.info("screening agentId:"+String.valueOf(agent.getAgentId())) ;
-                    
-                    for (Site site : getSites())
-                    {
-                        if (getInfectedStatus(site) != 0)
-                            record += Reporter.ADD_REPORT_PROPERTY(site.toString(), getSymptomatic(site)) ;
-                    }
-                    treat() ;
-                    record += Reporter.ADD_REPORT_LABEL("treated") ;
-                }
-                record += " " ;
-            }
-            else if (infected)
-            {
-                //LOGGER.log(Level.INFO, "infected:{0}", agent.getAgentId());
-                record += Reporter.ADD_REPORT_PROPERTY("agentId",agentId) ;
-                for (Site site : getSites())
-                {
-                    if (getInfectedStatus(site) != 0)
-                        record += Reporter.ADD_REPORT_PROPERTY(site.toString(), getSymptomatic(site)) ;
-                    //LOGGER.info(site.toString()) ;
-                }
-                
-                // agent.progressSitesInfection() allow infection to run one cycle of its course
-                // and returns boolean whether agent is cleared (!stillInfected)
-                if (progressSitesInfection())
-                    record += Reporter.ADD_REPORT_PROPERTY("cleared") ;
-                else if (symptomatic)
-                    if (treatSymptomatic())  
-                        record += Reporter.ADD_REPORT_PROPERTY("tested","treated") ;
-            }
-        }
-        //LOGGER.info(record)
-        return record ;
-    }
-
-    /**
      * Invoked when Agent is symptomatic. Call each site.treat(). If all treatments successful, call clearSymptomatic()
      * @return true if all sites successfully treated, false otherwise
      */
@@ -1420,7 +1356,7 @@ public abstract class Agent {
     /**
      * Set symptomatic to false. Called only when all sites have been successfully treated.
      */
-    protected void clearSymptomatic()
+    final protected void clearSymptomatic()
     {
         symptomatic = false ;
     }
@@ -1502,9 +1438,7 @@ public abstract class Agent {
     }
 
     /**
-     * Called by Methods using consentArgs() to generate desired data
-     * TODO: Remove middle step if Relationship.subclass and Agent partner not
-     * adequate for decision.
+     * Called by Methods using consentArgs() to generate desired data.
      * 
      * @param consentArgs
      * @return consent(String,Agent)
@@ -1516,7 +1450,7 @@ public abstract class Agent {
     
     /**
      * Whether to enter a proposed relationship of class relationshipClazz .
-     * Currently according to whether in a monogomous relationship and 
+     * Currently according to whether in a Monogomous relationship and 
      * the number of relationships already entered compared to concurrency.
      * It is advisable for subclasses of Agent to invoke this Method if they 
      * override with super.consent() .
@@ -1563,6 +1497,7 @@ public abstract class Agent {
     
     /**
      * Whether to accept proposed Casual Relationship.
+     * DEPRECATED.
      * @param partner (Agent) with whom Relationship is proposed.
      * @return (Boolean) true if accept and false otherwise
      */
@@ -1638,8 +1573,10 @@ public abstract class Agent {
     }
 
     /**
-     * For ending Relationships for which this Agent has the lower agentId
-     * @param relationship
+     * For ending Relationships for which this Agent has the lower agentId.
+     * Agent now knows that they are no longer the lowestAgentId Agent of
+     * relationship.
+     * @param (Relationship) relationship
      * @return 
      */
     public String diminishLowerAgentId(Relationship relationship)
@@ -1700,10 +1637,10 @@ public abstract class Agent {
     /**
      * To avoid double application of Relationship.Methods() we act from the 
      * Agent with the smallest agentId
-     * @param relationship
-     * @return true if relationship left, false otherwise
+     * @param (Relationship) relationship
+     * @return String record of relationship.relationshipId
      */
-    final private String endRelationship(Relationship relationship)
+    private String endRelationship(Relationship relationship)
     { 
         String record = "" ;
         //record = Reporter.ADD_REPORT_LABEL("death");
@@ -1716,7 +1653,7 @@ public abstract class Agent {
     }
 
     /**
-     * 
+     * DEPRECATED
      * @return String indicating disease (HIV) status
      */
     public String declareStatus()
@@ -1728,7 +1665,7 @@ public abstract class Agent {
      * Override and call in subclass if details about possible partners are 
      * needed.
      * TODO: Currently not used but may be in future if Relationship subclass
-     * and Agent partner are not longer enough data
+     * and Agent partner are no longer enough data
      * 
      * @param relationshipClazzName
      * @param agent
@@ -1797,6 +1734,7 @@ public abstract class Agent {
         leaveRelationship(doomedRelationship) ;
     }
 
+    /** Probably deprecated */
     public String enterCasual(Relationship relationship)
     {
         String report = "casual:" ;
@@ -1811,6 +1749,7 @@ public abstract class Agent {
             casualNumber++ ;
     }
 
+    /** Probably deprecated */
     public String enterRegular(Relationship relationship)
     {
         String report = "regular:" ;
@@ -1825,6 +1764,7 @@ public abstract class Agent {
             regularNumber++ ;
     }
 
+    /** Probably deprecated */
     public String enterMonogomous(Relationship relationship)
     {
         String report = "monogomous:" ;
@@ -1848,6 +1788,7 @@ public abstract class Agent {
     public void leaveCasual(int agentNb)
     {
         leaveCasual(agentNb) ;
+        LOGGER.info("This Method is being used") ;
         casualNumber-- ;
     }
 
@@ -1928,10 +1869,9 @@ public abstract class Agent {
         
     /**
      * Make agent die and clear their Relationships
- Default based on startAge, uniform probability with cutoff at maxLife
-     * @return true if they die, false otherwise
+     * Default based on startAge, uniform probability with cutoff at maxLife
      */
-    final private void death()
+    private void death()
     {
         //String report = Reporter.ADD_REPORT_LABEL("death") ; 
         //report += Reporter.ADD_REPORT_PROPERTY("agentId",agentId) ;
