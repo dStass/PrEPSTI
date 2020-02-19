@@ -1928,7 +1928,9 @@ public class Reporter {
                         {
                             for (int priorIndex : priorScoreIndices)
                             {
-                                String[] priorValues = priorData.get(categoryValue) ;
+                                String[] priorValues = new String[] {} ;
+                                if (priorData.containsKey(categoryValue))
+                                    priorValues = priorData.get(categoryValue) ;
                                 if (priorIndex < priorValues.length)
                                     initCategoryValue += COMMA + priorValues[priorIndex] ;
                                 else
@@ -2947,16 +2949,16 @@ public class Reporter {
      */
     public static void main(String[] args)
     {
-        String folderPath = "output/prePrEP/" ;
+        String folderPath = "output/prep/" ;
         //String folderPath = "output/prePrEP/" ;
         //String[] simNames = new String[] {"to2017newSort17aaPop40000Cycles5110", "to2017newSort17baPop40000Cycles5110","to2017newSort17caPop40000Cycles5110","to2017newSort17daPop40000Cycles5110","to2017newSort17eaPop40000Cycles5110",
           //  "to2017newSort17faPop40000Cycles5110", "to2017newSort17gaPop40000Cycles5110","to2017newSort17haPop40000Cycles5110","to2017newSort17iaPop40000Cycles5110","to2017newSort17jaPop40000Cycles5110"} ;
         //String[] simNames = new String[] {"from2007seek27aPop40000Cycles5475","from2007seek27bPop40000Cycles5475","from2007seek27cPop40000Cycles5475","from2007seek27dPop40000Cycles5475","from2007seek27ePop40000Cycles5475",
         //"from2007seek27fPop40000Cycles5475","from2007seek27gPop40000Cycles5475","from2007seek27hPop40000Cycles5475","from2007seek27iPop40000Cycles5475","from2007seek27jPop40000Cycles5475"} ;
     
-        String prefix = "to2014fix3Choice23" ;
+        String prefix = "to2019fix3Choice23" ;
         //String prefix = "from2014regularP5Risk6" ;
-        String suffix = "Pop40000Cycles5840" ;
+        String suffix = "Pop40000Cycles6570" ;
         ArrayList<String> simNameList = new ArrayList<String>() ;
         //String letter0 = "a" ;
         for (String letter0 : new String[] {"a","b","c","d","e","f","g","h","i","j"})
@@ -2976,7 +2978,7 @@ public class Reporter {
         int cutoff = 50 ;
         if (simNameList.size() < 50)
             cutoff = simNameList.size() ;
-        MULTI_WRITE_CSV(simNameList.subList(0, cutoff), "year", "Rectum_true", "riskyIncidence_HIV", folderPath) ; // "C:\\Users\\MichaelWalker\\OneDrive - UNSW\\gonorrhoeaPrEP\\simulator\\PrEPSTI\\output\\prep\\") ; // 
+        MULTI_WRITE_CSV(simNameList.subList(0, cutoff), "year", "all_false", "riskyIncidence_HIV", folderPath) ; // "C:\\Users\\MichaelWalker\\OneDrive - UNSW\\gonorrhoeaPrEP\\simulator\\PrEPSTI\\output\\prep\\") ; // 
         LOGGER.info(String.valueOf(cutoff) + " simulations included.") ;
         //PREPARE_GRAY_REPORT(simNames,folderPath,2007,2017) ;
     }
