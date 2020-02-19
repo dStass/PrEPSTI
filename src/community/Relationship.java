@@ -481,7 +481,7 @@ public class Relationship {
             //Class<?> agentClazz = agent0.getClass() ; //.asSubclass(agent0.getClass()) ;
 
             // TODO: Generalise to arbitrary Agent subClasses
-            Site[] sites = MSM.chooseSites(agent0, agent1) ;
+            Site[] sites = MSM.CHOOSE_SITES(agent0, agent1) ;
             Site site0 = sites[0] ;
             Site site1 = sites[1] ;
             
