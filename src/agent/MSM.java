@@ -209,8 +209,12 @@ public class MSM extends Agent {
         // Trust is zero until 2013, which is year 6.
         if (year < 6)
             return report ;
-        double lastUndetectable = PROPORTION_UNDETECTABLE[year - 1] ; 
-        double undetectableProportion = PROPORTION_UNDETECTABLE[year] ;
+        
+        int undetectableYear = year ;
+        if (undetectableYear >= PROPORTION_UNDETECTABLE.length)
+            undetectableYear = PROPORTION_UNDETECTABLE.length - 1 ;
+        double lastUndetectable = PROPORTION_UNDETECTABLE[undetectableYear - 1] ; 
+        double undetectableProportion = PROPORTION_UNDETECTABLE[undetectableYear] ;
         
         year -= 5 ;
         // Start from year 2012
