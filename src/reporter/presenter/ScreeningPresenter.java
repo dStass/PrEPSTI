@@ -81,18 +81,19 @@ public class ScreeningPresenter extends Presenter {
     
     public static void main(String[] args)
     {
-        //String prefix = "fix3debug23" ;
-        String prefix = "to2025fix23" ;
-        String suffix = "Pop40000Cycles8760" ;
+        String prefix = "debugTrust" ;
+        //String prefix = "to2019fix23" ;
+        String suffix = "Pop40000Cycles6570" ;
         ArrayList<String> simNameList = new ArrayList<String>() ;
+        simNameList.add("rebootPop20000Cycles1825") ;
         //String letter0 = "" ;
-        for (String letter0 : new String[] {"a","b","c","d","e","f","g","h","i","j"})
-            for (String letter1 : new String[] {"a","b","c","d","e"})
-                simNameList.add(prefix + letter0 + letter1 + suffix) ;
+//        for (String letter0 : new String[] {"a","b","c","d","e","f","g","h","i","j"})
+//            for (String letter1 : new String[] {"a","b","c","d","e"})
+//                simNameList.add(prefix + letter0 + letter1 + suffix) ;
         
         simNames = simNameList.toArray(new String[] {}) ;
         
-        //String simName = "testUpdate48aPop20000Cycles1825" ;
+        //String simName = "rebootPop20000Cycles1825" ;
         //String simName = "Qibin1p0aPop40000Cycles1460" ;
         //String simName = "to2017newSort17aaPop40000Cycles5110" ;
         //String simName = "to2012max3sameScreen34cPop40000Cycles4380" ;
@@ -129,8 +130,8 @@ public class ScreeningPresenter extends Presenter {
         //String reportFileName = "output/untouchable/" ; // args[2] ;
         //String reportFileName = "output/prep/" ; // args[2] ;
         //String reportFileName = "output/prePrEP/" ; // args[2] ;
-        //String reportFileName = "output/test/" ; // args[2] ;
-        String reportFileName = "output/to2025/" ; // args[2] ;
+        String reportFileName = "output/test/" ; // args[2] ;
+        //String reportFileName = "output/to2025/" ; // args[2] ;
         //String reportFileName = "output/year2012/" ; // args[2] ;
         //String reportFileName = "output/year2010/" ; // args[2] ;
         //String reportFileName = "output/year2007/" ; // args[2] ;
@@ -141,7 +142,6 @@ public class ScreeningPresenter extends Presenter {
         //Reporter.MULTI_WRITE_CSV(simNameList, "year", "Urethra_true", "riskyIncidence", screeningPresenter.reporter.getFolderPath()) ;
 
         String[] siteNames  = new String[] {"Pharynx","Rectum","Urethra"} ;
-        //String[] simNames = new String[] {"test2Pop30000Cycles500","test3Pop30000Cycles500","test4Pop30000Cycles500"} ;
         //String[] testArray[] = Arrays.asList(siteNames).subList(0,0)
         
         
@@ -160,7 +160,7 @@ public class ScreeningPresenter extends Presenter {
         //screeningPresenter.multiPlotScreening(new Object[] {"prevalence","prevalence",new String[] {"Pharynx","Rectum","Urethra"}});
         //screeningPresenter.plotIncidencePerCycle(siteNames) ;
         //screeningPresenter.plotFinalAtRiskIncidentsRecord(siteNames,0,"statusHIV") ;
-        screeningPresenter.plotYearsAtRiskIncidenceReport(siteNames, 16, 2025, "statusHIV") ;
+        screeningPresenter.plotYearsAtRiskIncidenceReport(siteNames, 5, 2019, "statusHIV") ;
         //screeningPresenter.plotYearsBeenTestedReport(13, 0, 0, 2019, "statusHIV") ;
         //screeningPresenter.plotNotificationsPerCycle(siteNames) ;
         //screeningPresenter.plotSitePrevalence(siteNames) ;
@@ -832,9 +832,9 @@ public class ScreeningPresenter extends Presenter {
         HashMap<Comparable,String> atRiskIncidenceReport ;
                // = reporter.prepareYearsAtRiskIncidenceReport(siteNames, backYears, lastYear, sortingProperty) ;
         ArrayList<HashMap<Comparable,String>> reports = new ArrayList<HashMap<Comparable,String>>() ;
-        String reportName = "riskyIncidence" ;
-        if (!sortingProperty.isEmpty())
-            reportName += "_" + sortingProperty ;
+        String reportName = GENERATE_SORTED_LABEL("riskyIncidence",sortingProperty) ;
+//        if (!sortingProperty.isEmpty())
+//            reportName += "_" + sortingProperty ;
         
         for (String simulation : simNames)
         {
@@ -843,7 +843,7 @@ public class ScreeningPresenter extends Presenter {
             HashMap<Comparable,String> report = screeningReporter.prepareYearsAtRiskIncidenceReport(siteNames, backYears, lastYear, sortingProperty) ;
             Reporter.CLEAR_REPORT_LIST() ; 
             reports.add((HashMap<Comparable,String>) report.clone()) ;
-            Reporter.DUMP_OUTPUT(GENERATE_SORTED_LABEL("riskyIncidence",sortingProperty),simulation,reporter.getFolderPath(),report);
+            Reporter.DUMP_OUTPUT(reportName,simulation,reporter.getFolderPath(),report);
         }
         //Reporter.WRITE_CSV_DISTRIBUTION(reports, "at-risk incidence-rate", simNames[0], "output/prep/") ;
         atRiskIncidenceReport = Reporter.PREPARE_MEAN_HASHMAP_REPORT(reports,"year","INCIDENCE",simNames[0]) ;
