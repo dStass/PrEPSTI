@@ -139,8 +139,6 @@ public class Presenter {
             sortingProperty = sortingProperty.substring(0, sortingProperty.indexOf("Status")) ;
         else if (sortingProperty.startsWith("status"))
             sortingProperty = sortingProperty.substring(6) ;    // "status".length() = 6
-        else
-            LOGGER.warning("sortingProperty:" + sortingProperty + ":") ;
         
         // Represent value of sortingProperty
         String valueString = labelParts[labelParts.length - 1] ;
