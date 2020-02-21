@@ -2022,6 +2022,8 @@ public class MSM extends Agent {
             double prepProbability = prepProbabilityArray[year] / riskyProbability ;
             setPrepStatus(RAND.nextDouble() < prepProbability) ;
         }
+        else
+            setPrepStatus(false) ;
         
         return (prep != prepStatus) ;
     }
@@ -2193,7 +2195,7 @@ public class MSM extends Agent {
         //if (testCondom)
           //  return (RAND.nextDouble() < probabilityUseCondom ) ;
         
-        boolean localRiskyStatus ; // = false ;
+        boolean localRiskyStatus ; 
         double localProbabilityUseCondom ;
         if ("Casual".equals(relationshipClazzName))
         {
@@ -2218,21 +2220,20 @@ public class MSM extends Agent {
             if (statusHIV && trustUndetectable)    // trustUndetectable => undetectableStatus for HIV positive
                 return false ;
             
+            if (trustUndetectable && !statusHIV)
+                if (partner.undetectableStatus)
+                    return false ;
+            
+            if (trustPrep && statusHIV)
+                if (partner.prepStatus)
+                    return false ;
+                
+            
             if (partner.discloseStatusHIV || discloseStatusHIV)
             {
                 if (statusHIV == partner.statusHIV)
                         return false ;
                 
-                if (partner.statusHIV)
-                    if (partner.undetectableStatus && trustUndetectable)
-                        return false ;
-                
-                if (statusHIV)
-                {
-                    if (partner.prepStatus && trustPrep)
-                        return false ;
-                }
-               
                 if (seroPosition && partner.seroPosition)
                     return false; // (RAND.nextDouble() < probabilityUseCondom ) ;
             }
@@ -2245,24 +2246,29 @@ public class MSM extends Agent {
             if (prepStatus)
                 return (RAND.nextDouble() < localProbabilityUseCondom ) ;
             
+            if (statusHIV && trustUndetectable)    
+                    return (RAND.nextDouble() < localProbabilityUseCondom ) ;
+            
+            if (trustUndetectable && !statusHIV)
+                if (partner.undetectableStatus)
+                    return (RAND.nextDouble() < localProbabilityUseCondom ) ;
+                
+            if (trustPrep && statusHIV)
+                if (partner.prepStatus)
+                    return (RAND.nextDouble() < localProbabilityUseCondom ) ;
+            
             if (partner.discloseStatusHIV || discloseStatusHIV)
             {
                 if (statusHIV == partner.statusHIV) 
                     return (RAND.nextDouble() < localProbabilityUseCondom ) ;
-                else if (partner.statusHIV)
-                {
-                    if ((!partner.undetectableStatus) || (!trustUndetectable))
-                        return true ;
-                }
-                else if (!trustUndetectable)    // statusHIV is positive
-                    return true ;  
-                else if ((!partner.prepStatus) || (!trustPrep))    // partner HIV negative
-                    return true ;
+                
+                if (seroPosition && partner.seroPosition)
+                    return (RAND.nextDouble() < probabilityUseCondom ) ;
             }
-            else
-                return true ;
             
-            return (RAND.nextDouble() < localProbabilityUseCondom ) ;  //TODO: Should there be subset who always use?
+            return true ;
+            
+            //return (RAND.nextDouble() < localProbabilityUseCondom ) ;  //TODO: Should there be subset who always use?
         }
     }
     
