@@ -79,7 +79,7 @@ public class MSM extends Agent {
     static double PROBABILITY_NEGATIVE_SERO_POSITION = 0.154 ;
     /** The proportion of HIV-positives whose viral load is undetectable, given positive HIV status */
     static double[] PROPORTION_UNDETECTABLE = {0.566, 0.647, 0.701, 0.723, 0.747, 0.816, 0.734, 0.808, 
-            0.856, 0.847, 0.918, 0.918, 0.918} ;
+            0.856, 0.847, 0.918} ;
     
     /**
      * Coordinates the reinitialisation of Agent parameters when they change 
@@ -2011,7 +2011,7 @@ public class MSM extends Agent {
         //double[] prepProbabilityArray = new double[] {0.011,0.014,0.014,0.039,0.139,0.204,0.204} ;
         // Most recent
         double[] prepProbabilityArray = new double[] {0.011,0.014,0.017,0.049,0.167,0.239,0.310  // 2013 to 2019
-                ,0.39,0.46,0.53,0.60,0.67,0.74    // 2020 to 2025
+            //    ,0.39,0.46,0.53,0.60,0.67,0.74    // 2020 to 2025
         } ;
         if (year >= prepProbabilityArray.length)
             year = prepProbabilityArray.length - 1 ;
@@ -2232,7 +2232,10 @@ public class MSM extends Agent {
             if (partner.discloseStatusHIV || discloseStatusHIV)
             {
                 if (statusHIV == partner.statusHIV)
-                        return false ;
+                    return false ;
+                
+                if (partner.prepStatus && statusHIV)
+                    return false ;
                 
                 if (seroPosition && partner.seroPosition)
                     return false; // (RAND.nextDouble() < probabilityUseCondom ) ;
@@ -2262,6 +2265,9 @@ public class MSM extends Agent {
                 if (statusHIV == partner.statusHIV) 
                     return (RAND.nextDouble() < localProbabilityUseCondom ) ;
                 
+                if (partner.prepStatus && statusHIV)
+                    return (RAND.nextDouble() < localProbabilityUseCondom ) ;
+            
                 if (seroPosition && partner.seroPosition)
                     return (RAND.nextDouble() < probabilityUseCondom ) ;
             }
@@ -2371,7 +2377,7 @@ public class MSM extends Agent {
             risk = RISK_20 ;
         else 
             risk = RISK_15 ;
-        double noRiskPower = 1.0/DAYS_PER_YEAR ;
+        //double noRiskPower = 1.0/DAYS_PER_YEAR ;
         
         double noRisk = Math.pow((1 - risk/1000),1.0/DAYS_PER_YEAR) ;
         return 1 - noRisk ;
