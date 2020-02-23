@@ -36,14 +36,6 @@ public class Community {
     static final int AGENTS_PER_DAY = POPULATION / 365 ;
     static public int MAX_CYCLES ; // = 350 ; 
     static public String NAME_ROOT = "" ;
-    //static public String NAME_ROOT = "TestUrethraSymp60a2" ;
-    //static public String NAME_ROOT = "CorrectedSafe46a" ;
-    //static public String NAME_ROOT = "From2007To2012a" ;
-    //static public String NAME_ROOT = "IntroPrepCalibration74acycle6000" ;
-    //static public String NAME_ROOT = "FallingCondomUseNew5a" ;
-    //static public String NAME_ROOT = "AllRiskyI" ;
-    //static public String NAME_ROOT = "AllSexualContacts" 
-    //        + "DecliningCondomsAlteredTesting" ;
     static String NAME_SUFFIX = "Pop" + String.valueOf(POPULATION) + "Cycles" + String.valueOf(MAX_CYCLES) ;
     static public String SIM_NAME = NAME_ROOT + NAME_SUFFIX ;
 
@@ -70,7 +62,7 @@ public class Community {
     //static public String FILE_PATH = "/short/is14/mw7704/prepsti/output/year2007/" ;
     
     /** Whether parameters change throughout simulation. */
-    static boolean DYNAMIC = false ;
+    static boolean DYNAMIC = true ;
     
     /** Dump reports to disk after this many cycles. */
     static int DUMP_CYCLE = 250 ; // ((int) Math.pow(10, 7))/POPULATION ;
@@ -87,7 +79,7 @@ public class Community {
      * (String) Name of previous simulation to reload.
      * Nothing reloaded if this is an empty string.
      */
-    static final String RELOAD_SIMULATION = "" ; // "testRegularP5Risk6aaPop40000Cycles1825" "testRegularP5Risk6adPop40000Cycles1825" "testRegularP5Risk6aaPop40000Cycles1825"
+    static final String RELOAD_SIMULATION = "to2014fix3Choice23aaPop40000Cycles4745" ; // "debugRebootPop20000Cycles1825" ; 
     
     static public String getFilePath()
     {
@@ -447,7 +439,7 @@ public class Community {
         HashMap<Comparable,String> incidenceReportPrep = new HashMap<Comparable,String>() ;
         if (DYNAMIC)
         {
-            incidenceReport = screeningReporter.prepareYearsAtRiskIncidenceReport(siteNames, 18, 2019, "statusHIV") ;
+            incidenceReport = screeningReporter.prepareYearsAtRiskIncidenceReport(siteNames, 13, 2019, "statusHIV") ;
             //incidenceReportPrep = screeningReporter.prepareYearsAtRiskIncidenceReport(siteNames, 16, 2022, "prepStatus") ;
         }
         LOGGER.info("by HIV-status " + screeningReporter.prepareFinalAtRiskIncidentsRecord(siteNames, 0,"statusHIV")) ;
@@ -565,6 +557,8 @@ public class Community {
             this.initialRecord = "" ; 
             for (Agent agent : agents)
                 initialRecord += agent.getCensusReport() ;
+            initialRecord.concat("!") ;
+            
             Relationship.REBOOT_RELATIONSHIPS(simName, agents) ;
             
             rebootRandomSeeds(simName) ;
