@@ -1963,7 +1963,10 @@ public class MSM extends Agent {
     @Override
     protected void reInitScreenCycle(double rescale)
     {
-        if (getPrepStatus())
+        // For easily testing the effects of the PrEP screening regime
+        boolean checkPrepStatus = true ;
+        
+        if (checkPrepStatus && getPrepStatus())
             setScreenCycle((sampleGamma(31,1,1)) + 61) ;
         else
         {
@@ -2223,18 +2226,19 @@ public class MSM extends Agent {
             if (trustUndetectable && !statusHIV)
                 if (partner.undetectableStatus)
                     return false ;
+
+            if (partner.prepStatus && statusHIV)
+                return false ;
+                
             
-            if (trustPrep && statusHIV)
-                if (partner.prepStatus)
-                    return false ;
+//            if (trustPrep && statusHIV)
+//                if (partner.prepStatus)
+//                    return false ;
                 
             
             if (partner.discloseStatusHIV || discloseStatusHIV)
             {
                 if (statusHIV == partner.statusHIV)
-                    return false ;
-                
-                if (partner.prepStatus && statusHIV)
                     return false ;
                 
                 if (seroPosition && partner.seroPosition)
@@ -2256,18 +2260,18 @@ public class MSM extends Agent {
                 if (partner.undetectableStatus)
                     return (RAND.nextDouble() < localProbabilityUseCondom ) ;
                 
-            if (trustPrep && statusHIV)
-                if (partner.prepStatus)
-                    return (RAND.nextDouble() < localProbabilityUseCondom ) ;
+//            if (trustPrep && statusHIV)
+//                if (partner.prepStatus)
+
+            if (partner.prepStatus && statusHIV)
+                return (RAND.nextDouble() < localProbabilityUseCondom ) ;
+            
             
             if (partner.discloseStatusHIV || discloseStatusHIV)
             {
                 if (statusHIV == partner.statusHIV) 
                     return (RAND.nextDouble() < localProbabilityUseCondom ) ;
                 
-                if (partner.prepStatus && statusHIV)
-                    return (RAND.nextDouble() < localProbabilityUseCondom ) ;
-            
                 if (seroPosition && partner.seroPosition)
                     return (RAND.nextDouble() < probabilityUseCondom ) ;
             }
