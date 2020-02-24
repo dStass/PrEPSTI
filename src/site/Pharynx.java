@@ -15,7 +15,7 @@ public class Pharynx extends Site {
 
     // Constants that vary according to Site subclass
     /** Probability of initial gonorrhoea infection */
-    static double INITIAL = 0.020 ; // 0.045 ; 
+    static double INITIAL = 0.040 ; // 0.045 ; 
 
     /** Probability of positive symptomatic status if infected */
     static double SYMPTOMATIC_PROBABILITY = 0.0 ; // 0.40 ;
@@ -31,7 +31,7 @@ public class Pharynx extends Site {
      */
     static double TREATMENT_PROBABILITY = 0.4 ; // 0.3 ;
     
-    /** Days between asymptomatic STI screens . */
+    /** Days between STI screens in the absence of symptoms. */
     private int screenCycle = 160 ;
     
     /** Cycles remaining until next STI screen. */
@@ -47,14 +47,6 @@ public class Pharynx extends Site {
             super() ;
     }
 
-    /**
-     * Initialises screenCycle from a Gamma distribution to determine how often 
-     * Rectum is screened, and then starts the cycle in a random place so that 
-     * not every MSM screens his Rectum at the same time.
-     * @param statusHIV
-     * @param prepStatus
-     * @param rescale
-     */
     @Override
     public void initScreenCycle(boolean statusHIV, boolean prepStatus, double rescale)
     {
@@ -99,10 +91,6 @@ public class Pharynx extends Site {
         return INFECTION_DURATION ;
     }
     
-    /**
-     * setter for screenTime
-     * @param time 
-     */
     @Override
     public void setScreenTime(int time) {
         screenTime = time ;
@@ -125,13 +113,14 @@ public class Pharynx extends Site {
 
     /**
      * Adjusts per year the screening period.
-     * @param year
+     * @param year (int) Which year into the simulation to take value for.
+     * @param hivStatus (boolean) Whether the Agent has HIV.
      * @throws Exception 
      */
     @Override
     public void reinitScreenCycle(int year, boolean hivStatus) throws Exception
     {
-        double[] testRates = new double[] {} ;
+        double[] testRates ;
         double testBase ;
         // Go from 2007
         // Frequencies, given by per 1000 per year, from 2007-2016
