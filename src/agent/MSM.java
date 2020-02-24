@@ -2227,9 +2227,8 @@ public class MSM extends Agent {
                 if (partner.undetectableStatus)
                     return false ;
 
-            if (trustPrep && statusHIV)
-                if (partner.prepStatus)
-                    return false ;
+            if (partner.prepStatus && statusHIV)
+                return false ;
             
             if (partner.discloseStatusHIV || discloseStatusHIV)
             {
@@ -2255,9 +2254,8 @@ public class MSM extends Agent {
                 if (partner.undetectableStatus)
                     return (RAND.nextDouble() < localProbabilityUseCondom ) ;
                 
-            if (trustPrep && statusHIV)
-                if (partner.prepStatus)
-                    return (RAND.nextDouble() < localProbabilityUseCondom ) ;
+            if (statusHIV && partner.prepStatus)
+                return (RAND.nextDouble() < localProbabilityUseCondom ) ;
             
             if (partner.discloseStatusHIV || discloseStatusHIV)
             {
