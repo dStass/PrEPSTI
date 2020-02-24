@@ -346,7 +346,7 @@ public abstract class Agent {
         // Needed if rebootFile == false
         ArrayList<String> birthReport = new ArrayList<String>() ;
         ArrayList<ArrayList<Comparable>> agentDeathReport = new ArrayList<ArrayList<Comparable>>() ;
-        String screeningRecord = "" ;
+        //String screeningRecord = "" ;
         {
             String rebootFileName = simName.concat("-REBOOT.txt") ;
             try
@@ -371,7 +371,6 @@ public abstract class Agent {
         }
         
         int startAge ;
-        String id ;
                         
         String className ;
         Site[] sites ;
@@ -379,7 +378,7 @@ public abstract class Agent {
         String infectionString ;
         //int daysPerYear = 365 ;
         
-        ArrayList deadAgentIds = new ArrayList<Object>() ; // Get ArrayList of dead Agents so we don't waste time reading their data
+        //ArrayList deadAgentIds = new ArrayList<Object>() ; // Get ArrayList of dead Agents so we don't waste time reading their data
         
         // Reboot saved Agent data 
         int maxAgentId = 0 ;
@@ -392,10 +391,9 @@ public abstract class Agent {
             
             for (String birth : birthList)
             {
-                // Extract Agents still living
-                id = Reporter.EXTRACT_VALUE(AGENTID, birth);
-                if (deadAgentIds.contains(id))
-                    continue ;
+                // Extract Agents still living  // DEPRECATED 20/02/2020
+//                if (deadAgentIds.contains(id))
+//                    continue ;
                 
                 startAge = Integer.valueOf(Reporter.EXTRACT_VALUE("age",birth));
                 //age += (maxCycles - birthIndex)/daysPerYear ;
@@ -543,8 +541,7 @@ public abstract class Agent {
                 testProperty = property ;
                 //LOGGER.info(testProperty) ;
                 valueString = Reporter.EXTRACT_VALUE(property, census) ;
-                //if (property.equals("screenInterval"))
-                  //  property = "screenCycle" ;
+                
                 for (Class agentClazz : clazzFields.keySet())
                     for (Field field : clazzFields.get(agentClazz))
                         if (field.getName().equals(property))
