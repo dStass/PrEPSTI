@@ -14,7 +14,7 @@ public class Rectum extends Site {
     // Constants that vary according to Site subclass
     
     /** Probability of Site being infected initially */
-    static double INITIAL = 0.020 ; // 0.045
+    static double INITIAL = 0.040 ; // 0.045
     
     /** Probability of positive symptomatic status if infected */
     static double SYMPTOMATIC_PROBABILITY = 0.15 ;
@@ -95,6 +95,7 @@ public class Rectum extends Site {
      * 
      * @return Probability of site being infected initially.
      */
+    @Override
     protected double getInfectedProbability()
     {
         return INITIAL ;
@@ -104,6 +105,7 @@ public class Rectum extends Site {
      * 
      * @return The probability of an infection at this Site causing symptoms
      */        
+    @Override
     protected double getSymptomaticProbability()
     {
         return symptomaticProbability ; // SYMPTOMATIC_PROBABILITY ;
