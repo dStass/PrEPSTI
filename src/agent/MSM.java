@@ -2261,9 +2261,6 @@ public class MSM extends Agent {
             {
                 if (statusHIV == partner.statusHIV) 
                     return (RAND.nextDouble() < localProbabilityUseCondom ) ;
-                
-                if (seroPosition && partner.seroPosition)
-                    return (RAND.nextDouble() < localProbabilityUseCondom ) ;
             }
             
             return true ;
