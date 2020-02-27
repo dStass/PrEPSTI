@@ -1621,16 +1621,6 @@ public abstract class Agent {
         return lowerAgentId ;
     }
 
-    public void enterRelationship(int agentNb)
-    {
-        currentPartnerIds.add(agentNb) ;
-
-        nbRelationships++ ;
-
-        // Open to more ?
-        updateAvailable() ;
-    }
-
     /**
      * To avoid double application of Relationship.Methods() we act from the 
      * Agent with the smallest agentId
@@ -1721,7 +1711,8 @@ public abstract class Agent {
     }
 
     /**
-     * 
+     * Ends Relationship with the agent whose agentId is specified. 
+     * TODO: Check that it works correctly and fix if so.
      * @param agentNb 
      */
     private void leavePartnerId(int agentNb)
@@ -1731,85 +1722,18 @@ public abstract class Agent {
         leaveRelationship(doomedRelationship) ;
     }
 
-    /** Probably deprecated */
-    public String enterCasual(Relationship relationship)
-    {
-        String report = "casual:" ;
-        report += enterRelationship(relationship) ;
-        casualNumber++ ;
-        return report;
-    }
-
-    protected void enterCasual(int agentNb)
-    {
-            enterRelationship(agentNb) ;
-            casualNumber++ ;
-    }
-
-    /** Probably deprecated */
-    public String enterRegular(Relationship relationship)
-    {
-        String report = "regular:" ;
-            report += enterRelationship(relationship) ;
-            regularNumber++ ;
-            return report ;
-    }
-
-    protected void enterRegular(int agentNb)
-    {
-            enterRelationship(agentNb) ;
-            regularNumber++ ;
-    }
-
-    /** Probably deprecated */
-    public String enterMonogomous(Relationship relationship)
-    {
-        String report = "monogomous:" ;
-        report += enterRelationship(relationship) ;
-        inMonogomous = true ;
-        return report ;
-    }
-
-    protected void enterMonogomous(int agentNb)
-    {
-        enterRelationship(agentNb) ;
-        inMonogomous = true ;
-    }
-
     public void leaveCasual(Relationship relationship)
     {
-        //leaveRelationship(relationship) ;
-        casualNumber-- ;
-    }
-
-    public void leaveCasual(int agentNb)
-    {
-        leaveCasual(agentNb) ;
-        LOGGER.info("This Method is being used") ;
         casualNumber-- ;
     }
 
     public void leaveRegular(Relationship relationship)
     {
-        //leaveRelationship(relationship) ;
-        regularNumber-- ;
-    }
-
-    private void leaveRegular(int agentNb)
-    {
-        //leaveRelationship(agentNb) ;
         regularNumber-- ;
     }
 
     public void leaveMonogomous(Relationship relationship)
     {
-        //leaveRelationship(relationship) ;
-        inMonogomous = false ;
-    }
-
-    private void leaveMonogomous(int agentNb)
-    {
-        //leaveRelationship(agentNb) ;
         inMonogomous = false ;
     }
 
