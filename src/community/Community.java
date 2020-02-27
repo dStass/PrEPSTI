@@ -32,7 +32,7 @@ import java.util.logging.Level;
  *
  *******************************************************************/
 public class Community {
-    static final public int POPULATION = 40000 ;
+    static final public int POPULATION = 20000 ;
     static final int AGENTS_PER_DAY = POPULATION / 365 ;
     static public int MAX_CYCLES ; // = 350 ; 
     static public String NAME_ROOT = "" ;
@@ -79,7 +79,7 @@ public class Community {
      * (String) Name of previous simulation to reload.
      * Nothing reloaded if this is an empty string.
      */
-    static final String RELOAD_SIMULATION = "to2014fix3Choice23aaPop40000Cycles4745" ; // "debugRebootPop20000Cycles1825" ; 
+    static final String RELOAD_SIMULATION = "" ; // "to2014fix3Choice23aaPop40000Cycles4745" ; // "debugRebootPop20000Cycles1825" ; 
     
     static public String getFilePath()
     {
@@ -295,6 +295,8 @@ public class Community {
             Community.COMMENT += "Burnin reloaded from " + RELOAD_BURNIN ;
         }
         
+        EncounterReporter encounterReporter ; // = new EncounterReporter(Community.SIM_NAME,Community.FILE_PATH) ;
+        ScreeningReporter screeningReporter ; // = new ScreeningReporter(SIM_NAME,FILE_PATH) ;
         // simulation of maxCycles cycles
         
         cycleString = "0," ;
@@ -383,7 +385,7 @@ public class Community {
         //HashMap<Object,Number[]> plotReport = Reporter.INVERT_HASHMAP_LIST(relationshipReport, relationshipClassNames) ;
         //Reporter.WRITE_CSV(plotReport, "Number of Relationships", relationshipClassNames, "cumulativeRelationship", SIM_NAME, "output/test/") ;
         
-        ScreeningReporter screeningReporter = new ScreeningReporter(SIM_NAME,FILE_PATH) ;
+        screeningReporter = new ScreeningReporter(SIM_NAME,FILE_PATH) ;
                 //new ScreeningReporter("prevalence",community.screeningReport) ;
                 
         //ArrayList<Object> pharynxPrevalenceReport = screeningReporter.preparePrevalenceReport("Pharynx") ;
@@ -423,7 +425,7 @@ public class Community {
         
         //LOGGER.log(Level.INFO, "Notification rate {0}", new Object[] {finalNotificationsRecord});
         String[] siteNames = new String[] {"Pharynx","Rectum","Urethra"} ;
-        screeningReporter = new ScreeningReporter(SIM_NAME,FILE_PATH) ;
+        //screeningReporter = new ScreeningReporter(SIM_NAME,FILE_PATH) ;
         //String prevalenceReports = "" ;
         ArrayList<String> prevalenceReport ;
         for (String siteName : siteNames)
@@ -447,7 +449,7 @@ public class Community {
         //LOGGER.log(Level.INFO, "prevalence {0}", finalPrevalencesRecord) ;
         
         //EncounterReporter encounterReporter = new EncounterReporter("Agent to Agent",community.encounterReport) ;
-        EncounterReporter encounterReporter = new EncounterReporter(Community.SIM_NAME,Community.FILE_PATH) ;
+        encounterReporter = new EncounterReporter(Community.SIM_NAME,Community.FILE_PATH) ;
         LOGGER.info("Incidence " + encounterReporter.prepareFinalIncidenceRecord(new String[] {"Pharynx","Rectum","Urethra"}, 0, 0, 365, MAX_CYCLES).toString());
         LOGGER.info("Incidence " + encounterReporter.prepareSortedFinalIncidenceRecord(siteNames, 0, 0, 365, MAX_CYCLES, "statusHIV").toString());
 //            EncounterPresenter encounterPresenter
