@@ -50,7 +50,7 @@ abstract public class Site {
     
     
     //LOGGER
-    static final java.util.logging.Logger LOGGER = java.util.logging.Logger.getLogger("relationship") ;
+    static final java.util.logging.Logger LOGGER = java.util.logging.Logger.getLogger("site") ;
 
 
     // Array of available infection status'
@@ -98,12 +98,6 @@ abstract public class Site {
     /** Range of incubation periods. */
     static int RANGE_INCUBATION = 5 ;
 
-    // Probability of site transmitting infection, if all other probabilities unity
-    //static double TRANSMIT = 0.5 ;
-
-    // Probability of site becoming infected, if all other probabilities unity
-    //static double RECEIVE = 0.5 ;
-    
     /** Probability of treatment being sought and successful if symptomatic */
     //static double TREATMENT_PROBABILITY = 0.5 ;
     
@@ -432,7 +426,7 @@ abstract public class Site {
     
     /**
      * 
-     * @return (String) giving values of the agent's important properties.
+     * @return (String) giving values of the Site's important properties.
      */
     public String getCensusReport()
     {
