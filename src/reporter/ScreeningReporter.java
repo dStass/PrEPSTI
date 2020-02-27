@@ -1597,7 +1597,8 @@ public class ScreeningReporter extends Reporter {
             PopulationReporter populationReporter = new PopulationReporter(simName,getFolderPath()) ;
             sortedAgentsReport = populationReporter.agentIdSorted(sortingProperty,endCycle) ;
             Collections.addAll(sortingProperties,sortedAgentsReport.keySet().toArray()) ;
-            //LOGGER.info(sortedAgentsReport.keySet().toString());
+//            LOGGER.info(sortedAgentsReport.toString());
+//            LOGGER.info(sortedAgentsReport.keySet().toString());
         }
         else
             sortingProperties.add("") ;
