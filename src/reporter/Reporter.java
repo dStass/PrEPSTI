@@ -1245,32 +1245,40 @@ public class Reporter {
      * in the subreports are averaged over the innermost ArrayList.
      */
     static public HashMap<Object,String> 
-        PREPARE_MEAN_HASHMAP_REPORT(String propertyName, ArrayList<HashMap<Object,String>> reportList)
+        PREPARE_MEAN_HASHMAP_REPORT(String propertyName, ArrayList<HashMap<Comparable,String>> reportList)
     {
         // Find mean of reports
         HashMap<Object,String> meanReport = new HashMap<Object,String>() ;
         
-        HashMap<Object,String> firstReport = reportList.get(0) ;
+        HashMap<Comparable,String> firstReport = reportList.get(0) ;
         int nbReports = reportList.size() ;
         String firstReportString = firstReport.values().iterator().next() ;
-        ArrayList<String> reportProperties = IDENTIFY_PROPERTIES(firstReportString) ;
-        for (Object cycle : firstReport.keySet())
+        ArrayList<String> reportProperties ;
+        if (propertyName.isEmpty())
+            reportProperties = IDENTIFY_PROPERTIES(firstReportString) ;
+        else
+        {
+            reportProperties = new ArrayList<String>() ;
+            reportProperties.add(propertyName) ;
+        }
+        
+        for (Comparable key : firstReport.keySet())
         {
             String itemString ;
             String meanRecord = "" ;
             //Number[] meanRecord = new Number[nbSubReports] ;
-            //for (int itemIndex = 0 ; itemIndex < reportProperties.size() ; itemIndex++ );
+            for (String property : reportProperties) 
             {
                 double itemValue = 0.0 ;
-                for (HashMap<Object,String> report : reportList)
+                for (HashMap<Comparable,String> report : reportList)
                 {
-                    String record = report.get(cycle) ;
-                    itemValue += Double.valueOf(Reporter.EXTRACT_VALUE(propertyName,record)) ;
+                    String record = report.get(key) ;
+                    itemValue += Double.valueOf(Reporter.EXTRACT_VALUE(property,record)) ;
                 }
-                itemString = Reporter.ADD_REPORT_PROPERTY(propertyName, itemValue/nbReports) ;
-                meanRecord.concat(itemString) ;
+                itemString = Reporter.ADD_REPORT_PROPERTY(property, itemValue/nbReports) ;
+                meanRecord = meanRecord.concat(itemString) ;
             }
-            meanReport.put(cycle,meanRecord) ;
+            meanReport.put(key,meanRecord) ;
         }
         return meanReport ;
     }
@@ -1837,17 +1845,22 @@ public class Reporter {
      */
     static public boolean MULTI_WRITE_CSV(List<String> simNames, String categoryName, String scoreName, String reportName, String folderPath)
     {
-        HashMap<String,String> outputReport = new HashMap<String,String>() ;
-        // 
+        HashMap<Comparable,String> outputReport = new HashMap<Comparable,String>() ;
+        
+        // To keep track of scores and find their mean
+        HashMap<Comparable,Double> totalReport = new HashMap<Comparable,Double>() ;
+        
+        // Load prior data when looking at at-risk incidence
         String fileName = "gonoGoneWild" ;
-        HashMap<String,String[]> priorData = new HashMap<String,String[]>() ;
+        HashMap<Comparable,String[]> priorData = new HashMap<Comparable,String[]>() ;
         String[] priorScoreNames = new String[0] ;
         Integer[] priorScoreIndices = new Integer[2] ;
         
-        String firstLine = "" ;
+        // Set up header
+        String firstLine = "mean" + COMMA ;
         if (reportName.contains("riskyIncidence_HIV"))
         {
-            firstLine += "gono-gone-wild" + COMMA + "Ann. Surv. Rep." + COMMA ;
+            firstLine = "gono-gone-wild" + COMMA + "Ann. Surv. Rep." + COMMA + firstLine ;
             priorData = READ_CSV_STRING(fileName, DATA_FOLDER) ;
             priorScoreNames = priorData.get(categoryName) ;
             
@@ -1863,8 +1876,10 @@ public class Reporter {
                 if (priorIndex == priorScoreIndices.length)
                     break ;
             }
-            
         } 
+
+        //HashMap<Comparable,String> meanReport = PREPARE_MEAN_HASHMAP_REPORT(scoreName,simNames) ;
+
         for (String simulationName : simNames)
         {
             try
@@ -1872,7 +1887,7 @@ public class Reporter {
                 BufferedReader fileReader 
                     = new BufferedReader(new FileReader(folderPath + reportName + "_" + simulationName + ".txt")) ;
 
-                // Read input file of simulationName
+                // Read last line of input file of simulationName
                 String fileLine = "" ; // fileReader.readLine() ;
                 String fileLine2 = fileReader.readLine() ;
                 //fileLine2 = fileReader.readLine() ;
@@ -1937,9 +1952,11 @@ public class Reporter {
                                     initCategoryValue += COMMA + EMPTY ;
                             }
                         }
+                        totalReport.put(categoryValue, 0.0) ;
                         outputReport.put(categoryValue, initCategoryValue) ;
                     }
                     outputReport.put(categoryValue, String.join(COMMA, outputReport.get(categoryValue), scoreValue)) ;
+                    totalReport.put(categoryValue, totalReport.get(categoryValue) + Double.valueOf(scoreValue)) ;
                 }   
             }
             catch ( Exception e )
@@ -1949,6 +1966,25 @@ public class Reporter {
                 //return false;
             }
             
+        }
+        
+        // Insert mean scoreValues after priorData if present but before simulations
+        int nbSimulations = simNames.size() ;
+        int nbPriors = firstLine.split(COMMA).length - simNames.size() -1 ;
+        String value ;
+        String outputValue ;
+        for (Comparable categoryValue : outputReport.keySet() )
+        {
+            value = outputReport.get(categoryValue) ;
+            // categoryValue + COMMA
+            int meanIndex = value.indexOf(COMMA) + 1 ;
+            // priorData
+            for (int commaIndex = 0 ; commaIndex < 2 ; commaIndex++ )
+                meanIndex = value.indexOf(COMMA,meanIndex) + 1 ;
+            
+            Double meanValue = totalReport.get(categoryValue)/nbSimulations ;
+            outputValue = value.substring(0, meanIndex) + String.valueOf(meanValue) + COMMA + value.substring(meanIndex + 1) ;
+            outputReport.put(categoryValue, outputValue) ;
         }
 
         ArrayList<String> categoryValues = new ArrayList<String>() ;
@@ -2005,7 +2041,7 @@ public class Reporter {
         HashMap<Double,ArrayList<String>> comparisonReport = new HashMap<Double,ArrayList<String>>() ;
         
         // Read in data to compare against
-        HashMap<String,String[]> referenceReport = READ_CSV_STRING(referenceFileName, referenceFolder) ;
+        HashMap<Comparable,String[]> referenceReport = READ_CSV_STRING(referenceFileName, referenceFolder) ;
         ArrayList<String> scoreNames = new ArrayList<String>() ;
         Collections.addAll(scoreNames, referenceReport.get(categoryName)) ;
         String dataSuffix = "_wild" ;
@@ -2108,9 +2144,9 @@ public class Reporter {
      * @param folderPath
      * @return 
      */
-    static protected HashMap<String,String[]> READ_CSV_STRING(String fileName, String folderPath)
+    static protected HashMap<Comparable,String[]> READ_CSV_STRING(String fileName, String folderPath)
     {
-        HashMap<String,String[]> report = new HashMap<String,String[]>() ;
+        HashMap<Comparable,String[]> report = new HashMap<Comparable,String[]>() ;
         
         String key ;
         
@@ -2956,13 +2992,13 @@ public class Reporter {
         //String[] simNames = new String[] {"from2007seek27aPop40000Cycles5475","from2007seek27bPop40000Cycles5475","from2007seek27cPop40000Cycles5475","from2007seek27dPop40000Cycles5475","from2007seek27ePop40000Cycles5475",
         //"from2007seek27fPop40000Cycles5475","from2007seek27gPop40000Cycles5475","from2007seek27hPop40000Cycles5475","from2007seek27iPop40000Cycles5475","from2007seek27jPop40000Cycles5475"} ;
     
-        String prefix = "to2019fix3Choice23" ;
-        //String prefix = "from2014regularP5Risk6" ;
+        String prefix = "to2019oldParams23" ;
+        //String prefix = "from2015to2025linearPrep23" ;
         String suffix = "Pop40000Cycles6570" ;
         ArrayList<String> simNameList = new ArrayList<String>() ;
         //String letter0 = "a" ;
         for (String letter0 : new String[] {"a","b","c","d","e","f","g","h","i","j"})
-            for (String letter1: new String[] {"a","b","c"}) //,"d","e"}) //,"f"}) //,"g","h"})
+            for (String letter1: new String[] {"a","b","c"}) // ,"d","e","f"}) //,"g","h"})
                 for (String letter2 : new String[] {""}) //,"B"})
                     simNameList.add(prefix + letter2 + letter0 + letter1 + suffix) ;
         
@@ -2976,9 +3012,9 @@ public class Reporter {
         LOGGER.info(String.valueOf(simNameList.size()) + " simulations included.") ;
         //MULTI_WRITE_CSV(simNameList, "condomUse", folderPath) ; // "C:\\Users\\MichaelWalker\\OneDrive - UNSW\\gonorrhoeaPrEP\\simulator\\PrEPSTI\\output\\prep\\") ; // 
         int cutoff = 50 ;
-        if (simNameList.size() < 50)
+        if (simNameList.size() < cutoff)
             cutoff = simNameList.size() ;
-        MULTI_WRITE_CSV(simNameList.subList(0, cutoff), "year", "all_false", "riskyIncidence_HIV", folderPath) ; // "C:\\Users\\MichaelWalker\\OneDrive - UNSW\\gonorrhoeaPrEP\\simulator\\PrEPSTI\\output\\prep\\") ; // 
+        MULTI_WRITE_CSV(simNameList.subList(0, cutoff), "year", "Pharynx_false", "riskyIncidence_HIV", folderPath) ; // "C:\\Users\\MichaelWalker\\OneDrive - UNSW\\gonorrhoeaPrEP\\simulator\\PrEPSTI\\output\\prep\\") ; // 
         LOGGER.info(String.valueOf(cutoff) + " simulations included.") ;
         //PREPARE_GRAY_REPORT(simNames,folderPath,2007,2017) ;
     }
