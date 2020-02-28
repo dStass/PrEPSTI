@@ -630,52 +630,52 @@ public class MSM extends Agent {
      * @param agentList (ArrayList) List of Agents to undergo parameter change.
      * @param year (int) Year of simulation, starting from zero.
      */
-    static protected void REINIT_USE_GSN(ArrayList<Agent> agentList, int year)
-    {
-        if (year == 0)
-            return ;
-        double[] gsnArray = new double[] {0.0,0.0,0.0,0.0, 22.9, 31.5, 36.1, 41.9, 46.0, 49.5, 48.8, 50.8} ;
-        
-        double probabilityGSN = gsnArray[year] ;
-        if (probabilityGSN == 0.0)
-            return ;
-        double lastProbabilityGSN = gsnArray[year - 1] ;
-        
-        boolean moreGSN = ( lastProbabilityGSN < probabilityGSN ) ;
-        if (lastProbabilityGSN == 0.0)
-            for (Agent agent : agentList)
-                agent.setUseGSN(RAND.nextDouble() < probabilityGSN) ;
-        else
-        {
-            double changeProbability ;
-
-            for (Agent agent : agentList)
-            {
-                // Compensates for allowing only change in one direction.
-                if (moreGSN) 
-                {
-                    changeProbability = (probabilityGSN - lastProbabilityGSN)/(1-lastProbabilityGSN) ;
-                }
-                else
-                    changeProbability = probabilityGSN/lastProbabilityGSN ;
-
-
-                if (moreGSN) 
-                {
-                    if (agent.useGSN) // if using GSN already
-                        continue ;    // we don't change it
-                    agent.setUseGSN(RAND.nextDouble() < changeProbability) ;
-                }
-                else    // riskyProbability has gone down
-                {
-                    if (!agent.useGSN)// if not using GSN already
-                        continue ;    // we don't change it
-                    // equivalent to correct calculation: RAND > (1 - changeProbability)
-                    agent.setUseGSN(RAND.nextDouble() < changeProbability) ; 
-                }
-            }
-        }
-    }
+//    static protected void REINIT_USE_GSN(ArrayList<Agent> agentList, int year)
+//    {
+//        if (year == 0)
+//            return ;
+//        double[] gsnArray = new double[] {0.0,0.0,0.0,0.0, 22.9, 31.5, 36.1, 41.9, 46.0, 49.5, 48.8, 50.8} ;
+//        
+//        double probabilityGSN = gsnArray[year] ;
+//        if (probabilityGSN == 0.0)
+//            return ;
+//        double lastProbabilityGSN = gsnArray[year - 1] ;
+//        
+//        boolean moreGSN = ( lastProbabilityGSN < probabilityGSN ) ;
+//        if (lastProbabilityGSN == 0.0)
+//            for (Agent agent : agentList)
+//                agent.setUseGSN(RAND.nextDouble() < probabilityGSN) ;
+//        else
+//        {
+//            double changeProbability ;
+//
+//            for (Agent agent : agentList)
+//            {
+//                // Compensates for allowing only change in one direction.
+//                if (moreGSN) 
+//                {
+//                    changeProbability = (probabilityGSN - lastProbabilityGSN)/(1-lastProbabilityGSN) ;
+//                }
+//                else
+//                    changeProbability = probabilityGSN/lastProbabilityGSN ;
+//
+//
+//                if (moreGSN) 
+//                {
+//                    if (agent.useGSN) // if using GSN already
+//                        continue ;    // we don't change it
+//                    agent.setUseGSN(RAND.nextDouble() < changeProbability) ;
+//                }
+//                else    // riskyProbability has gone down
+//                {
+//                    if (!agent.useGSN)// if not using GSN already
+//                        continue ;    // we don't change it
+//                    // equivalent to correct calculation: RAND > (1 - changeProbability)
+//                    agent.setUseGSN(RAND.nextDouble() < changeProbability) ; 
+//                }
+//            }
+//        }
+//    }
     
     /**
      * Resets the probability of consenting to a Casual relationship according to 
@@ -957,19 +957,19 @@ public class MSM extends Agent {
     private boolean riskyStatusRegular ;
     
     /** Transmission probabilities per sexual contact from Urethra to Rectum */
-    static double URETHRA_TO_RECTUM = 0.85 ; 
+    static double URETHRA_TO_RECTUM = 0.95 ; 
     /** Transmission probabilities sexual contact from Urethra to Pharynx. */
-    static double URETHRA_TO_PHARYNX = 0.45 ; // 0.50 ; 
+    static double URETHRA_TO_PHARYNX = 0.50 ; 
     /** Transmission probabilities sexual contact from Rectum to Urethra. */
-    static double RECTUM_TO_URETHRA = 0.010 ; // 0.010 ;
+    static double RECTUM_TO_URETHRA = 0.015 ; // 0.010 ;
     /** Transmission probabilities sexual contact from Rectum to Pharynx. */
-    static double RECTUM_TO_PHARYNX = 0.030 ; // 0.025 ;
+    static double RECTUM_TO_PHARYNX = 0.025 ;
     /** Transmission probabilities sexual contact in Pharynx to Urethra intercourse. */
     static double PHARYNX_TO_URETHRA = 0.005 ; // 0.010 ; 
     /** Transmission probabilities sexual contact in Pharynx to Rectum intercourse. */
     static double PHARYNX_TO_RECTUM = 0.020 ; // 0.020 ; 
     /** Transmission probabilities sexual contact in Pharynx to Pharynx intercourse (kissing). */
-    static double PHARYNX_TO_PHARYNX = 0.055 ; // 0.055 ; 
+    static double PHARYNX_TO_PHARYNX = 0.040 ;
     /** Transmission probabilities sexual contact in Urethra to Urethra intercourse (docking). */
     static double URETHRA_TO_URETHRA = 0.001 ; // 0.020 ; 
     /** Transmission probabilities sexual contact in Rectum to Rectum intercourse. */
