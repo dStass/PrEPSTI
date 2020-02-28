@@ -206,6 +206,9 @@ public class Community {
         // Whether to plot prevalence upon completion.
         // Must be false when run on an HPC cluster.
         TO_PLOT = (!FILE_PATH.contains("prepsti")) ;
+        EncounterReporter encounterReporter = new EncounterReporter(Community.SIM_NAME,Community.FILE_PATH) ;
+        ScreeningReporter screeningReporter = new ScreeningReporter(SIM_NAME,FILE_PATH) ;
+        
         
         // Record starting time to measure running time
         long startTime = System.nanoTime() ;
@@ -295,8 +298,6 @@ public class Community {
             Community.COMMENT += "Burnin reloaded from " + RELOAD_BURNIN ;
         }
         
-        EncounterReporter encounterReporter ; // = new EncounterReporter(Community.SIM_NAME,Community.FILE_PATH) ;
-        ScreeningReporter screeningReporter ; // = new ScreeningReporter(SIM_NAME,FILE_PATH) ;
         // simulation of maxCycles cycles
         
         cycleString = "0," ;
@@ -385,7 +386,7 @@ public class Community {
         //HashMap<Object,Number[]> plotReport = Reporter.INVERT_HASHMAP_LIST(relationshipReport, relationshipClassNames) ;
         //Reporter.WRITE_CSV(plotReport, "Number of Relationships", relationshipClassNames, "cumulativeRelationship", SIM_NAME, "output/test/") ;
         
-        screeningReporter = new ScreeningReporter(SIM_NAME,FILE_PATH) ;
+        //screeningReporter = new ScreeningReporter(SIM_NAME,FILE_PATH) ;
                 //new ScreeningReporter("prevalence",community.screeningReport) ;
                 
         //ArrayList<Object> pharynxPrevalenceReport = screeningReporter.preparePrevalenceReport("Pharynx") ;
@@ -438,7 +439,7 @@ public class Community {
         LOGGER.log(Level.INFO,"{0} {1}", new Object[] {"all", prevalenceReport.get(prevalenceReport.size() - 1)}) ;
 
         HashMap<Comparable,String> incidenceReport = new HashMap<Comparable,String>() ;
-        HashMap<Comparable,String> incidenceReportPrep = new HashMap<Comparable,String>() ;
+        //HashMap<Comparable,String> incidenceReportPrep = new HashMap<Comparable,String>() ;
         if (DYNAMIC)
         {
             incidenceReport = screeningReporter.prepareYearsAtRiskIncidenceReport(siteNames, 13, 2019, "statusHIV") ;
@@ -449,7 +450,7 @@ public class Community {
         //LOGGER.log(Level.INFO, "prevalence {0}", finalPrevalencesRecord) ;
         
         //EncounterReporter encounterReporter = new EncounterReporter("Agent to Agent",community.encounterReport) ;
-        encounterReporter = new EncounterReporter(Community.SIM_NAME,Community.FILE_PATH) ;
+        //encounterReporter = new EncounterReporter(Community.SIM_NAME,Community.FILE_PATH) ;
         LOGGER.info("Incidence " + encounterReporter.prepareFinalIncidenceRecord(new String[] {"Pharynx","Rectum","Urethra"}, 0, 0, 365, MAX_CYCLES).toString());
         LOGGER.info("Incidence " + encounterReporter.prepareSortedFinalIncidenceRecord(siteNames, 0, 0, 365, MAX_CYCLES, "statusHIV").toString());
 //            EncounterPresenter encounterPresenter
