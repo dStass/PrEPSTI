@@ -280,7 +280,7 @@ public abstract class Agent {
     protected double probabilityUseCondomMonogomous = RAND.nextDouble() ;
     
     /** Does the Agent use a GeoSpatial Network (eg Grindr) */
-    protected boolean useGSN = false ;
+    //protected boolean useGSN = false ;
 
     static final java.util.logging.Logger LOGGER = java.util.logging.Logger.getLogger("agent") ;
 
@@ -610,10 +610,10 @@ public abstract class Agent {
     }
     
     /**
-     * Initialises startAge of new Agents
+     * Initialises new Agents
      * @param startAge = -1, choose random startAge from 16 to 65, for initialising community
      *            = 0 , choose random startAge from 16 to 25, new agents entering sexual maturity
-     *            > 0 , set startAge to startAge
+     *            > 0 , take startAge as given
      */
     private int initAge(int startAge)
     {
@@ -738,19 +738,19 @@ public abstract class Agent {
      * Getter of useGSN.
      * @return (boolean) whether Agent uses a GSN.
      */
-    public boolean getUseGSN()
-    {
-        return useGSN ;
-    }
+//    public boolean getUseGSN()
+//    {
+//        return useGSN ;
+//    }
     
     /**
      * Setter of useGSN.
      * @param gsn 
      */
-    public void setUseGSN(boolean gsn)
-    {
-        useGSN = gsn ;
-    }
+//    public void setUseGSN(boolean gsn)
+//    {
+//        useGSN = gsn ;
+//    }
     	
     abstract int getMaxRelationships() ;
     
@@ -1082,7 +1082,7 @@ public abstract class Agent {
      * @param scale
      * @return (double) new value of probabilityUseCondom
      */
-    public double scaleProbabilityUseCondom(double scale) 
+    protected double scaleProbabilityUseCondom(double scale) 
     {
         probabilityUseCondom *= scale ;
         return probabilityUseCondom ;
@@ -1093,7 +1093,7 @@ public abstract class Agent {
      * Rescales the probability of using a condom in a Casual Relationship by factor scale
      * @param scale
      */
-    public double scaleProbabilityUseCondomCasual(double scale) 
+    protected double scaleProbabilityUseCondomCasual(double scale) 
     {
         probabilityUseCondomCasual *= scale ;
         return probabilityUseCondomCasual ;
@@ -1104,7 +1104,7 @@ public abstract class Agent {
      * Rescales the probability of using a condom by factor scale
      * @param scale
      */
-    public double scaleProbabilityUseCondomRegular(double scale) 
+    protected double scaleProbabilityUseCondomRegular(double scale) 
     {
         probabilityUseCondomRegular *= scale ;
         return probabilityUseCondomRegular ;
@@ -1470,6 +1470,12 @@ public abstract class Agent {
         //return available ;
     }
     
+    /**
+     * Randomly choose whether Agent is interested in a Relationship of 
+     * Class relationshipClazzName.
+     * @param (String) relationshipClazzName
+     * @return (boolean)
+     */
     public boolean seekRelationship(String relationshipClazzName)
     {
         if (inMonogomous)
@@ -1501,7 +1507,7 @@ public abstract class Agent {
     abstract protected boolean consentCasual(Agent partner);
     
     /**
-     * Probabilistically decide to accept invitation to join orgy
+     * Probabilistically decide to accept invitation to join a group sex event.
      * @param args
      * @return true to join and false otherwise
      */
@@ -1738,7 +1744,7 @@ public abstract class Agent {
     }
 
     /**
-     * Calls death() to see if Agent dies and removes from agents if so.
+     * Probabilistically chooses whether to call death() so Agent dies.
      * @return true if agent dies and false otherwise
      */
     final public boolean grimReaper()
@@ -1755,7 +1761,7 @@ public abstract class Agent {
      * Based on data from the Australian Bureau of Statistics for Australian 
      * population (http://stat.data.abs.gov.au/).
      * @return (double) probability of dying during any cycle depending on the 
- properties, here startAge, of the Agent.
+ properties, here age, of the Agent.
      */
     protected double getRisk()
     {
@@ -1830,14 +1836,5 @@ public abstract class Agent {
             return Reporter.ADD_REPORT_PROPERTY(agent, agentId) ;
     }
 
-    
-    public void reportInfectedStatus()
-    {
-        Site[] sites = getSites() ;
-        String siteReport = "" ;
-        for (Site site : sites)
-            siteReport += site.toString() + ":" + site.getInfectedStatus() + " " ;
-        LOGGER.log(Level.INFO, "Agent:{0} {1}", new Object[]{getInfectedStatus(),siteReport});
-    }
      
 }
