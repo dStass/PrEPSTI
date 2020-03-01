@@ -32,7 +32,7 @@ import java.util.logging.Level;
  *
  *******************************************************************/
 public class Community {
-    static final public int POPULATION = 20000 ;
+    static final public int POPULATION = 40000 ;
     static final int AGENTS_PER_DAY = POPULATION / 365 ;
     static public int MAX_CYCLES ; // = 350 ; 
     static public String NAME_ROOT = "" ;
@@ -62,7 +62,7 @@ public class Community {
     //static public String FILE_PATH = "/short/is14/mw7704/prepsti/output/year2007/" ;
     
     /** Whether parameters change throughout simulation. */
-    static boolean DYNAMIC = true ;
+    static boolean DYNAMIC = false ;
     
     /** Dump reports to disk after this many cycles. */
     static int DUMP_CYCLE = 250 ; // ((int) Math.pow(10, 7))/POPULATION ;
@@ -206,8 +206,8 @@ public class Community {
         // Whether to plot prevalence upon completion.
         // Must be false when run on an HPC cluster.
         TO_PLOT = (!FILE_PATH.contains("prepsti")) ;
-        EncounterReporter encounterReporter = new EncounterReporter(Community.SIM_NAME,Community.FILE_PATH) ;
-        ScreeningReporter screeningReporter = new ScreeningReporter(SIM_NAME,FILE_PATH) ;
+        EncounterReporter encounterReporter = new EncounterReporter() ;
+        ScreeningReporter screeningReporter = new ScreeningReporter() ;
         
         
         // Record starting time to measure running time
@@ -385,6 +385,9 @@ public class Community {
           //      = relationshipReporter.prepareCumulativeRelationshipRecord(-1, relationshipClassNames, 0, 6, 0) ;
         //HashMap<Object,Number[]> plotReport = Reporter.INVERT_HASHMAP_LIST(relationshipReport, relationshipClassNames) ;
         //Reporter.WRITE_CSV(plotReport, "Number of Relationships", relationshipClassNames, "cumulativeRelationship", SIM_NAME, "output/test/") ;
+        
+        encounterReporter = new EncounterReporter(Community.SIM_NAME,Community.FILE_PATH) ;
+        screeningReporter = new ScreeningReporter(SIM_NAME,FILE_PATH) ;
         
         //screeningReporter = new ScreeningReporter(SIM_NAME,FILE_PATH) ;
                 //new ScreeningReporter("prevalence",community.screeningReport) ;
