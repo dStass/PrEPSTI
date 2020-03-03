@@ -1,0 +1,33 @@
+{   
+    "REBOOT_PATH" : "output/test/",
+    "REPORT_PATH" : "output/",
+    "DATA_PATH" : "data_files/",
+
+    "Community" : {
+        "FILE_PATH" : "output/",
+        "NAME_ROOT" : "test",
+        "POPULATION" : "1000",
+        "COMMENT" : "",
+        "DYNAMIC" : "true",
+        "RELOAD_SIMULATION" : ""
+    },
+
+    "MSM" : {
+        "GROUP_SEX_EVENT_SIZE" : "7",
+        "reInitScreenCycle" : {
+            "checkPrepStatus" : "true"
+        }
+    },
+
+    "Presenter" : {
+        "PLOT_FILE" : "false",
+        "FILE_NAME" : "gonoGoneWild",
+        "DATA_SCORE" : [
+            "overall_gone_wild",
+            "urethral_gone_wild",
+            "rectal_gone_wild",
+            "pharyngeal_gone_wild" 
+        ]
+    }
+
+}

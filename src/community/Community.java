@@ -16,6 +16,8 @@ import reporter.* ;
 import reporter.ScreeningReporter ;
 import reporter.presenter.* ;
 
+import configloader.ConfigLoader;
+
 import java.util.Random;
 
 import java.lang.reflect.*;
@@ -25,44 +27,40 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.logging.Level;
 
-//import org.jfree.chart.* ;
+// JSON imports:
+import org.json.simple.parser.*;
+import org.json.simple.JSONArray; 
+import org.json.simple.JSONObject; 
 
 /******************************************************************
  * @author Michael Luke Walker
  *
  *******************************************************************/
 public class Community {
-    static final public int POPULATION = 100 ;
-    static final int AGENTS_PER_DAY = POPULATION / 365 ;
-    static public int MAX_CYCLES ; // = 350 ; 
-    static public String NAME_ROOT = "" ;
-    static String NAME_SUFFIX = "Pop" + String.valueOf(POPULATION) + "Cycles" + String.valueOf(MAX_CYCLES) ;
-    static public String SIM_NAME = NAME_ROOT + NAME_SUFFIX ;
+    static final public String DEFAULT_JSON = "default_config.json";
 
-    static String COMMENT = ""
-            //+ "Removed extra choice under serosorting for RiskyMSM"
-            //+ "of accepting Casual Relationships back to EPIC-inspired levels. "
-            //+ "probabilityUseCondom becomes zero at cycle 2095. "
-            // + "Now trying to reproduce 2010 notifications/incidents from 'gonoGoneWild'"
-            //+ "Agents reduce their chances of choosing condoms by up to 0.5"
-            //+ "parameters are adjusted according to ARTB data on a yearly basis"
-            //+ "Continue From2007To2012NoCondomIII to see if prevalence rises. "
-            //+ "five RiskyMSM go on PrEP "
-            //+ "Testing rates are altered to compare with long-term data " 
-            //+ "and their condom usage rates are multiplied by random fraction between 0 and 1."
-            //+ "All encounters are recorded in full." 
-            //+ "Test of loading burn-in. " // Uses From2007To2011p5v3aAdjust. "
-            //+ "with 500 cycle grace period."
-            //+ "Test of Urethra symptomaticProbability 0.75 "
-            + "" ;
+
+    // Default variables
+    static public String FILE_PATH;
+    static public String NAME_ROOT;
+    static public int POPULATION;
+    static public String COMMENT;
+    static public boolean DYNAMIC; // Whether parameters change throughout simulation.
+    static public String RELOAD_SIMULATION; // "to2014fix3Choice23aaPop40000Cycles4745" ; // "debugRebootPop20000Cycles1825" ; 
     
+
+    // input variables
+    static public int MAX_CYCLES;
+    
+    // derived variables
+    static public String SIM_NAME;
+    static String NAME_SUFFIX;
+    static int AGENTS_PER_DAY;
+
     static boolean TO_PLOT ; //= true ;
-    static public String FILE_PATH = "output/" ;
     //static public String FILE_PATH = "/srv/scratch/z3524276/prepsti/output/test/" ;
     //static public String FILE_PATH = "/short/is14/mw7704/prepsti/output/year2007/" ;
     
-    /** Whether parameters change throughout simulation. */
-    static boolean DYNAMIC = false ;
     
     /** Dump reports to disk after this many cycles. */
     static int DUMP_CYCLE = 250 ; // ((int) Math.pow(10, 7))/POPULATION ;
@@ -79,7 +77,6 @@ public class Community {
      * (String) Name of previous simulation to reload.
      * Nothing reloaded if this is an empty string.
      */
-    static final String RELOAD_SIMULATION = "" ; // "to2014fix3Choice23aaPop40000Cycles4745" ; // "debugRebootPop20000Cycles1825" ; 
     
     static public String getFilePath()
     {
@@ -128,8 +125,51 @@ public class Community {
     // Logger
     static final java.util.logging.Logger LOGGER = java.util.logging.Logger.getLogger("reporter") ;
 
-    public static void main(String[] args)
-    {
+
+        /**
+     * Setting defaults
+     * 
+     */
+    // public static void LoadDefaults() {
+    //     try {
+    //         Object obj = new JSONParser().parse(new FileReader(DEFAULT_JSON)); 
+    //         JSONObject jsonObj = (JSONObject) obj;
+    //         JSONObject jsonCommunity = (JSONObject) jsonObj.get("Community");
+            
+
+    //         // Set Community defaults
+    //         Community.FILE_PATH = (String) jsonCommunity.get("FILE_PATH");
+    //         Community.NAME_ROOT = (String) jsonCommunity.get("NAME_ROOT");
+    //         Community.POPULATION = Integer.parseInt((String) jsonCommunity.get("POPULATION"));
+    //         Community.COMMENT = (String) jsonCommunity.get("COMMENT");
+    //         Community.DYNAMIC = Boolean.parseBoolean((String) jsonCommunity.get("DYNAMIC"));
+    //         Community.RELOAD_SIMULATION = (String) jsonCommunity.get("RELOAD_SIMULATION");
+
+    //     } catch (FileNotFoundException e) {
+    //         e.printStackTrace();
+    //     } catch (IOException e) {
+    //         e.printStackTrace();
+    //     } catch (ParseException e) {
+    //         e.printStackTrace();
+    //     }
+
+    // }
+
+    // public static void LoadConfig() {
+        
+    // }
+
+
+    public static void main(String[] args) {
+        ConfigLoader.load();  // set static variables
+        
+        // derived variables
+        Community.AGENTS_PER_DAY = Community.POPULATION / 365 ;
+        Community.NAME_SUFFIX = "Pop" + String.valueOf(POPULATION) + "Cycles" + String.valueOf(MAX_CYCLES);
+        Community.SIM_NAME = Community.NAME_ROOT + Community.NAME_SUFFIX;
+
+
+
         //String infectedSiteName ;
         //double urethralTransmission ;
         int argIndex = 0 ;
@@ -372,7 +412,6 @@ public class Community {
         System.out.println("Elapsed running time: " + minutes + "minutes") ;
         
         //if (TO_PLOT)
-        {
         String[] relationshipClassNames = new String[] {"Casual","Regular","Monogomous"} ; // "Casual","Regular","Monogomous"
         
 //        RelationshipReporter relationshipReporter = new RelationshipReporter(Community.SIM_NAME,Community.FILE_PATH) ;
@@ -480,9 +519,14 @@ public class Community {
             Reporter.DUMP_OUTPUT("riskyIncidence_HIV",SIM_NAME,FILE_PATH,incidenceReport);
             //Reporter.DUMP_OUTPUT("riskyIncidencePrep",SIM_NAME,FILE_PATH,incidenceReportPrep);
         }
-        }
+        
+
+        LOGGER.info("Task completed");
+
     }
 
+
+    
     /**
      * Community object containing all agent(s) and Relationships and methods 
      * for pairing agent(s) into relationship(s) and for ending relationship(s)
@@ -1567,6 +1611,9 @@ public class Community {
 
 
     }
+
+
+
 
 }
     
