@@ -7,7 +7,6 @@ package agent.agent;
 
 import agent.Agent;
 import agent.MSM;
-import agent.SafeMSM ;
 
 import org.junit.After;
 import org.junit.AfterClass;
@@ -184,7 +183,7 @@ public class MsmTest {
         
         msm1.setStatusHIV(false);
         assert (!msm1.getStatusHIV()) : "msm1.getStatusHIV() should be 'false'. Test 3" ;
-        assert (!msm0.getAntiViralStatus()) : "msm1.getAntiViralStatus() should be 'false'. Test 4" ;
+        assert (!msm0.getUndetectableStatus()) : "msm1.getAntiViralStatus() should be 'false'. Test 4" ;
     }
     
     /**
@@ -248,9 +247,9 @@ public class MsmTest {
         msm1.setSeroSort(sort1) ;
     }
     
-    public class SafeMSMImpl extends SafeMSM {
+    public class MSMImpl extends MSM {
 
-        public SafeMSMImpl() {
+        public MSMImpl() {
             super(0);
         }
 
