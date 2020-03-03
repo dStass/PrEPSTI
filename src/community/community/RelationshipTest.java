@@ -55,19 +55,19 @@ public class RelationshipTest {
         for (String checkSiteName : MSM.SITE_NAMES)
         {
             // MSMs both infected at Urethra only
-            MSM msm0 = new RiskyMSM(20) ;
+            MSM msm0 = new MSM(20) ;
             for (Site site : msm0.getSites())
             {
-                if (checkSiteName.equals(site.getSite()))
+                if (checkSiteName.equals(site.toString()))
                     msm0.receiveInfection(1.1,site) ;    // Must receive infection, +0.1 margin against round-off
                 else
                     site.treat();
             }
 
-            MSM msm1 = new SafeMSM(30) ;
+            MSM msm1 = new MSM(30) ;
             for (Site site : msm1.getSites())
             {
-                if (checkSiteName.equals(site.getSite()))
+                if (checkSiteName.equals(site.toString()))
                     msm1.receiveInfection(1.1,site) ;    // Must receive infection, +0.1 margin against round-off
                 else
                     site.treat();
@@ -88,8 +88,8 @@ public class RelationshipTest {
     @Test
     public void testRelationship() throws Exception
     {
-        Agent agent0 = new SafeMSM(20) ;
-        Agent agent1 = new SafeMSM(19) ;
+        Agent agent0 = new MSM(20) ;
+        Agent agent1 = new MSM(19) ;
         
         Casual casual = new Casual(agent0,agent1) ;
         
