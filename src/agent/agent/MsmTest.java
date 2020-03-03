@@ -7,7 +7,7 @@ package agent.agent;
 
 import agent.Agent;
 import agent.MSM;
-import agent.SafeMSM ;
+//import agent.SafeMSM ;
 
 import org.junit.After;
 import org.junit.AfterClass;
@@ -176,17 +176,17 @@ public class MsmTest {
     /**
      * Check that properties are properly adjusted when statusHIV is set.
      */
-    public void testSetStatus()
-    {
-        msm0.setStatusHIV(true);
-        assert (msm0.getStatusHIV()) : "msm0.getStatusHIV() should be 'true'. Test 1" ;
-        assert (!msm0.getPrepStatus()) : "msm0.getStatusHIV() should be 'false'. Test 2" ;
-        
-        msm1.setStatusHIV(false);
-        assert (!msm1.getStatusHIV()) : "msm1.getStatusHIV() should be 'false'. Test 3" ;
-        assert (!msm0.getAntiViralStatus()) : "msm1.getAntiViralStatus() should be 'false'. Test 4" ;
-    }
-    
+//    public void testSetStatus()
+//    {
+//        msm0.setStatusHIV(true);
+//        assert (msm0.getStatusHIV()) : "msm0.getStatusHIV() should be 'true'. Test 1" ;
+//        assert (!msm0.getPrepStatus()) : "msm0.getStatusHIV() should be 'false'. Test 2" ;
+//        
+//        msm1.setStatusHIV(false);
+//        assert (!msm1.getStatusHIV()) : "msm1.getStatusHIV() should be 'false'. Test 3" ;
+//        assert (!msm0.getAntiViralStatus()) : "msm1.getAntiViralStatus() should be 'false'. Test 4" ;
+//    }
+//    
     /**
      * Test that Sites are chosen with proper accounting for relevant factors
      * such as seroPositioning and statusHIV.
@@ -248,35 +248,35 @@ public class MsmTest {
         msm1.setSeroSort(sort1) ;
     }
     
-    public class SafeMSMImpl extends SafeMSM {
-
-        public SafeMSMImpl() {
-            super(0);
-        }
-
-        public int getMaxRelationships() {
-            return 0;
-        }
-
-        public double getProportionHIV() {
-            return 0.0;
-        }
-
-        public double getProbabilityDiscloseHIV() {
-            return 0.0;
-        }
-
-        public double getProbabilityPrep() {
-            return 0.0;
-        }
-
-        public boolean chooseCondom(Agent msm) {
-            return false;
-        }
-
-        public double getJoinOrgyProbability() {
-            return 0.0;
-        }
-    }
+//    public class SafeMSMImpl extends SafeMSM {
+//
+//        public SafeMSMImpl() {
+//            super(0);
+//        }
+//
+//        public int getMaxRelationships() {
+//            return 0;
+//        }
+//
+//        public double getProportionHIV() {
+//            return 0.0;
+//        }
+//
+//        public double getProbabilityDiscloseHIV() {
+//            return 0.0;
+//        }
+//
+//        public double getProbabilityPrep() {
+//            return 0.0;
+//        }
+//
+//        public boolean chooseCondom(Agent msm) {
+//            return false;
+//        }
+//
+//        public double getJoinOrgyProbability() {
+//            return 0.0;
+//        }
+//    }
     
 }
