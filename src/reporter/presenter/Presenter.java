@@ -81,7 +81,7 @@ public class Presenter {
 
     // Used for controlling if and what is co-plotted from file.
     static boolean PLOT_FILE = false ;    
-    static String FOLDER_PATH = "data_files/" ;
+    public static String FOLDER_PATH;
     static String FILENAME = "gonoGoneWild" ; // "incidence_kirby2018" ; // "meanNotificationRate" ; // "unique_positivity_urethra" ; // "notifications" ; //  
     //static String[] DATA_SCORE = new String[] {"hiv_negative","hiv_positive"} ;
     //static String[] DATA_SCORE = new String[] {"data_notifications","data_notification_rate"} ; // 

@@ -988,13 +988,18 @@ public class MSM extends Agent {
 
     
     /** The number of MSM invited to any given group-sex event. */
-    static public int GROUP_SEX_EVENT_SIZE = 7 ;
+    static public int GROUP_SEX_EVENT_SIZE;
 
     /** The number of orgies in the community during a given cycle. */
     //int ORGY_NUMBER = 4 ;
     
     /** Probability of joining a group-sex event if invited. */
     static double JOIN_GSE_PROBABILITY = 6.35 * Math.pow(10,-4) ;
+
+
+    // hashmap with key = method name, value = hashmap that contains
+    // variable names and its literal value as a String
+    static public HashMap<String, Object> METHOD_CONFIG;
     
     /**
      * Allows changing of SITE_TO_SITE transmission probabilities.
@@ -1187,7 +1192,7 @@ public class MSM extends Agent {
      * Describes correlation between statusHIV and riskyStatus.
      * Must be less than 1/PROPORTION_HIV OR initRiskiness() fails.
      */
-    static double HIV_RISKY_CORRELATION = 1.5 ; // 2.0 ; // 1.0 ;	
+    public static double HIV_RISKY_CORRELATION; // 2.0 ; // 1.0 ;	
     
     /**
      * 

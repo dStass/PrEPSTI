@@ -44,13 +44,7 @@ public abstract class Agent {
     
     //static String FOLDER_PATH = "/srv/scratch/z3524276/prepsti/"
     //static String FOLDER_PATH = "/short/is14/mw7704/prepsti/"
-    static String FOLDER_PATH = ""
-    //+  "output/year2007/" ;
-    // +  "output/year2010/" ;
-    //+  "output/year2012/" ;
-     +  "output/test/" ;
-    // +  "output/prePrEP/" ;
-    
+    public static String FOLDER_PATH;
     
     /** Names of Sites for Agent*/ 
     //static public String[] SITE_NAMES = new String[] {} ;

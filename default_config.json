@@ -1,9 +1,12 @@
 {   
-    "REBOOT_PATH" : "output/test/",
-    "REPORT_PATH" : "output/",
-    "DATA_PATH" : "data_files/",
+    "paths": {
+        "REBOOT_PATH" : "output/test/",
+        "REPORT_PATH" : "reports/",
+        "DATA_PATH" : "data_files/"
 
-    "Community" : {
+    },
+
+    "community" : {
         "FILE_PATH" : "output/",
         "NAME_ROOT" : "test",
         "POPULATION" : "1000",
@@ -12,14 +15,17 @@
         "RELOAD_SIMULATION" : ""
     },
 
-    "MSM" : {
+    "msm" : {
         "GROUP_SEX_EVENT_SIZE" : "7",
-        "reInitScreenCycle" : {
-            "checkPrepStatus" : "true"
+        "HIV_RISKY_CORRELATION" : "1.5",
+        "methods": {
+            "reInitScreenCycle" : {
+                "checkPrepStatus" : "true"
+            }
         }
     },
 
-    "Presenter" : {
+    "presenter" : {
         "PLOT_FILE" : "false",
         "FILE_NAME" : "gonoGoneWild",
         "DATA_SCORE" : [
