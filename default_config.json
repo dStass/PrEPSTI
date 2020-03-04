@@ -20,7 +20,11 @@
         "HIV_RISKY_CORRELATION" : "1.5",
         "methods": {
             "reInitScreenCycle" : {
-                "checkPrepStatus" : "true"
+                "checkPrepStatus" : "true",
+                "testVal" : "53"
+            },
+            "testMethod2" : {
+                "tst2val" : "0"
             }
         }
     },

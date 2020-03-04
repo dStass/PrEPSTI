@@ -133,8 +133,15 @@ public class ConfigLoader {
         // load function methods - set MSM.METHOD_CONFIG
         JSONObject defaultMethodsJSON = (JSONObject) msmDefaultsJSON.get("methods");
         HashMap <String, HashMap> methodToVariablesMapHashMap = convertJSONObjectToHashMapStringToHashMap(defaultMethodsJSON);
+        for (HashMap.Entry<String, HashMap> entry : methodToVariablesMapHashMap.entrySet()) {
+            String methodName = entry.getKey();
+            JSONObject methodVariablesJSON = (JSONObject) defaultMethodsJSON.get(methodName);
+            HashMap <String, String> methodVariablesToValues = convertJSONObjectToHashMapStringToString(methodVariablesJSON);
+            methodToVariablesMapHashMap.put(methodName, methodVariablesToValues);
 
+        }
 
+        LOGGER.info("@@@@@@@@!@#@#@#" + methodToVariablesMapHashMap.toString());
         
 
     }
@@ -178,18 +185,21 @@ public class ConfigLoader {
      */
 
     private static HashMap<String, String> convertJSONObjectToHashMapStringToString(JSONObject jsonObject) {
-
-        return null;
-
+        HashMap<String, String> toReturn = new HashMap();
+        for(Iterator iterator = jsonObject.keySet().iterator(); iterator.hasNext();) {
+            String key = (String) iterator.next();
+            String value = (String) jsonObject.get(key);
+            toReturn.put(key, value);
+        }
+        return toReturn;
     }
 
     private static HashMap <String, HashMap> convertJSONObjectToHashMapStringToHashMap(JSONObject jsonObject) {
-        LOGGER.info("@@@ = " + jsonObject.toString());
+        HashMap<String, HashMap> toReturn = new HashMap();
         for(Iterator iterator = jsonObject.keySet().iterator(); iterator.hasNext();) {
             String key = (String) iterator.next();
-            LOGGER.info("@@@KEY=" + jsonObject.get(key));
+            toReturn.put(key, new HashMap());
         }
-        return null;
-
+        return toReturn;
     }
 }
