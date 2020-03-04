@@ -125,121 +125,75 @@ public class Community {
     // Logger
     static final java.util.logging.Logger LOGGER = java.util.logging.Logger.getLogger("reporter") ;
 
-
-        /**
-     * Setting defaults
-     * 
-     */
-    // public static void LoadDefaults() {
-    //     try {
-    //         Object obj = new JSONParser().parse(new FileReader(DEFAULT_JSON)); 
-    //         JSONObject jsonObj = (JSONObject) obj;
-    //         JSONObject jsonCommunity = (JSONObject) jsonObj.get("Community");
-            
-
-    //         // Set Community defaults
-    //         Community.FILE_PATH = (String) jsonCommunity.get("FILE_PATH");
-    //         Community.NAME_ROOT = (String) jsonCommunity.get("NAME_ROOT");
-    //         Community.POPULATION = Integer.parseInt((String) jsonCommunity.get("POPULATION"));
-    //         Community.COMMENT = (String) jsonCommunity.get("COMMENT");
-    //         Community.DYNAMIC = Boolean.parseBoolean((String) jsonCommunity.get("DYNAMIC"));
-    //         Community.RELOAD_SIMULATION = (String) jsonCommunity.get("RELOAD_SIMULATION");
-
-    //     } catch (FileNotFoundException e) {
-    //         e.printStackTrace();
-    //     } catch (IOException e) {
-    //         e.printStackTrace();
-    //     } catch (ParseException e) {
-    //         e.printStackTrace();
-    //     }
-
-    // }
-
-    // public static void LoadConfig() {
-        
-    // }
-
-
     public static void main(String[] args) {
         ConfigLoader.load();  // set static variables
         
         // derived variables
         Community.AGENTS_PER_DAY = Community.POPULATION / 365 ;
-        Community.NAME_SUFFIX = "Pop" + String.valueOf(POPULATION) + "Cycles" + String.valueOf(MAX_CYCLES);
+
+        // MAX_CYCLES
+        Community.MAX_CYCLES = Community.MAX_CYCLES > 99 
+                             ? Community.MAX_CYCLES 
+                             : Community.MAX_CYCLES * Reporter.DAYS_PER_YEAR;
+        
+        // Pop[POPULATION]Cycles[MAX_CYCLES]
+        Community.NAME_SUFFIX = "Pop" + String.valueOf(Community.POPULATION) 
+                              + "Cycles" + String.valueOf(Community.MAX_CYCLES);
+
         Community.SIM_NAME = Community.NAME_ROOT + Community.NAME_SUFFIX;
+        Community.OUTPUT_RETURN += Community.SIM_NAME + " " ;
+        
+        // Name of test run passed in via argument
+        switch (args[0]) {
+            case "gadi":
+                Community.FILE_PATH = "/scratch/is14/mw7704/prepsti/" + Community.FILE_PATH; 
+                Community.DUMP_CYCLE = 500;
+                break;
+            case "katana":
+                Community.FILE_PATH = "/srv/scratch/z3524276/prepsti/" + Community.FILE_PATH ;
+                Community.DUMP_CYCLE = 500;
+                break;
+        }
 
 
+        
+        // if (args.length > argIndex)
+        // {
+        //     LOGGER.info(args[argIndex]);
+        //     if (args[argIndex].equals("gadi"))
+        //     {
+        //         FILE_PATH = "/scratch/is14/mw7704/prepsti/" + FILE_PATH ;
+        //         DUMP_CYCLE = 500 ;
+        //     }
+        //     else if (args[argIndex].equals("katana"))
+        //     {
+        //         FILE_PATH = "/srv/scratch/z3524276/prepsti/" + FILE_PATH ;
+        //         DUMP_CYCLE = 500 ;
+        //     }
+        //     argIndex++ ;
+        // }
+        // /*
+        // if (args.length > argIndex)
+        // {
+        //     MSM.SET_ADJUST_CASUAL_CONSENT(Double.valueOf(args[argIndex]));
+        //     argIndex++ ;
+        // }
+        // */
 
-        //String infectedSiteName ;
-        //double urethralTransmission ;
-        int argIndex = 0 ;
-        if (args.length > argIndex)
-        {
-            LOGGER.info(args[0]);
-            NAME_ROOT = args[0] ;
-            SIM_NAME = NAME_ROOT + NAME_SUFFIX ;
-            argIndex++ ;
-        }
-        //MAX_CYCLES = Integer.valueOf(args[1]) ;
-        if (args.length > argIndex)
-        {
-            LOGGER.info(args[argIndex]) ;
-            int time = Integer.valueOf(args[argIndex]) ;
-            if (time > 99)    // time given assumed to be days
-                MAX_CYCLES = time ;
-            else    // time given assumed to be years
-                MAX_CYCLES = time * Reporter.DAYS_PER_YEAR ;
-            NAME_SUFFIX = "Pop" + String.valueOf(POPULATION) + "Cycles" + MAX_CYCLES ;
-            SIM_NAME = NAME_ROOT + NAME_SUFFIX ;
-            OUTPUT_RETURN += SIM_NAME + " " ;
-            argIndex++ ;
-        }
-        if (args.length > argIndex)
-        {
-            LOGGER.info(args[argIndex]) ;
-            FILE_PATH += args[argIndex] ;
-            /*
-            urethralTransmission = Double.valueOf(args[argIndex]) ;
-            MSM.SET_INFECT_PROBABILITY("URETHRA","RECTUM",urethralTransmission) ;
-            MSM.SET_INFECT_PROBABILITY("RECTUM","URETHRA",urethralTransmission) ;
-            */
-            argIndex++ ;
-        }
-        if (args.length > argIndex)
-        {
-            LOGGER.info(args[argIndex]);
-            if (args[argIndex].equals("gadi"))
-            {
-                FILE_PATH = "/scratch/is14/mw7704/prepsti/" + FILE_PATH ;
-                DUMP_CYCLE = 500 ;
-            }
-            else if (args[argIndex].equals("katana"))
-            {
-                FILE_PATH = "/srv/scratch/z3524276/prepsti/" + FILE_PATH ;
-                DUMP_CYCLE = 500 ;
-            }
-            argIndex++ ;
-        }
-        /*
-        if (args.length > argIndex)
-        {
-            MSM.SET_ADJUST_CASUAL_CONSENT(Double.valueOf(args[argIndex]));
-            argIndex++ ;
-        }
-        */
-        if (args.length > argIndex)
-        {
-            int siteIndex = 0 ;
-            for (String infected : MSM.SITE_NAMES)
-                for (String clear : MSM.SITE_NAMES)
-                {
-                    MSM.SET_INFECT_PROBABILITY(infected, clear, Double.valueOf(args[argIndex + siteIndex])) ;
-                    OUTPUT_RETURN += args[argIndex + siteIndex] + " " ;
-                    siteIndex++ ;
-                }
-            if (siteIndex != 9)    // 9 transmissionProbabilities or none
-                LOGGER.severe("Transmission probabilities missing. Only found " + String.valueOf(siteIndex-3) + " out of 9") ;
-        }
+
+        // if (args.length > argIndex)
+        // {
+        //     int siteIndex = 0 ;
+        //     for (String infected : MSM.SITE_NAMES)
+        //         for (String clear : MSM.SITE_NAMES)
+        //         {
+        //             MSM.SET_INFECT_PROBABILITY(infected, clear, Double.valueOf(args[argIndex + siteIndex])) ;
+        //             OUTPUT_RETURN += args[argIndex + siteIndex] + " " ;
+        //             siteIndex++ ;
+        //         }
+        //     if (siteIndex != 9)    // 9 transmissionProbabilities or none
+        //         LOGGER.severe("Transmission probabilities missing. Only found " + String.valueOf(siteIndex-3) + " out of 9") ;
+        // }
         
         COMMENT += MSM.TRANSMISSION_PROBABILITY_REPORT() ;
         
@@ -524,7 +478,7 @@ public class Community {
         LOGGER.info("Task completed");
 
     }
-
+ 
 
     
     /**
