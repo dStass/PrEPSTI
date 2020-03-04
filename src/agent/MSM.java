@@ -999,7 +999,7 @@ public class MSM extends Agent {
 
     // hashmap with key = method name, value = hashmap that contains
     // variable names and its literal value as a String
-    static public HashMap<String, Object> METHOD_CONFIG;
+    static public HashMap<String, HashMap> METHOD_CONFIG;
     
     /**
      * Allows changing of SITE_TO_SITE transmission probabilities.
@@ -1969,8 +1969,7 @@ public class MSM extends Agent {
     protected void reInitScreenCycle(double rescale)
     {
         // For easily testing the effects of the PrEP screening regime
-        boolean checkPrepStatus = true ;
-        
+        boolean checkPrepStatus = Boolean.parseBoolean((String) MSM.METHOD_CONFIG.get("reInitScreenCycle").get("checkPrepStatus"));
         if (checkPrepStatus && getPrepStatus())
             setScreenCycle((sampleGamma(31,1,1)) + 61) ;
         else

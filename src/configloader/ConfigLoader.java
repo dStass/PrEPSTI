@@ -37,14 +37,14 @@ public class ConfigLoader {
     static final public String CONFIG_JSON_FILE = "config.json";
 
     // loaded JSONObjects
-    static JSONObject loadedDefaultsJSON; 
-    static JSONObject loadedConfigJSON;
+    static JSONObject loadedJSON; 
     
     // load jsons into class
     public static void load() {
-        readDefaultsJSON();
-        readConfigJSON();
-        loadDefaults();
+        ConfigLoader.readDefaultsJSON();
+        ConfigLoader.loadInformationIntoClasses();
+        ConfigLoader.readConfigJSON();
+        ConfigLoader.loadInformationIntoClasses();
         LOGGER.info("Test Loading Defaults");
     }
 
@@ -58,8 +58,8 @@ public class ConfigLoader {
 
     private static void readDefaultsJSON() {
         try {
-            Object obj = new JSONParser().parse(new FileReader(DEFAULT_JSON_FILE));
-            loadedDefaultsJSON = (JSONObject) obj;
+            Object obj = new JSONParser().parse(new FileReader(ConfigLoader.DEFAULT_JSON_FILE));
+            ConfigLoader.loadedJSON = (JSONObject) obj;
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -73,24 +73,38 @@ public class ConfigLoader {
     /**
      * Extract community from JSON and load into Communit class
      */
-    private static void loadDefaults() {
-        loadCommunityDefaults();
-        loadPathsDefaults();
-        loadMSMDefaults();
+    private static void loadInformationIntoClasses() {
+        ConfigLoader.loadCommunity();
+        ConfigLoader.loadPaths();
+        ConfigLoader.loadMSM();
+        ConfigLoader.loadReporter();
+        ConfigLoader.loadPresenter();
 
     }
 
 
-    private static void loadCommunityDefaults() {
-        JSONObject communityDefaultsJSON = (JSONObject) loadedDefaultsJSON.get("community");
+    private static void loadCommunity() {
+        JSONObject communityJSON = (JSONObject) ConfigLoader.loadedJSON.get("community");
+        if (communityJSON == null) return;
             
         // Set community defaults
-        Community.FILE_PATH = (String) communityDefaultsJSON.get("FILE_PATH");
-        Community.NAME_ROOT = (String) communityDefaultsJSON.get("NAME_ROOT");
-        Community.POPULATION = Integer.parseInt((String) communityDefaultsJSON.get("POPULATION"));
-        Community.COMMENT = (String) communityDefaultsJSON.get("COMMENT");
-        Community.DYNAMIC = Boolean.parseBoolean((String) communityDefaultsJSON.get("DYNAMIC"));
-        Community.RELOAD_SIMULATION = (String) communityDefaultsJSON.get("RELOAD_SIMULATION");
+        String FILE_PATH = (String) communityJSON.get("FILE_PATH");
+        if (FILE_PATH != null) Community.FILE_PATH = FILE_PATH;
+        
+        String NAME_ROOT = (String) communityJSON.get("NAME_ROOT");
+        if (NAME_ROOT != null) Community.NAME_ROOT = NAME_ROOT;
+
+        String POPULATION = (String) communityJSON.get("POPULATION");
+        if (POPULATION != null) Community.POPULATION = Integer.parseInt(POPULATION);
+
+        String COMMENT = (String) communityJSON.get("COMMENT");
+        if (COMMENT != null) Community.COMMENT = COMMENT;
+
+        String DYNAMIC = (String) communityJSON.get("DYNAMIC");
+        if (DYNAMIC != null) Community.DYNAMIC = Boolean.parseBoolean(DYNAMIC);
+
+        String RELOAD_SIMULATION = (String) communityJSON.get("RELOAD_SIMULATION");
+        if (RELOAD_SIMULATION != null) Community.RELOAD_SIMULATION = RELOAD_SIMULATION;
     }
 
 
@@ -100,22 +114,27 @@ public class ConfigLoader {
      * - REPORT_PATH for Reporter
      * - DATA_PATH for Report and Presenter
      */
-    private static void loadPathsDefaults() {
-        JSONObject pathsDefaultsJSON = (JSONObject) loadedDefaultsJSON.get("paths");
+    private static void loadPaths() {
+        JSONObject pathsJSON = (JSONObject) ConfigLoader.loadedJSON.get("paths");
+        if (pathsJSON == null) return;
         
         // reboot path for Relationship and Agent
-        String rebootPath = (String) pathsDefaultsJSON.get("REBOOT_PATH");
-        Relationship.FOLDER_PATH = rebootPath;
-        Agent.FOLDER_PATH = rebootPath;
+        String rebootPath = (String) pathsJSON.get("REBOOT_PATH");
+        if (rebootPath != null) {
+            Relationship.FOLDER_PATH = rebootPath;
+            Agent.FOLDER_PATH = rebootPath;
+        }
 
         // report path for Reporter
-        String reportPath = (String) pathsDefaultsJSON.get("REPORT_PATH");
-        Reporter.REPORT_FOLDER = reportPath;
+        String reportPath = (String) pathsJSON.get("REPORT_PATH");
+        if (reportPath != null) Reporter.REPORT_FOLDER = reportPath;
 
         // data path for Reporter and Presenter
-        String dataPath = (String) pathsDefaultsJSON.get("DATA_PATH");
-        Reporter.DATA_FOLDER = dataPath;
-        Presenter.FOLDER_PATH = dataPath;
+        String dataPath = (String) pathsJSON.get("DATA_PATH");
+        if (dataPath != null) {
+            Reporter.DATA_FOLDER = dataPath;
+            Presenter.FOLDER_PATH = dataPath;
+        }
     }
 
     /**
@@ -123,28 +142,66 @@ public class ConfigLoader {
      * contains default variables inside methods
      * will implement a hashmap inside MSM class to extract this info
      */
-    private static void loadMSMDefaults() {
-        JSONObject msmDefaultsJSON = (JSONObject) loadedDefaultsJSON.get("msm");
+    private static void loadMSM() {
+        JSONObject msmJSON = (JSONObject) ConfigLoader.loadedJSON.get("msm");
+        if (msmJSON == null) return;
 
         // set group sex event size and HIV risky correlation
-        MSM.GROUP_SEX_EVENT_SIZE = Integer.parseInt((String) msmDefaultsJSON.get("GROUP_SEX_EVENT_SIZE"));
-        MSM.HIV_RISKY_CORRELATION = Double.parseDouble((String) msmDefaultsJSON.get("HIV_RISKY_CORRELATION"));
+        String groupSexEventSizeStr = (String) msmJSON.get("GROUP_SEX_EVENT_SIZE");
+        if (groupSexEventSizeStr != null)
+            MSM.GROUP_SEX_EVENT_SIZE = Integer.parseInt(groupSexEventSizeStr);
+        
+        String hivRiskyCorrelation = (String) msmJSON.get("HIV_RISKY_CORRELATION");
+        if (hivRiskyCorrelation != null) 
+            MSM.HIV_RISKY_CORRELATION = Double.parseDouble(hivRiskyCorrelation);
 
         // load function methods - set MSM.METHOD_CONFIG
-        JSONObject defaultMethodsJSON = (JSONObject) msmDefaultsJSON.get("methods");
-        HashMap <String, HashMap> methodToVariablesMapHashMap = convertJSONObjectToHashMapStringToHashMap(defaultMethodsJSON);
-        for (HashMap.Entry<String, HashMap> entry : methodToVariablesMapHashMap.entrySet()) {
-            String methodName = entry.getKey();
-            JSONObject methodVariablesJSON = (JSONObject) defaultMethodsJSON.get(methodName);
-            HashMap <String, String> methodVariablesToValues = convertJSONObjectToHashMapStringToString(methodVariablesJSON);
-            methodToVariablesMapHashMap.put(methodName, methodVariablesToValues);
-
+        // in the json file under MSM, there is methods : { ... }
+        // this will contain function_name -> {} pairs where {} contains 
+        // key-value pairs signifying what variables should be set to
+        // this converts from JSON format to a Java HashMap
+        // for easy access from within the MSM class (remove the need to deal with JSONObjects)
+        JSONObject defaultMethodsJSON = (JSONObject) msmJSON.get("methods");
+        if (defaultMethodsJSON != null) {
+            HashMap <String, HashMap> methodToVariablesMapHashMap = ConfigLoader.convertJSONObjectToHashMapStringToHashMap(defaultMethodsJSON);
+            for (HashMap.Entry<String, HashMap> entry : methodToVariablesMapHashMap.entrySet()) {
+                String methodName = entry.getKey();
+                JSONObject methodVariablesJSON = (JSONObject) defaultMethodsJSON.get(methodName);
+                HashMap <String, String> methodVariablesToValues = ConfigLoader.convertJSONObjectToHashMapStringToString(methodVariablesJSON);
+                methodToVariablesMapHashMap.put(methodName, methodVariablesToValues);
+            }
+            // set MSM config to above hashmap
+            MSM.METHOD_CONFIG = methodToVariablesMapHashMap;
         }
 
-        LOGGER.info("@@@@@@@@!@#@#@#" + methodToVariablesMapHashMap.toString());
-        
-
     }
+
+
+    private static void loadReporter() {
+        JSONObject reporterJSON = (JSONObject) ConfigLoader.loadedJSON.get("reporter");
+        if (reporterJSON == null) return;
+
+        String WRITE_REPORT = (String) reporterJSON.get("WRITE_REPORT");
+        if (WRITE_REPORT != null) {
+            Reporter.WRITE_REPORT = Boolean.parseBoolean(WRITE_REPORT);
+        }
+    }
+
+    private static void loadPresenter() {
+        JSONObject presenterJSON = (JSONObject) ConfigLoader.loadedJSON.get("presenter");
+        if (presenterJSON == null) return;
+
+        String PLOT_FILE = (String) presenterJSON.get("PLOT_FILE");
+        if (PLOT_FILE != null) Presenter.PLOT_FILE = Boolean.parseBoolean(PLOT_FILE);
+        
+        String FILENAME = (String) presenterJSON.get("FILENAME");
+        if (FILENAME != null) Presenter.FILENAME = FILENAME;
+
+        JSONArray DATA_SCORE = (JSONArray) presenterJSON.get("DATA_SCORE");
+        if (DATA_SCORE != null)
+            Presenter.DATA_SCORE = ConfigLoader.convertJSONArrayToStringArray(DATA_SCORE);
+    }
+
 
 
     /*
@@ -155,8 +212,8 @@ public class ConfigLoader {
 
     private static void readConfigJSON() {
         try {
-            Object obj = new JSONParser().parse(new FileReader(CONFIG_JSON_FILE));
-            loadedConfigJSON = (JSONObject) obj;
+            Object obj = new JSONParser().parse(new FileReader(ConfigLoader.CONFIG_JSON_FILE));
+            ConfigLoader.loadedJSON = (JSONObject) obj;
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -202,4 +259,14 @@ public class ConfigLoader {
         }
         return toReturn;
     }
+
+    private static String[] convertJSONArrayToStringArray (JSONArray jsonArray) {
+        String[] toReturn = new String[jsonArray.size()];
+        for (int i = 0; i < toReturn.length; ++i) {
+            toReturn[i] = (String) (jsonArray.get(i));
+        }        
+        return toReturn;
+    }
+
+
 }

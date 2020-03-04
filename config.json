@@ -1,29 +1,12 @@
-{
+{   
+
     "community" : {
-        "POPULATION" : "80000",
-        "MAX_CYCLES" : "3",
-        "COMMENT" : ""
-    },
-   
-    "msm" : {
-        "GROUP_SEX_EVENT_SIZE" : "7",
-        "reInitScreenCycle" : ""
-    },
-    
-    "reporter" : {
-        "REPORT_FOLDER" : "output/test"
+        "POPULATION" : "1500"
     },
 
-    "presenter" : {
-        "PLOT_FILE" : "false",
-        "FOLDER_PATH" : "data_files/",
-        "FILE_NAME" : "gonoGoneWild",
-        "DATA_SCORE" : [
-            "overall_gone_wild",
-            "urethral_gone_wild",
-            "rectal_gone_wild",
-            "pharyngeal_gone_wild" 
-        ]
+    "msm" : {
+        "GROUP_SEX_EVENT_SIZE" : "13",
+        "HIV_RISKY_CORRELATION" : "2.5"
     }
 
 }

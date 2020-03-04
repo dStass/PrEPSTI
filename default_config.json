@@ -9,7 +9,7 @@
     "community" : {
         "FILE_PATH" : "output/",
         "NAME_ROOT" : "test",
-        "POPULATION" : "1000",
+        "POPULATION" : "500",
         "COMMENT" : "",
         "DYNAMIC" : "true",
         "RELOAD_SIMULATION" : ""
@@ -20,13 +20,13 @@
         "HIV_RISKY_CORRELATION" : "1.5",
         "methods": {
             "reInitScreenCycle" : {
-                "checkPrepStatus" : "true",
-                "testVal" : "53"
-            },
-            "testMethod2" : {
-                "tst2val" : "0"
+                "checkPrepStatus" : "true"
             }
         }
+    },
+
+    "reporter" : {
+        "WRITE_REPORT" : "true"
     },
 
     "presenter" : {

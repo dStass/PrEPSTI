@@ -51,7 +51,7 @@ public class Reporter {
     }
     
     /** Whether to automatically save reports */
-    static boolean WRITE_REPORT = true ;
+    public static boolean WRITE_REPORT;
     
     /** Path to folder for saving reports. */
 
