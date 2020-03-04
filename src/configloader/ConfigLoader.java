@@ -103,6 +103,9 @@ public class ConfigLoader {
         String DYNAMIC = (String) communityJSON.get("DYNAMIC");
         if (DYNAMIC != null) Community.DYNAMIC = Boolean.parseBoolean(DYNAMIC);
 
+        String MAX_CYCLES = (String) communityJSON.get("MAX_CYCLES");
+        if (MAX_CYCLES != null) Community.MAX_CYCLES = Integer.parseInt(MAX_CYCLES);
+
         String RELOAD_SIMULATION = (String) communityJSON.get("RELOAD_SIMULATION");
         if (RELOAD_SIMULATION != null) Community.RELOAD_SIMULATION = RELOAD_SIMULATION;
     }
