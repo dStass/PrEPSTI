@@ -379,7 +379,7 @@ public class Community {
         String[] relationshipClassNames = new String[] {"Casual","Regular","Monogomous"} ; // "Casual","Regular","Monogomous"
         
         
-        encounterReporter = new EncounterReporter(Community.SIM_NAME,Community.FILE_PATH) ;
+        encounterReporter = new EncounterReporter(SIM_NAME,FILE_PATH) ;
         screeningReporter = new ScreeningReporter(SIM_NAME,FILE_PATH) ;
         
         //screeningReporter = new ScreeningReporter(SIM_NAME,FILE_PATH) ;
@@ -438,10 +438,12 @@ public class Community {
         //HashMap<Comparable,String> incidenceReportPrep = new HashMap<Comparable,String>() ;
         if (DYNAMIC)
         {
-            incidenceReport = screeningReporter.prepareYearsAtRiskIncidenceReport(siteNames, 13, 2019, "statusHIV") ;
+            int startYear = 2015 ;
+            int endYear = 2025 ;
+            incidenceReport = screeningReporter.prepareYearsAtRiskIncidenceReport(siteNames, endYear + 1 - startYear, endYear, "statusHIV") ;
             //incidenceReportPrep = screeningReporter.prepareYearsAtRiskIncidenceReport(siteNames, 16, 2022, "prepStatus") ;
         }
-        LOGGER.info("by HIV-status " + screeningReporter.prepareFinalAtRiskIncidentsRecord(siteNames, 0,"statusHIV")) ;
+        LOGGER.info("by HIV-status " + screeningReporter.prepareFinalAtRiskIncidentsRecord(siteNames, 0, "statusHIV")) ;
         //String finalPrevalencesRecord = screeningReporter.prepareFinalPrevalencesSortedRecord(siteNames, "statusHIV") ;
         //LOGGER.log(Level.INFO, "prevalence {0}", finalPrevalencesRecord) ;
         
