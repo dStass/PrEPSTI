@@ -9,10 +9,17 @@
     "community" : {
         "FILE_PATH" : "output/",
         "NAME_ROOT" : "test",
-        "POPULATION" : "500",
+        "POPULATION" : "40000",
         "COMMENT" : "",
         "DYNAMIC" : "true",
-        "RELOAD_SIMULATION" : ""
+        "RELOAD_SIMULATION" : "",
+        "endYear" : "2025",
+        "methods" : {
+            "interveneCommunity" : {
+                "numStartCycle" : "4",
+                "startYear" : "2007"
+            }
+        }
     },
 
     "msm" : {
@@ -20,7 +27,11 @@
         "HIV_RISKY_CORRELATION" : "1.5",
         "methods": {
             "reInitScreenCycle" : {
-                "checkPrepStatus" : "true"
+                "checkPrepStatus" : "true",
+                "useStatus" : "true"
+            },
+            "REINIT_RISK_CASUAL" : {
+                "prepHasTests" : "true"
             }
         }
     },

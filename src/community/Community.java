@@ -39,7 +39,7 @@ import org.json.simple.JSONObject;
 public class Community {
     static final public String DEFAULT_JSON = "default_config.json";
 
-
+    
     // Default variables
     static public String FILE_PATH;
     static public String NAME_ROOT;
@@ -48,6 +48,9 @@ public class Community {
     static public boolean DYNAMIC; // Whether parameters change throughout simulation.
     static public String RELOAD_SIMULATION; // "to2014fix3Choice23aaPop40000Cycles4745" ; // "debugRebootPop20000Cycles1825" ; 
     
+    // hashmap with key = method name, value = hashmap that contains
+    // variable names and its literal value as a String
+    static public HashMap<String, HashMap> METHOD_CONFIG;
 
     // input variables
     static public int MAX_CYCLES;
@@ -627,11 +630,18 @@ public class Community {
      */
     private String interveneCommunity(int cycle)
     {
+        // loading in from json
+        int numStartCycle = Integer.parseInt((String) Community.METHOD_CONFIG.get("interveneCommunity").get("numStartCycle"));
+        int startYear = Integer.parseInt((String) Community.METHOD_CONFIG.get("interveneCommunity").get("startYear"));
+
+
+        // int numStartCycle = 4;
+        // int startYear = 2007;
+
         // When to end burn-in
-        int startCycle = 365 * 5 ;
-        
-        int startYear = 2007 ;
+        int startCycle = 365 * numStartCycle;
         startYear -= 2007 ;
+
         // No more burn-in if starting at a later date than 2007
         if (startYear > 0)
             startCycle = 0 ;

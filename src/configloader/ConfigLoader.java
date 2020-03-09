@@ -108,6 +108,14 @@ public class ConfigLoader {
 
         String RELOAD_SIMULATION = (String) communityJSON.get("RELOAD_SIMULATION");
         if (RELOAD_SIMULATION != null) Community.RELOAD_SIMULATION = RELOAD_SIMULATION;
+
+        // load methods:
+        HashMap<String, HashMap> methodToVariablesMapHashMap = ConfigLoader.getMethodsHashMapFromJSONObject(communityJSON);
+        if (methodToVariablesMapHashMap != null) {
+
+            // set MSM config to above hashmap
+            Community.METHOD_CONFIG = methodToVariablesMapHashMap;
+        }
     }
 
 
@@ -164,15 +172,9 @@ public class ConfigLoader {
         // key-value pairs signifying what variables should be set to
         // this converts from JSON format to a Java HashMap
         // for easy access from within the MSM class (remove the need to deal with JSONObjects)
-        JSONObject defaultMethodsJSON = (JSONObject) msmJSON.get("methods");
-        if (defaultMethodsJSON != null) {
-            HashMap <String, HashMap> methodToVariablesMapHashMap = ConfigLoader.convertJSONObjectToHashMapStringToHashMap(defaultMethodsJSON);
-            for (HashMap.Entry<String, HashMap> entry : methodToVariablesMapHashMap.entrySet()) {
-                String methodName = entry.getKey();
-                JSONObject methodVariablesJSON = (JSONObject) defaultMethodsJSON.get(methodName);
-                HashMap <String, String> methodVariablesToValues = ConfigLoader.convertJSONObjectToHashMapStringToString(methodVariablesJSON);
-                methodToVariablesMapHashMap.put(methodName, methodVariablesToValues);
-            }
+        HashMap<String, HashMap> methodToVariablesMapHashMap = ConfigLoader.getMethodsHashMapFromJSONObject(msmJSON);
+        if (methodToVariablesMapHashMap != null) {
+
             // set MSM config to above hashmap
             MSM.METHOD_CONFIG = methodToVariablesMapHashMap;
         }
@@ -235,6 +237,24 @@ public class ConfigLoader {
      */
 
     
+    private static HashMap<String, HashMap> getMethodsHashMapFromJSONObject(JSONObject jsonObject) {
+        JSONObject methodsJSON = (JSONObject) jsonObject.get("methods");
+
+        if (methodsJSON == null) return null;
+
+        HashMap <String, HashMap> methodToVariablesMapHashMap = ConfigLoader.convertJSONObjectToHashMap_StringToNewHashMap(methodsJSON);
+            for (HashMap.Entry<String, HashMap> entry : methodToVariablesMapHashMap.entrySet()) {
+                String methodName = entry.getKey();
+                JSONObject methodVariablesJSON = (JSONObject) methodsJSON.get(methodName);
+                HashMap <String, String> methodVariablesToValues = ConfigLoader.convertJSONObjectToHashMap_StringToString(methodVariablesJSON);
+                methodToVariablesMapHashMap.put(methodName, methodVariablesToValues);
+            }
+
+        // TODO: if nothing inside methods
+        return methodToVariablesMapHashMap;
+    }
+
+
     /*
      * Give this function a JSONObject, it will iterate over it,
      * adding each key-value pairs into a hashmap which will be returned
@@ -243,23 +263,26 @@ public class ConfigLoader {
      * @post returns a hashmap with each key value pair
      *  
      */
+    
+    private static HashMap <String, HashMap> convertJSONObjectToHashMap_StringToNewHashMap(JSONObject jsonObject) {
+        HashMap<String, HashMap> toReturn = new HashMap();
 
-    private static HashMap<String, String> convertJSONObjectToHashMapStringToString(JSONObject jsonObject) {
-        HashMap<String, String> toReturn = new HashMap();
-        for(Iterator iterator = jsonObject.keySet().iterator(); iterator.hasNext();) {
-            String key = (String) iterator.next();
-            String value = (String) jsonObject.get(key);
-            toReturn.put(key, value);
+        for (Object keyObject : jsonObject.keySet()) {
+            String key = keyObject.toString();
+            toReturn.put(key, new HashMap());
         }
+
         return toReturn;
     }
 
-    private static HashMap <String, HashMap> convertJSONObjectToHashMapStringToHashMap(JSONObject jsonObject) {
-        HashMap<String, HashMap> toReturn = new HashMap();
-        for(Iterator iterator = jsonObject.keySet().iterator(); iterator.hasNext();) {
-            String key = (String) iterator.next();
-            toReturn.put(key, new HashMap());
+    private static HashMap<String, String> convertJSONObjectToHashMap_StringToString(JSONObject jsonObject) {
+        HashMap<String, String> toReturn = new HashMap();
+        for (Object keyObject : jsonObject.keySet()) {
+            String key = keyObject.toString();
+            String value = jsonObject.get(key).toString();
+            toReturn.put(key, value);
         }
+
         return toReturn;
     }
 
