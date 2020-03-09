@@ -1,0 +1,54 @@
+{   
+    "paths": {
+        "REBOOT_PATH" : "output/test/",
+        "REPORT_PATH" : "reports/",
+        "DATA_PATH" : "data_files/"
+
+    },
+
+    "community" : {
+        "FILE_PATH" : "output/",
+        "NAME_ROOT" : "test",
+        "POPULATION" : "40000",
+        "COMMENT" : "",
+        "DYNAMIC" : "true",
+        "RELOAD_SIMULATION" : "",
+        "endYear" : "2025",
+        "methods" : {
+            "interveneCommunity" : {
+                "numStartCycle" : "4",
+                "startYear" : "2007"
+            }
+        }
+    },
+
+    "msm" : {
+        "GROUP_SEX_EVENT_SIZE" : "7",
+        "HIV_RISKY_CORRELATION" : "1.5",
+        "methods": {
+            "reInitScreenCycle" : {
+                "checkPrepStatus" : "true",
+                "useStatus" : "true"
+            },
+            "REINIT_RISK_CASUAL" : {
+                "prepHasTests" : "true"
+            }
+        }
+    },
+
+    "reporter" : {
+        "WRITE_REPORT" : "true"
+    },
+
+    "presenter" : {
+        "PLOT_FILE" : "false",
+        "FILE_NAME" : "gonoGoneWild",
+        "DATA_SCORE" : [
+            "overall_gone_wild",
+            "urethral_gone_wild",
+            "rectal_gone_wild",
+            "pharyngeal_gone_wild" 
+        ]
+    }
+
+}

@@ -36,16 +36,11 @@ public class Relationship {
     /** Simple name of relationship subclass (see constructor). */
     final String relationship ;
     
-    static public String RELATIONSHIP_ID = "relationshipId" ;
+    public static String RELATIONSHIP_ID = "relationshipId" ;
     
     //static String FOLDER_PATH = "/srv/scratch/z3524276/prepsti/"
     //static String FOLDER_PATH = "/short/is14/mw7704/prepsti/"
-    static String FOLDER_PATH = ""
-    // +  "output/year2007/" ;
-    // +  "output/year2010/" ;
-    // +  "output/year2012/" ;
-     +  "output/test/" ;
-    // +  "output/prePrEP/" ;
+    public static String FOLDER_PATH = "";
     
     /** Generate and record Random number seed. */
     static long RANDOM_SEED = System.nanoTime() ;

@@ -38,7 +38,7 @@ import org.jfree.data.category.* ;
 import org.jfree.data.xy.XYDataset; 
 import org.jfree.data.xy.XYSeries ;  
 import org.jfree.data.xy.XYSeriesCollection ;
-import org.jfree.util.* ;
+//import org.jfree.util.* ;
 
 
 import java.lang.reflect.* ;
@@ -80,12 +80,12 @@ public class Presenter {
     static final String COMMA = Reporter.COMMA ;
 
     // Used for controlling if and what is co-plotted from file.
-    static boolean PLOT_FILE = false ;    
-    static String FOLDER_PATH = "data_files/" ;
-    static String FILENAME = "gonoGoneWild" ; // "incidence_kirby2018" ; // "meanNotificationRate" ; // "unique_positivity_urethra" ; // "notifications" ; //  
+    public static boolean PLOT_FILE;    
+    public static String FOLDER_PATH;
+    public static String FILENAME; // "incidence_kirby2018" ; // "meanNotificationRate" ; // "unique_positivity_urethra" ; // "notifications" ; //  
     //static String[] DATA_SCORE = new String[] {"hiv_negative","hiv_positive"} ;
     //static String[] DATA_SCORE = new String[] {"data_notifications","data_notification_rate"} ; // 
-    static String[] DATA_SCORE = new String[] {"overall_gone_wild","urethral_gone_wild","rectal_gone_wild","pharyngeal_gone_wild"} ; // {"urethral_positivity"} ;
+    public static String[] DATA_SCORE;
             
     private boolean stacked = true ; // 
     private BarChart_AWT chart_awt ;

@@ -15,6 +15,8 @@ import java.io.* ;
 //import reporter.ScreeningReporter ;
 import reporter.presenter.* ;
 
+import configloader.ConfigLoader;
+
 import java.util.Random;
 
 import java.lang.reflect.*;
@@ -24,44 +26,43 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.logging.Level;
 
-//import org.jfree.chart.* ;
+// JSON imports:
+import org.json.simple.parser.*;
+import org.json.simple.JSONArray; 
+import org.json.simple.JSONObject; 
 
 /******************************************************************
  * @author Michael Luke Walker
  *
  *******************************************************************/
 public class Community {
-    static final public int POPULATION = 40000 ;
-    static final int AGENTS_PER_DAY = POPULATION / 365 ;
-    static public int MAX_CYCLES ; // = 350 ; 
-    static public String NAME_ROOT = "" ;
-    static String NAME_SUFFIX = "Pop" + String.valueOf(POPULATION) + "Cycles" + String.valueOf(MAX_CYCLES) ;
-    static public String SIM_NAME = NAME_ROOT + NAME_SUFFIX ;
+    static final public String DEFAULT_JSON = "default_config.json";
 
-    static String COMMENT = ""
-            //+ "Removed extra choice under serosorting for RiskyMSM"
-            //+ "of accepting Casual Relationships back to EPIC-inspired levels. "
-            //+ "probabilityUseCondom becomes zero at cycle 2095. "
-            // + "Now trying to reproduce 2010 notifications/incidents from 'gonoGoneWild'"
-            //+ "Agents reduce their chances of choosing condoms by up to 0.5"
-            //+ "parameters are adjusted according to ARTB data on a yearly basis"
-            //+ "Continue From2007To2012NoCondomIII to see if prevalence rises. "
-            //+ "five RiskyMSM go on PrEP "
-            //+ "Testing rates are altered to compare with long-term data " 
-            //+ "and their condom usage rates are multiplied by random fraction between 0 and 1."
-            //+ "All encounters are recorded in full." 
-            //+ "Test of loading burn-in. " // Uses From2007To2011p5v3aAdjust. "
-            //+ "with 500 cycle grace period."
-            //+ "Test of Urethra symptomaticProbability 0.75 "
-            + "" ;
     
+    // Default variables
+    static public String FILE_PATH;
+    static public String NAME_ROOT;
+    static public int POPULATION;
+    static public String COMMENT;
+    static public boolean DYNAMIC; // Whether parameters change throughout simulation.
+    static public String RELOAD_SIMULATION; // "to2014fix3Choice23aaPop40000Cycles4745" ; // "debugRebootPop20000Cycles1825" ; 
+    
+    // hashmap with key = method name, value = hashmap that contains
+    // variable names and its literal value as a String
+    static public HashMap<String, HashMap> METHOD_CONFIG;
+
+    // input variables
+    static public int MAX_CYCLES;
+    
+    // derived variables
+    static public String SIM_NAME;
+    static String NAME_SUFFIX;
+    static int AGENTS_PER_DAY;
+
     static boolean TO_PLOT ; //= true ;
-    static public String FILE_PATH = "output/" ;
     //static public String FILE_PATH = "/srv/scratch/z3524276/prepsti/output/test/" ;
     //static public String FILE_PATH = "/short/is14/mw7704/prepsti/output/year2007/" ;
     
-    /** Whether parameters change throughout simulation. */
-    static boolean DYNAMIC = false ;
     
     /** Dump reports to disk after this many cycles. */
     static int DUMP_CYCLE = 250 ; // ((int) Math.pow(10, 7))/POPULATION ;
@@ -78,7 +79,6 @@ public class Community {
      * (String) Name of previous simulation to reload.
      * Nothing reloaded if this is an empty string.
      */
-    static final String RELOAD_SIMULATION = "" ; // "to2014fix3Choice23aaPop40000Cycles4745" ; // "debugRebootPop20000Cycles1825" ; 
     
     static public String getFilePath()
     {
@@ -127,78 +127,75 @@ public class Community {
     // Logger
     static final java.util.logging.Logger LOGGER = java.util.logging.Logger.getLogger("reporter") ;
 
-    public static void main(String[] args)
-    {
-        //String infectedSiteName ;
-        //double urethralTransmission ;
-        int argIndex = 0 ;
-        if (args.length > argIndex)
-        {
-            LOGGER.info(args[0]);
-            NAME_ROOT = args[0] ;
-            SIM_NAME = NAME_ROOT + NAME_SUFFIX ;
-            argIndex++ ;
+    public static void main(String[] args) {
+        ConfigLoader.load();  // set static variables
+        
+        // derived variables
+        Community.AGENTS_PER_DAY = Community.POPULATION / 365 ;
+
+        // MAX_CYCLES
+        Community.MAX_CYCLES = Community.MAX_CYCLES > 99 
+                             ? Community.MAX_CYCLES 
+                             : Community.MAX_CYCLES * Reporter.DAYS_PER_YEAR;
+        
+        // Pop[POPULATION]Cycles[MAX_CYCLES]
+        Community.NAME_SUFFIX = "Pop" + String.valueOf(Community.POPULATION) 
+                              + "Cycles" + String.valueOf(Community.MAX_CYCLES);
+
+        Community.SIM_NAME = Community.NAME_ROOT + Community.NAME_SUFFIX;
+        Community.OUTPUT_RETURN += Community.SIM_NAME + " " ;
+        
+        // Name of test run passed in via argument
+        switch (args[0]) {
+            case "gadi":
+                Community.FILE_PATH = "/scratch/is14/mw7704/prepsti/" + Community.FILE_PATH; 
+                Community.DUMP_CYCLE = 500;
+                break;
+            case "katana":
+                Community.FILE_PATH = "/srv/scratch/z3524276/prepsti/" + Community.FILE_PATH ;
+                Community.DUMP_CYCLE = 500;
+                break;
         }
-        //MAX_CYCLES = Integer.valueOf(args[1]) ;
-        if (args.length > argIndex)
-        {
-            LOGGER.info(args[argIndex]) ;
-            int time = Integer.valueOf(args[argIndex]) ;
-            if (time > 99)    // time given assumed to be days
-                MAX_CYCLES = time ;
-            else    // time given assumed to be years
-                MAX_CYCLES = time * Reporter.DAYS_PER_YEAR ;
-            NAME_SUFFIX = "Pop" + String.valueOf(POPULATION) + "Cycles" + MAX_CYCLES ;
-            SIM_NAME = NAME_ROOT + NAME_SUFFIX ;
-            OUTPUT_RETURN += SIM_NAME + " " ;
-            argIndex++ ;
-        }
-        if (args.length > argIndex)
-        {
-            LOGGER.info(args[argIndex]) ;
-            FILE_PATH += args[argIndex] ;
-            /*
-            urethralTransmission = Double.valueOf(args[argIndex]) ;
-            MSM.SET_INFECT_PROBABILITY("URETHRA","RECTUM",urethralTransmission) ;
-            MSM.SET_INFECT_PROBABILITY("RECTUM","URETHRA",urethralTransmission) ;
-            */
-            argIndex++ ;
-        }
-        if (args.length > argIndex)
-        {
-            LOGGER.info(args[argIndex]);
-            if (args[argIndex].equals("gadi"))
-            {
-                FILE_PATH = "/scratch/is14/mw7704/prepsti/" + FILE_PATH ;
-                DUMP_CYCLE = 500 ;
-            }
-            else if (args[argIndex].equals("katana"))
-            {
-                FILE_PATH = "/srv/scratch/z3524276/prepsti/" + FILE_PATH ;
-                DUMP_CYCLE = 500 ;
-            }
-            argIndex++ ;
-        }
-        /*
-        if (args.length > argIndex)
-        {
-            MSM.SET_ADJUST_CASUAL_CONSENT(Double.valueOf(args[argIndex]));
-            argIndex++ ;
-        }
-        */
-        if (args.length > argIndex)
-        {
-            int siteIndex = 0 ;
-            for (String infected : MSM.SITE_NAMES)
-                for (String clear : MSM.SITE_NAMES)
-                {
-                    MSM.SET_INFECT_PROBABILITY(infected, clear, Double.valueOf(args[argIndex + siteIndex])) ;
-                    OUTPUT_RETURN += args[argIndex + siteIndex] + " " ;
-                    siteIndex++ ;
-                }
-            if (siteIndex != 9)    // 9 transmissionProbabilities or none
-                LOGGER.severe("Transmission probabilities missing. Only found " + String.valueOf(siteIndex-3) + " out of 9") ;
-        }
+
+
+        
+        // if (args.length > argIndex)
+        // {
+        //     LOGGER.info(args[argIndex]);
+        //     if (args[argIndex].equals("gadi"))
+        //     {
+        //         FILE_PATH = "/scratch/is14/mw7704/prepsti/" + FILE_PATH ;
+        //         DUMP_CYCLE = 500 ;
+        //     }
+        //     else if (args[argIndex].equals("katana"))
+        //     {
+        //         FILE_PATH = "/srv/scratch/z3524276/prepsti/" + FILE_PATH ;
+        //         DUMP_CYCLE = 500 ;
+        //     }
+        //     argIndex++ ;
+        // }
+        // /*
+        // if (args.length > argIndex)
+        // {
+        //     MSM.SET_ADJUST_CASUAL_CONSENT(Double.valueOf(args[argIndex]));
+        //     argIndex++ ;
+        // }
+        // */
+
+
+        // if (args.length > argIndex)
+        // {
+        //     int siteIndex = 0 ;
+        //     for (String infected : MSM.SITE_NAMES)
+        //         for (String clear : MSM.SITE_NAMES)
+        //         {
+        //             MSM.SET_INFECT_PROBABILITY(infected, clear, Double.valueOf(args[argIndex + siteIndex])) ;
+        //             OUTPUT_RETURN += args[argIndex + siteIndex] + " " ;
+        //             siteIndex++ ;
+        //         }
+        //     if (siteIndex != 9)    // 9 transmissionProbabilities or none
+        //         LOGGER.severe("Transmission probabilities missing. Only found " + String.valueOf(siteIndex-3) + " out of 9") ;
+        // }
         
         COMMENT += MSM.TRANSMISSION_PROBABILITY_REPORT() ;
         
@@ -375,7 +372,6 @@ public class Community {
         System.out.println("Elapsed running time: " + minutes + "minutes") ;
         
         //if (TO_PLOT)
-        {
         String[] relationshipClassNames = new String[] {"Casual","Regular","Monogomous"} ; // "Casual","Regular","Monogomous"
         
         
@@ -475,9 +471,14 @@ public class Community {
             Reporter.DUMP_OUTPUT("riskyIncidence_HIV",SIM_NAME,FILE_PATH,incidenceReport);
             //Reporter.DUMP_OUTPUT("riskyIncidencePrep",SIM_NAME,FILE_PATH,incidenceReportPrep);
         }
-        }
-    }
+        
 
+        LOGGER.info("Task completed");
+
+    }
+ 
+
+    
     /**
      * Community object containing all agent(s) and Relationships and methods 
      * for pairing agent(s) into relationship(s) and for ending relationship(s)
@@ -624,11 +625,18 @@ public class Community {
      */
     private String interveneCommunity(int cycle)
     {
+        // loading in from json
+        int numStartCycle = Integer.parseInt((String) Community.METHOD_CONFIG.get("interveneCommunity").get("numStartCycle"));
+        int startYear = Integer.parseInt((String) Community.METHOD_CONFIG.get("interveneCommunity").get("startYear"));
+
+
+        // int numStartCycle = 4;
+        // int startYear = 2007;
+
         // When to end burn-in
-        int startCycle = 365 * 5 ;
-        
-        int startYear = 2007 ;
+        int startCycle = 365 * numStartCycle;
         startYear -= 2007 ;
+
         // No more burn-in if starting at a later date than 2007
         if (startYear > 0)
             startCycle = 0 ;
@@ -1562,6 +1570,9 @@ public class Community {
 
 
     }
+
+
+
 
 }
     

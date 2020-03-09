@@ -51,12 +51,18 @@ public class Reporter {
     }
     
     /** Whether to automatically save reports */
-    static boolean WRITE_REPORT = true ;
+    public static boolean WRITE_REPORT;
     
     /** Path to folder for saving reports. */
-    static public String REPORT_FOLDER = "C:\\Users\\MichaelWalker\\UNSW\\NSW PRSP - Documents\\Model development\\output\\" ;
-    static String DATA_FOLDER = "C:\\Users\\MichaelWalker\\OneDrive - UNSW\\gonorrhoeaPrEP\\simulator\\PrEPSTI2\\data_files\\" ;
+
+    // old paths
+    // public static String REPORT_FOLDER = "C:\\Users\\MichaelWalker\\UNSW\\NSW PRSP - Documents\\Model development\\output\\" ;
+    // public static String DATA_FOLDER = "C:\\Users\\MichaelWalker\\OneDrive - UNSW\\gonorrhoeaPrEP\\simulator\\PrEPSTI2\\data_files\\" ;
     
+    // loaded paths
+    public static String REPORT_FOLDER;
+    public static String DATA_FOLDER;
+
     /** Names of properties for filtering records. */
     private ArrayList<String> filterPropertyNames = new ArrayList<String>() ;
     
