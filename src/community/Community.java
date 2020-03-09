@@ -4,7 +4,6 @@
 package community;
 
 import agent.* ;
-//import static community.Community.RAND;
 import site.* ;
 import reporter.* ;
         
@@ -12,8 +11,8 @@ import java.io.* ;
 //import java.io.FileWriter ;
 //import java.io.IOException;
 
-import reporter.* ; 
-import reporter.ScreeningReporter ;
+//import reporter.* ; 
+//import reporter.ScreeningReporter ;
 import reporter.presenter.* ;
 
 import configloader.ConfigLoader;
@@ -203,6 +202,10 @@ public class Community {
         // Whether to plot prevalence upon completion.
         // Must be false when run on an HPC cluster.
         TO_PLOT = (!FILE_PATH.contains("prepsti")) ;
+        
+        // Needed to avoid NoClassDefFoundError on HPC
+        PopulationReporter populationReporter = new PopulationReporter() ;
+        RelationshipReporter relationshipReporter = new RelationshipReporter() ;
         EncounterReporter encounterReporter = new EncounterReporter() ;
         ScreeningReporter screeningReporter = new ScreeningReporter() ;
         
@@ -371,18 +374,8 @@ public class Community {
         //if (TO_PLOT)
         String[] relationshipClassNames = new String[] {"Casual","Regular","Monogomous"} ; // "Casual","Regular","Monogomous"
         
-//        RelationshipReporter relationshipReporter = new RelationshipReporter(Community.SIM_NAME,Community.FILE_PATH) ;
-//        LOGGER.info(relationshipReporter.prepareCumulativeRelationshipRecord(1, relationshipClassNames, 0, 6, 0).get("Casual").toString()) ;
-//        LOGGER.info(relationshipReporter.prepareCumulativeRelationshipRecord(2, relationshipClassNames, 0, 6, 0).get("Casual").toString()) ;
-//        LOGGER.info(relationshipReporter.prepareCumulativeRelationshipRecord(11, relationshipClassNames, 0, 6, 0).get("Casual").toString()) ;
-//        LOGGER.info(relationshipReporter.prepareCumulativeRelationshipRecord(51, relationshipClassNames, 0, 6, 0).get("Casual").toString()) ;
-//        LOGGER.info(relationshipReporter.prepareCumulativeRelationshipRecord(100, relationshipClassNames, 0, 6, 0).get("Casual").toString()) ;
-        //HashMap<Object,HashMap<Object,Number>> relationshipReport 
-          //      = relationshipReporter.prepareCumulativeRelationshipRecord(-1, relationshipClassNames, 0, 6, 0) ;
-        //HashMap<Object,Number[]> plotReport = Reporter.INVERT_HASHMAP_LIST(relationshipReport, relationshipClassNames) ;
-        //Reporter.WRITE_CSV(plotReport, "Number of Relationships", relationshipClassNames, "cumulativeRelationship", SIM_NAME, "output/test/") ;
         
-        encounterReporter = new EncounterReporter(Community.SIM_NAME,Community.FILE_PATH) ;
+        encounterReporter = new EncounterReporter(SIM_NAME,FILE_PATH) ;
         screeningReporter = new ScreeningReporter(SIM_NAME,FILE_PATH) ;
         
         //screeningReporter = new ScreeningReporter(SIM_NAME,FILE_PATH) ;
@@ -441,10 +434,12 @@ public class Community {
         //HashMap<Comparable,String> incidenceReportPrep = new HashMap<Comparable,String>() ;
         if (DYNAMIC)
         {
-            incidenceReport = screeningReporter.prepareYearsAtRiskIncidenceReport(siteNames, 13, 2019, "statusHIV") ;
+            int startYear = 2015 ;
+            int endYear = 2025 ;
+            incidenceReport = screeningReporter.prepareYearsAtRiskIncidenceReport(siteNames, endYear + 1 - startYear, endYear, "statusHIV") ;
             //incidenceReportPrep = screeningReporter.prepareYearsAtRiskIncidenceReport(siteNames, 16, 2022, "prepStatus") ;
         }
-        LOGGER.info("by HIV-status " + screeningReporter.prepareFinalAtRiskIncidentsRecord(siteNames, 0,"statusHIV")) ;
+        LOGGER.info("by HIV-status " + screeningReporter.prepareFinalAtRiskIncidentsRecord(siteNames, 0, "statusHIV")) ;
         //String finalPrevalencesRecord = screeningReporter.prepareFinalPrevalencesSortedRecord(siteNames, "statusHIV") ;
         //LOGGER.log(Level.INFO, "prevalence {0}", finalPrevalencesRecord) ;
         

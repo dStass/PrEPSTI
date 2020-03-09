@@ -5,8 +5,6 @@
  */
 package reporter;
 
-import community.Community ;
-
 import java.util.ArrayList ;
 import java.util.HashSet ;
 import java.util.Collections ;

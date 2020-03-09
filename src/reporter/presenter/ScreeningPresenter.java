@@ -9,8 +9,6 @@ package reporter.presenter;
 import java.util.ArrayList ;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List ;
-import java.util.Collection ;
 import java.util.Collections;
 
 //import community.Community ;
@@ -81,7 +79,7 @@ public class ScreeningPresenter extends Presenter {
     
     public static void main(String[] args)
     {
-        String prefix = "debugTrust" ;
+        String prefix = "old1p5Params26" ;
         //String prefix = "to2019fix23" ;
         String suffix = "Pop40000Cycles6570" ;
         ArrayList<String> simNameList = new ArrayList<String>() ;
@@ -98,8 +96,8 @@ public class ScreeningPresenter extends Presenter {
         //String simName = "to2017newSort17aaPop40000Cycles5110" ;
         //String simName = "to2012max3sameScreen34cPop40000Cycles4380" ;
         //String simName = "to2014agentAdjust29aPop40000Cycles4920" ;
-        //String simName = "fix3debug23baPop40000Cycles1825" ;
-        String simName = simNames[0] ;
+        String simName = "old1p5Params38Pop40000Cycles1095" ;
+        //String simName = simNames[0] ;
         
         boolean unique = false ;
         int notifications = 1 ; 
@@ -159,8 +157,8 @@ public class ScreeningPresenter extends Presenter {
         //screeningPresenter.multiPlotScreening(new Object[] {"prevalence","coprevalence",new String[] {"Pharynx","Rectum"},new String[] {"Urethra","Rectum"},"prevalence",new String[] {"Pharynx","Rectum","Urethra"}});
         //screeningPresenter.multiPlotScreening(new Object[] {"prevalence","prevalence",new String[] {"Pharynx","Rectum","Urethra"}});
         //screeningPresenter.plotIncidencePerCycle(siteNames) ;
-        //screeningPresenter.plotFinalAtRiskIncidentsRecord(siteNames,0,"statusHIV") ;
-        screeningPresenter.plotYearsAtRiskIncidenceReport(siteNames, 5, 2019, "statusHIV") ;
+        screeningPresenter.plotFinalAtRiskIncidentsRecord(siteNames,0,"statusHIV") ;
+        //screeningPresenter.plotYearsAtRiskIncidenceReport(siteNames, 5, 2019, "statusHIV") ;
         //screeningPresenter.plotYearsBeenTestedReport(13, 0, 0, 2019, "statusHIV") ;
         //screeningPresenter.plotNotificationsPerCycle(siteNames) ;
         //screeningPresenter.plotSitePrevalence(siteNames) ;

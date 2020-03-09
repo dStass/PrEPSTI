@@ -34,7 +34,7 @@ public class Relationship {
     private int relationshipId ;
     
     /** Simple name of relationship subclass (see constructor). */
-    private String relationship ;
+    final String relationship ;
     
     public static String RELATIONSHIP_ID = "relationshipId" ;
     
