@@ -49,7 +49,7 @@ public class Community {
     
     // hashmap with key = method name, value = hashmap that contains
     // variable names and its literal value as a String
-    static public HashMap<String, HashMap> METHOD_CONFIG;
+    // static public HashMap<String, HashMap> METHOD_CONFIG;
 
     // input variables
     static public int MAX_CYCLES;
@@ -435,7 +435,10 @@ public class Community {
         if (DYNAMIC)
         {
             int startYear = 2015 ;
-            int endYear = 2025 ;
+
+            // loading endYear from ConfigLoader
+            int endYear = ConfigLoader.getMethodVariableInteger("community", "main", "endYear");
+
             incidenceReport = screeningReporter.prepareYearsAtRiskIncidenceReport(siteNames, endYear + 1 - startYear, endYear, "statusHIV") ;
             //incidenceReportPrep = screeningReporter.prepareYearsAtRiskIncidenceReport(siteNames, 16, 2022, "prepStatus") ;
         }
@@ -626,12 +629,8 @@ public class Community {
     private String interveneCommunity(int cycle)
     {
         // loading in from json
-        int numStartCycle = Integer.parseInt((String) Community.METHOD_CONFIG.get("interveneCommunity").get("numStartCycle"));
-        int startYear = Integer.parseInt((String) Community.METHOD_CONFIG.get("interveneCommunity").get("startYear"));
-
-
-        // int numStartCycle = 4;
-        // int startYear = 2007;
+        int numStartCycle = ConfigLoader.getMethodVariableInteger("community", "interveneCommunity", "numStartCycle");
+        int startYear = ConfigLoader.getMethodVariableInteger("community", "interveneCommunity", "startYear");
 
         // When to end burn-in
         int startCycle = 365 * numStartCycle;
@@ -640,7 +639,6 @@ public class Community {
         // No more burn-in if starting at a later date than 2007
         if (startYear > 0)
             startCycle = 0 ;
-        
         
         if ((cycle < startCycle))
             return "" ;

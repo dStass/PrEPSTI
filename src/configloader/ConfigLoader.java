@@ -30,17 +30,22 @@ import reporter.presenter.Presenter;
  */
 public class ConfigLoader {
     // Michael's LOGGER
-    static final java.util.logging.Logger LOGGER = java.util.logging.Logger.getLogger("reporter");
+    private static final java.util.logging.Logger LOGGER = java.util.logging.Logger.getLogger("reporter");
 
     // final definitions 
-    static final public String DEFAULT_JSON_FILE = "default_config.json";
-    static final public String CONFIG_JSON_FILE = "config.json";
+    public static final String DEFAULT_JSON_FILE = "default_config.json";
+    public static final String CONFIG_JSON_FILE = "config.json";
 
     // loaded JSONObjects
-    static JSONObject loadedJSON; 
+    public static JSONObject loadedJSON;
+
+    // contains key = method name, value = variables loaded for that method
+    public static HashMap<String, HashMap> classMethodVariablesHashMap;
     
     // load jsons into class
     public static void load() {
+        ConfigLoader.classMethodVariablesHashMap = new HashMap();
+
         ConfigLoader.readDefaultsJSON();
         ConfigLoader.loadInformationIntoClasses();
         ConfigLoader.readConfigJSON();
@@ -110,12 +115,7 @@ public class ConfigLoader {
         if (RELOAD_SIMULATION != null) Community.RELOAD_SIMULATION = RELOAD_SIMULATION;
 
         // load methods:
-        HashMap<String, HashMap> methodToVariablesMapHashMap = ConfigLoader.getMethodsHashMapFromJSONObject(communityJSON);
-        if (methodToVariablesMapHashMap != null) {
-
-            // set MSM config to above hashmap
-            Community.METHOD_CONFIG = methodToVariablesMapHashMap;
-        }
+        loadMethodVariablesHashMap("community", communityJSON);
     }
 
 
@@ -172,12 +172,7 @@ public class ConfigLoader {
         // key-value pairs signifying what variables should be set to
         // this converts from JSON format to a Java HashMap
         // for easy access from within the MSM class (remove the need to deal with JSONObjects)
-        HashMap<String, HashMap> methodToVariablesMapHashMap = ConfigLoader.getMethodsHashMapFromJSONObject(msmJSON);
-        if (methodToVariablesMapHashMap != null) {
-
-            // set MSM config to above hashmap
-            MSM.METHOD_CONFIG = methodToVariablesMapHashMap;
-        }
+        loadMethodVariablesHashMap("msm", msmJSON);
 
     }
 
@@ -294,5 +289,52 @@ public class ConfigLoader {
         return toReturn;
     }
 
+
+    /**
+     * 
+     * @param methodName
+     * @param methodJSON
+     * 
+     * entire default methods will be overwritten by config file
+     * 
+     */
+    private static void loadMethodVariablesHashMap(String methodName, JSONObject methodJSON) {
+        HashMap<String, HashMap> methodToVariablesMapHashMap = ConfigLoader.getMethodsHashMapFromJSONObject(methodJSON);
+        if (methodToVariablesMapHashMap != null) {
+            ConfigLoader.classMethodVariablesHashMap.put(methodName, methodToVariablesMapHashMap);
+        }
+    }
+
+    /*
+     * * * * * * * * * * * * * * * * * * * * *
+     *        PUBLIC HELPER FUNCTIONS        *
+     * * * * * * * * * * * * * * * * * * * * *
+     */    
+
+    public static int getMethodVariableInteger(String className, String methodName, String variableName) {
+        String val = ConfigLoader.getMethodVariable(className, methodName, variableName);
+        if (val == null) return 0;
+        return Integer.parseInt(val);
+    }
+
+    public static double getMethodVariableDouble(String className, String methodName, String variableName) {
+        return Double.parseDouble(ConfigLoader.getMethodVariable(className, methodName, variableName));
+    }
+
+    public static boolean getMethodVariableBoolean(String className, String methodName, String variableName) {
+        return Boolean.parseBoolean(ConfigLoader.getMethodVariable(className, methodName, variableName));
+    }
+
+    public static String getMethodVariableString(String className, String methodName, String variableName) {
+        return ConfigLoader.getMethodVariable(className, methodName, variableName);
+    }
+
+    private static String getMethodVariable(String className, String methodName, String variableName) {
+        HashMap<String, HashMap> classHashMap = ConfigLoader.classMethodVariablesHashMap.get(className);
+        HashMap<String, String> methodHashMap = classHashMap.get(methodName);
+        String value = methodHashMap.get(variableName);
+
+        return value;
+    }
 
 }

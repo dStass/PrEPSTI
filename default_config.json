@@ -18,6 +18,9 @@
             "interveneCommunity" : {
                 "numStartCycle" : "4",
                 "startYear" : "2007"
+            },
+            "main" : {
+                "endYear" : "2025"
             }
         }
     },
