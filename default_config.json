@@ -16,7 +16,7 @@
         "endYear" : "2025",
         "methods" : {
             "interveneCommunity" : {
-                "numStartCycle" : "4",
+                "startCycle" : "4",
                 "startYear" : "2007"
             },
             "main" : {

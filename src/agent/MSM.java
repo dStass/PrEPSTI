@@ -1971,7 +1971,7 @@ public class MSM extends Agent {
     {
         // For easily testing the effects of the PrEP screening regime
         boolean checkPrepStatus = ConfigLoader.getMethodVariableBoolean("msm", "reInitScreenCycle", "checkPrepStatus");
-
+        
 
         if (checkPrepStatus && getPrepStatus())
             setScreenCycle((sampleGamma(31,1,1)) + 61) ;

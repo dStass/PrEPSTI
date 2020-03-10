@@ -134,9 +134,7 @@ public class Community {
         Community.AGENTS_PER_DAY = Community.POPULATION / 365 ;
 
         // MAX_CYCLES
-        Community.MAX_CYCLES = Community.MAX_CYCLES > 99 
-                             ? Community.MAX_CYCLES 
-                             : Community.MAX_CYCLES * Reporter.DAYS_PER_YEAR;
+        Community.MAX_CYCLES = Community.generateTrueCycles(MAX_CYCLES);
         
         // Pop[POPULATION]Cycles[MAX_CYCLES]
         Community.NAME_SUFFIX = "Pop" + String.valueOf(Community.POPULATION) 
@@ -629,11 +627,11 @@ public class Community {
     private String interveneCommunity(int cycle)
     {
         // loading in from json
-        int numStartCycle = ConfigLoader.getMethodVariableInteger("community", "interveneCommunity", "numStartCycle");
+        int startCycle = ConfigLoader.getMethodVariableInteger("community", "interveneCommunity", "startCycle");
         int startYear = ConfigLoader.getMethodVariableInteger("community", "interveneCommunity", "startYear");
 
         // When to end burn-in
-        int startCycle = 365 * numStartCycle;
+        startCycle = Community.generateTrueCycles(startCycle);
         startYear -= 2007 ;
 
         // No more burn-in if starting at a later date than 2007
@@ -1360,6 +1358,22 @@ public class Community {
     //public Reporter(String simName, ArrayList<String> generateReports, 
 
     //	ArrayList<String> encounterReports, ArrayList<String> clearReports, ArrayList<String> screenReports)
+    
+    
+
+    /*
+    * * * * * * * * * * * * * * * * * * * * *
+    *            HELPER FUNCTIONS           *
+    * * * * * * * * * * * * * * * * * * * * *
+    */
+
+    private static int generateTrueCycles(int cycles) {
+        cycles = cycles > 99 
+                        ? cycles 
+                        : cycles * Reporter.DAYS_PER_YEAR;
+        return cycles;
+    }
+    
     private class Scribe{
 
         String extension = ".txt" ;
@@ -1568,8 +1582,6 @@ public class Community {
 
 
     }
-
-
 
 
 }
