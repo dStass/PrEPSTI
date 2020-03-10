@@ -489,6 +489,12 @@ public class Presenter {
             screeningReporter  = new ScreeningReporter(simName,"output/test/") ;
             //hashMapList.add(screeningReporter.prepareYearsPositivityRecord(siteNames, false, 8, 2014)) ;
         }
+
+
+
+
+
+
 //        HashMap<Object,Number[]> averagedHashMap = Reporter.AVERAGED_HASHMAP_REPORT(hashMapList) ;
 //        averagedHashMap.remove(2013) ;
 //        averagedHashMap.remove(2014) ;
@@ -1099,6 +1105,7 @@ public class Presenter {
                 scoreName += "/" + name ;
         scoreName = scoreName.substring(1) ;
         // Send data to be processed and presented
+
         chart_awt.callPlotChart(chartTitle,scoreList,scoreName,legend) ;
     }
     
@@ -2127,6 +2134,13 @@ public class Presenter {
                 yLabel,dataset,PlotOrientation.VERTICAL,true, true, false);
             
             barChart.getPlot().setBackgroundPaint(Color.WHITE) ;
+
+            // Bar chart formatting:
+            BarRenderer r = (BarRenderer) barChart.getCategoryPlot().getRenderer();
+            r.setBarPainter(new StandardBarPainter());
+            // r.setSeriesPaint(0, new Color(15, 159, 240));
+            r.setSeriesPaint(0, Color.BLACK);
+
             //barChart.getXYPlot().getDomainAxis().set.setTickUnit(new NumberTickUnit(dataset.getColumnCount()/20)) ;
             //saveChart(barChart) ;
             displayChart(barChart) ;

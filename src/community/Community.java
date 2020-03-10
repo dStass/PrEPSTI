@@ -388,13 +388,15 @@ public class Community {
           //      = new ScreeningPresenter("prevalence",Community.SIM_NAME,screeningReporter) ;
         //screeningPresenter2.plotPrevalence();
         //screeningPresenter2.plotNotificationsPerCycle();
-        LOGGER.info(MSM.TRANSMISSION_PROBABILITY_REPORT()) ;    
-        if (TO_PLOT)
-        {
+
+
+        LOGGER.info(MSM.TRANSMISSION_PROBABILITY_REPORT());
+        if (TO_PLOT) {
             ScreeningPresenter screeningPresenter3 
                     = new ScreeningPresenter(SIM_NAME,"multi prevalence",screeningReporter) ;
             screeningPresenter3.multiPlotScreening(new Object[] {"prevalence","prevalence",new String[] {"Pharynx","Rectum","Urethra"}}) ;  // ,"coprevalence",new String[] {"Pharynx","Rectum"},new String[] {"Urethra","Rectum"}
         }
+        
         HashMap<Object,Number> finalNotificationsRecord = new HashMap<Object,Number>() ;
         
         for (boolean unique : new boolean[] {})    // false,

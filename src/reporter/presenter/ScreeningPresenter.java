@@ -79,24 +79,24 @@ public class ScreeningPresenter extends Presenter {
     
     public static void main(String[] args)
     {
-        String prefix = "old1p5Params26" ;
-        //String prefix = "to2019fix23" ;
-        String suffix = "Pop40000Cycles6570" ;
-        ArrayList<String> simNameList = new ArrayList<String>() ;
-        simNameList.add("rebootPop20000Cycles1825") ;
-        //String letter0 = "" ;
-//        for (String letter0 : new String[] {"a","b","c","d","e","f","g","h","i","j"})
-//            for (String letter1 : new String[] {"a","b","c","d","e"})
-//                simNameList.add(prefix + letter0 + letter1 + suffix) ;
+//         String prefix = "old1p5Params26" ;
+//         //String prefix = "to2019fix23" ;
+//         String suffix = "Pop40000Cycles6570" ;
+//         ArrayList<String> simNameList = new ArrayList<String>() ;
+//         simNameList.add("rebootPop20000Cycles1825") ;
+//         //String letter0 = "" ;
+// //        for (String letter0 : new String[] {"a","b","c","d","e","f","g","h","i","j"})
+// //            for (String letter1 : new String[] {"a","b","c","d","e"})
+// //                simNameList.add(prefix + letter0 + letter1 + suffix) ;
         
-        simNames = simNameList.toArray(new String[] {}) ;
+//         simNames = simNameList.toArray(new String[] {}) ;
         
         //String simName = "rebootPop20000Cycles1825" ;
         //String simName = "Qibin1p0aPop40000Cycles1460" ;
         //String simName = "to2017newSort17aaPop40000Cycles5110" ;
         //String simName = "to2012max3sameScreen34cPop40000Cycles4380" ;
         //String simName = "to2014agentAdjust29aPop40000Cycles4920" ;
-        String simName = "old1p5Params38Pop40000Cycles1095" ;
+        String simName = "testPop2500Cycles1095" ;
         //String simName = simNames[0] ;
         
         boolean unique = false ;
@@ -128,7 +128,7 @@ public class ScreeningPresenter extends Presenter {
         //String reportFileName = "output/untouchable/" ; // args[2] ;
         //String reportFileName = "output/prep/" ; // args[2] ;
         //String reportFileName = "output/prePrEP/" ; // args[2] ;
-        String reportFileName = "output/test/" ; // args[2] ;
+        String reportFileName = "output/" ; // args[2] ;
         //String reportFileName = "output/to2025/" ; // args[2] ;
         //String reportFileName = "output/year2012/" ; // args[2] ;
         //String reportFileName = "output/year2010/" ; // args[2] ;
@@ -151,7 +151,7 @@ public class ScreeningPresenter extends Presenter {
         //screeningPresenter.coplotPrevalence(simNames) ;
         //screeningPresenter.plotSiteMeanPrevalence(siteNames,simNames) ;
         
-        //screeningPresenter.plotNumberAgentTestingReport(0, 6, 0) ;
+        screeningPresenter.plotNumberAgentTestingReport(0, 6, 0) ;
         //screeningPresenter.plotNumberAgentTreatedReport(2, 0, 0,"prepStatus",5) ;
 
         //screeningPresenter.multiPlotScreening(new Object[] {"prevalence","coprevalence",new String[] {"Pharynx","Rectum"},new String[] {"Urethra","Rectum"},"prevalence",new String[] {"Pharynx","Rectum","Urethra"}});
