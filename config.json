@@ -1,7 +1,7 @@
 {   
     "community" : {
         "POPULATION" : "105",
-        "MAX_CYCLES" : "3",
+        "MAX_CYCLES" : "3"
     },
 
     "msm" : {
