@@ -96,6 +96,9 @@ public class Presenter {
     
     private String folderPath = Community.FILE_PATH ;
 
+    // Variables containing drawing information:
+    private boolean drawPoints = true;  // draw each individual point for a line graph true by default
+
     static final java.util.logging.Logger LOGGER = java.util.logging.Logger.getLogger("presenter") ;
     
     static protected String GET_TIME_PERIOD_STRING(int backYears, int backMonths, int backDays)
@@ -1898,6 +1901,18 @@ public class Presenter {
     }
 
     /**
+     * True by default
+     * If set to false -> graph will not draw points
+     * @param val
+     */
+    public void setDrawPoints(boolean val) {
+        drawPoints = val;
+    }
+
+
+
+
+    /**
      * private class to specifically handle JFreeChart functions such as
      * handling Datasets and plotting charts.
      */
@@ -2331,16 +2346,17 @@ public class Presenter {
 
             ArrayList<ArrayList<Integer>> colours = ConfigLoader.getColoursShuffled();
 
+            // set shape of points
+            double circleWidth = 3.5;
+            double circleOffset = circleWidth / 2;
+            Shape shape = new Ellipse2D.Double(-circleOffset, -circleOffset, circleWidth, circleWidth);
 
             for (int numSeries = 0; numSeries < legend.length; ++numSeries) {
                 XYLineAndShapeRenderer r = (XYLineAndShapeRenderer) lineChart.getXYPlot().getRenderer();
 
-                // set shape of points
-                double circleWidth = 3.5;
-                double circleOffset = circleWidth / 2;
-                Shape shape = new Ellipse2D.Double(-circleOffset, -circleOffset, circleWidth, circleWidth);
                 r.setSeriesShape(numSeries, shape);
-                r.setSeriesShapesVisible(numSeries, true);
+                if (drawPoints) r.setSeriesShapesVisible(numSeries, true);
+                else r.setSeriesShapesVisible(numSeries, false);
 
                 // set line colours - remove from start and add to the end just in case we run out of colours
                 ArrayList<Integer> rgb = colours.remove(0);

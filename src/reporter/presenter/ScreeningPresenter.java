@@ -160,14 +160,14 @@ public class ScreeningPresenter extends Presenter {
         //screeningPresenter.multiPlotScreening(new Object[] {"prevalence","prevalence",new String[] {"Pharynx","Rectum","Urethra"}});
         //screeningPresenter.plotIncidencePerCycle(siteNames) ;
         // screeningPresenter.plotFinalAtRiskIncidentsRecord(siteNames,0,"statusHIV") ;
-        screeningPresenter.plotYearsAtRiskIncidenceReport(siteNames, 10, 2019, "") ;  // line chart
+        // screeningPresenter.plotYearsAtRiskIncidenceReport(siteNames, 3, 2019, "") ;  // line chart
         // screeningPresenter.plotYearsBeenTestedReport(13, 0, 0, 2019, "statusHIV") ;
         //screeningPresenter.plotNotificationsPerCycle(siteNames) ;
-        // screeningPresenter.plotSitePrevalence(siteNames) ;
-        //screeningPresenter.plotSiteSymptomPrevalence(siteNames) ;
+        screeningPresenter.plotSitePrevalence(siteNames) ;
+        // screeningPresenter.plotSiteSymptomPrevalence(siteNames) ;
         // screeningPresenter.plotPrevalence(siteNames) ;  // points on plot may not make sense here?
         // screeningPresenter.plotPrevalenceYears(siteNames,11,2017) ;
-        //screeningPresenter.plotSortedPrevalenceYears(siteNames,13,2019,"statusHIV") ;
+        // screeningPresenter.plotSortedPrevalenceYears(siteNames,13,2019,"statusHIV") ;
         // screeningPresenter.plotFinalSymptomatic(new String[] {"Pharynx","Rectum","Urethra"}) ;
         //screeningPresenter.plotFinalPrevalences(new String[] {"Pharynx","Rectum","Urethra"}) ;
         //screeningPresenter.plotSortedFinalPrevalences(new String[] {"Pharynx","Rectum","Urethra"}, "statusHIV") ;
@@ -710,6 +710,8 @@ public class ScreeningPresenter extends Presenter {
         
         // set new title
         this.chartTitle = "Site Prevalence";
+        setDrawPoints(false);
+
 
         ArrayList<ArrayList<String>> prevalenceReports = new ArrayList<ArrayList<String>>() ;
         
