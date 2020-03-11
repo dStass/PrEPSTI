@@ -541,11 +541,8 @@ public class Presenter {
         //LOGGER.log(Level.INFO, "{0}", hashMapNumber );
     }
     
-    public Presenter()
-    {
-        
-    }
-    
+    public Presenter() {}
+
     public Presenter(String simName, String chartTitle)
     {
         this.applicationTitle = simName ;

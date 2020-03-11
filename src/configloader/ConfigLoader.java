@@ -339,9 +339,7 @@ public class ConfigLoader {
      */    
 
     public static int getMethodVariableInteger(String className, String methodName, String variableName) {
-        String val = ConfigLoader.getMethodVariable(className, methodName, variableName);
-        if (val == null) return 0;
-        return Integer.parseInt(val);
+        return Integer.parseInt(ConfigLoader.getMethodVariable(className, methodName, variableName));
     }
 
     public static double getMethodVariableDouble(String className, String methodName, String variableName) {
@@ -365,11 +363,18 @@ public class ConfigLoader {
     }
 
 
-    // TODO: to implement
+    /**
+     * returns ArrayList containing ArrayList<Integers> (representing RGB)
+     * @return a shallow copy of ConfigLoader.colours 
+     */
     public static ArrayList<ArrayList<Integer>> getColours() {
         return (ArrayList<ArrayList<Integer>>) ConfigLoader.colours.clone();
     }
 
+    /**
+     * returns ArrayList containing ArrayList<Integers> (representing RGB)
+     * @return a shuffled shallow copy of ConfigLoader.colours
+     */
     public static ArrayList<ArrayList<Integer>> getColoursShuffled() {
         ArrayList<ArrayList<Integer>> cloneList = (ArrayList<ArrayList<Integer>>) ConfigLoader.colours.clone();
         Collections.shuffle(cloneList);
