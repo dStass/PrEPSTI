@@ -151,7 +151,7 @@ public class ScreeningPresenter extends Presenter {
         //screeningPresenter.coplotPrevalence(simNames) ;
         //screeningPresenter.plotSiteMeanPrevalence(siteNames,simNames) ;
         
-        screeningPresenter.plotNumberAgentTestingReport(0, 6, 0) ;
+        // screeningPresenter.plotNumberAgentTestingReport(0, 6, 0) ;
         //screeningPresenter.plotNumberAgentTreatedReport(2, 0, 0,"prepStatus",5) ;
 
         //screeningPresenter.multiPlotScreening(new Object[] {"prevalence","coprevalence",new String[] {"Pharynx","Rectum"},new String[] {"Urethra","Rectum"},"prevalence",new String[] {"Pharynx","Rectum","Urethra"}});
@@ -159,14 +159,14 @@ public class ScreeningPresenter extends Presenter {
         //screeningPresenter.plotIncidencePerCycle(siteNames) ;
         screeningPresenter.plotFinalAtRiskIncidentsRecord(siteNames,0,"statusHIV") ;
         //screeningPresenter.plotYearsAtRiskIncidenceReport(siteNames, 5, 2019, "statusHIV") ;
-        //screeningPresenter.plotYearsBeenTestedReport(13, 0, 0, 2019, "statusHIV") ;
+        // screeningPresenter.plotYearsBeenTestedReport(13, 0, 0, 2019, "statusHIV") ;
         //screeningPresenter.plotNotificationsPerCycle(siteNames) ;
-        //screeningPresenter.plotSitePrevalence(siteNames) ;
+        // screeningPresenter.plotSitePrevalence(siteNames) ;
         //screeningPresenter.plotSiteSymptomPrevalence(siteNames) ;
-        //screeningPresenter.plotPrevalence(siteNames) ;
-        //screeningPresenter.plotPrevalenceYears(siteNames,11,2017) ;
+        // screeningPresenter.plotPrevalence(siteNames) ;
+        // screeningPresenter.plotPrevalenceYears(siteNames,11,2017) ;
         //screeningPresenter.plotSortedPrevalenceYears(siteNames,13,2019,"statusHIV") ;
-        //screeningPresenter.plotFinalSymptomatic(new String[] {"Pharynx","Rectum","Urethra"}) ;
+        // screeningPresenter.plotFinalSymptomatic(new String[] {"Pharynx","Rectum","Urethra"}) ;
         //screeningPresenter.plotFinalPrevalences(new String[] {"Pharynx","Rectum","Urethra"}) ;
         //screeningPresenter.plotSortedFinalPrevalences(new String[] {"Pharynx","Rectum","Urethra"}, "statusHIV") ;
         //screeningPresenter.plotFinalNotifications(new String[] {"Pharynx","Rectum","Urethra"}, unique, 0, Reporter.DAYS_PER_YEAR, notifications) ;
@@ -175,7 +175,7 @@ public class ScreeningPresenter extends Presenter {
         //screeningPresenter.plotNotificationsYears(siteNames,13,2019) ;   
         //screeningPresenter.plotPositivityYears(siteNames, unique, 8, 2014) ;
         //screeningPresenter.plotNotificationPerCycle() ;    
-        //screeningPresenter.plotSiteProportionSymptomatic(siteNames) ;
+        // screeningPresenter.plotSiteProportionSymptomatic(siteNames) ;
 
 
         //String methodName = args[3] ;

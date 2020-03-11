@@ -259,14 +259,11 @@ public class SlidingCategoryDataset extends AbstractDataset
     public Number getValue(Comparable rowKey, Comparable columnKey) {
         int r = getRowIndex(rowKey);
         int c = getColumnIndex(columnKey);
-        if (c == -1) {
-            throw new UnknownKeyException("Unknown columnKey: " + columnKey);
-        }
-        else if (r == -1) {
-            throw new UnknownKeyException("Unknown rowKey: " + rowKey);
+        if (c != -1) {
+            return this.underlying.getValue(r, c + this.firstCategoryIndex);
         }
         else {
-            return this.underlying.getValue(r, c + this.firstCategoryIndex);
+            throw new UnknownKeyException("Unknown columnKey: " + columnKey);
         }
     }
 

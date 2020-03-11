@@ -9,6 +9,7 @@ import community.Community ;
 import java.awt.Color;
 import java.awt.Font ;
 import java.awt.Shape ;
+import java.awt.geom.Ellipse2D;
 import java.awt.font.TextAttribute;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -38,7 +39,7 @@ import org.jfree.data.category.* ;
 import org.jfree.data.xy.XYDataset; 
 import org.jfree.data.xy.XYSeries ;  
 import org.jfree.data.xy.XYSeriesCollection ;
-//import org.jfree.util.* ;
+import org.jfree.chart.util.ShapeUtils;
 
 
 import java.lang.reflect.* ;
@@ -2135,11 +2136,16 @@ public class Presenter {
             
             barChart.getPlot().setBackgroundPaint(Color.WHITE) ;
 
-            // Bar chart formatting:
+            /* !!!
+            * * * * * * * * * * * * * * * * * * * * *
+            *        BarChart Render Settings       *
+            * * * * * * * * * * * * * * * * * * * * *
+            */
+
             BarRenderer r = (BarRenderer) barChart.getCategoryPlot().getRenderer();
             r.setBarPainter(new StandardBarPainter());
             // r.setSeriesPaint(0, new Color(15, 159, 240));
-            r.setSeriesPaint(0, Color.BLACK);
+            // r.setSeriesPaint(0, Color.BLACK);
 
             //barChart.getXYPlot().getDomainAxis().set.setTickUnit(new NumberTickUnit(dataset.getColumnCount()/20)) ;
             //saveChart(barChart) ;
@@ -2289,7 +2295,7 @@ public class Presenter {
             }
             
             // Put shapes at plotted points
-            if (upperBound < 100)
+            if (upperBound < 100) 
                 lineChart.getXYPlot().setRenderer(new XYLineAndShapeRenderer()) ; 
             
             //domainAxis.setRange(2.0,upperBound);
@@ -2312,9 +2318,27 @@ public class Presenter {
             //lineChart.getPlot().setOutlineVisible(false);
             
             // David can use this to experiment with improving presentation.
-            //lineChart.getXYPlot().getRenderer().setSeriesShape(0, ShapeUtilities.createDiamond((float) 3)) ;
-            
+            // lineChart.getXValue().getRenderer().setSeriesShape
             //saveChart(lineChart) ;
+            
+
+            /* !!!
+            * * * * * * * * * * * * * * * * * * * * *
+            *         XYPlot Render Settings        *
+            * * * * * * * * * * * * * * * * * * * * *
+            */
+
+
+            for (int i = 0; i < legend.length; ++i) {
+                XYLineAndShapeRenderer r = (XYLineAndShapeRenderer) lineChart.getXYPlot().getRenderer();
+                // r.setSeriesShape(i, new Ellipse2D(2, 3));
+                double circleWidth = 2.5;
+                double circleOffset = circleWidth / 2;
+                Shape shape = new Ellipse2D.Double(-circleOffset, -circleOffset, circleWidth, circleWidth);
+                r.setSeriesShape(i, shape);
+                r.setSeriesShapesVisible(i, true);
+            }
+
             displayChart(lineChart) ;
         }
         
@@ -2370,7 +2394,9 @@ public class Presenter {
             setContentPane( chartPanel ); 
             pack() ;
             setVisible(true) ;
-            //LOGGER.info(System.getProperty("os.name")) ;
+
+            // used to determine OS:
+            LOGGER.info(System.getProperty("os.name")) ;
         }
         
         /**
