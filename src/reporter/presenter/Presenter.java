@@ -4,11 +4,14 @@
  */
 package reporter.presenter;
 
+
+import configloader.ConfigLoader;
 import reporter.* ;
 import community.Community ;
 import java.awt.Color;
 import java.awt.Font ;
 import java.awt.Shape ;
+import java.awt.BasicStroke;
 import java.awt.geom.Ellipse2D;
 import java.awt.font.TextAttribute;
 import java.io.BufferedReader;
@@ -469,6 +472,7 @@ public class Presenter {
     
     public static void main(String[] args)
     {
+        ConfigLoader.load();
         //String simName = "NoPrepCalibration12Pop40000Cycles2000" ;
         //String simName = "RelationshipCalibrationPop40000Cycles200" ; // "testPlotCondomUsePop4000Cycles500" ; // args[0] ;
         //String folder = "output/test/" ;
@@ -2328,15 +2332,26 @@ public class Presenter {
             * * * * * * * * * * * * * * * * * * * * *
             */
 
+            ArrayList<ArrayList<Integer>> colours = ConfigLoader.getColoursShuffled();
 
-            for (int i = 0; i < legend.length; ++i) {
+
+            for (int numSeries = 0; numSeries < legend.length; ++numSeries) {
                 XYLineAndShapeRenderer r = (XYLineAndShapeRenderer) lineChart.getXYPlot().getRenderer();
-                // r.setSeriesShape(i, new Ellipse2D(2, 3));
-                double circleWidth = 2.5;
+
+                // set shape of points
+                double circleWidth = 3.5;
                 double circleOffset = circleWidth / 2;
                 Shape shape = new Ellipse2D.Double(-circleOffset, -circleOffset, circleWidth, circleWidth);
-                r.setSeriesShape(i, shape);
-                r.setSeriesShapesVisible(i, true);
+                r.setSeriesShape(numSeries, shape);
+                r.setSeriesShapesVisible(numSeries, true);
+
+                // set line colours - remove from start and add to the end just in case we run out of colours
+                ArrayList<Integer> rgb = colours.remove(0);
+                colours.add(rgb);
+                r.setSeriesPaint(numSeries, new Color(rgb.get(0).intValue(),rgb.get(1).intValue(),rgb.get(2).intValue()));
+
+                // set line thickness
+                r.setSeriesStroke(numSeries, new BasicStroke(2.0f));
             }
 
             displayChart(lineChart) ;

@@ -6,8 +6,11 @@ package configloader;
 
 // JSON imports:
 import java.io.* ;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Collections;
+
 
 import org.json.simple.parser.*;
 import org.json.simple.JSONArray; 
@@ -33,22 +36,32 @@ public class ConfigLoader {
     private static final java.util.logging.Logger LOGGER = java.util.logging.Logger.getLogger("reporter");
 
     // final definitions 
-    public static final String DEFAULT_JSON_FILE = "default_config.json";
-    public static final String CONFIG_JSON_FILE = "config.json";
+    private static final String DEFAULT_JSON_FILE = "default_config.json";
+    private static final String CONFIG_JSON_FILE = "config.json";
 
     // loaded JSONObjects
-    public static JSONObject loadedJSON;
+    private static JSONObject loadedJSON;
 
     // contains key = method name, value = variables loaded for that method
-    public static HashMap<String, HashMap> classMethodVariablesHashMap;
+    private static HashMap<String, HashMap> classMethodVariablesHashMap;
+
+    // contains colours
+    private static ArrayList<ArrayList<Integer>> colours;
     
     // load jsons into class
     public static void load() {
-        ConfigLoader.classMethodVariablesHashMap = new HashMap();
 
-        ConfigLoader.readDefaultsJSON();
+        // Instantiations:
+        ConfigLoader.classMethodVariablesHashMap = new HashMap();
+        ConfigLoader.colours = new ArrayList<ArrayList<Integer>>();
+
+        // load information for this class
+        ConfigLoader.readJSON("default");
+        ConfigLoader.loadConfigLoader();
+        
+        // load information for other classes
         ConfigLoader.loadInformationIntoClasses();
-        ConfigLoader.readConfigJSON();
+        ConfigLoader.readJSON("config");
         ConfigLoader.loadInformationIntoClasses();
         LOGGER.info("Test Loading Defaults");
     }
@@ -57,13 +70,26 @@ public class ConfigLoader {
 
     /*
      * * * * * * * * * * * * * * * * * * * * *
-     *                DEFAULTS               *
+     *              JSON LOADING             *
      * * * * * * * * * * * * * * * * * * * * *
      */
 
-    private static void readDefaultsJSON() {
+
+    /**
+     * 
+     * @param configType - takes in "config" or "default" to load file
+     */
+    private static void readJSON(String configType) {
+        
+        String configString = "";
+        if (configType == "default") {
+            configString = ConfigLoader.DEFAULT_JSON_FILE;
+        } else {
+            configString = ConfigLoader.CONFIG_JSON_FILE;
+        }
+
         try {
-            Object obj = new JSONParser().parse(new FileReader(ConfigLoader.DEFAULT_JSON_FILE));
+            Object obj = new JSONParser().parse(new FileReader(configString));
             ConfigLoader.loadedJSON = (JSONObject) obj;
         } catch (FileNotFoundException e) {
             e.printStackTrace();
@@ -85,6 +111,27 @@ public class ConfigLoader {
         ConfigLoader.loadReporter();
         ConfigLoader.loadPresenter();
 
+    }
+
+
+    private static void loadConfigLoader() {
+        JSONObject configLoaderJSON = (JSONObject) ConfigLoader.loadedJSON.get("config_loader");
+        if (configLoaderJSON == null) return;
+
+        JSONArray coloursJSONArray = (JSONArray) configLoaderJSON.get("colours");
+
+
+        for (int i = 0; i < coloursJSONArray.size(); ++i) {
+            JSONArray rgbJSONArray = (JSONArray) coloursJSONArray.get(i);
+
+            ArrayList<Integer> rgbArrayList = new ArrayList<Integer>();
+            for (int j = 0; j < rgbJSONArray.size(); ++j) {
+                int col = ((Number) rgbJSONArray.get(j)).intValue();
+                rgbArrayList.add(col);
+            }
+            ConfigLoader.colours.add(rgbArrayList);
+        }
+        LOGGER.info(ConfigLoader.colours.toString());
     }
 
 
@@ -204,26 +251,6 @@ public class ConfigLoader {
 
 
 
-    /*
-     * * * * * * * * * * * * * * * * * * * * *
-     *                 CONFIG                *
-     * * * * * * * * * * * * * * * * * * * * *
-     */
-
-    private static void readConfigJSON() {
-        try {
-            Object obj = new JSONParser().parse(new FileReader(ConfigLoader.CONFIG_JSON_FILE));
-            ConfigLoader.loadedJSON = (JSONObject) obj;
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
-    }
-
-
 
     /*
      * * * * * * * * * * * * * * * * * * * * *
@@ -335,6 +362,18 @@ public class ConfigLoader {
         String value = methodHashMap.get(variableName);
 
         return value;
+    }
+
+
+    // TODO: to implement
+    public static ArrayList<ArrayList<Integer>> getColours() {
+        return (ArrayList<ArrayList<Integer>>) ConfigLoader.colours.clone();
+    }
+
+    public static ArrayList<ArrayList<Integer>> getColoursShuffled() {
+        ArrayList<ArrayList<Integer>> cloneList = (ArrayList<ArrayList<Integer>>) ConfigLoader.colours.clone();
+        Collections.shuffle(cloneList);
+        return cloneList;
     }
 
 }
