@@ -36,8 +36,9 @@ public class ConfigLoader {
     private static final java.util.logging.Logger LOGGER = java.util.logging.Logger.getLogger("reporter");
 
     // final definitions 
-    private static final String DEFAULT_JSON_FILE = "default_config.json";
-    private static final String CONFIG_JSON_FILE = "config.json";
+    private static final String CONFIG_PATH = "configs/";
+    private static final String DEFAULT_JSON_FILE = ConfigLoader.CONFIG_PATH + "default_config.json";
+    private static final String CONFIG_JSON_FILE = ConfigLoader.CONFIG_PATH + "config.json";
 
     // loaded JSONObjects
     private static JSONObject loadedJSON;
@@ -57,7 +58,7 @@ public class ConfigLoader {
 
         // load information for this class
         ConfigLoader.readJSON("default");
-        ConfigLoader.loadConfigLoader();
+        ConfigLoader.loadConfigLoaderSettings();
         
         // load information for other classes
         ConfigLoader.loadInformationIntoClasses();
@@ -84,7 +85,7 @@ public class ConfigLoader {
         String configString = "";
         if (configType == "default") {
             configString = ConfigLoader.DEFAULT_JSON_FILE;
-        } else {
+        } else if (configType == "config") {
             configString = ConfigLoader.CONFIG_JSON_FILE;
         }
 
@@ -114,7 +115,7 @@ public class ConfigLoader {
     }
 
 
-    private static void loadConfigLoader() {
+    private static void loadConfigLoaderSettings() {
         JSONObject configLoaderJSON = (JSONObject) ConfigLoader.loadedJSON.get("config_loader");
         if (configLoaderJSON == null) return;
 

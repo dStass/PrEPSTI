@@ -2281,8 +2281,7 @@ public class Presenter {
          * @param yLabel
          * @param xLabel 
          */
-        private void plotLineChart(String chartTitle, XYDataset dataset, String yLabel, String xLabel, String[] legend)
-        {
+        private void plotLineChart(String chartTitle, XYDataset dataset, String yLabel, String xLabel, String[] legend) {
             boolean showLegend = !(legend[0].isEmpty()) ;
             JFreeChart lineChart = ChartFactory.createXYLineChart(chartTitle,xLabel,
                 yLabel,dataset,PlotOrientation.VERTICAL,showLegend, true, false);
@@ -2290,6 +2289,7 @@ public class Presenter {
             //lineChart.getXYPlot().setDomainAxis(new LogarithmicAxis(xLabel));
             
             NumberAxis domainAxis = (NumberAxis) lineChart.getXYPlot().getDomainAxis() ;
+            ValueAxis rangeAxis = lineChart.getXYPlot().getRangeAxis();
             double upperBound = dataset.getItemCount(0) ;    // domainAxis.getRange().getUpperBound() ;
             
             if ((upperBound % 365) == 0)    // if upperBound a multiple of 365 (days)
@@ -2324,7 +2324,6 @@ public class Presenter {
                 //rangeAxis.setTickUnit(new NumberTickUnit(1)) ;
                 domainAxis.setTickUnit(new NumberTickUnit(1)) ;
             }
-            lineChart.getPlot().setBackgroundPaint(Color.WHITE) ;
             if (!legend[0].isEmpty())
             {
                 LegendTitle plotLegend = lineChart.getLegend() ;
@@ -2337,19 +2336,23 @@ public class Presenter {
             // lineChart.getXValue().getRenderer().setSeriesShape
             //saveChart(lineChart) ;
             
-
+            
             /* !!!
             * * * * * * * * * * * * * * * * * * * * *
             *         XYPlot Render Settings        *
             * * * * * * * * * * * * * * * * * * * * *
             */
 
-            ArrayList<ArrayList<Integer>> colours = ConfigLoader.getColoursShuffled();
+            // set background to white
+            lineChart.getPlot().setBackgroundPaint(Color.WHITE) ;
 
             // set shape of points
             double circleWidth = 3.5;
             double circleOffset = circleWidth / 2;
             Shape shape = new Ellipse2D.Double(-circleOffset, -circleOffset, circleWidth, circleWidth);
+
+            // get preloaded colours
+            ArrayList<ArrayList<Integer>> colours = ConfigLoader.getColours();
 
             for (int numSeries = 0; numSeries < legend.length; ++numSeries) {
                 XYLineAndShapeRenderer r = (XYLineAndShapeRenderer) lineChart.getXYPlot().getRenderer();
@@ -2366,6 +2369,19 @@ public class Presenter {
                 // set line thickness
                 r.setSeriesStroke(numSeries, new BasicStroke(2.0f));
             }
+
+
+            // set font:
+            Font fontTitle = new Font("Helvetica", Font.PLAIN, 30);
+            Font fontDomainAndRange = new Font("Helvetica", Font.PLAIN, 20);
+
+            // title:
+            lineChart.getTitle().setFont(fontTitle);
+
+            // x and y:
+
+            domainAxis.setLabelFont(fontDomainAndRange);
+            rangeAxis.setLabelFont(fontDomainAndRange);
 
             displayChart(lineChart) ;
         }

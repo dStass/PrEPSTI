@@ -1,0 +1,26 @@
+{
+    "charts" : {
+        "font" : {
+            "title" : {
+                "name" : "Helvetica",
+                "size" : "30"
+            },
+
+            "domain" : {
+                "name" : "Helvetica",
+                "size" : "15"
+            },
+
+            "range" : {
+                "name" : "Helvetica",
+                "size" : "15"
+            }
+        },
+
+        "line" : {
+
+        }
+    }
+
+
+}
