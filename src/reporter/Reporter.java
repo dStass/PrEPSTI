@@ -1983,36 +1983,36 @@ public class Reporter {
         String value ;
         String outputValue ;
         for (Comparable categoryValue : outputReport.keySet() ) {
-            value = outputReport.get(categoryValue);
+            valuesCommaSeparatedString = outputReport.get(categoryValue);
 
             // extract information into an arraylist, remove leading and trailing whitespace before and after a comma
-            // TODO OPTIMISE, hold the year information so we only do this once
-            ArrayList<String> valuesArrayList = new ArrayList<String>(Arrays.asList(value.split("\\s*,\\s*")));
-            ArrayList<String> simValues = new ArrayList<String>(Arrays.asList(value.split("\\s*,\\s*")));
-            simValues.remove(0); // remove the year
-            // LOGGER.info("simvals=" + simValues.toString() + String.valueOf(simValues.size() ) );
 
-
+            ArrayList<String> valuesArrayList = new ArrayList<String>(Arrays.asList(valuesCommaSeparatedString.split("\\s*,\\s*")));
+            String year = valuesArrayList.remove(0); // remove the year and store it in a variable
+            
             // extract pre-calculated mean
-            Double meanValue = totalReport.get(categoryValue)/nbSimulations ;
+            Double meanValue = totalReport.get(categoryValue)/nbSimulations;
 
             // calculate standard deviation
-            Double standardDeviation = Reporter.getStandardDeviationDoubleValueFromArrayListOfStrings(simValues, meanValue);
+            Double standardDeviation = Reporter.getStandardDeviationDoubleValueFromArrayListOfStrings(valuesArrayList, meanValue);
 
-            int simSize = simValues.size();
             // calculate confidence intervals
             Double[] confidenceInterval = Reporter.get95ConfidenceIntervalDoubleArray(  meanValue,
                                                                                         standardDeviation,
-                                                                                        (double) simSize);
+                                                                                        (double) nbSimulations);
 
+            // insert year -> mean -> lower95 -> upper95 into array list
+            // this then gets converted into a comma separated string
+            int YEAR_INDEX = 0;
             int MEAN_INDEX = 1;
             int LOWER95_INDEX = 2;
             int HIGHER95_INDEX = 3;
 
+            valuesArrayList.add(YEAR_INDEX, year);
             valuesArrayList.add(MEAN_INDEX, String.valueOf(meanValue));
             valuesArrayList.add(LOWER95_INDEX, String.valueOf(confidenceInterval[0]));
             valuesArrayList.add(HIGHER95_INDEX, String.valueOf(confidenceInterval[1]));
-
+            
             outputValue = String.join(",", valuesArrayList);
             outputReport.put(categoryValue, outputValue);
         }
@@ -2052,6 +2052,13 @@ public class Reporter {
         
     }
 
+
+    /**
+     * 
+     * @param values - arraylist of Strings that can be parsed as a double
+     * @param mean - double value
+     * @return - a double representing the standard deviation
+     */
     private static Double getStandardDeviationDoubleValueFromArrayListOfStrings(ArrayList<String> values, Double mean) {
         Double squaredDifferenceOngoingSum = 0.0;
         for (int i = 0; i < values.size(); ++i) {
