@@ -1980,10 +1980,9 @@ public class Reporter {
         // Insert mean scoreValues after priorData if present but before simulations
         int nbSimulations = simNames.size() ;
         int nbPriors = firstLine.split(COMMA).length - simNames.size() -1 ;
-        String value ;
         String outputValue ;
         for (Comparable categoryValue : outputReport.keySet() ) {
-            valuesCommaSeparatedString = outputReport.get(categoryValue);
+            String valuesCommaSeparatedString = outputReport.get(categoryValue);
 
             // extract information into an arraylist, remove leading and trailing whitespace before and after a comma
 
