@@ -654,7 +654,8 @@ public class ScreeningPresenter extends Presenter {
         
         // set new title
         this.chartTitle = "Prevalence";
-
+        setDrawPoints(false);
+        
         ArrayList<Object> prevalenceReport = reporter.prepareCompletePrevalenceReport(siteNames) ;
         //LOGGER.log(Level.INFO, "{0}", prevalenceReport);
         ArrayList<String> siteNamesAll = new ArrayList<String>(Arrays.asList(siteNames)) ;

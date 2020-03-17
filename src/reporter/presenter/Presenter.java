@@ -35,6 +35,7 @@ import org.jfree.chart.renderer.category.StackedBarRenderer ;
 import org.jfree.chart.renderer.category.BarRenderer ;
 import org.jfree.chart.renderer.category.StandardBarPainter ;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer ;
+import org.jfree.chart.renderer.xy.XYErrorRenderer;
 import org.jfree.chart.annotations.XYTextAnnotation ;
 import org.jfree.data.KeyToGroupMap;
 import org.jfree.data.category.* ;
@@ -42,6 +43,7 @@ import org.jfree.data.category.* ;
 import org.jfree.data.xy.XYDataset; 
 import org.jfree.data.xy.XYSeries ;  
 import org.jfree.data.xy.XYSeriesCollection ;
+import org.jfree.data.xy.XYIntervalSeries;
 import org.jfree.chart.util.ShapeUtils;
 
 
@@ -98,6 +100,8 @@ public class Presenter {
 
     // Variables containing drawing information:
     private boolean drawPoints = true;  // draw each individual point for a line graph true by default
+    private boolean xLogarithmic = false;
+    private boolean yLogarithmic = false;
 
     static final java.util.logging.Logger LOGGER = java.util.logging.Logger.getLogger("presenter") ;
     
@@ -1906,9 +1910,16 @@ public class Presenter {
      * @param val
      */
     public void setDrawPoints(boolean val) {
-        drawPoints = val;
+        this.drawPoints = val;
     }
 
+    public void setXLogarithmic(boolean val) {
+        this.xLogarithmic = val;
+    }
+
+    public void setYLogarithmic(boolean val) {
+        this.yLogarithmic = val;
+    }
 
 
 
@@ -2285,6 +2296,9 @@ public class Presenter {
             boolean showLegend = !(legend[0].isEmpty()) ;
             JFreeChart lineChart = ChartFactory.createXYLineChart(chartTitle,xLabel,
                 yLabel,dataset,PlotOrientation.VERTICAL,showLegend, true, false);
+
+            XYErrorRenderer r = new XYErrorRenderer();
+            lineChart.getXYPlot().setRenderer(r);
             
             //lineChart.getXYPlot().setDomainAxis(new LogarithmicAxis(xLabel));
             
@@ -2310,9 +2324,9 @@ public class Presenter {
                 domainAxis.setMinorTickMarksVisible(true);
             }
             
-            // Put shapes at plotted points
-            if (upperBound < 100) 
-                lineChart.getXYPlot().setRenderer(new XYLineAndShapeRenderer()) ; 
+            // // Put shapes at plotted points
+            // if (upperBound < 100) 
+            //     lineChart.getXYPlot().setRenderer(new XYLineAndShapeRenderer()) ; 
             
             //domainAxis.setRange(2.0,upperBound);
             
@@ -2324,8 +2338,9 @@ public class Presenter {
                 //rangeAxis.setTickUnit(new NumberTickUnit(1)) ;
                 domainAxis.setTickUnit(new NumberTickUnit(1)) ;
             }
-            if (!legend[0].isEmpty())
-            {
+
+            // draw legend
+            if (!legend[0].isEmpty()) {
                 LegendTitle plotLegend = lineChart.getLegend() ;
                 plotLegend.setPosition(RectangleEdge.RIGHT);
             }
@@ -2344,10 +2359,18 @@ public class Presenter {
             */
 
             // set background to white
-            lineChart.getPlot().setBackgroundPaint(Color.WHITE) ;
+            lineChart.getPlot().setBackgroundPaint(Color.WHITE);
+
+            // set draw lines to True
+            // r.setDrawOutlines(false);
+            // r.setDrawSeriesLineAsPath(true);
+
+            r.setDrawXError(false);
+            r.setDrawYError(true);
+            r.setCapLength(2.5);
 
             // set shape of points
-            double circleWidth = 3.5;
+            double circleWidth = 3.8;
             double circleOffset = circleWidth / 2;
             Shape shape = new Ellipse2D.Double(-circleOffset, -circleOffset, circleWidth, circleWidth);
 
@@ -2355,9 +2378,10 @@ public class Presenter {
             ArrayList<ArrayList<Integer>> colours = ConfigLoader.getColours();
 
             for (int numSeries = 0; numSeries < legend.length; ++numSeries) {
-                XYLineAndShapeRenderer r = (XYLineAndShapeRenderer) lineChart.getXYPlot().getRenderer();
+                // XYLineAndShapeRenderer r = (XYLineAndShapeRenderer) lineChart.getXYPlot().getRenderer();
 
                 r.setSeriesShape(numSeries, shape);
+                r.setSeriesLinesVisible(numSeries, true);
                 if (drawPoints) r.setSeriesShapesVisible(numSeries, true);
                 else r.setSeriesShapesVisible(numSeries, false);
 
@@ -2372,20 +2396,164 @@ public class Presenter {
 
 
             // set font:
-            Font fontTitle = new Font("Helvetica", Font.PLAIN, 30);
-            Font fontDomainAndRange = new Font("Helvetica", Font.PLAIN, 20);
+            String UNIFORM_FONT = "Helvetica";
 
+            Font titleFont = new Font(UNIFORM_FONT, Font.PLAIN, 30);
+            Font labelFont = new Font(UNIFORM_FONT, Font.PLAIN, 15);
+            Font legendFont = new Font(UNIFORM_FONT, Font.PLAIN, 10);
+            Font tickFont = new Font(UNIFORM_FONT, Font.PLAIN, 8);
             // title:
-            lineChart.getTitle().setFont(fontTitle);
+            lineChart.getTitle().setFont(titleFont);
 
-            // x and y:
+            // x and y labels:
+            domainAxis.setLabelFont(labelFont);
+            rangeAxis.setLabelFont(labelFont);
+            
+            domainAxis.setTickLabelFont(tickFont);
+            rangeAxis.setTickLabelFont(tickFont);
 
-            domainAxis.setLabelFont(fontDomainAndRange);
-            rangeAxis.setLabelFont(fontDomainAndRange);
+            // legend
+            lineChart.getLegend().setItemFont(legendFont);
 
             displayChart(lineChart) ;
         }
         
+
+      /**
+       * 
+       * XYIntervalSeries
+       */
+
+        // private void plotLineChart(String chartTitle, XYIntervalSeries dataset, String yLabel, String xLabel, String[] legend) {
+        //     boolean showLegend = !(legend[0].isEmpty()) ;
+        //     JFreeChart lineChart = ChartFactory.createXYLineChart(chartTitle,xLabel,
+        //         yLabel,dataset,PlotOrientation.VERTICAL,showLegend, true, false);
+
+        //     XYErrorRenderer r = new XYErrorRenderer();
+        //     lineChart.getXYPlot().setRenderer(r);
+            
+        //     //lineChart.getXYPlot().setDomainAxis(new LogarithmicAxis(xLabel));
+            
+        //     NumberAxis domainAxis = (NumberAxis) lineChart.getXYPlot().getDomainAxis() ;
+        //     ValueAxis rangeAxis = lineChart.getXYPlot().getRangeAxis();
+        //     double upperBound = dataset.getItemCount(0) ;    // domainAxis.getRange().getUpperBound() ;
+            
+        //     if ((upperBound % 365) == 0)    // if upperBound a multiple of 365 (days)
+        //     {
+        //         if (upperBound > 729)    // more than two years
+        //         {
+        //             domainAxis.setTickUnit(new NumberTickUnit(365)) ;
+        //             if (upperBound < 3650)    // less than ten years
+        //             {
+        //                 domainAxis.setMinorTickCount(4);
+        //                 domainAxis.setMinorTickMarksVisible(true);
+        //             }
+        //         }
+        //     }
+        //     else
+        //     {
+        //         //LOGGER.info(String.valueOf(upperBound)) ;
+        //         domainAxis.setMinorTickMarksVisible(true);
+        //     }
+            
+        //     // // Put shapes at plotted points
+        //     // if (upperBound < 100) 
+        //     //     lineChart.getXYPlot().setRenderer(new XYLineAndShapeRenderer()) ; 
+            
+        //     //domainAxis.setRange(2.0,upperBound);
+            
+        //     // Set unit tick distance if range is integer.
+        //     if (int.class.isInstance(dataset.getX(0,0)) || Integer.class.isInstance(dataset.getX(0, 0)))
+        //     {
+        //         LOGGER.info("integer domain") ;
+        //         //NumberAxis rangeAxis = (NumberAxis) lineChart.getXYPlot().getRangeAxis() ;
+        //         //rangeAxis.setTickUnit(new NumberTickUnit(1)) ;
+        //         domainAxis.setTickUnit(new NumberTickUnit(1)) ;
+        //     }
+
+        //     // draw legend
+        //     if (!legend[0].isEmpty()) {
+        //         LegendTitle plotLegend = lineChart.getLegend() ;
+        //         plotLegend.setPosition(RectangleEdge.RIGHT);
+        //     }
+            
+        //     //lineChart.getPlot().setOutlineVisible(false);
+            
+        //     // David can use this to experiment with improving presentation.
+        //     // lineChart.getXValue().getRenderer().setSeriesShape
+        //     //saveChart(lineChart) ;
+            
+            
+        //     /* !!!
+        //     * * * * * * * * * * * * * * * * * * * * *
+        //     *         XYPlot Render Settings        *
+        //     * * * * * * * * * * * * * * * * * * * * *
+        //     */
+
+        //     // set background to white
+        //     lineChart.getPlot().setBackgroundPaint(Color.WHITE);
+
+        //     // set draw lines to True
+        //     // r.setDrawOutlines(false);
+        //     // r.setDrawSeriesLineAsPath(true);
+
+        //     r.setDrawXError(false);
+        //     r.setDrawYError(true);
+        //     r.setCapLength(2.5);
+
+        //     // set shape of points
+        //     double circleWidth = 3.8;
+        //     double circleOffset = circleWidth / 2;
+        //     Shape shape = new Ellipse2D.Double(-circleOffset, -circleOffset, circleWidth, circleWidth);
+
+        //     // get preloaded colours
+        //     ArrayList<ArrayList<Integer>> colours = ConfigLoader.getColours();
+
+        //     for (int numSeries = 0; numSeries < legend.length; ++numSeries) {
+        //         // XYLineAndShapeRenderer r = (XYLineAndShapeRenderer) lineChart.getXYPlot().getRenderer();
+
+        //         r.setSeriesShape(numSeries, shape);
+        //         r.setSeriesLinesVisible(numSeries, true);
+        //         if (drawPoints) r.setSeriesShapesVisible(numSeries, true);
+        //         else r.setSeriesShapesVisible(numSeries, false);
+
+        //         // set line colours - remove from start and add to the end just in case we run out of colours
+        //         ArrayList<Integer> rgb = colours.remove(0);
+        //         colours.add(rgb);
+        //         r.setSeriesPaint(numSeries, new Color(rgb.get(0).intValue(),rgb.get(1).intValue(),rgb.get(2).intValue()));
+
+        //         // set line thickness
+        //         r.setSeriesStroke(numSeries, new BasicStroke(2.0f));
+        //     }
+
+
+        //     // set font:
+        //     String UNIFORM_FONT = "Helvetica";
+
+        //     Font titleFont = new Font(UNIFORM_FONT, Font.PLAIN, 30);
+        //     Font labelFont = new Font(UNIFORM_FONT, Font.PLAIN, 15);
+        //     Font legendFont = new Font(UNIFORM_FONT, Font.PLAIN, 10);
+        //     Font tickFont = new Font(UNIFORM_FONT, Font.PLAIN, 8);
+        //     // title:
+        //     lineChart.getTitle().setFont(titleFont);
+
+        //     // x and y labels:
+        //     domainAxis.setLabelFont(labelFont);
+        //     rangeAxis.setLabelFont(labelFont);
+            
+        //     domainAxis.setTickLabelFont(tickFont);
+        //     rangeAxis.setTickLabelFont(tickFont);
+
+        //     // legend
+        //     lineChart.getLegend().setItemFont(legendFont);
+
+        //     displayChart(lineChart) ;
+        // }
+     
+
+
+
+
         /**
          * Generates Area plot of dataset.
          * @param chartTitle
