@@ -4,7 +4,7 @@
 package reporter ;
 
 import agent.MSM;
-//import community.* ;
+import configloader.ConfigLoader;
 
 import java.io.* ;
 
@@ -1864,25 +1864,28 @@ public class Reporter {
         
         // Set up header
         String firstLine = "mean" + COMMA ;
-        if (reportName.contains("riskyIncidence_HIV"))
-        {
-            firstLine = "gono-gone-wild" + COMMA + "Ann. Surv. Rep." + COMMA + firstLine ;
-            priorData = READ_CSV_STRING(fileName, DATA_FOLDER) ;
-            priorScoreNames = priorData.get(categoryName) ;
+        firstLine += "lower95" + COMMA;
+        firstLine += "upper95" + COMMA;
+        // String firstLine = "";
+        // if (reportName.contains("riskyIncidence_HIV"))
+        // {
+        //     firstLine = "gono-gone-wild" + COMMA + "Ann. Surv. Rep." + COMMA + firstLine ;
+        //     priorData = READ_CSV_STRING(fileName, DATA_FOLDER) ;
+        //     priorScoreNames = priorData.get(categoryName) ;
             
-            // Which columns in gonoGoneWild.csv have the scoreName data 
-            int priorIndex = 0 ;
-            for (int scoreIndex = 0 ; scoreIndex < priorScoreNames.length ; scoreIndex++ )
-            {
-                if (priorScoreNames[scoreIndex].contains(scoreName))
-                {
-                    priorScoreIndices[priorIndex] = scoreIndex ;
-                    priorIndex++ ;
-                }
-                if (priorIndex == priorScoreIndices.length)
-                    break ;
-            }
-        } 
+        //     // Which columns in gonoGoneWild.csv have the scoreName data 
+        //     int priorIndex = 0 ;
+        //     for (int scoreIndex = 0 ; scoreIndex < priorScoreNames.length ; scoreIndex++ )
+        //     {
+        //         if (priorScoreNames[scoreIndex].contains(scoreName))
+        //         {
+        //             priorScoreIndices[priorIndex] = scoreIndex ;
+        //             priorIndex++ ;
+        //         }
+        //         if (priorIndex == priorScoreIndices.length)
+        //             break ;
+        //     }
+        // } 
 
         //HashMap<Comparable,String> meanReport = PREPARE_MEAN_HASHMAP_REPORT(scoreName,simNames) ;
 
@@ -1977,20 +1980,40 @@ public class Reporter {
         // Insert mean scoreValues after priorData if present but before simulations
         int nbSimulations = simNames.size() ;
         int nbPriors = firstLine.split(COMMA).length - simNames.size() -1 ;
-        String value ;
         String outputValue ;
-        for (Comparable categoryValue : outputReport.keySet() )
-        {
-            value = outputReport.get(categoryValue) ;
-            // categoryValue + COMMA
-            int meanIndex = value.indexOf(COMMA) + 1 ;
-            // priorData
-            for (int commaIndex = 0 ; commaIndex < 2 ; commaIndex++ )
-                meanIndex = value.indexOf(COMMA,meanIndex) + 1 ;
+        for (Comparable categoryValue : outputReport.keySet() ) {
+            String valuesCommaSeparatedString = outputReport.get(categoryValue);
+
+            // extract information into an arraylist, remove leading and trailing whitespace before and after a comma
+
+            ArrayList<String> valuesArrayList = new ArrayList<String>(Arrays.asList(valuesCommaSeparatedString.split("\\s*,\\s*")));
+            String year = valuesArrayList.remove(0); // remove the year and store it in a variable
             
-            Double meanValue = totalReport.get(categoryValue)/nbSimulations ;
-            outputValue = value.substring(0, meanIndex) + String.valueOf(meanValue) + COMMA + value.substring(meanIndex + 1) ;
-            outputReport.put(categoryValue, outputValue) ;
+            // extract pre-calculated mean
+            Double meanValue = totalReport.get(categoryValue)/nbSimulations;
+
+            // calculate standard deviation
+            Double standardDeviation = Reporter.getStandardDeviationDoubleValueFromArrayListOfStrings(valuesArrayList, meanValue);
+
+            // calculate confidence intervals
+            Double[] confidenceInterval = Reporter.get95ConfidenceIntervalDoubleArray(  meanValue,
+                                                                                        standardDeviation,
+                                                                                        (double) nbSimulations);
+
+            // insert year -> mean -> lower95 -> upper95 into array list
+            // this then gets converted into a comma separated string
+            int YEAR_INDEX = 0;
+            int MEAN_INDEX = 1;
+            int LOWER95_INDEX = 2;
+            int HIGHER95_INDEX = 3;
+
+            valuesArrayList.add(YEAR_INDEX, year);
+            valuesArrayList.add(MEAN_INDEX, String.valueOf(meanValue));
+            valuesArrayList.add(LOWER95_INDEX, String.valueOf(confidenceInterval[0]));
+            valuesArrayList.add(HIGHER95_INDEX, String.valueOf(confidenceInterval[1]));
+            
+            outputValue = String.join(",", valuesArrayList);
+            outputReport.put(categoryValue, outputValue);
         }
 
         ArrayList<String> categoryValues = new ArrayList<String>() ;
@@ -2026,6 +2049,45 @@ public class Reporter {
         
         return true ;
         
+    }
+
+
+    /**
+     * 
+     * @param values - arraylist of Strings that can be parsed as a double
+     * @param mean - double value
+     * @return - a double representing the standard deviation
+     */
+    private static Double getStandardDeviationDoubleValueFromArrayListOfStrings(ArrayList<String> values, Double mean) {
+        Double squaredDifferenceOngoingSum = 0.0;
+        for (int i = 0; i < values.size(); ++i) {
+            Double valueDouble = Double.parseDouble(values.get(i));
+            squaredDifferenceOngoingSum += Math.pow((valueDouble - mean), 2);            
+        }
+        Double variance = squaredDifferenceOngoingSum/ values.size();
+        Double standardDeviation = Math.sqrt(variance);
+        return standardDeviation;
+    }
+
+
+    /**
+     * 
+     * @param meanValue
+     * @param standardDeviation
+     * @param sampleSize - must not be zero
+     * @return an array containing two doubles, lower and upper values ofr 95% CI
+     */
+    private static Double[] get95ConfidenceIntervalDoubleArray(Double meanValue, Double standardDeviation, Double sampleSize) {
+        
+        Double[] toReturn = new Double[2];
+
+        // hard-coded 95% confidence interval
+        Double confidenceLevel = 1.96;
+        
+        Double difference = (confidenceLevel * (standardDeviation)) / Math.sqrt(sampleSize);
+        toReturn[0] = meanValue - difference;
+        toReturn[1] = meanValue + difference;
+        return toReturn;
     }
     
     /**
@@ -2991,6 +3053,7 @@ public class Reporter {
      */
     public static void main(String[] args)
     {
+        ConfigLoader.load();
         String folderPath = "output/prep/" ;
         //String folderPath = "output/prePrEP/" ;
         //String[] simNames = new String[] {"to2017newSort17aaPop40000Cycles5110", "to2017newSort17baPop40000Cycles5110","to2017newSort17caPop40000Cycles5110","to2017newSort17daPop40000Cycles5110","to2017newSort17eaPop40000Cycles5110",
@@ -2998,7 +3061,7 @@ public class Reporter {
         //String[] simNames = new String[] {"from2007seek27aPop40000Cycles5475","from2007seek27bPop40000Cycles5475","from2007seek27cPop40000Cycles5475","from2007seek27dPop40000Cycles5475","from2007seek27ePop40000Cycles5475",
         //"from2007seek27fPop40000Cycles5475","from2007seek27gPop40000Cycles5475","from2007seek27hPop40000Cycles5475","from2007seek27iPop40000Cycles5475","from2007seek27jPop40000Cycles5475"} ;
     
-        String prefix = "to2019oldParams23" ;
+        String prefix = "to2019chooseCondom1" ;
         //String prefix = "from2015to2025linearPrep23" ;
         String suffix = "Pop40000Cycles6570" ;
         ArrayList<String> simNameList = new ArrayList<String>() ;
@@ -3014,8 +3077,8 @@ public class Reporter {
         //String[] simNames = new String[] {"newSortRisk12aPop40000Cycles1825"} ;
         //String[] simNames = new String[] {"newSortRisk12aPop40000Cycles730","newSortRisk11aPop40000Cycles730","newSortRisk10aPop40000Cycles730","newSortRisk9aPop40000Cycles730","newSortRisk8aPop40000Cycles730"} ;
         //ArrayList<String> closestSimulations
-        simNameList = CLOSEST_SIMULATIONS(simNameList, "year", "all_false", "riskyIncidence_HIV", folderPath, "gonoGoneWild", "data_files/") ;
-        LOGGER.info(String.valueOf(simNameList.size()) + " simulations included.") ;
+        // simNameList = CLOSEST_SIMULATIONS(simNameList, "year", "all_false", "riskyIncidence_HIV", folderPath, "gonoGoneWild", "data_files/") ;
+        // LOGGER.info(String.valueOf(simNameList.size()) + " simulations included.") ;
         //MULTI_WRITE_CSV(simNameList, "condomUse", folderPath) ; // "C:\\Users\\MichaelWalker\\OneDrive - UNSW\\gonorrhoeaPrEP\\simulator\\PrEPSTI\\output\\prep\\") ; // 
         int cutoff = 50 ;
         if (simNameList.size() < cutoff)
