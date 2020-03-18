@@ -2367,6 +2367,7 @@ public class Presenter {
 
             r.setDrawXError(false);
             r.setDrawYError(true);
+
             r.setCapLength(2.5);
 
             // set shape of points
@@ -2382,7 +2383,7 @@ public class Presenter {
 
                 r.setSeriesShape(numSeries, shape);
                 r.setSeriesLinesVisible(numSeries, true);
-                if (drawPoints) r.setSeriesShapesVisible(numSeries, true);
+                if (drawPoints) r.setSeriesShapesVisible(numSeries, false);
                 else r.setSeriesShapesVisible(numSeries, false);
 
                 // set line colours - remove from start and add to the end just in case we run out of colours

@@ -160,7 +160,7 @@ public class ScreeningPresenter extends Presenter {
         //screeningPresenter.multiPlotScreening(new Object[] {"prevalence","prevalence",new String[] {"Pharynx","Rectum","Urethra"}});
         //screeningPresenter.plotIncidencePerCycle(siteNames) ;
         // screeningPresenter.plotFinalAtRiskIncidentsRecord(siteNames,0,"statusHIV") ;
-        //screeningPresenter.plotYearsAtRiskIncidenceReport(siteNames, 5, 2019, "statusHIV") ;
+        screeningPresenter.plotYearsAtRiskIncidenceReport(siteNames, 5, 2019, "statusHIV") ;  // line chart here
         // screeningPresenter.plotYearsBeenTestedReport(13, 0, 0, 2019, "statusHIV") ;
         //screeningPresenter.plotNotificationsPerCycle(siteNames) ;
         // screeningPresenter.plotSitePrevalence(siteNames) ;
@@ -173,7 +173,7 @@ public class ScreeningPresenter extends Presenter {
         //screeningPresenter.plotSortedFinalPrevalences(new String[] {"Pharynx","Rectum","Urethra"}, "statusHIV") ;
         //screeningPresenter.plotFinalNotifications(new String[] {"Pharynx","Rectum","Urethra"}, unique, 0, Reporter.DAYS_PER_YEAR, notifications) ;
         //screeningPresenter.plotSortedFinalNotifications(new String[] {"Pharynx","Rectum","Urethra"}, unique, 0, 0, Reporter.DAYS_PER_YEAR, "statusHIV") ; 
-        screeningPresenter.plotSortedNotificationsYears(siteNames, unique, 2, 2019, "statusHIV") ;
+        // screeningPresenter.plotSortedNotificationsYears(siteNames, unique, 2, 2019, "statusHIV") ;
         //screeningPresenter.plotNotificationsYears(siteNames,13,2019) ;   
         //screeningPresenter.plotPositivityYears(siteNames, unique, 8, 2014) ;
         //screeningPresenter.plotNotificationPerCycle() ;    
