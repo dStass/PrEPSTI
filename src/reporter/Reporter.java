@@ -1289,6 +1289,136 @@ public class Reporter {
         return meanReport ;
     }
 
+
+    static public HashMap<Object, String> 
+        PREPARE_MEAN_CI_HASHMAP_REPORT(String propertyName, ArrayList<HashMap<Comparable,String>> reportList)
+    {
+        // Find mean of reports
+        HashMap<Object,String> meanReport = new HashMap<Object,String>() ;
+        
+        HashMap<Comparable,String> firstReport = reportList.get(0) ;
+        int nbReports = reportList.size() ;
+        String firstReportString = firstReport.values().iterator().next() ;
+        ArrayList<String> reportProperties ;
+        if (propertyName.isEmpty())
+            reportProperties = IDENTIFY_PROPERTIES(firstReportString) ;
+        else
+        {
+            reportProperties = new ArrayList<String>() ;
+            reportProperties.add(propertyName) ;
+        }
+        
+        for (Comparable key : firstReport.keySet())
+        {
+            String itemString ;
+            String meanRecord = "" ;
+            //Number[] meanRecord = new Number[nbSubReports] ;
+            for (String property : reportProperties) 
+            {
+                Double itemValue = 0.0 ;
+                ArrayList<String> values = new ArrayList<String>();
+                for (HashMap<Comparable,String> report : reportList)
+                {
+                    String record = report.get(key) ;
+                    String valueStr = Reporter.EXTRACT_VALUE(property,record) ;
+                    values.add(valueStr) ;
+                    itemValue += Double.valueOf(valueStr) ;
+                }
+
+                Double mean = itemValue / Double.valueOf(nbReports) ;
+                Double stdDev = Reporter.getStandardDeviationDoubleValueFromArrayListOfStrings(values, mean);
+                Double[] confidenceInerval = Reporter.get95ConfidenceIntervalDoubleArray(mean, stdDev, Double.valueOf(values.size()));
+
+                String meanAndCIString =    String.valueOf(mean) + " " +
+                                            String.valueOf(confidenceInerval[0]) + " " +
+                                            String.valueOf(confidenceInerval[1]) ;
+                
+                
+
+                itemString = Reporter.ADD_REPORT_PROPERTY(property, meanAndCIString) ;
+                meanRecord = meanRecord.concat(itemString) ;
+            }
+            meanReport.put(key,meanRecord) ;
+        }
+        return meanReport ;
+    }
+
+    /**
+     * 
+     * Averages over reports in (ArrayList) REPORT_LIST and saves it if static variable
+ WRITE_REPORT is true.
+     * @param reportList
+     * @param categoryName
+     * @param reportName
+     * @param nameSimulation
+     * @return (ArrayList) report with (ArrayList) subreports where the values 
+     * in the subreports are averaged over the innermost ArrayList.
+     */
+    static public HashMap<Comparable,String> 
+        PREPARE_MEAN_CI_HASHMAP_REPORT(ArrayList<HashMap<Comparable,String>> reportList, String categoryName, String reportName, String nameSimulation)
+    {
+        // Find mean of reports
+        HashMap<Comparable,String> meanReport = new HashMap<Comparable,String>() ;
+        
+        HashMap<Comparable,String> firstReport = reportList.get(0) ;
+        int nbReports = reportList.size() ;
+        String firstReportString = (String) String.valueOf(firstReport.values().iterator().next()) ;
+        String meanRecord = "" ;
+        ArrayList<String> reportProperties = IDENTIFY_PROPERTIES(firstReportString) ;
+        
+        
+        for (Comparable key : firstReport.keySet())
+        {
+            //LOGGER.info("year:" + key.toString());
+            for (String propertyName : reportProperties)
+            {
+                Double itemValue = 0.0 ;
+                ArrayList<String> values = new ArrayList<String>();
+
+                for (HashMap<Comparable,String> report : reportList)
+                {
+                    String record = report.get(key) ;
+                    String valueStr = Reporter.EXTRACT_VALUE(propertyName,record) ;
+                    LOGGER.info("Test " + valueStr + " " + String.valueOf(nbReports) + "\n");
+
+                    try
+                    {
+                        itemValue += Double.valueOf(valueStr) ;
+                        values.add(valueStr);
+                    }
+                    catch (Exception e)
+                    {
+                        LOGGER.log(Level.SEVERE,"report:{0} propertyName:{1} {2}", new Object[] {reportList.indexOf(report),propertyName,e.toString()}) ;
+                        itemValue += 0.0 ;
+                        values.add("0.0");
+                    }
+                }
+
+
+                Double mean = itemValue / Double.valueOf(nbReports) ;
+                Double stdDev = Reporter.getStandardDeviationDoubleValueFromArrayListOfStrings(values, mean);
+                Double[] confidenceInerval = Reporter.get95ConfidenceIntervalDoubleArray(mean, stdDev, Double.valueOf(values.size()));
+                
+                String meanAndCIString =    String.valueOf(mean) + " " +
+                                            String.valueOf(confidenceInerval[0]) + " " +
+                                            String.valueOf(confidenceInerval[1]) ;
+
+                String itemString = Reporter.ADD_REPORT_PROPERTY(propertyName, meanAndCIString) ;
+                meanRecord = meanRecord.concat(itemString) ;
+            }
+            meanReport.put(key,meanRecord) ;
+            
+            // Prepare for next key
+            meanRecord = "" ;
+        }
+        
+        if (WRITE_REPORT)
+            WRITE_CSV_STRING(meanReport, categoryName, reportName, nameSimulation, REPORT_FOLDER) ;
+        
+        return meanReport ;
+    }
+
+
     static public String 
         PREPARE_MEAN_REPORT(ArrayList<String> reportList)
     {
@@ -1773,8 +1903,7 @@ public class Reporter {
      * @param folderPath
      * @return 
      */
-    static public boolean MULTI_WRITE_CSV(ArrayList<String> simNames, String reportName, String folderPath)
-    {
+    static public boolean MULTI_WRITE_CSV(ArrayList<String> simNames, String reportName, String folderPath) {
         ArrayList<String> outputReport = new ArrayList<String>() ;
         // 
         
@@ -1849,8 +1978,14 @@ public class Reporter {
      * @param folderPath
      * @return 
      */
-    static public boolean MULTI_WRITE_CSV(List<String> simNames, String categoryName, String scoreName, String reportName, String folderPath)
-    {
+    static public boolean MULTI_WRITE_CSV(  List<String> simNames,
+                                            String categoryName,
+                                            String scoreName,
+                                            String reportName,
+                                            String folderPath) {
+        
+                                                
+                                                
         HashMap<Comparable,String> outputReport = new HashMap<Comparable,String>() ;
         
         // To keep track of scores and find their mean
@@ -1866,29 +2001,30 @@ public class Reporter {
         String firstLine = "mean" + COMMA ;
         firstLine += "lower95" + COMMA;
         firstLine += "upper95" + COMMA;
+
         // String firstLine = "";
         // if (reportName.contains("riskyIncidence_HIV"))
         // {
         //     firstLine = "gono-gone-wild" + COMMA + "Ann. Surv. Rep." + COMMA + firstLine ;
         //     priorData = READ_CSV_STRING(fileName, DATA_FOLDER) ;
         //     priorScoreNames = priorData.get(categoryName) ;
-            
+        
         //     // Which columns in gonoGoneWild.csv have the scoreName data 
         //     int priorIndex = 0 ;
         //     for (int scoreIndex = 0 ; scoreIndex < priorScoreNames.length ; scoreIndex++ )
         //     {
-        //         if (priorScoreNames[scoreIndex].contains(scoreName))
-        //         {
-        //             priorScoreIndices[priorIndex] = scoreIndex ;
-        //             priorIndex++ ;
+            //         if (priorScoreNames[scoreIndex].contains(scoreName))
+            //         {
+                //             priorScoreIndices[priorIndex] = scoreIndex ;
+                //             priorIndex++ ;
         //         }
         //         if (priorIndex == priorScoreIndices.length)
         //             break ;
         //     }
         // } 
-
+        
         //HashMap<Comparable,String> meanReport = PREPARE_MEAN_HASHMAP_REPORT(scoreName,simNames) ;
-
+        
         for (String simulationName : simNames)
         {
             try
@@ -1982,6 +2118,7 @@ public class Reporter {
         int nbPriors = firstLine.split(COMMA).length - simNames.size() -1 ;
         String outputValue ;
         for (Comparable categoryValue : outputReport.keySet() ) {
+
             String valuesCommaSeparatedString = outputReport.get(categoryValue);
 
             // extract information into an arraylist, remove leading and trailing whitespace before and after a comma
@@ -2089,6 +2226,22 @@ public class Reporter {
         toReturn[1] = meanValue + difference;
         return toReturn;
     }
+
+
+    // public static HashMap<String, String[]> extractMeanAndCI(HashMap<Comparable, String[]> csvHashMap) {
+    //     for (Comparable key : csvHashMap.keySet()) {
+    //         String[] keyValue = csvHashMap.get(key);
+    //         String keyValueString = "";
+    //         for (int i = 0; i < keyValue.length; ++i) {
+    //             keyValueString += keyValue[i] + " ";
+    //         }
+
+    //         LOGGER.info("PAIR: " + key.toString() + ": " + keyValueString);
+    //     }
+
+    //     return null;
+    // }
+
     
     /**
      * Sums residuals between the simulations given by simNames and the data in file
@@ -2204,7 +2357,8 @@ public class Reporter {
         return sortedSimNames ;
         
     }
-    
+
+
     /**
      * Read .csv file and return its contents as a HashMap where String maps to 
      * String[] .
@@ -2212,7 +2366,7 @@ public class Reporter {
      * @param folderPath
      * @return 
      */
-    static protected HashMap<Comparable,String[]> READ_CSV_STRING(String fileName, String folderPath)
+    public static HashMap<Comparable,String[]> READ_CSV_STRING(String fileName, String folderPath)
     {
         HashMap<Comparable,String[]> report = new HashMap<Comparable,String[]>() ;
         

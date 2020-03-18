@@ -71,7 +71,7 @@ public class ScreeningPresenter extends Presenter {
         this.reporter = reporter ;
     }
 
-    static String[] simNames = new String[] {"testPop2500Cycles1095"} ; //, "to2017newSort17baPop40000Cycles5110","to2017newSort17caPop40000Cycles5110","to2017newSort17daPop40000Cycles5110","to2017newSort17eaPop40000Cycles5110",
+    static String[] simNames = new String[] {"testPop10000Cycles3650"} ; //, "to2017newSort17baPop40000Cycles5110","to2017newSort17caPop40000Cycles5110","to2017newSort17daPop40000Cycles5110","to2017newSort17eaPop40000Cycles5110",
       //      "to2017newSort17faPop40000Cycles5110", "to2017newSort17gaPop40000Cycles5110","to2017newSort17haPop40000Cycles5110","to2017newSort17iaPop40000Cycles5110","to2017newSort17jaPop40000Cycles5110"} ;
             //"from2007seek57fPop40000Cycles5475","from2007seek57gPop40000Cycles5475","from2007seek57hPop40000Cycles5475","from2007seek57iPop40000Cycles5475","from2007seek57jPop40000Cycles5475"} ;
     //static String[] simNames = new String[] {"newSortaPop40000Cycles1825","seek68bPop40000Cycles1825","seek68cPop40000Cycles1825","seek68dPop40000Cycles1825"} ; // ,"seek53ePop40000Cycles1825",
@@ -98,7 +98,7 @@ public class ScreeningPresenter extends Presenter {
         //String simName = "to2017newSort17aaPop40000Cycles5110" ;
         //String simName = "to2012max3sameScreen34cPop40000Cycles4380" ;
         //String simName = "to2014agentAdjust29aPop40000Cycles4920" ;
-        String simName = "testPop5000Cycles1095" ;
+        String simName = "testPop10000Cycles3650" ;
         //String simName = simNames[0] ;
         
         boolean unique = false ;
@@ -160,14 +160,14 @@ public class ScreeningPresenter extends Presenter {
         //screeningPresenter.multiPlotScreening(new Object[] {"prevalence","prevalence",new String[] {"Pharynx","Rectum","Urethra"}});
         //screeningPresenter.plotIncidencePerCycle(siteNames) ;
         // screeningPresenter.plotFinalAtRiskIncidentsRecord(siteNames,0,"statusHIV") ;
-        screeningPresenter.plotYearsAtRiskIncidenceReport(siteNames, 5, 2019, "statusHIV") ;  // line chart here
+        screeningPresenter.plotYearsAtRiskIncidenceReport(siteNames, 15, 2019, "statusHIV") ;  // line chart here
         // screeningPresenter.plotYearsBeenTestedReport(13, 0, 0, 2019, "statusHIV") ;
         //screeningPresenter.plotNotificationsPerCycle(siteNames) ;
         // screeningPresenter.plotSitePrevalence(siteNames) ;
         // screeningPresenter.plotSiteSymptomPrevalence(siteNames) ;
         // screeningPresenter.plotPrevalence(siteNames) ;  // points on plot may not make sense here?
         // screeningPresenter.plotPrevalenceYears(siteNames,11,2017) ;
-        // screeningPresenter.plotSortedPrevalenceYears(siteNames,13,2019,"statusHIV") ;
+        // screeningPresenter.plotSortedPrevalenceYears(siteNames, 2 ,2019,"statusHIV") ;
         // screeningPresenter.plotFinalSymptomatic(new String[] {"Pharynx","Rectum","Urethra"}) ;
         //screeningPresenter.plotFinalPrevalences(new String[] {"Pharynx","Rectum","Urethra"}) ;
         //screeningPresenter.plotSortedFinalPrevalences(new String[] {"Pharynx","Rectum","Urethra"}, "statusHIV") ;
@@ -913,7 +913,7 @@ public class ScreeningPresenter extends Presenter {
     public void plotYearsAtRiskIncidenceReport(String[] siteNames, int backYears, int lastYear, String sortingProperty) {
         
         // set new title
-        this.chartTitle = "Final At Risk Incidents Record";
+        this.chartTitle = "Years At Risk Incidents Record";
 
         HashMap<Comparable,String> atRiskIncidenceReport ;
                // = reporter.prepareYearsAtRiskIncidenceReport(siteNames, backYears, lastYear, sortingProperty) ;
@@ -932,7 +932,14 @@ public class ScreeningPresenter extends Presenter {
             Reporter.DUMP_OUTPUT(reportName,simulation,reporter.getFolderPath(),report);
         }
         //Reporter.WRITE_CSV_DISTRIBUTION(reports, "at-risk incidence-rate", simNames[0], "output/prep/") ;
+
+        // arRiskIncidenceReport with ONLY mean:
         atRiskIncidenceReport = Reporter.PREPARE_MEAN_HASHMAP_REPORT(reports,"year","INCIDENCE",simNames[0]) ;
+        HashMap<Comparable,String> reportWithMeanAndCI = Reporter.PREPARE_MEAN_CI_HASHMAP_REPORT(reports,"year","INCIDENCE",simNames[0]) ;
+        // ArrayList<String[]> 
+        LOGGER.info("@@@@@@ AT RISK CI HM REPORT \n" + reports.toString());
+
+
         //Reporter.WRITE_CSV(percentAgentCondomlessYears, "year", relationshipClassNames, "discordant_relationships", simNames[0], reporter.getFolderPath()) ;
         String[] legend = Reporter.IDENTIFY_PROPERTIES(atRiskIncidenceReport.get(lastYear)).toArray(new String[0]) ;
         
@@ -941,7 +948,14 @@ public class ScreeningPresenter extends Presenter {
             String property = legend[legendIndex] ;
             ArrayList<String> simNameList = new ArrayList<String>() ;
             Collections.addAll(simNameList, simNames) ;
+
             Reporter.MULTI_WRITE_CSV(simNameList, "year", property, reportName, reporter.getFolderPath()) ;
+
+            // csv file name:
+            String fileName = reportName + "_" + property + "_" + simNameList.get(0);
+            HashMap<Comparable, String[]> readCSV = Reporter.READ_CSV_STRING(fileName, reporter.getFolderPath());
+            // HashMap<String, String[]> meanAndCI = Reporter.extractMeanAndCI(readCSV);
+            LOGGER.info("@@@ MY HASH MAP = " + readCSV.toString());
         }
         plotHashMapString(atRiskIncidenceReport,INCIDENCE,"year", legend) ;
     }
