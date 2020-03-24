@@ -25,6 +25,8 @@ import java.util.logging.Level;
  */
 public class Reporter {
 
+    private static final String COLUMN_NAME = "_COLUMN_NAME_" ;
+
     /** Name of simulation. */
     protected String simName ;    
     /** Input report. */ 
@@ -1968,6 +1970,54 @@ public class Reporter {
         return true ;        
     }
     
+
+    // public static boolean COMBINE_FILES_AS_ON_MEAN_AND_CI(ArrayList<String> fileNames, String folderPath) {
+       
+    //     HashMap<String, ArrayList<String>> yearMap = new HashMap<String, ArrayList<String>>();
+
+    //     // for (int i = 0; i < properties.size(); ++i) {
+    //     //     properties.put()
+    //     // }
+        
+    //     for (int i = 0; i < fileNames.size(); ++i) {
+    //         String fileName = fileNames.get(i); 
+    //         HashMap<Comparable, String[]> readCSV = Reporter.READ_CSV_STRING(fileName, folderPath);
+    //         for (Comparable key : readCSV.keySet()) {
+
+    //             String[] entries = readCSV.get(key);
+    //             String mean = entries[0];
+    //             if (!yearMap.containsKey(key)) {
+    //                 ArrayList<String> meansForYear = new ArrayList<String>();
+    //                 yearMap.put(key.toString(), meansForYear);
+    //             }
+
+
+    //             ArrayList<String> meansForYear = yearMap.get(key);
+    //             meansForYear.add(mean);
+
+    //             // for (int e = 1; e < entries.length; ++e) {
+                    
+                    
+    //                 // }
+    //         }
+    //     }
+
+    //     // LOGGER.info("@@@@@@\n@@@@@@\n@@@@@ " + yearMap.toString());
+        
+
+    //     return true;
+    // }
+
+
+
+
+
+
+
+
+
+
+
     /**
      * Reads in values from multiple files whose names are derived from simNames 
      * and writes them all to one file for coplotting.
@@ -1984,7 +2034,7 @@ public class Reporter {
                                             String reportName,
                                             String folderPath) {
         
-                                                
+        // LOGGER.info("@@TEST: here multi write csv");                           
                                                 
         HashMap<Comparable,String> outputReport = new HashMap<Comparable,String>() ;
         
@@ -2041,7 +2091,7 @@ public class Reporter {
                     fileLine = fileLine2 ;
                     fileLine2 = fileReader.readLine() ;
                 }
-                LOGGER.info(fileLine);
+                // LOGGER.info(fileLine);
                 fileReader.close() ;
                 
                 
@@ -2118,7 +2168,7 @@ public class Reporter {
         int nbPriors = firstLine.split(COMMA).length - simNames.size() -1 ;
         String outputValue ;
         for (Comparable categoryValue : outputReport.keySet() ) {
-
+            // LOGGER.info("@@\n@@\n@@\n" + categoryValue.toString());
             String valuesCommaSeparatedString = outputReport.get(categoryValue);
 
             // extract information into an arraylist, remove leading and trailing whitespace before and after a comma
@@ -2228,19 +2278,37 @@ public class Reporter {
     }
 
 
-    // public static HashMap<String, String[]> extractMeanAndCI(HashMap<Comparable, String[]> csvHashMap) {
-    //     for (Comparable key : csvHashMap.keySet()) {
-    //         String[] keyValue = csvHashMap.get(key);
-    //         String keyValueString = "";
-    //         for (int i = 0; i < keyValue.length; ++i) {
-    //             keyValueString += keyValue[i] + " ";
-    //         }
+    public static HashMap<String, String[]> extractMeanAndCI(HashMap<Comparable, String[]> csvHashMap) {
+        int FIRST_N_ITEMS_TO_EXTRACT = 3; // mean, upper and lower
 
-    //         LOGGER.info("PAIR: " + key.toString() + ": " + keyValueString);
-    //     }
+        int MEAN_INDEX = 0;
+        String MEAN_STRING = "mean";
 
-    //     return null;
-    // }
+        int LOWER_INDEX = 1;
+        String LOWER_STRING = "lower95";
+
+        int HIGHER_INDEX = 2;
+        String HIGHER_STRING = "higher95";
+
+        HashMap<String, String[]> toReturn = new HashMap<String, String[]>();
+
+        for (Comparable key : csvHashMap.keySet()) {
+            String[] keyValue = csvHashMap.get(key);
+            String keyValueString = "";
+
+            String[] toExtract = new String[FIRST_N_ITEMS_TO_EXTRACT];
+
+            toExtract[MEAN_INDEX] = keyValue[MEAN_INDEX];
+            toExtract[LOWER_INDEX] = keyValue[LOWER_INDEX];
+            toExtract[HIGHER_INDEX] = keyValue[HIGHER_INDEX];
+
+            toReturn.put(key.toString(), toExtract);
+            
+            // LOGGER.info("PAIR: " + key.toString() + ": " + keyValueString);
+        }
+
+        return toReturn;
+    }
 
     
     /**
@@ -2413,6 +2481,67 @@ public class Reporter {
         return report ;
     }
     
+
+    /**
+     * Read CSV String WITH COLUMN TITLE
+     * @param fileName
+     * @param folderPath
+     * @return
+     */
+    public static HashMap<Comparable,String[]> READ_CSV_STRING_SKIP_FIRST_COLUMN(String fileName, String folderPath)
+    {
+        HashMap<Comparable,String[]> report = new HashMap<Comparable,String[]>() ;
+        
+        String key ;
+        
+        try
+        {
+            BufferedReader fileReader 
+                    = new BufferedReader(new FileReader(folderPath + fileName + CSV)) ;
+            
+            // Find last line
+            String record = fileReader.readLine() ;  
+            if (record != null) {
+                record = fileReader.readLine();
+            }
+            String[] recordArray = record.split(COMMA) ;
+            // Remove invisible character at beginning of first key
+            key = recordArray[0] ;
+            
+            // report.put(Reporter.COLUMN_NAME, recordArray);
+
+            while ((record != null) && (!record.isEmpty()))
+            {
+                if (recordArray.length > 1)
+                {   
+                    String[] valueArray = new String[recordArray.length-1] ;
+                    for (int index = 1 ; index < recordArray.length ; index++ )
+                        valueArray[index-1] = recordArray[index] ;
+                    report.put(key, valueArray) ;
+                }
+                else
+                    report.put(key, new String[0]) ;
+
+                record = fileReader.readLine() ;
+                if (record != null)
+                {
+                    recordArray = record.split(COMMA) ;
+                    key = recordArray[0] ;
+                }
+                
+            }
+            fileReader.close() ;
+        }
+        catch ( Exception e )
+        {
+            LOGGER.info(e.toString());
+        }
+     
+        return report ;
+    }
+
+
+
     /**
      * Stores a (HashMap of String records) report as a .csv file for other packages to read.
      * @param report

@@ -41,9 +41,12 @@ import org.jfree.data.KeyToGroupMap;
 import org.jfree.data.category.* ;
 //import org.jfree.data.general.* ;
 import org.jfree.data.xy.XYDataset; 
+
 import org.jfree.data.xy.XYSeries ;  
 import org.jfree.data.xy.XYSeriesCollection ;
+
 import org.jfree.data.xy.XYIntervalSeries;
+import org.jfree.data.xy.XYIntervalSeriesCollection ;  
 import org.jfree.chart.util.ShapeUtils;
 
 
@@ -1294,6 +1297,18 @@ public class Presenter {
         // Send data to be processed and presented
         chart_awt.plotLineChart(chartTitle,xySeriesCollection, yLabel, xLabel, newLegend) ;
     }
+
+    protected void plotHashMapStringCI(HashMap<String,HashMap> report, String yLabel, String xLabel, String[] legend)
+    {
+        // Extract data from reportArray
+        XYIntervalSeriesCollection xyIntervalSeriesCollection = parseReportHashMapCI(report, legend) ;
+
+        
+
+            
+        // // Send data to be processed and presented
+        chart_awt.plotLineChart(chartTitle,xyIntervalSeriesCollection, yLabel, xLabel, legend) ;
+    }
     
     protected void plotSortedHashMap(HashMap<Object,String> report, String yLabel, String xLabel, String[] legend)
     {
@@ -1820,7 +1835,7 @@ public class Presenter {
 
             for (Object category : categoryEntry)
             {
-
+                // LOGGER.info("@@@category = " + category.toString() + ", property=" + property);
                 String scoreString = Reporter.EXTRACT_VALUE(property,report.get(category)) ;
                 if (int.class.isInstance(scoreString) || Integer.class.isInstance(scoreString)) 
                     scoreValue = Integer.valueOf(scoreString) ;
@@ -1850,6 +1865,65 @@ public class Presenter {
         }
         
         return xySeriesCollection ;
+    }
+
+    private XYIntervalSeriesCollection parseReportHashMapCI(HashMap<String, HashMap> report, String[] legend) {
+        XYIntervalSeriesCollection xyIntervalSeriesCollection = new XYIntervalSeriesCollection() ;
+
+        // Sorted ArrayList of HashMap keys
+        ArrayList<String> categoryEntry = new ArrayList<String>() ;
+        for (String key : report.keySet()) 
+            categoryEntry.add(key) ;
+        categoryEntry.sort(null) ;
+
+        
+
+        if (legend.length == 0)
+            legend = new String[] {""} ;
+
+        for (String property : categoryEntry) {
+            HashMap<String, String[]> propertyToCategories = report.get(property);
+
+            // set property
+            XYIntervalSeries xyIntervalSeries = new XYIntervalSeries(property);
+
+            // TODO: at the moment, we assume data is valid, checks can and should be added
+            for (String category : propertyToCategories.keySet()) {
+
+                String[] extractedMeanAndCI = (String[]) report.get(property).get(category);
+                ArrayList<String> meanAndCI = new ArrayList<String> ( Arrays.asList(extractedMeanAndCI) );
+                LOGGER.info("@@@@@\n"+meanAndCI.toString());
+
+                double xValue = Double.valueOf(category);
+
+                if (xValue == 0) {
+                    LOGGER.info("@@@@|@@@\n@@@@||@@@@\n" + String.valueOf(xValue) + "cat="+category);
+                }
+
+                // TODO: these are hard-coded at the moment
+                double yMean = Double.valueOf(extractedMeanAndCI[0]);
+                double yLower95 = Double.valueOf(extractedMeanAndCI[1]);
+                double yUpper95 = Double.valueOf(extractedMeanAndCI[2]);
+
+                xyIntervalSeries.add(xValue, xValue, xValue, yMean, yLower95, yUpper95);
+
+
+                
+                
+            }
+
+            try
+            {
+                xyIntervalSeriesCollection.addSeries((XYIntervalSeries) xyIntervalSeries.clone()) ;
+            }
+            catch ( CloneNotSupportedException cnse )
+            {
+                LOGGER.log(Level.SEVERE, cnse.toString());
+            
+            }
+        }
+
+        return xyIntervalSeriesCollection;
     }
 
     /**
@@ -2340,13 +2414,20 @@ public class Presenter {
             //domainAxis.setRange(2.0,upperBound);
             
             // Set unit tick distance if range is integer.
-            if (int.class.isInstance(dataset.getX(0,0)) || Integer.class.isInstance(dataset.getX(0, 0)))
-            {
-                LOGGER.info("integer domain") ;
-                //NumberAxis rangeAxis = (NumberAxis) lineChart.getXYPlot().getRangeAxis() ;
-                //rangeAxis.setTickUnit(new NumberTickUnit(1)) ;
+            // if (int.class.isInstance(dataset.getX(0,0)) || Integer.class.isInstance(dataset.getX(0, 0)))
+            // {
+            //     LOGGER.info("integer domain") ;
+            //     //NumberAxis rangeAxis = (NumberAxis) lineChart.getXYPlot().getRangeAxis() ;
+            //     //rangeAxis.setTickUnit(new NumberTickUnit(1)) ;
+            //     domainAxis.setTickUnit(new NumberTickUnit(1)) ;
+            // }
+
+            // TODO: how do we figure out if domain is integer? With XYIntervalSeries only holding doubles
+            // maybe a random sample of the domain to see if they are all integers?
+            if ((double) dataset.getX(0,0) % 1 == 0) {
                 domainAxis.setTickUnit(new NumberTickUnit(1)) ;
             }
+
 
             // draw legend
             if (!legend[0].isEmpty()) {
@@ -2375,7 +2456,7 @@ public class Presenter {
             // r.setDrawSeriesLineAsPath(true);
 
             r.setDrawXError(false);
-            r.setDrawYError(false);
+            r.setDrawYError(true);
 
             boolean val = false;
 
@@ -2426,6 +2507,10 @@ public class Presenter {
 
             // legend
             lineChart.getLegend().setItemFont(legendFont);
+
+            // set CI error bars:
+            r.setCapLength(20);
+
 
             displayChart(lineChart) ;
         }
