@@ -3,7 +3,6 @@
         "REBOOT_PATH" : "output/test/",
         "REPORT_PATH" : "reports/",
         "DATA_PATH" : "data_files/"
-
     },
 
     "community" : {
@@ -51,6 +50,21 @@
             "urethral_gone_wild",
             "rectal_gone_wild",
             "pharyngeal_gone_wild" 
+        ]
+    },
+
+    "config_loader" : {
+        "colours" : [
+            [0,0,0],
+            [5,164,11],
+            [255,0,0],
+            [255,115,0],
+            [0,0,255],
+            [127,126,129],
+            [173,99,82],
+            [255,0,148],
+            [38,217,203],
+            [194,0,255]
         ]
     }
 

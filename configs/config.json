@@ -1,7 +1,8 @@
 {   
     "community" : {
         "POPULATION" : "2500",
-        "MAX_CYCLES" : "3"
+        "NAME_ROOT" : "REPORT_F",
+        "MAX_CYCLES" : "8"
     },
 
     "msm" : {

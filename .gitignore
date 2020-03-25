@@ -4,4 +4,6 @@
 /dist/
 /output/
 
+*.csv
 *.class
+/reports/*.csv
