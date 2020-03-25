@@ -101,11 +101,20 @@ public class Presenter {
     
     private String folderPath = Community.FILE_PATH ;
 
-    // Variables containing drawing information:
-    private boolean drawPoints = true;  // draw each individual point for a line graph true by default
-    private boolean drawCI = false;
-    private boolean xLogarithmic = false;
-    private boolean yLogarithmic = false;
+
+
+
+
+    /* * * * * * * * * * * * * * * * * * * * * *
+     *         LINE GRAPH DRAWING INFO         *
+     * * * * * * * * * * * * * * * * * * * * * */
+
+    private boolean drawPoints = false ;  // draw each individual point for a line graph true by default
+    private boolean drawCI = false ;
+    private boolean xLogarithmic = false ;
+    private boolean yLogarithmic = false ;
+    private boolean xIntervalVisible = false ;
+    private boolean yIntervalVisible = false ;
 
     static final java.util.logging.Logger LOGGER = java.util.logging.Logger.getLogger("presenter") ;
     
@@ -2375,12 +2384,12 @@ public class Presenter {
          * @param xLabel 
          */
         private void plotLineChart(String chartTitle, XYDataset dataset, String yLabel, String xLabel, String[] legend) {
-            LOGGER.info("!!!MY DATA SET IS \n\n\n" + dataset.toString());
             boolean showLegend = !(legend[0].isEmpty()) ;
             JFreeChart lineChart = ChartFactory.createXYLineChart(chartTitle,xLabel,
                 yLabel,dataset,PlotOrientation.VERTICAL,showLegend, true, false);
 
             XYErrorRenderer r = new XYErrorRenderer();
+            
             lineChart.getXYPlot().setRenderer(r);
             
             //lineChart.getXYPlot().setDomainAxis(new LogarithmicAxis(xLabel));
