@@ -7,3 +7,4 @@
 *.csv
 *.class
 /reports/*.csv
+.metadata/*
