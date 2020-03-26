@@ -2,6 +2,13 @@
   "configurations": [
     {
       "type": "java",
+      "name": "CodeLens (Launch) - ScreeningPresenter",
+      "request": "launch",
+      "mainClass": "PRSP.PrEPSTI.reporter.presenter.ScreeningPresenter",
+      "projectName": "PrEPSTI"
+    },
+    {
+      "type": "java",
       "name": "CodeLens (Launch) - Community",
       "request": "launch",
       "mainClass": "PRSP.PrEPSTI.community.Community",
