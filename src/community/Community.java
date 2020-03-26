@@ -49,7 +49,7 @@ public class Community {
     
     // hashmap with key = method name, value = hashmap that contains
     // variable names and its literal value as a String
-    static public HashMap<String, HashMap> METHOD_CONFIG;
+    // static public HashMap<String, HashMap> METHOD_CONFIG;
 
     // input variables
     static public int MAX_CYCLES;
@@ -134,9 +134,7 @@ public class Community {
         Community.AGENTS_PER_DAY = Community.POPULATION / 365 ;
 
         // MAX_CYCLES
-        Community.MAX_CYCLES = Community.MAX_CYCLES > 99 
-                             ? Community.MAX_CYCLES 
-                             : Community.MAX_CYCLES * Reporter.DAYS_PER_YEAR;
+        Community.MAX_CYCLES = Community.generateTrueCycles(MAX_CYCLES);
         
         // Pop[POPULATION]Cycles[MAX_CYCLES]
         Community.NAME_SUFFIX = "Pop" + String.valueOf(Community.POPULATION) 
@@ -390,13 +388,15 @@ public class Community {
           //      = new ScreeningPresenter("prevalence",Community.SIM_NAME,screeningReporter) ;
         //screeningPresenter2.plotPrevalence();
         //screeningPresenter2.plotNotificationsPerCycle();
-        LOGGER.info(MSM.TRANSMISSION_PROBABILITY_REPORT()) ;    
-        if (TO_PLOT)
-        {
+
+
+        LOGGER.info(MSM.TRANSMISSION_PROBABILITY_REPORT());
+        if (TO_PLOT) {
             ScreeningPresenter screeningPresenter3 
                     = new ScreeningPresenter(SIM_NAME,"multi prevalence",screeningReporter) ;
             screeningPresenter3.multiPlotScreening(new Object[] {"prevalence","prevalence",new String[] {"Pharynx","Rectum","Urethra"}}) ;  // ,"coprevalence",new String[] {"Pharynx","Rectum"},new String[] {"Urethra","Rectum"}
         }
+        
         HashMap<Object,Number> finalNotificationsRecord = new HashMap<Object,Number>() ;
         
         for (boolean unique : new boolean[] {})    // false,
@@ -435,7 +435,10 @@ public class Community {
         if (DYNAMIC)
         {
             int startYear = 2015 ;
-            int endYear = 2025 ;
+
+            // loading endYear from ConfigLoader
+            int endYear = ConfigLoader.getMethodVariableInteger("community", "main", "endYear");
+
             incidenceReport = screeningReporter.prepareYearsAtRiskIncidenceReport(siteNames, endYear + 1 - startYear, endYear, "statusHIV") ;
             //incidenceReportPrep = screeningReporter.prepareYearsAtRiskIncidenceReport(siteNames, 16, 2022, "prepStatus") ;
         }
@@ -626,21 +629,16 @@ public class Community {
     private String interveneCommunity(int cycle)
     {
         // loading in from json
-        int numStartCycle = Integer.parseInt((String) Community.METHOD_CONFIG.get("interveneCommunity").get("numStartCycle"));
-        int startYear = Integer.parseInt((String) Community.METHOD_CONFIG.get("interveneCommunity").get("startYear"));
-
-
-        // int numStartCycle = 4;
-        // int startYear = 2007;
+        int startCycle = ConfigLoader.getMethodVariableInteger("community", "interveneCommunity", "startCycle");
+        int startYear = ConfigLoader.getMethodVariableInteger("community", "interveneCommunity", "startYear");
 
         // When to end burn-in
-        int startCycle = 365 * numStartCycle;
+        startCycle = Community.generateTrueCycles(startCycle);
         startYear -= 2007 ;
 
         // No more burn-in if starting at a later date than 2007
         if (startYear > 0)
             startCycle = 0 ;
-        
         
         if ((cycle < startCycle))
             return "" ;
@@ -1362,6 +1360,22 @@ public class Community {
     //public Reporter(String simName, ArrayList<String> generateReports, 
 
     //	ArrayList<String> encounterReports, ArrayList<String> clearReports, ArrayList<String> screenReports)
+    
+    
+
+    /*
+    * * * * * * * * * * * * * * * * * * * * *
+    *            HELPER FUNCTIONS           *
+    * * * * * * * * * * * * * * * * * * * * *
+    */
+
+    private static int generateTrueCycles(int cycles) {
+        cycles = cycles > 99 
+                        ? cycles 
+                        : cycles * Reporter.DAYS_PER_YEAR;
+        return cycles;
+    }
+    
     private class Scribe{
 
         String extension = ".txt" ;
@@ -1570,8 +1584,6 @@ public class Community {
 
 
     }
-
-
 
 
 }
