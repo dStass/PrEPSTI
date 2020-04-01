@@ -2489,7 +2489,7 @@ public class Reporter {
      * @param folderPath
      * @return
      */
-    public static HashMap<Comparable,String[]> READ_CSV_STRING_SKIP_FIRST_COLUMN(String fileName, String folderPath)
+    public static HashMap<Comparable,String[]> READ_CSV_STRING_SKIP_FIRST_ROW(String fileName, String folderPath)
     {
         HashMap<Comparable,String[]> report = new HashMap<Comparable,String[]>() ;
         

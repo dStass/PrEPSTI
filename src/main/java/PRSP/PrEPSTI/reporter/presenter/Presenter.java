@@ -5,13 +5,15 @@
 package PRSP.PrEPSTI.reporter.presenter;
 
 import PRSP.PrEPSTI.configloader.ConfigLoader;
-import PRSP.PrEPSTI.reporter.* ;
-import PRSP.PrEPSTI.community.Community ;
+import PRSP.PrEPSTI.reporter.*;
+import PRSP.PrEPSTI.community.Community;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Font ;
 import java.awt.Shape ;
 import java.awt.BasicStroke;
 import java.awt.geom.Ellipse2D;
+import java.awt.Toolkit;
 import java.awt.font.TextAttribute;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -2003,6 +2005,10 @@ public class Presenter {
         this.drawCI = val;
     }
 
+    public boolean getDrawCI() {
+        return this.drawCI;
+    }
+
     public void setXLogarithmic(boolean val) {
         this.xLogarithmic = val;
     }
@@ -2463,15 +2469,32 @@ public class Presenter {
             // r.setDrawOutlines(false);
             // r.setDrawSeriesLineAsPath(true);
 
+            int elementCountX = dataset.getItemCount(0);
+            if (elementCountX > ConfigLoader.MAX_YEARS) {
+                setDrawPoints(false);
+                setDrawCI(false);
+            } else {
+                setDrawPoints(true);
+                setDrawCI(true);
+            }
+
+            if (getDrawCI())    r.setDrawYError(true);
+            else                r.setDrawYError(false);
+
             r.setDrawXError(false);
-            r.setDrawYError(true);
+
+            // if (getDrawCI()) {
+            //     r.setDrawYError(true);
+            // } else {
+
+            // }
 
             boolean val = false;
 
             r.setCapLength(2.5);
 
             // set shape of points
-            double circleWidth = 3.8;
+            double circleWidth = 8.0;
             double circleOffset = circleWidth / 2;
             Shape shape = new Ellipse2D.Double(-circleOffset, -circleOffset, circleWidth, circleWidth);
 
@@ -2485,42 +2508,46 @@ public class Presenter {
                 r.setSeriesLinesVisible(numSeries, true);
                 if (drawPoints) r.setSeriesShapesVisible(numSeries, true);
                 else r.setSeriesShapesVisible(numSeries, false);
-
+                
                 // set line colours - remove from start and add to the end just in case we run out of colours
                 ArrayList<Integer> rgb = colours.remove(0);
                 colours.add(rgb);
                 r.setSeriesPaint(numSeries, new Color(rgb.get(0).intValue(),rgb.get(1).intValue(),rgb.get(2).intValue()));
-
+                
+                // r.setErrorPaint(Color.BLACK); // sets error paint
                 // set line thickness
                 r.setSeriesStroke(numSeries, new BasicStroke(2.0f));
             }
-
-
+            
+            
             // set font:
             String UNIFORM_FONT = "Helvetica";
-
+            
             Font titleFont = new Font(UNIFORM_FONT, Font.PLAIN, 30);
             Font labelFont = new Font(UNIFORM_FONT, Font.PLAIN, 15);
             Font legendFont = new Font(UNIFORM_FONT, Font.PLAIN, 10);
             Font tickFont = new Font(UNIFORM_FONT, Font.PLAIN, 8);
+
             // title:
             lineChart.getTitle().setFont(titleFont);
-
+            
             // x and y labels:
             domainAxis.setLabelFont(labelFont);
             rangeAxis.setLabelFont(labelFont);
             
             domainAxis.setTickLabelFont(tickFont);
             rangeAxis.setTickLabelFont(tickFont);
-
+            
             // legend
             lineChart.getLegend().setItemFont(legendFont);
+            
 
             // set CI error bars:
-            r.setCapLength(20);
-
+            r.setCapLength(15);
+            r.setErrorStroke(new BasicStroke(2.0f));
 
             displayChart(lineChart) ;
+            saveChart(lineChart);
         }
 
         /**
@@ -2568,9 +2595,16 @@ public class Presenter {
         
         private void displayChart(JFreeChart barChart)
         {
-            ChartPanel chartPanel = new ChartPanel( barChart );   
+            ChartPanel chartPanel = new ChartPanel( barChart );
+            Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+            int screenWidth = (int) screenSize.getWidth();
+            int screenHeight = (int) screenSize.getHeight();
+            int windowSize = (int) (Math.min(screenWidth, screenHeight) * 0.75);
+
+
+            
             //chartPanel.setPreferredSize(new java.awt.Dimension( 2240 , 734 ) );        
-            chartPanel.setPreferredSize(new java.awt.Dimension( 1120 , 367 ) );        
+            chartPanel.setPreferredSize(new java.awt.Dimension((int) (windowSize * 1.5), windowSize));        
             //chartPanel.setPreferredSize(new java.awt.Dimension( 560 , 367 ) );        
             setContentPane( chartPanel ); 
             pack() ;
@@ -2578,6 +2612,7 @@ public class Presenter {
 
             // used to determine OS:
             LOGGER.info(System.getProperty("os.name")) ;
+
         }
         
         /**
@@ -2593,7 +2628,7 @@ public class Presenter {
             int width = 1280 ;
             //int width = 640 ;
             //int height = 960 ;
-            int height = 480 ;
+            int height = 1280 ;
             File file = new File(address) ;
             //File file = new File(directory) ;
             //String[] files = file.list() ;

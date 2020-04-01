@@ -23,6 +23,7 @@ import PRSP.PrEPSTI.community.Community;
 import PRSP.PrEPSTI.community.Relationship;
 import PRSP.PrEPSTI.reporter.Reporter;
 import PRSP.PrEPSTI.reporter.presenter.Presenter;
+import PRSP.PrEPSTI.reporter.presenter.ScreeningPresenter;
 
 
 
@@ -48,6 +49,10 @@ public class ConfigLoader {
 
     // contains colours
     private static ArrayList<ArrayList<Integer>> colours;
+
+    // constant definitions
+    public static final int MAX_YEARS = 99; // used for drawing points
+
     
     // load jsons into class
     public static void load() {
@@ -111,7 +116,6 @@ public class ConfigLoader {
         ConfigLoader.loadMSM();
         ConfigLoader.loadReporter();
         ConfigLoader.loadPresenter();
-
     }
 
 
@@ -157,7 +161,7 @@ public class ConfigLoader {
         if (DYNAMIC != null) Community.DYNAMIC = Boolean.parseBoolean(DYNAMIC);
 
         String MAX_CYCLES = (String) communityJSON.get("MAX_CYCLES");
-        if (MAX_CYCLES != null) Community.MAX_CYCLES = Integer.parseInt(MAX_CYCLES);
+        if (MAX_CYCLES != null) Community.DEFAULT_MAX_CYCLES = Integer.parseInt(MAX_CYCLES);
 
         String RELOAD_SIMULATION = (String) communityJSON.get("RELOAD_SIMULATION");
         if (RELOAD_SIMULATION != null) Community.RELOAD_SIMULATION = RELOAD_SIMULATION;
