@@ -1293,59 +1293,6 @@ public class Reporter {
     }
 
 
-    static public HashMap<Object, String> 
-        PREPARE_MEAN_CI_HASHMAP_REPORT(String propertyName, ArrayList<HashMap<Comparable,String>> reportList)
-    {
-        // Find mean of reports
-        HashMap<Object,String> meanReport = new HashMap<Object,String>() ;
-        
-        HashMap<Comparable,String> firstReport = reportList.get(0) ;
-        int nbReports = reportList.size() ;
-        String firstReportString = firstReport.values().iterator().next() ;
-        ArrayList<String> reportProperties ;
-        if (propertyName.isEmpty())
-            reportProperties = IDENTIFY_PROPERTIES(firstReportString) ;
-        else
-        {
-            reportProperties = new ArrayList<String>() ;
-            reportProperties.add(propertyName) ;
-        }
-        
-        for (Comparable key : firstReport.keySet())
-        {
-            String itemString ;
-            String meanRecord = "" ;
-            //Number[] meanRecord = new Number[nbSubReports] ;
-            for (String property : reportProperties) 
-            {
-                Double itemValue = 0.0 ;
-                ArrayList<String> values = new ArrayList<String>();
-                for (HashMap<Comparable,String> report : reportList)
-                {
-                    String record = report.get(key) ;
-                    String valueStr = Reporter.EXTRACT_VALUE(property,record) ;
-                    values.add(valueStr) ;
-                    itemValue += Double.valueOf(valueStr) ;
-                }
-
-                Double mean = itemValue / Double.valueOf(nbReports) ;
-                Double stdDev = Reporter.getStandardDeviationDoubleValueFromArrayListOfStrings(values, mean);
-                Double[] confidenceInerval = Reporter.get95ConfidenceIntervalDoubleArray(mean, stdDev, Double.valueOf(values.size()));
-
-                String meanAndCIString =    String.valueOf(mean) + " " +
-                                            String.valueOf(confidenceInerval[0]) + " " +
-                                            String.valueOf(confidenceInerval[1]) ;
-                
-                
-
-                itemString = Reporter.ADD_REPORT_PROPERTY(property, meanAndCIString) ;
-                meanRecord = meanRecord.concat(itemString) ;
-            }
-            meanReport.put(key,meanRecord) ;
-        }
-        return meanReport ;
-    }
-
     /**
      * 
      * Averages over reports in (ArrayList) REPORT_LIST and saves it if static variable
@@ -2426,16 +2373,21 @@ public class Reporter {
         return sortedSimNames ;
         
     }
+    
 
 
     /**
      * Read .csv file and return its contents as a HashMap where String maps to 
-     * String[] .
+     * String[]. We will also skip the first rowsToSkip lines.
+     * No safety implemented, method assumes rowsToSkip will be less than
+     * the total number of lines in the file.
+     * 
      * @param fileName
      * @param folderPath
+     * @param rowsToSkip: rowsToSkip < number of lines
      * @return 
      */
-    public static HashMap<Comparable,String[]> READ_CSV_STRING(String fileName, String folderPath)
+    public static HashMap<Comparable, String[]> READ_CSV_STRING(String fileName, String folderPath, int rowsToSkip)
     {
         HashMap<Comparable,String[]> report = new HashMap<Comparable,String[]>() ;
         
@@ -2446,65 +2398,14 @@ public class Reporter {
             BufferedReader fileReader 
                     = new BufferedReader(new FileReader(folderPath + fileName + CSV)) ;
             
-            // Find last line
-            String record = fileReader.readLine() ;  
-            String[] recordArray = record.split(COMMA) ;
-            // Remove invisible character at beginning of first key
-            key = recordArray[0].substring(1) ;
-                
-            while ((record != null) && (!record.isEmpty()))
-            {
-                if (recordArray.length > 1)
-                {
-                    String[] valueArray = new String[recordArray.length - 1] ;
-                    for (int index = 1 ; index < recordArray.length ; index++ )
-                        valueArray[index - 1] = recordArray[index] ;
-                    report.put(key, valueArray) ;
-                }
-                else
-                    report.put(key, new String[0]) ;
+            // Get first line
+            String record = fileReader.readLine() ;
 
-                record = fileReader.readLine() ;
-                if (record != null)
-                {
-                    recordArray = record.split(COMMA) ;
-                    key = recordArray[0] ;
-                }
-                
-            }
-            fileReader.close() ;
-        }
-        catch ( Exception e )
-        {
-            LOGGER.info(e.toString());
-        }
-     
-        return report ;
-    }
-    
-
-    /**
-     * Read CSV String WITH COLUMN TITLE
-     * @param fileName
-     * @param folderPath
-     * @return
-     */
-    public static HashMap<Comparable,String[]> READ_CSV_STRING_SKIP_FIRST_ROW(String fileName, String folderPath)
-    {
-        HashMap<Comparable,String[]> report = new HashMap<Comparable,String[]>() ;
-        
-        String key ;
-        
-        try
-        {
-            BufferedReader fileReader 
-                    = new BufferedReader(new FileReader(folderPath + fileName + CSV)) ;
-            
-            // Find last line
-            String record = fileReader.readLine() ;  
-            if (record != null) {
+            // Skip rowsToSkip number of lines:
+            for (int i = 0; i < rowsToSkip; ++i) {
                 record = fileReader.readLine();
             }
+
             String[] recordArray = record.split(COMMA) ;
             // Remove invisible character at beginning of first key
             key = recordArray[0] ;
@@ -2541,6 +2442,61 @@ public class Reporter {
         return report ;
     }
 
+
+    /**
+     * Read .csv file and return its contents as a HashMap where String maps to 
+     * String[] .
+     * @param fileName
+     * @param folderPath
+     * @return 
+     */
+    public static HashMap<Comparable,String[]> READ_CSV_STRING(String fileName, String folderPath)
+    {
+        return READ_CSV_STRING(fileName, folderPath, 0);
+        // HashMap<Comparable,String[]> report = new HashMap<Comparable,String[]>() ;
+        
+        // String key ;
+        
+        // try
+        // {
+        //     BufferedReader fileReader 
+        //             = new BufferedReader(new FileReader(folderPath + fileName + CSV)) ;
+            
+        //     // Find last line
+        //     String record = fileReader.readLine() ;  
+        //     String[] recordArray = record.split(COMMA) ;
+        //     // Remove invisible character at beginning of first key
+        //     key = recordArray[0].substring(1) ;
+                
+        //     while ((record != null) && (!record.isEmpty()))
+        //     {
+        //         if (recordArray.length > 1)
+        //         {
+        //             String[] valueArray = new String[recordArray.length - 1] ;
+        //             for (int index = 1 ; index < recordArray.length ; index++ )
+        //                 valueArray[index - 1] = recordArray[index] ;
+        //             report.put(key, valueArray) ;
+        //         }
+        //         else
+        //             report.put(key, new String[0]) ;
+
+        //         record = fileReader.readLine() ;
+        //         if (record != null)
+        //         {
+        //             recordArray = record.split(COMMA) ;
+        //             key = recordArray[0] ;
+        //         }
+                
+        //     }
+        //     fileReader.close() ;
+        // }
+        // catch ( Exception e )
+        // {
+        //     LOGGER.info(e.toString());
+        // }
+     
+        // return report ;
+    }
 
 
     /**

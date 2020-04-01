@@ -981,7 +981,7 @@ public class ScreeningPresenter extends Presenter {
             String fileName = reportName + "_" + property + "_" + simNameList.get(0);
             fileNames.add(fileName);
 
-            HashMap<Comparable, String[]> readCSV = Reporter.READ_CSV_STRING_SKIP_FIRST_ROW(fileName, reporter.getFolderPath());
+            HashMap<Comparable, String[]> readCSV = Reporter.READ_CSV_STRING(fileName, reporter.getFolderPath(), 1);
             HashMap<String, String[]> meanAndCI = Reporter.extractMeanAndCI(readCSV);
             propertyToMeanAndCI.put(property, meanAndCI);
             // LOGGER.info("@@@ MY HASH MAP = " + meanAndCI.toString());
@@ -1358,7 +1358,7 @@ public class ScreeningPresenter extends Presenter {
             String fileName = fileNames[i];
 
             
-            HashMap<Comparable, String[]> readCSV = Reporter.READ_CSV_STRING_SKIP_FIRST_ROW(fileName, reporter.getFolderPath());
+            HashMap<Comparable, String[]> readCSV = Reporter.READ_CSV_STRING(fileName, reporter.getFolderPath(), 1);
             HashMap<String, String[]> meanAndCI = Reporter.extractMeanAndCI(readCSV);
             propertyToMeanAndCI.put(property, meanAndCI);
         }
