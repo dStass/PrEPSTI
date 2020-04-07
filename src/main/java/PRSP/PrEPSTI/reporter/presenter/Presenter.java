@@ -54,6 +54,7 @@ import org.jfree.chart.util.ShapeUtils;
 import java.lang.reflect.* ;
 import java.util.Arrays ;
 import java.util.ArrayList ;
+import java.util.Random;
 import java.util.* ;
 
 import java.io.File ;
@@ -114,8 +115,6 @@ public class Presenter {
     private boolean drawCI = false ;
     private boolean xLogarithmic = false ;
     private boolean yLogarithmic = false ;
-    private boolean xIntervalVisible = false ;
-    private boolean yIntervalVisible = false ;
 
     static final java.util.logging.Logger LOGGER = java.util.logging.Logger.getLogger("presenter") ;
     
@@ -2389,41 +2388,39 @@ public class Presenter {
          * @param xLabel 
          */
         private void plotLineChart(String chartTitle, XYDataset dataset, String yLabel, String xLabel, String[] legend) {
+
+            int DAYS_IN_YEAR = 365;
             boolean showLegend = !(legend[0].isEmpty()) ;
+
+            // define lineChart and set error renderer
             JFreeChart lineChart = ChartFactory.createXYLineChart(chartTitle,xLabel,
                 yLabel,dataset,PlotOrientation.VERTICAL,showLegend, true, false);
-
             XYErrorRenderer r = new XYErrorRenderer();
-            
             lineChart.getXYPlot().setRenderer(r);
             
-            //lineChart.getXYPlot().setDomainAxis(new LogarithmicAxis(xLabel));
-            
+            // axes information:
+            // setting logarithmic 
+            // lineChart.getXYPlot().setDomainAxis(new LogarithmicAxis(xLabel));
             NumberAxis domainAxis = (NumberAxis) lineChart.getXYPlot().getDomainAxis() ;
             ValueAxis rangeAxis = lineChart.getXYPlot().getRangeAxis();
             double upperBound = dataset.getItemCount(0) ;    // domainAxis.getRange().getUpperBound() ;
             
-            if ((upperBound % 365) == 0)    // if upperBound a multiple of 365 (days)
+            // chart settings based on number of elements plotted
+            if ((upperBound % DAYS_IN_YEAR) == 0)    // if upperBound a multiple of 365 (days)
             {
-                if (upperBound > 729)    // more than two years
+                if (upperBound >= DAYS_IN_YEAR * 2)    // more than two years
                 {
-                    domainAxis.setTickUnit(new NumberTickUnit(365)) ;
-                    if (upperBound < 3650)    // less than ten years
+                    domainAxis.setTickUnit(new NumberTickUnit(DAYS_IN_YEAR)) ;
+                    if (upperBound < DAYS_IN_YEAR * 10)    // less than ten years
                     {
                         domainAxis.setMinorTickCount(4);
                         domainAxis.setMinorTickMarksVisible(true);
                     }
                 }
             }
-            else
-            {
-                //LOGGER.info(String.valueOf(upperBound)) ;
+            else {
                 domainAxis.setMinorTickMarksVisible(true);
             }
-            
-            // // Put shapes at plotted points
-            // if (upperBound < 100) 
-            //     lineChart.getXYPlot().setRenderer(new XYLineAndShapeRenderer()) ; 
             
             //domainAxis.setRange(2.0,upperBound);
             
@@ -2436,10 +2433,11 @@ public class Presenter {
             //     domainAxis.setTickUnit(new NumberTickUnit(1)) ;
             // }
 
-            // TODO: how do we figure out if domain is integer? With XYIntervalSeries only holding doubles
-            // maybe a random sample of the domain to see if they are all integers?
-            if ((double) dataset.getX(0,0) % 1 == 0) {
+            
+            // randomly pick domain values to find out if the domain contains only integer values
+            if (this.isDomainInteger(dataset)) {
                 domainAxis.setTickUnit(new NumberTickUnit(1)) ;
+                domainAxis.setMinorTickMarksVisible(false);
             }
 
 
@@ -2448,12 +2446,6 @@ public class Presenter {
                 LegendTitle plotLegend = lineChart.getLegend() ;
                 plotLegend.setPosition(RectangleEdge.RIGHT);
             }
-            
-            //lineChart.getPlot().setOutlineVisible(false);
-            
-            // David can use this to experiment with improving presentation.
-            // lineChart.getXValue().getRenderer().setSeriesShape
-            //saveChart(lineChart) ;
             
             
             /* !!!
@@ -2465,12 +2457,7 @@ public class Presenter {
             // set background to white
             lineChart.getPlot().setBackgroundPaint(Color.WHITE);
 
-            // set draw lines to True
-            // r.setDrawOutlines(false);
-            // r.setDrawSeriesLineAsPath(true);
-
-            int elementCountX = dataset.getItemCount(0);
-            if (elementCountX > ConfigLoader.MAX_YEARS) {
+            if (upperBound > ConfigLoader.MAX_YEARS) {
                 setDrawPoints(false);
                 setDrawCI(false);
             } else {
@@ -2482,12 +2469,6 @@ public class Presenter {
             else                r.setDrawYError(false);
 
             r.setDrawXError(false);
-
-            // if (getDrawCI()) {
-            //     r.setDrawYError(true);
-            // } else {
-
-            // }
 
             boolean val = false;
 
@@ -2548,6 +2529,49 @@ public class Presenter {
 
             displayChart(lineChart) ;
             saveChart(lineChart);
+        }
+
+
+        /**
+         * Randomly selects 3 points in the domain and verify that they are all integers
+         * @param dataset
+         * @return a boolean on whether the domain only contains integer values or not
+         */
+        private boolean isDomainInteger(XYDataset dataset) {
+            int RANDOM_SAMPLE_SIZE = 3;
+            
+            boolean toReturn = true;
+            int numSeries = dataset.getSeriesCount();
+            
+            for (int i = 0; i < RANDOM_SAMPLE_SIZE; ++i) {
+
+                // randomly select a series
+                int series = this.randIntInRangeInclusive(0, numSeries - 1);
+                int itemCount = dataset.getItemCount(series);
+
+                // randomly select an item
+                int item = this.randIntInRangeInclusive(0, itemCount - 1);
+
+                // extract its value
+                double xValue = (double) dataset.getX(series, item);
+
+                // if this is non-integer, break early and return false
+                if (xValue % 1 != 0) {
+                    toReturn = false;
+                    break;
+                }
+            }
+            return toReturn;
+        }
+        
+        /**
+         * @param from: an integer as an inclusive lower bound
+         * @param to: an integer as an inclusive upper bound
+         * @return a random number between the ranges(from, to) inclusive of the bounds
+         */
+        private int randIntInRangeInclusive(int from, int to) {
+            Random ran = new Random();
+            return ran.nextInt((to - from) + 1) + from;
         }
 
         /**
