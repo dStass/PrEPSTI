@@ -145,15 +145,17 @@ public class Community {
         Community.OUTPUT_RETURN += Community.SIM_NAME + " " ;
         
         // Name of test run passed in via argument
-        switch (args[0]) {
-            case "gadi":
-                Community.FILE_PATH = "/scratch/is14/mw7704/prepsti/" + Community.FILE_PATH; 
-                Community.DUMP_CYCLE = 500;
-                break;
-            case "katana":
-                Community.FILE_PATH = "/srv/scratch/z3524276/prepsti/" + Community.FILE_PATH ;
-                Community.DUMP_CYCLE = 500;
-                break;
+        if (args.length > 0) {
+            switch (args[0]) {
+                case "gadi":
+                    Community.FILE_PATH = "/scratch/is14/mw7704/prepsti/" + Community.FILE_PATH; 
+                    Community.DUMP_CYCLE = 500;
+                    break;
+                case "katana":
+                    Community.FILE_PATH = "/srv/scratch/z3524276/prepsti/" + Community.FILE_PATH ;
+                    Community.DUMP_CYCLE = 500;
+                    break;
+            }
         }
 
 
