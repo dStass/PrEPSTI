@@ -3,8 +3,12 @@
 /build/
 /dist/
 /output/
+/target/
+/.metadata/
+/.settings/
+/.vscode/
 
 *.csv
 *.class
 /reports/*.csv
-.metadata/*
+.settings/
