@@ -4,11 +4,13 @@
 /dist/
 /output/
 /target/
+
+# settings
 /.metadata/
 /.settings/
 /.vscode/
 
+# files
 *.csv
 *.class
 /reports/*.csv
-.settings/
