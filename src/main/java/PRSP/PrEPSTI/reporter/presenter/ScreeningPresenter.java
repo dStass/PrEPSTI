@@ -5,6 +5,7 @@
  */
 package PRSP.PrEPSTI.reporter.presenter;
 
+import PRSP.PrEPSTI.configloader.ConfigLoader;
 
 import java.util.ArrayList ;
 import java.util.Arrays;
@@ -38,11 +39,10 @@ public class ScreeningPresenter extends Presenter {
     static public String NOTIFICATION = "notification" ;  // "treated" ;
     static public String POSITIVITY = "positivity" ;  // "treated" ;
     
-    public ScreeningPresenter()
-    {
-        super() ;   
+    public ScreeningPresenter() {
+        super();
     }
-    
+
     public ScreeningPresenter(String applicationTitle, String chartTitle)
     {
         super(applicationTitle, chartTitle);
@@ -71,46 +71,52 @@ public class ScreeningPresenter extends Presenter {
         this.reporter = reporter ;
     }
 
-    static String[] simNames = new String[] {"REPORT_APop500Cycles1825"} ; //, "to2017newSort17baPop40000Cycles5110","to2017newSort17caPop40000Cycles5110","to2017newSort17daPop40000Cycles5110","to2017newSort17eaPop40000Cycles5110",
-      //      "to2017newSort17faPop40000Cycles5110", "to2017newSort17gaPop40000Cycles5110","to2017newSort17haPop40000Cycles5110","to2017newSort17iaPop40000Cycles5110","to2017newSort17jaPop40000Cycles5110"} ;
+    // static String[] simNames = new String[] {"REPORT_APop2500Cycles2920", "REPORT_BPop2500Cycles2920", "REPORT_CPop2500Cycles2920", "REPORT_DPop2500Cycles2920", "REPORT_EPop2500Cycles2920", "REPORT_FPop2500Cycles2920"} ; //, "to2017newSort17baPop40000Cycles5110","to2017newSort17caPop40000Cycles5110","to2017newSort17daPop40000Cycles5110","to2017newSort17eaPop40000Cycles5110",
+    static String[] simNames = new String[] {"REPORT_APop2500Cycles2920", "REPORT_BPop2500Cycles2920", "REPORT_CPop2500Cycles2920"};
+
+    
+    //      "to2017newSort17faPop40000Cycles5110", "to2017newSort17gaPop40000Cycles5110","to2017newSort17haPop40000Cycles5110","to2017newSort17iaPop40000Cycles5110","to2017newSort17jaPop40000Cycles5110"} ;
             //"from2007seek57fPop40000Cycles5475","from2007seek57gPop40000Cycles5475","from2007seek57hPop40000Cycles5475","from2007seek57iPop40000Cycles5475","from2007seek57jPop40000Cycles5475"} ;
     //static String[] simNames = new String[] {"newSortaPop40000Cycles1825","seek68bPop40000Cycles1825","seek68cPop40000Cycles1825","seek68dPop40000Cycles1825"} ; // ,"seek53ePop40000Cycles1825",
       //      "seek53fPop40000Cycles1825","seek53gPop40000Cycles1825","seek53hPop40000Cycles1825","seek53iPop40000Cycles1825","seek53jPop40000Cycles1825"} ;
-    
+    static String[] testSimNames = new String[] {"riskyIncidence_all_from2020to2025prep0p5cycleParams33aaPop40000Cycles2190", "riskyIncidence_all_from2020to2025prep1p0cycleParams33aaPop40000Cycles2190", "riskyIncidence_all_from2020to2025prep0p75cycleParams33aaPop40000Cycles2190" };
     public static void main(String[] args)
     {
-//         String prefix = "old1p5Params26" ;
-//         //String prefix = "to2019fix23" ;
-//         String suffix = "Pop40000Cycles6570" ;
-//         ArrayList<String> simNameList = new ArrayList<String>() ;
-//         simNameList.add("rebootPop20000Cycles1825") ;
-//         //String letter0 = "" ;
-// //        for (String letter0 : new String[] {"a","b","c","d","e","f","g","h","i","j"})
-// //            for (String letter1 : new String[] {"a","b","c","d","e"})
-// //                simNameList.add(prefix + letter0 + letter1 + suffix) ;
+
+        ConfigLoader.load();
         
-//         simNames = simNameList.toArray(new String[] {}) ;
+        //         String prefix = "old1p5Params26" ;
+        //         //String prefix = "to2019fix23" ;
+        //         String suffix = "Pop40000Cycles6570" ;
+        //         ArrayList<String> simNameList = new ArrayList<String>() ;
+        //         simNameList.add("rebootPop20000Cycles1825") ;
+        //         //String letter0 = "" ;
+        // //        for (String letter0 : new String[] {"a","b","c","d","e","f","g","h","i","j"})
+        // //            for (String letter1 : new String[] {"a","b","c","d","e"})
+        // //                simNameList.add(prefix + letter0 + letter1 + suffix) ;
+        
+        //         simNames = simNameList.toArray(new String[] {}) ;
         
         //String simName = "rebootPop20000Cycles1825" ;
         //String simName = "Qibin1p0aPop40000Cycles1460" ;
         //String simName = "to2017newSort17aaPop40000Cycles5110" ;
         //String simName = "to2012max3sameScreen34cPop40000Cycles4380" ;
         //String simName = "to2014agentAdjust29aPop40000Cycles4920" ;
-        String simName = "REPORT_APop500Cycles1825" ;
+        String simName = "REPORT_APop2500Cycles2920" ;
         //String simName = simNames[0] ;
         
         boolean unique = false ;
         int notifications = 1 ; 
         String chartTitle = "" ;
         if (unique && (notifications == 1))
-            chartTitle = "unique " ;
+        chartTitle = "unique " ;
         if (notifications == 0)
         {
             chartTitle += "notification-rate" ;
             //chartTitle += "condom use scaledown in 2009" ;
         } //
         else if (notifications == 1)
-            chartTitle += "incidence" ;
+        chartTitle += "incidence" ;
         else
         {
             //chartTitle += "screening rate"
@@ -118,8 +124,8 @@ public class ScreeningPresenter extends Presenter {
             //chartTitle += "mean_prevalence" 
             chartTitle += "multi-site prevalence" 
             //chartTitle += "multi-site symptomatic"
-        
-        + "" ;
+            
+            + "" ;
         }
         //String chartTitle = "proportion_symptomatic" ;
         //String chartTitle = "site-specific symptomatic" ; // args[1] ;
@@ -133,12 +139,26 @@ public class ScreeningPresenter extends Presenter {
         //String reportFileName = "output/year2012/" ; // args[2] ;
         //String reportFileName = "output/year2010/" ; // args[2] ;
         //String reportFileName = "output/year2007/" ; // args[2] ;
-
+        
         LOGGER.info(chartTitle) ;
         
         ScreeningPresenter screeningPresenter = new ScreeningPresenter(simName,chartTitle,reportFileName) ;
-        //Reporter.MULTI_WRITE_CSV(simNameList, "year", "Urethra_true", "riskyIncidence", screeningPresenter.reporter.getFolderPath()) ;
 
+        // // set information of plots based on whether we are plotting years
+        // if (ScreeningPresenter.PLOT_YEARS) {
+        //     screeningPresenter.setDrawPoints(true);
+        //     screeningPresenter.setDrawCI(true);
+        // }
+
+        // // set graphical info for plotting days
+        // else {
+        //     screeningPresenter.setDrawPoints(false);
+        //     screeningPresenter.setDrawCI(false);
+        // }
+
+
+        //Reporter.MULTI_WRITE_CSV(simNameList, "year", "Urethra_true", "riskyIncidence", screeningPresenter.reporter.getFolderPath()) ;
+        
         String[] siteNames  = new String[] {"Pharynx","Rectum","Urethra"} ;
         //String[] testArray[] = Arrays.asList(siteNames).subList(0,0)
         
@@ -158,30 +178,35 @@ public class ScreeningPresenter extends Presenter {
         //screeningPresenter.multiPlotScreening(new Object[] {"prevalence","prevalence",new String[] {"Pharynx","Rectum","Urethra"}});
         //screeningPresenter.plotIncidencePerCycle(siteNames) ;
         // screeningPresenter.plotFinalAtRiskIncidentsRecord(siteNames,0,"statusHIV") ;
-        // screeningPresenter.plotYearsAtRiskIncidenceReport(siteNames, 5, 2019, "statusHIV") ;
+        // screeningPresenter.plotYearsAtRiskIncidenceReport(siteNames, 8, 2019, "statusHIV") ;  // !! line chart here
         // screeningPresenter.plotYearsBeenTestedReport(13, 0, 0, 2019, "statusHIV") ;
         //screeningPresenter.plotNotificationsPerCycle(siteNames) ;
         // screeningPresenter.plotSitePrevalence(siteNames) ;
-        //screeningPresenter.plotSiteSymptomPrevalence(siteNames) ;
-        screeningPresenter.plotPrevalence(siteNames) ;
-        // screeningPresenter.plotPrevalenceYears(siteNames,11,2017) ;
-        //screeningPresenter.plotSortedPrevalenceYears(siteNames,13,2019,"statusHIV") ;
+        // screeningPresenter.plotSiteSymptomPrevalence(siteNames) ;
+        screeningPresenter.plotPrevalence(siteNames) ;  // points on plot may not make sense here?
+        // screeningPresenter.plotPrevalenceYears(siteNames,5,2025) ;
+        // screeningPresenter.plotSortedPrevalenceYears(siteNames, 2 ,2019,"statusHIV") ;
         // screeningPresenter.plotFinalSymptomatic(new String[] {"Pharynx","Rectum","Urethra"}) ;
         //screeningPresenter.plotFinalPrevalences(new String[] {"Pharynx","Rectum","Urethra"}) ;
         //screeningPresenter.plotSortedFinalPrevalences(new String[] {"Pharynx","Rectum","Urethra"}, "statusHIV") ;
         //screeningPresenter.plotFinalNotifications(new String[] {"Pharynx","Rectum","Urethra"}, unique, 0, Reporter.DAYS_PER_YEAR, notifications) ;
         //screeningPresenter.plotSortedFinalNotifications(new String[] {"Pharynx","Rectum","Urethra"}, unique, 0, 0, Reporter.DAYS_PER_YEAR, "statusHIV") ; 
-        //screeningPresenter.plotSortedNotificationsYears(siteNames, unique, 13, 2019, "statusHIV") ;
+        // screeningPresenter.plotSortedNotificationsYears(siteNames, unique, 2, 2019, "statusHIV") ;
         //screeningPresenter.plotNotificationsYears(siteNames,13,2019) ;   
         //screeningPresenter.plotPositivityYears(siteNames, unique, 8, 2014) ;
         //screeningPresenter.plotNotificationPerCycle() ;    
         // screeningPresenter.plotSiteProportionSymptomatic(siteNames) ;
 
 
+        // screeningPresenter.plotIntervalMeansFromCSVFileNames(testSimNames);
+
+
         //String methodName = args[3] ;
         //Method method = EncounterPresenter.class.getMethod(methodName) ;
 
         //method.invoke(encounterPresenter, (Object[]) Arrays.copyOfRange(args,4,args.length)) ;
+
+        
         
     }
     
@@ -193,8 +218,11 @@ public class ScreeningPresenter extends Presenter {
      * @param lastYear
      * @param sortingProperty 
      */
-    public void plotSortedNotificationsYears(String[] siteNames, boolean unique, int backYears, int lastYear, String sortingProperty)
-    {
+    public void plotSortedNotificationsYears(String[] siteNames, boolean unique, int backYears, int lastYear, String sortingProperty) {
+        
+        // set new title
+        this.chartTitle = "Sorted Notifications Years";
+        
         String[] siteAllNames = new String[siteNames.length+1] ;
         siteAllNames[0] = "all" ;
         System.arraycopy(siteNames, 0, siteAllNames, 1, siteNames.length);
@@ -241,8 +269,11 @@ public class ScreeningPresenter extends Presenter {
      * @param backYears
      * @param lastYear 
      */
-    public void plotNotificationsYears(String[] siteNames, int backYears, int lastYear)
-    {
+    public void plotNotificationsYears(String[] siteNames, int backYears, int lastYear) {
+        
+        // set new title
+        this.chartTitle = "Notifications Years";
+        
         //HashMap<Object,Number[]> notificationsRecordYears = reporter.prepareYearsNotificationsRecord(siteNames, backYears, lastYear) ;
         HashMap<Comparable,String> notificationsYearsPlot ; //= new HashMap<Object,String>() ;
         
@@ -282,8 +313,11 @@ public class ScreeningPresenter extends Presenter {
         //plotHashMap("Year", siteAllNames, notificationsRecordYears) ;
     }
     
-    public void plotYearsTestingRateReport(int backYears, int backMonths, int backDays, int lastYear, String sortingProperty)
-    {
+    public void plotYearsTestingRateReport(int backYears, int backMonths, int backDays, int lastYear, String sortingProperty){
+        
+        // set new title
+        this.chartTitle = "Years Testing Rate Report";
+        
         ArrayList<HashMap<Comparable,String>> reports = new ArrayList<HashMap<Comparable,String>>() ;
         String reportOutput ;
         String label ;
@@ -330,8 +364,11 @@ public class ScreeningPresenter extends Presenter {
      * @param backYears
      * @param lastYear 
      */
-    public void plotPositivityYears(String[] siteNames, boolean unique, int backYears, int lastYear)
-    {
+    public void plotPositivityYears(String[] siteNames, boolean unique, int backYears, int lastYear) {
+        
+        // set new title
+        this.chartTitle = "Positivity Years";
+        
         HashMap<Comparable,String> positivityRecordYears = reporter.prepareYearsPositivityRecord(siteNames, unique, backYears, lastYear) ;    // Number[]
         
         String[] siteAllNames = new String[siteNames.length+1] ;
@@ -363,8 +400,11 @@ public class ScreeningPresenter extends Presenter {
      * @param backDays 
      * @param outcome 
      */
-    public void plotFinalNotifications(String[] siteNames, boolean unique, int backMonths, int backDays, int outcome)
-    {
+    public void plotFinalNotifications(String[] siteNames, boolean unique, int backMonths, int backDays, int outcome) {
+        
+        // set new title
+        this.chartTitle = "Final Notifications";
+        
         // [0] for positivity
         //HashMap<Object,Number> finalNotificationsRecord = new HashMap<Object,Number>() ;
         String finalNotificationsRecord ; // = "" ;
@@ -418,8 +458,11 @@ public class ScreeningPresenter extends Presenter {
      * @param backDays
      * @param sortingProperty 
      */
-    public void plotSortedFinalNotifications(String[] siteNames, boolean unique, int backYears, int backMonths, int backDays, String sortingProperty)
-    {
+    public void plotSortedFinalNotifications(String[] siteNames, boolean unique, int backYears, int backMonths, int backDays, String sortingProperty) {
+        
+        // set new title
+        this.chartTitle = "Sorted Final Notifications";
+        
         String finalNotificationsRecord = "" ;
         HashMap<Object,String> notificationsRecord = reporter.prepareSortedFinalNotificationsRecord(siteNames, unique, backYears, backMonths, backDays, 0, sortingProperty) ;
         LOGGER.log(Level.INFO, "{0}", notificationsRecord);
@@ -505,8 +548,11 @@ public class ScreeningPresenter extends Presenter {
      * @param lastYear 
      * @param sortingProperty 
      */
-    public void plotSortedPrevalenceYears(String[] siteNames, int backYears, int lastYear, String sortingProperty)
-    {
+    public void plotSortedPrevalenceYears(String[] siteNames, int backYears, int lastYear, String sortingProperty) {
+        
+        // set new title
+        this.chartTitle = "Sorted Prevalence Years";
+        
         ArrayList<HashMap<Comparable,String>> reports = new ArrayList<HashMap<Comparable,String>>() ;
         for (String simulation: simNames)
         {
@@ -529,8 +575,11 @@ public class ScreeningPresenter extends Presenter {
      * @param backYears
      * @param lastYear 
      */
-    public void plotPrevalenceYears(String[] siteNames, int backYears, int lastYear)
-    {
+    public void plotPrevalenceYears(String[] siteNames, int backYears, int lastYear) {
+        
+        // set new title
+        this.chartTitle = "Prevalence Years";
+        
         //HashMap<Object,Number[]> 
         HashMap<Comparable,String>  prevalenceRecordYears = reporter.prepareYearsPrevalenceRecord(siteNames, backYears, lastYear, "") ;
         String[] siteAllNames = Arrays.copyOf(siteNames, siteNames.length + 1) ;
@@ -554,8 +603,11 @@ public class ScreeningPresenter extends Presenter {
      * Plots bar chart showing prevalence of requested siteNames and total prevalence.
      * @param siteNames 
      */
-    public void plotFinalPrevalences(String[] siteNames)
-    {
+    public void plotFinalPrevalences(String[] siteNames){
+        
+        // set new title
+        this.chartTitle = "Final Prevalences";
+        
         //HashMap<Object,Number> 
         String finalPrevalencesRecord = reporter.prepareFinalPrevalencesRecord(siteNames) ;
         LOGGER.info(finalPrevalencesRecord);
@@ -568,8 +620,11 @@ public class ScreeningPresenter extends Presenter {
      * @param siteNames 
      * @param sortingProperty 
      */
-    public void plotSortedFinalPrevalences(String[] siteNames, String sortingProperty)
-    {
+    public void plotSortedFinalPrevalences(String[] siteNames, String sortingProperty) {
+        
+        // set new title
+        this.chartTitle = "Sorted Final Prevalences";
+        
         //HashMap<Object,Number> 
         String finalPrevalencesRecord = reporter.prepareFinalPrevalencesSortedRecord(siteNames, sortingProperty) ;
         
@@ -582,8 +637,8 @@ public class ScreeningPresenter extends Presenter {
     /**
      * Plots bar chart showing prevalence of all siteNames and total prevalence.
      */
-    public void plotFinalSymptomatic()
-    {
+    public void plotFinalSymptomatic(){
+        
         //String siteNames = reporter.getMetaDatum("Community.SITE_NAMES") ;
         //ArrayList<String> sitesList = Arrays(siteNames) ;
         
@@ -594,8 +649,11 @@ public class ScreeningPresenter extends Presenter {
      * Plots bar chart showing symptomatic prevalence of requested siteNames and in total.
      * @param siteNames 
      */
-    public void plotFinalSymptomatic(String[] siteNames)
-    {
+    public void plotFinalSymptomatic(String[] siteNames) {
+        
+        // set new title
+        this.chartTitle = "Final Symptomatic";
+
         HashMap<Comparable,Number> finalSymptomaticRecord = reporter.prepareFinalSymptomaticRecord(siteNames) ;
         
         
@@ -615,8 +673,12 @@ public class ScreeningPresenter extends Presenter {
     /**
      * Plots the population prevalence of STI over time (cycles).
      */
-    public void plotPrevalence(String[] siteNames)
-    {
+    public void plotPrevalence(String[] siteNames) {
+        
+        // set new title
+        this.chartTitle = "Prevalence";
+        setDrawPoints(false);
+        
         ArrayList<Object> prevalenceReport = reporter.prepareCompletePrevalenceReport(siteNames) ;
         //LOGGER.log(Level.INFO, "{0}", prevalenceReport);
         ArrayList<String> siteNamesAll = new ArrayList<String>(Arrays.asList(siteNames)) ;
@@ -628,8 +690,11 @@ public class ScreeningPresenter extends Presenter {
     /**
      * Plots the population prevalence of symptomatic STI over time (cycles).
      */
-    public void plotSymptomPrevalence()
-    {
+    public void plotSymptomPrevalence() {
+        
+        // set new title
+        this.chartTitle = "Symptom Prevalence";
+
         ArrayList<String> symptomaticReport = reporter.preparePrevalenceReport() ;
         
         plotCycleValue("symptomatic", symptomaticReport) ;
@@ -638,8 +703,11 @@ public class ScreeningPresenter extends Presenter {
     /**
      * Plots the proportion of Agents with an STI that are symptomatic over time (cycles).
      */
-    public void plotProportionSymptomatic()
-    {
+    public void plotProportionSymptomatic() {
+        
+        // set new title
+        this.chartTitle = "Proportion Symptomatic";
+
         ArrayList<String> symptomaticReport = reporter.preparePrevalenceReport() ;
         plotCycleValue("proportion", symptomaticReport) ;
     }
@@ -648,8 +716,11 @@ public class ScreeningPresenter extends Presenter {
      * Plots the population prevalence of infected siteName over time (cycles).
      * @param siteName - Name of Site to plot for.
      */
-    public void plotSitePrevalence(String siteName)
-    {
+    public void plotSitePrevalence(String siteName) {
+        
+        // set new title
+        this.chartTitle = "Site Prevalence";
+
         ArrayList<String> prevalenceReport = reporter.preparePrevalenceReport(siteName) ;
         
         plotCycleValue("prevalence", prevalenceReport) ;
@@ -659,8 +730,13 @@ public class ScreeningPresenter extends Presenter {
      * Co-plots the population prevalence of infected siteNames over time (cycles).
      * @param siteNames - Array of Sites to plot for.
      */
-    public void plotSitePrevalence(String[] siteNames)
-    {
+    public void plotSitePrevalence(String[] siteNames) {
+        
+        // set new title
+        this.chartTitle = "Site Prevalence";
+        setDrawPoints(false);
+
+
         ArrayList<ArrayList<String>> prevalenceReports = new ArrayList<ArrayList<String>>() ;
         
         for (String siteName : siteNames)
@@ -674,8 +750,11 @@ public class ScreeningPresenter extends Presenter {
      * Plots the population prevalence of symptomatic siteName over time (cycles).
      * @param siteName - Name of Site to plot for.
      */
-    public void plotSiteSymptomPrevalence(String siteName)
-    {
+    public void plotSiteSymptomPrevalence(String siteName) {
+        
+        // set new title
+        this.chartTitle = "Site Symptom Prevalence";
+
         ArrayList<String> symptomaticReport = reporter.preparePrevalenceReport(siteName) ;
         
         plotCycleValue("symptomatic", symptomaticReport) ;
@@ -685,8 +764,11 @@ public class ScreeningPresenter extends Presenter {
      * Co-plots the population prevalence of symptomatic siteNames over time (cycles).
      * @param siteNames - Array of Sites to plot for.
      */
-    public void plotSiteSymptomPrevalence(String[] siteNames)
-    {
+    public void plotSiteSymptomPrevalence(String[] siteNames) {
+        
+        // set new title
+        this.chartTitle = "Site Symptom Prevalence";
+
         ArrayList<ArrayList<String>> symptomaticReports = new ArrayList<ArrayList<String>>() ;
         
         for (String siteName : siteNames)
@@ -699,8 +781,11 @@ public class ScreeningPresenter extends Presenter {
      * Plots the proportion of Agents with an infected siteName that are symptomatic over time (cycles).
      * @param siteName - Name of Site to plot for.
      */
-    public void plotSiteProportionSymptomatic(String siteName)
-    {
+    public void plotSiteProportionSymptomatic(String siteName) {
+        
+        // set new title
+        this.chartTitle = "Site Proportion Symptomatic";
+
         ArrayList<String> symptomaticReport = reporter.preparePrevalenceReport(siteName) ;
         plotCycleValue("proportion", symptomaticReport) ;
     }
@@ -709,8 +794,11 @@ public class ScreeningPresenter extends Presenter {
      * Plots the proportion of Agents that are symptomatic at each siteName over time (cycles).
      * @param siteNames - Name of Sites to plot for.
      */
-    public void plotSiteProportionSymptomatic(String[] siteNames)
-    {
+    public void plotSiteProportionSymptomatic(String[] siteNames) {
+        
+        // set new title
+        this.chartTitle = "Site Proportion Symptomatic";
+
         ArrayList<ArrayList<String>> symptomaticReports = new ArrayList<ArrayList<String>>() ;
         
         for (String siteName : siteNames)
@@ -724,8 +812,11 @@ public class ScreeningPresenter extends Presenter {
      * Plots the population prevalence of coinfected siteNames over time (cycles).
      * @param siteNames (String[]) - Name of coinfected Sites to plot for.
      */
-    public void plotSiteCoPrevalence(String[] siteNames)
-    {
+    public void plotSiteCoPrevalence(String[] siteNames) {
+        
+        // set new title
+        this.chartTitle = "Site Co-Prevalence";
+
         ArrayList<String> coprevalenceReport = reporter.prepareCoPrevalenceReport(siteNames) ;
         
         plotCycleValue("coprevalence", coprevalenceReport) ;
@@ -743,8 +834,11 @@ public class ScreeningPresenter extends Presenter {
      * Plots site-specific STI incidence pere head of population over time.
      * @param siteName 
      */
-    public void plotNotificationsPerCycle(String siteName)
-    {
+    public void plotNotificationsPerCycle(String siteName) {
+        
+        // set new title
+        this.chartTitle = "Notifications Per Cycle";
+
         ArrayList<String> notificationsReport = reporter.prepareNotificationsReport(siteName) ;
         
         plotCycleValue("notifications", notificationsReport) ;
@@ -754,8 +848,11 @@ public class ScreeningPresenter extends Presenter {
      * Plots site-specific STI incidence pere head of population over time.
      * @param siteNames 
      */
-    public void plotNotificationsPerCycle(String[] siteNames)
-    {
+    public void plotNotificationsPerCycle(String[] siteNames) {
+        
+        // set new title
+        this.chartTitle = "Notifications Per Cycle";
+
         ArrayList<ArrayList<String>> notificationsReports = new ArrayList<ArrayList<String>>() ;
         
         for (String siteName : siteNames)
@@ -768,8 +865,11 @@ public class ScreeningPresenter extends Presenter {
     }
     
     
-    public void plotIncidencePerCycle(String[] siteNames)
-    {
+    public void plotIncidencePerCycle(String[] siteNames) {
+        
+        // set new title
+        this.chartTitle = "Incidence Per Cycle";
+
         ArrayList<ArrayList<String>> notificationReports = new ArrayList<ArrayList<String>>() ;
         
         for (String siteName : siteNames)
@@ -782,25 +882,30 @@ public class ScreeningPresenter extends Presenter {
     /**
      * Plots STI notifications per head of population over time.
      */
-    public void plotNotificationPerCycle()
-    {
-        plotNotificationPerCycle("") ;
+    public void plotNotificationPerCycle() {
+         plotNotificationPerCycle("") ;
     }
     
     /**
      * Plots site-specific STI incidence pere head of population over time.
      * @param siteName 
      */
-    public void plotNotificationPerCycle(String siteName)
-    {
+    public void plotNotificationPerCycle(String siteName) {
+        
+        // set new title
+        this.chartTitle = "Notification Per Cycle";
+
         ArrayList<String> incidenceReport = reporter.prepareNotificationsReport(siteName) ;
         LOGGER.log(Level.INFO, "{0}", incidenceReport);
         plotCycleValue(NOTIFICATION, incidenceReport) ;
     }
     
     
-    public void plotNotificationPerCycle(String[] siteNames)
-    {
+    public void plotNotificationPerCycle(String[] siteNames) {
+        
+        // set new title
+        this.chartTitle = "Notification Per Cycle";
+
         ArrayList<ArrayList<String>> incidenceReports = new ArrayList<ArrayList<String>>() ;
         
         for (String siteName : siteNames)
@@ -809,8 +914,11 @@ public class ScreeningPresenter extends Presenter {
         multiPlotCycleValue(NOTIFICATION, incidenceReports, siteNames) ;
     }
     
-    public void plotFinalAtRiskIncidentsRecord(String[] siteNames, int backYears, String sortingProperty)
-    {
+    public void plotFinalAtRiskIncidentsRecord(String[] siteNames, int backYears, String sortingProperty) {
+        
+        // set new title
+        this.chartTitle = "Final At Risk Incidents Record";
+
         String atRiskIncidentsRecord = reporter.prepareFinalAtRiskIncidentsRecord(siteNames, backYears, sortingProperty) ;
         LOGGER.info(atRiskIncidentsRecord) ;
         multiPlotValues(atRiskIncidentsRecord,INCIDENCE,"Site") ;
@@ -825,8 +933,11 @@ public class ScreeningPresenter extends Presenter {
      * @param lastYear
      * @param sortingProperty 
      */
-    public void plotYearsAtRiskIncidenceReport(String[] siteNames, int backYears, int lastYear, String sortingProperty)
-    {
+    public void plotYearsAtRiskIncidenceReport(String[] siteNames, int backYears, int lastYear, String sortingProperty) {
+        
+        // set new title
+        this.chartTitle = "Years At Risk Incidents Report";
+
         HashMap<Comparable,String> atRiskIncidenceReport ;
                // = reporter.prepareYearsAtRiskIncidenceReport(siteNames, backYears, lastYear, sortingProperty) ;
         ArrayList<HashMap<Comparable,String>> reports = new ArrayList<HashMap<Comparable,String>>() ;
@@ -842,24 +953,54 @@ public class ScreeningPresenter extends Presenter {
             Reporter.CLEAR_REPORT_LIST() ; 
             reports.add((HashMap<Comparable,String>) report.clone()) ;
             Reporter.DUMP_OUTPUT(reportName,simulation,reporter.getFolderPath(),report);
+            // LOGGER.info("@@@@@@ AT RISK CI HM  REPORT" + sortingProperty + "\n" + reports.toString());
         }
         //Reporter.WRITE_CSV_DISTRIBUTION(reports, "at-risk incidence-rate", simNames[0], "output/prep/") ;
+
+        // arRiskIncidenceReport with ONLY mean:
         atRiskIncidenceReport = Reporter.PREPARE_MEAN_HASHMAP_REPORT(reports,"year","INCIDENCE",simNames[0]) ;
+        // ArrayList<String[]> 
+
+
         //Reporter.WRITE_CSV(percentAgentCondomlessYears, "year", relationshipClassNames, "discordant_relationships", simNames[0], reporter.getFolderPath()) ;
         String[] legend = Reporter.IDENTIFY_PROPERTIES(atRiskIncidenceReport.get(lastYear)).toArray(new String[0]) ;
         
+        // keep all the csv file names without extensions
+        ArrayList<String> fileNames = new ArrayList<String>();
+
+        HashMap<String, HashMap> propertyToMeanAndCI = new HashMap<String, HashMap>();
+
         for (int legendIndex = 0 ; legendIndex < legend.length ; legendIndex++ )
         {
             String property = legend[legendIndex] ;
             ArrayList<String> simNameList = new ArrayList<String>() ;
             Collections.addAll(simNameList, simNames) ;
+
             Reporter.MULTI_WRITE_CSV(simNameList, "year", property, reportName, reporter.getFolderPath()) ;
+
+            String fileName = reportName + "_" + property + "_" + simNameList.get(0);
+            fileNames.add(fileName);
+
+            HashMap<Comparable, String[]> readCSV = Reporter.READ_CSV_STRING(fileName, reporter.getFolderPath(), 1);
+            HashMap<String, String[]> meanAndCI = Reporter.extractMeanAndCI(readCSV);
+            propertyToMeanAndCI.put(property, meanAndCI);
+            // LOGGER.info("@@@ MY HASH MAP = " + meanAndCI.toString());
         }
-        plotHashMapString(atRiskIncidenceReport,INCIDENCE,"year", legend) ;
+        
+
+
+
+
+        // @@@ 
+        // plotHashMapString(atRiskIncidenceReport,INCIDENCE,"year", legend) ;
+        plotHashMapStringCI(propertyToMeanAndCI,INCIDENCE,"year", legend) ;
     }
     
-    public void plotNumberAgentTestingReport(int backYears, int backMonths, int backDays)
-    {
+    public void plotNumberAgentTestingReport(int backYears, int backMonths, int backDays) {
+        
+        // set new title
+        this.chartTitle = "Number Agent Testing Report";
+
         HashMap<Comparable,Number> numberAgentTestingReport 
                 = reporter.prepareNumberAgentTestingReport(backYears, backMonths, backDays) ;
     
@@ -878,8 +1019,11 @@ public class ScreeningPresenter extends Presenter {
      * @param lastYear
      * @param sortingProperty 
      */
-    public void plotYearsBeenTestedReport(int backYears, int backMonths, int backDays, int lastYear, String sortingProperty)
-    {
+    public void plotYearsBeenTestedReport(int backYears, int backMonths, int backDays, int lastYear, String sortingProperty) {
+        
+        // set new title
+        this.chartTitle = "Years been tested";
+
         ArrayList<HashMap<Comparable,String>> reports = new ArrayList<HashMap<Comparable,String>>() ;
         String reportOutput ;
         String label ;
@@ -924,8 +1068,11 @@ public class ScreeningPresenter extends Presenter {
      * @param backMonths
      * @param backDays 
      */
-    public void plotNumberAgentTreatedReport(int backYears, int backMonths, int backDays)
-    {
+    public void plotNumberAgentTreatedReport(int backYears, int backMonths, int backDays) {
+        
+        // set new title
+        this.chartTitle = "Number Agent Treated Report";
+
         HashMap<Comparable,Number> numberAgentTreatedReport 
                 = reporter.prepareNumberAgentTreatedReport(backYears, backMonths, backDays) ;
     
@@ -944,8 +1091,11 @@ public class ScreeningPresenter extends Presenter {
      * @param sortingProperty 
      * @param maxNumber 
      */
-    public void plotNumberAgentTreatedReport(int backYears, int backMonths, int backDays, String sortingProperty, int maxNumber )
-    {
+    public void plotNumberAgentTreatedReport(int backYears, int backMonths, int backDays, String sortingProperty, int maxNumber ) {
+        
+        // set new title
+        this.chartTitle = "Number Agent Treated Report";
+
         HashMap<Comparable,Number[]> numberAgentTreatedReport 
                 = reporter.prepareNumberAgentTreatedReport(backYears, backMonths, backDays, sortingProperty, maxNumber) ;
         LOGGER.info(numberAgentTreatedReport.toString());
@@ -1044,8 +1194,11 @@ public class ScreeningPresenter extends Presenter {
      * @param siteNames - Array of Sites to plot for.
      * @param simNames
      */
-    public void plotSiteMeanPrevalence(String[] siteNames, String[] simNames)
-    {
+    public void plotSiteMeanPrevalence(String[] siteNames, String[] simNames) {
+        
+        // set new title
+        this.chartTitle = "Site Mean Prevalence";
+
         ArrayList<ArrayList<String>> prevalenceReports = new ArrayList<ArrayList<String>>() ;
         
         /*ArrayList<String> allSimNames = (ArrayList<String>) Arrays.asList(simNames) ;
@@ -1191,6 +1344,26 @@ public class ScreeningPresenter extends Presenter {
             legendArray[i] = legend.get(i) ;
         plotHashMap("simulation", PREVALENCE, prevalenceRecordList) ;
     
+    }
+
+
+
+    // Used for testing purposes
+    public void plotIntervalMeansFromCSVFileNames(String[] fileNames) {
+        // String EXTENSION = ".csv" ;
+        HashMap<String, HashMap> propertyToMeanAndCI = new HashMap<String, HashMap>();
+
+        for (int i = 0; i < fileNames.length; ++i) {
+            String property = fileNames[i];
+            String fileName = fileNames[i];
+
+            
+            HashMap<Comparable, String[]> readCSV = Reporter.READ_CSV_STRING(fileName, reporter.getFolderPath(), 1);
+            HashMap<String, String[]> meanAndCI = Reporter.extractMeanAndCI(readCSV);
+            propertyToMeanAndCI.put(property, meanAndCI);
+        }
+
+        plotHashMapStringCI(propertyToMeanAndCI, "Y", "Year", fileNames);
     }
     
 }

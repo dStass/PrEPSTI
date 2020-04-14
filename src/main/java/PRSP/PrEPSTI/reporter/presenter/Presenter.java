@@ -4,12 +4,16 @@
  */
 package PRSP.PrEPSTI.reporter.presenter;
 
-import PRSP.PrEPSTI.reporter.* ;
-import PRSP.PrEPSTI.community.Community ;
+import PRSP.PrEPSTI.configloader.ConfigLoader;
+import PRSP.PrEPSTI.reporter.*;
+import PRSP.PrEPSTI.community.Community;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Font ;
 import java.awt.Shape ;
+import java.awt.BasicStroke;
 import java.awt.geom.Ellipse2D;
+import java.awt.Toolkit;
 import java.awt.font.TextAttribute;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -32,19 +36,25 @@ import org.jfree.chart.renderer.category.StackedBarRenderer ;
 import org.jfree.chart.renderer.category.BarRenderer ;
 import org.jfree.chart.renderer.category.StandardBarPainter ;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer ;
+import org.jfree.chart.renderer.xy.XYErrorRenderer;
 import org.jfree.chart.annotations.XYTextAnnotation ;
 import org.jfree.data.KeyToGroupMap;
 import org.jfree.data.category.* ;
 //import org.jfree.data.general.* ;
 import org.jfree.data.xy.XYDataset; 
+
 import org.jfree.data.xy.XYSeries ;  
 import org.jfree.data.xy.XYSeriesCollection ;
+
+import org.jfree.data.xy.XYIntervalSeries;
+import org.jfree.data.xy.XYIntervalSeriesCollection ;  
 import org.jfree.chart.util.ShapeUtils;
 
 
 import java.lang.reflect.* ;
 import java.util.Arrays ;
 import java.util.ArrayList ;
+import java.util.Random;
 import java.util.* ;
 
 import java.io.File ;
@@ -92,6 +102,19 @@ public class Presenter {
     private BarChart_AWT chart_awt ;
     
     private String folderPath = Community.FILE_PATH ;
+
+
+
+
+
+    /* * * * * * * * * * * * * * * * * * * * * *
+     *         LINE GRAPH DRAWING INFO         *
+     * * * * * * * * * * * * * * * * * * * * * */
+
+    private boolean drawPoints = false ;  // draw each individual point for a line graph true by default
+    private boolean drawCI = false ;
+    private boolean xLogarithmic = false ;
+    private boolean yLogarithmic = false ;
 
     static final java.util.logging.Logger LOGGER = java.util.logging.Logger.getLogger("presenter") ;
     
@@ -469,6 +492,7 @@ public class Presenter {
     
     public static void main(String[] args)
     {
+        ConfigLoader.load();
         //String simName = "NoPrepCalibration12Pop40000Cycles2000" ;
         //String simName = "RelationshipCalibrationPop40000Cycles200" ; // "testPlotCondomUsePop4000Cycles500" ; // args[0] ;
         //String folder = "output/test/" ;
@@ -537,11 +561,8 @@ public class Presenter {
         //LOGGER.log(Level.INFO, "{0}", hashMapNumber );
     }
     
-    public Presenter()
-    {
-        
-    }
-    
+    public Presenter() {}
+
     public Presenter(String simName, String chartTitle)
     {
         this.applicationTitle = simName ;
@@ -1083,7 +1104,7 @@ public class Presenter {
         //LOGGER.info("callPlotChart()") ;
         // Extract data from reportArray
         ArrayList<ArrayList<String>> scoreList = parseReportArrays(scoreName, reportArrays) ;
-        
+        LOGGER.info("MY SCORE LIST::\n\n\n" + scoreList.toString());
         // Send data to be processed and presented
         chart_awt.callPlotChart(chartTitle,scoreList,scoreName,legend) ;
     }
@@ -1268,6 +1289,9 @@ public class Presenter {
     {
         // Extract data from reportArray
         XYSeriesCollection xySeriesCollection = parseReportHashMap(report, legend) ;
+
+        // TODO: may have to convert XYSeriesCollection to XYIntervalSeriesCollection
+
         String[] newLegend = legend ;
         
         if (PLOT_FILE)
@@ -1281,6 +1305,18 @@ public class Presenter {
             
         // Send data to be processed and presented
         chart_awt.plotLineChart(chartTitle,xySeriesCollection, yLabel, xLabel, newLegend) ;
+    }
+
+    protected void plotHashMapStringCI(HashMap<String,HashMap> report, String yLabel, String xLabel, String[] legend)
+    {
+        // Extract data from reportArray
+        XYIntervalSeriesCollection xyIntervalSeriesCollection = parseReportHashMapCI(report, legend) ;
+
+        
+
+            
+        // // Send data to be processed and presented
+        chart_awt.plotLineChart(chartTitle,xyIntervalSeriesCollection, yLabel, xLabel, legend) ;
     }
     
     protected void plotSortedHashMap(HashMap<Object,String> report, String yLabel, String xLabel, String[] legend)
@@ -1808,7 +1844,7 @@ public class Presenter {
 
             for (Object category : categoryEntry)
             {
-
+                // LOGGER.info("@@@category = " + category.toString() + ", property=" + property);
                 String scoreString = Reporter.EXTRACT_VALUE(property,report.get(category)) ;
                 if (int.class.isInstance(scoreString) || Integer.class.isInstance(scoreString)) 
                     scoreValue = Integer.valueOf(scoreString) ;
@@ -1838,6 +1874,65 @@ public class Presenter {
         }
         
         return xySeriesCollection ;
+    }
+
+    private XYIntervalSeriesCollection parseReportHashMapCI(HashMap<String, HashMap> report, String[] legend) {
+        XYIntervalSeriesCollection xyIntervalSeriesCollection = new XYIntervalSeriesCollection() ;
+
+        // Sorted ArrayList of HashMap keys
+        ArrayList<String> categoryEntry = new ArrayList<String>() ;
+        for (String key : report.keySet()) 
+            categoryEntry.add(key) ;
+        categoryEntry.sort(null) ;
+
+        
+
+        if (legend.length == 0)
+            legend = new String[] {""} ;
+
+        for (String property : categoryEntry) {
+            HashMap<String, String[]> propertyToCategories = report.get(property);
+
+            // set property
+            XYIntervalSeries xyIntervalSeries = new XYIntervalSeries(property);
+
+            // TODO: at the moment, we assume data is valid, checks can and should be added
+            for (String category : propertyToCategories.keySet()) {
+
+                String[] extractedMeanAndCI = (String[]) report.get(property).get(category);
+                ArrayList<String> meanAndCI = new ArrayList<String> ( Arrays.asList(extractedMeanAndCI) );
+                LOGGER.info("@@@@@\n"+meanAndCI.toString());
+
+                double xValue = Double.valueOf(category);
+
+                if (xValue == 0) {
+                    LOGGER.info("@@@@|@@@\n@@@@||@@@@\n" + String.valueOf(xValue) + "cat="+category);
+                }
+
+                // TODO: these are hard-coded at the moment
+                double yMean = Double.valueOf(extractedMeanAndCI[0]);
+                double yLower95 = Double.valueOf(extractedMeanAndCI[1]);
+                double yUpper95 = Double.valueOf(extractedMeanAndCI[2]);
+
+                xyIntervalSeries.add(xValue, xValue, xValue, yMean, yLower95, yUpper95);
+
+
+                
+                
+            }
+
+            try
+            {
+                xyIntervalSeriesCollection.addSeries((XYIntervalSeries) xyIntervalSeries.clone()) ;
+            }
+            catch ( CloneNotSupportedException cnse )
+            {
+                LOGGER.log(Level.SEVERE, cnse.toString());
+            
+            }
+        }
+
+        return xyIntervalSeriesCollection;
     }
 
     /**
@@ -1895,6 +1990,33 @@ public class Presenter {
         
         return scoreList ;
     }
+
+    /**
+     * True by default
+     * If set to false -> graph will not draw points
+     * @param val
+     */
+    public void setDrawPoints(boolean val) {
+        this.drawPoints = val;
+    }
+
+    public void setDrawCI(boolean val) {
+        this.drawCI = val;
+    }
+
+    public boolean getDrawCI() {
+        return this.drawCI;
+    }
+
+    public void setXLogarithmic(boolean val) {
+        this.xLogarithmic = val;
+    }
+
+    public void setYLogarithmic(boolean val) {
+        this.yLogarithmic = val;
+    }
+
+
 
     /**
      * private class to specifically handle JFreeChart functions such as
@@ -2265,83 +2387,193 @@ public class Presenter {
          * @param yLabel
          * @param xLabel 
          */
-        private void plotLineChart(String chartTitle, XYDataset dataset, String yLabel, String xLabel, String[] legend)
-        {
+        private void plotLineChart(String chartTitle, XYDataset dataset, String yLabel, String xLabel, String[] legend) {
+
+            int DAYS_IN_YEAR = 365;
             boolean showLegend = !(legend[0].isEmpty()) ;
+
+            // define lineChart and set error renderer
             JFreeChart lineChart = ChartFactory.createXYLineChart(chartTitle,xLabel,
                 yLabel,dataset,PlotOrientation.VERTICAL,showLegend, true, false);
+            XYErrorRenderer r = new XYErrorRenderer();
+            lineChart.getXYPlot().setRenderer(r);
             
-            //lineChart.getXYPlot().setDomainAxis(new LogarithmicAxis(xLabel));
-            
+            // axes information:
+            // setting logarithmic 
+            // lineChart.getXYPlot().setDomainAxis(new LogarithmicAxis(xLabel));
             NumberAxis domainAxis = (NumberAxis) lineChart.getXYPlot().getDomainAxis() ;
+            ValueAxis rangeAxis = lineChart.getXYPlot().getRangeAxis();
             double upperBound = dataset.getItemCount(0) ;    // domainAxis.getRange().getUpperBound() ;
             
-            if ((upperBound % 365) == 0)    // if upperBound a multiple of 365 (days)
+            // chart settings based on number of elements plotted
+            if ((upperBound % DAYS_IN_YEAR) == 0)    // if upperBound a multiple of 365 (days)
             {
-                if (upperBound > 729)    // more than two years
+                if (upperBound >= DAYS_IN_YEAR * 2)    // more than two years
                 {
-                    domainAxis.setTickUnit(new NumberTickUnit(365)) ;
-                    if (upperBound < 3650)    // less than ten years
+                    domainAxis.setTickUnit(new NumberTickUnit(DAYS_IN_YEAR)) ;
+                    if (upperBound < DAYS_IN_YEAR * 10)    // less than ten years
                     {
                         domainAxis.setMinorTickCount(4);
                         domainAxis.setMinorTickMarksVisible(true);
                     }
                 }
             }
-            else
-            {
-                //LOGGER.info(String.valueOf(upperBound)) ;
+            else {
                 domainAxis.setMinorTickMarksVisible(true);
             }
-            
-            // Put shapes at plotted points
-            if (upperBound < 100) 
-                lineChart.getXYPlot().setRenderer(new XYLineAndShapeRenderer()) ; 
             
             //domainAxis.setRange(2.0,upperBound);
             
             // Set unit tick distance if range is integer.
-            if (int.class.isInstance(dataset.getX(0,0)) || Integer.class.isInstance(dataset.getX(0, 0)))
-            {
-                LOGGER.info("integer domain") ;
-                //NumberAxis rangeAxis = (NumberAxis) lineChart.getXYPlot().getRangeAxis() ;
-                //rangeAxis.setTickUnit(new NumberTickUnit(1)) ;
+            // if (int.class.isInstance(dataset.getX(0,0)) || Integer.class.isInstance(dataset.getX(0, 0)))
+            // {
+            //     LOGGER.info("integer domain") ;
+            //     //NumberAxis rangeAxis = (NumberAxis) lineChart.getXYPlot().getRangeAxis() ;
+            //     //rangeAxis.setTickUnit(new NumberTickUnit(1)) ;
+            //     domainAxis.setTickUnit(new NumberTickUnit(1)) ;
+            // }
+
+            
+            // randomly pick domain values to find out if the domain contains only integer values
+            if (this.isDomainInteger(dataset)) {
                 domainAxis.setTickUnit(new NumberTickUnit(1)) ;
+                domainAxis.setMinorTickMarksVisible(false);
             }
-            lineChart.getPlot().setBackgroundPaint(Color.WHITE) ;
-            if (!legend[0].isEmpty())
-            {
+
+
+            // draw legend
+            if (!legend[0].isEmpty()) {
                 LegendTitle plotLegend = lineChart.getLegend() ;
                 plotLegend.setPosition(RectangleEdge.RIGHT);
             }
             
-            //lineChart.getPlot().setOutlineVisible(false);
             
-            // David can use this to experiment with improving presentation.
-            // lineChart.getXValue().getRenderer().setSeriesShape
-            //saveChart(lineChart) ;
-            
-
             /* !!!
             * * * * * * * * * * * * * * * * * * * * *
             *         XYPlot Render Settings        *
             * * * * * * * * * * * * * * * * * * * * *
             */
 
+            // set background to white
+            lineChart.getPlot().setBackgroundPaint(Color.WHITE);
 
-            for (int i = 0; i < legend.length; ++i) {
-                XYLineAndShapeRenderer r = (XYLineAndShapeRenderer) lineChart.getXYPlot().getRenderer();
-                // r.setSeriesShape(i, new Ellipse2D(2, 3));
-                double circleWidth = 2.5;
-                double circleOffset = circleWidth / 2;
-                Shape shape = new Ellipse2D.Double(-circleOffset, -circleOffset, circleWidth, circleWidth);
-                r.setSeriesShape(i, shape);
-                r.setSeriesShapesVisible(i, true);
+            if (upperBound > ConfigLoader.MAX_YEARS) {
+                setDrawPoints(false);
+                setDrawCI(false);
+            } else {
+                setDrawPoints(true);
+                setDrawCI(true);
             }
 
+            if (getDrawCI())    r.setDrawYError(true);
+            else                r.setDrawYError(false);
+
+            r.setDrawXError(false);
+
+            boolean val = false;
+
+            r.setCapLength(2.5);
+
+            // set shape of points
+            double circleWidth = 8.0;
+            double circleOffset = circleWidth / 2;
+            Shape shape = new Ellipse2D.Double(-circleOffset, -circleOffset, circleWidth, circleWidth);
+
+            // get preloaded colours
+            ArrayList<ArrayList<Integer>> colours = ConfigLoader.getColours();
+
+            for (int numSeries = 0; numSeries < legend.length; ++numSeries) {
+                // XYLineAndShapeRenderer r = (XYLineAndShapeRenderer) lineChart.getXYPlot().getRenderer();
+
+                r.setSeriesShape(numSeries, shape);
+                r.setSeriesLinesVisible(numSeries, true);
+                if (drawPoints) r.setSeriesShapesVisible(numSeries, true);
+                else r.setSeriesShapesVisible(numSeries, false);
+                
+                // set line colours - remove from start and add to the end just in case we run out of colours
+                ArrayList<Integer> rgb = colours.remove(0);
+                colours.add(rgb);
+                r.setSeriesPaint(numSeries, new Color(rgb.get(0).intValue(),rgb.get(1).intValue(),rgb.get(2).intValue()));
+                
+                // r.setErrorPaint(Color.BLACK); // sets error paint
+                // set line thickness
+                r.setSeriesStroke(numSeries, new BasicStroke(2.0f));
+            }
+            
+            
+            // set font:
+            String UNIFORM_FONT = "Helvetica";
+            
+            Font titleFont = new Font(UNIFORM_FONT, Font.PLAIN, 30);
+            Font labelFont = new Font(UNIFORM_FONT, Font.PLAIN, 15);
+            Font legendFont = new Font(UNIFORM_FONT, Font.PLAIN, 10);
+            Font tickFont = new Font(UNIFORM_FONT, Font.PLAIN, 8);
+
+            // title:
+            lineChart.getTitle().setFont(titleFont);
+            
+            // x and y labels:
+            domainAxis.setLabelFont(labelFont);
+            rangeAxis.setLabelFont(labelFont);
+            
+            domainAxis.setTickLabelFont(tickFont);
+            rangeAxis.setTickLabelFont(tickFont);
+            
+            // legend
+            lineChart.getLegend().setItemFont(legendFont);
+            
+
+            // set CI error bars:
+            r.setCapLength(15);
+            r.setErrorStroke(new BasicStroke(2.0f));
+
             displayChart(lineChart) ;
+            saveChart(lineChart);
+        }
+
+
+        /**
+         * Randomly selects 3 points in the domain and verify that they are all integers
+         * @param dataset
+         * @return a boolean on whether the domain only contains integer values or not
+         */
+        private boolean isDomainInteger(XYDataset dataset) {
+            int RANDOM_SAMPLE_SIZE = 3;
+            
+            boolean toReturn = true;
+            int numSeries = dataset.getSeriesCount();
+            
+            for (int i = 0; i < RANDOM_SAMPLE_SIZE; ++i) {
+
+                // randomly select a series
+                int series = this.randIntInRangeInclusive(0, numSeries - 1);
+                int itemCount = dataset.getItemCount(series);
+
+                // randomly select an item
+                int item = this.randIntInRangeInclusive(0, itemCount - 1);
+
+                // extract its value
+                double xValue = (double) dataset.getX(series, item);
+
+                // if this is non-integer, break early and return false
+                if (xValue % 1 != 0) {
+                    toReturn = false;
+                    break;
+                }
+            }
+            return toReturn;
         }
         
+        /**
+         * @param from: an integer as an inclusive lower bound
+         * @param to: an integer as an inclusive upper bound
+         * @return a random number between the ranges(from, to) inclusive of the bounds
+         */
+        private int randIntInRangeInclusive(int from, int to) {
+            Random ran = new Random();
+            return ran.nextInt((to - from) + 1) + from;
+        }
+
         /**
          * Generates Area plot of dataset.
          * @param chartTitle
@@ -2387,9 +2619,16 @@ public class Presenter {
         
         private void displayChart(JFreeChart barChart)
         {
-            ChartPanel chartPanel = new ChartPanel( barChart );   
+            ChartPanel chartPanel = new ChartPanel( barChart );
+            Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+            int screenWidth = (int) screenSize.getWidth();
+            int screenHeight = (int) screenSize.getHeight();
+            int windowSize = (int) (Math.min(screenWidth, screenHeight) * 0.75);
+
+
+            
             //chartPanel.setPreferredSize(new java.awt.Dimension( 2240 , 734 ) );        
-            chartPanel.setPreferredSize(new java.awt.Dimension( 1120 , 367 ) );        
+            chartPanel.setPreferredSize(new java.awt.Dimension((int) (windowSize * 1.5), windowSize));        
             //chartPanel.setPreferredSize(new java.awt.Dimension( 560 , 367 ) );        
             setContentPane( chartPanel ); 
             pack() ;
@@ -2397,6 +2636,7 @@ public class Presenter {
 
             // used to determine OS:
             LOGGER.info(System.getProperty("os.name")) ;
+
         }
         
         /**
@@ -2412,7 +2652,7 @@ public class Presenter {
             int width = 1280 ;
             //int width = 640 ;
             //int height = 960 ;
-            int height = 480 ;
+            int height = 1280 ;
             File file = new File(address) ;
             //File file = new File(directory) ;
             //String[] files = file.list() ;

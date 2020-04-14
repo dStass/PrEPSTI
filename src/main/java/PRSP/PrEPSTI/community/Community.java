@@ -52,7 +52,8 @@ public class Community {
     // static public HashMap<String, HashMap> METHOD_CONFIG;
 
     // input variables
-    static public int MAX_CYCLES;
+    static public int DEFAULT_MAX_CYCLES;
+    static private int MAX_CYCLES;
     
     // derived variables
     static public String SIM_NAME;
@@ -134,7 +135,7 @@ public class Community {
         Community.AGENTS_PER_DAY = Community.POPULATION / 365 ;
 
         // MAX_CYCLES
-        Community.MAX_CYCLES = Community.generateTrueCycles(MAX_CYCLES);
+        Community.MAX_CYCLES = Community.generateTrueCycles(Community.DEFAULT_MAX_CYCLES) / 2;
         
         // Pop[POPULATION]Cycles[MAX_CYCLES]
         Community.NAME_SUFFIX = "Pop" + String.valueOf(Community.POPULATION) 
@@ -144,15 +145,17 @@ public class Community {
         Community.OUTPUT_RETURN += Community.SIM_NAME + " " ;
         
         // Name of test run passed in via argument
-        switch (args[0]) {
-            case "gadi":
-                Community.FILE_PATH = "/scratch/is14/mw7704/prepsti/" + Community.FILE_PATH; 
-                Community.DUMP_CYCLE = 500;
-                break;
-            case "katana":
-                Community.FILE_PATH = "/srv/scratch/z3524276/prepsti/" + Community.FILE_PATH ;
-                Community.DUMP_CYCLE = 500;
-                break;
+        if (args.length > 0) {
+            switch (args[0]) {
+                case "gadi":
+                    Community.FILE_PATH = "/scratch/is14/mw7704/prepsti/" + Community.FILE_PATH; 
+                    Community.DUMP_CYCLE = 500;
+                    break;
+                case "katana":
+                    Community.FILE_PATH = "/srv/scratch/z3524276/prepsti/" + Community.FILE_PATH ;
+                    Community.DUMP_CYCLE = 500;
+                    break;
+            }
         }
 
 

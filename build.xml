@@ -1,13 +1,22 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!-- WARNING: Eclipse auto-generated file.
-              Any modifications will be overwritten.
-              To include a user specific buildfile here, simply create one in the same
-              directory with the processing instruction <?eclipse.ant.import?>
-              as the first entry and export the buildfile again. --><project basedir="." default="build" name="PrEPSTI">
+
+<project basedir="." default="build" name="PrEPSTI">
+
     <property environment="env"/>
+
     <property name="debuglevel" value="source,lines,vars"/>
-    <property name="target" value="1.7"/>
-    <property name="source" value="1.7"/>
+
+    <!-- Java version -->
+    <property name="target" value="1.8"/>
+    <property name="source" value="1.8"/>
+
+    <!-- Modifcations to the build should be done here, simply modify the value -->
+    <property name="main-class" value="PRSP.PrEPSTI.community.Community"/>
+    <property name="build-name" value="PrEPSTI"/>
+    <property name="compiled-folder" value="./bin"/>
+    <property name="build-folder" value="./build"/>
+
+    <!-- this value gets appended after the file name-->
     <property name="version" value="0.0.1"/>
 
 
@@ -25,17 +34,20 @@
         <pathelement location="${commons-math3-jar}"/>
         <pathelement location="${jfreechart-jar}"/>
     </path>
+    
     <path id="PrEPSTI.classpath">
-        <pathelement location="target/classes"/>
+        <pathelement location="${compiled-folder}/classes"/>
         <path refid="Maven Dependencies.libraryclasspath"/>
     </path>
+
     <path id="run.Community.classpath">
         <path refid="PrEPSTI.classpath"/>
         <path refid="Maven Dependencies.libraryclasspath"/>
     </path>
+
     <target name="init">
-        <mkdir dir="target/classes"/>
-        <copy includeemptydirs="false" todir="target/classes">
+        <mkdir dir="${compiled-folder}/classes"/>
+        <copy includeemptydirs="false" todir="${compiled-folder}/classes">
             <fileset dir="src/main/java">
                 <exclude name="**/*.java"/>
             </fileset>
@@ -44,29 +56,29 @@
 
     <target depends="init" name="build-project">
         <echo message="${ant.project.name}: ${ant.file}"/>
-        <javac debug="true" debuglevel="${debuglevel}" destdir="target/classes" includeantruntime="false" source="${source}" target="${target}">
+        <javac debug="true" debuglevel="${debuglevel}" destdir="${compiled-folder}/classes" includeantruntime="false" source="${source}" target="${target}">
             <src path="src/main/java"/>
             <classpath refid="PrEPSTI.classpath"/>
         </javac>
     </target>
 
-    <target name="clean">
-        <delete dir="/target/classes"/>
-    </target>
-    <target depends="clean" name="cleanall"/>
     <target depends="build-project" name="build">
         <!-- Create the jar directory -->
-        <mkdir dir="./build" />
+        <echo message="Building project . . . "/>
+        <mkdir dir="build" />
 
-        <jar destfile="./build/PrEPSTI-${version}.jar" basedir="target/classes" >
+        <jar destfile="${build-folder}/${build-name}-${version}.jar" basedir="${compiled-folder}/classes" >
             <!-- add all our dependencies in jar file -->
             <zipgroupfileset dir="./lib"/>
             <manifest>
                 <attribute name="Class-Path" value="${junit-jar} ${jfreechart-jar} ${hamcrest-jar} ${json-simple-jar} ${commons-math3-jar}"/>
-                <attribute name="Main-Class" value="PRSP.PrEPSTI.community.Community"/>
+                <attribute name="Main-Class" value="${main-class}"/>
             </manifest>
         </jar>
     </target>
 
+    <target name="clean">
+        <delete dir="${compiled-folder}/classes"/>
+    </target>
 
 </project>
