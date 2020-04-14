@@ -3,5 +3,12 @@
 /build/
 /dist/
 /output/
-*.metadata/
+/target/
+/.metadata/
+/.settings/
+/.vscode/
+
+*.csv
 *.class
+/reports/*.csv
+.settings/org.eclipse.jdt.core.prefs
