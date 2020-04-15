@@ -2518,7 +2518,7 @@ public class Presenter {
             r.setCapLength(15);
             r.setErrorStroke(new BasicStroke(2.0f));
 
-            // displayChart(lineChart) ;
+            displayChart(lineChart) ;
             saveChart(lineChart);
         }
 
@@ -2620,7 +2620,9 @@ public class Presenter {
             
             //chartPanel.setPreferredSize(new java.awt.Dimension( 2240 , 734 ) );        
             chartPanel.setPreferredSize(new java.awt.Dimension((int) (windowSize * 1.5), windowSize));        
-            //chartPanel.setPreferredSize(new java.awt.Dimension( 560 , 367 ) );        
+            //chartPanel.setPreferredSize(new java.awt.Dimension( 560 , 367 ) );
+
+            // detect opearting system:
             // setContentPane( chartPanel ); 
             // pack() ;
             // setVisible(true) ;
