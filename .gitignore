@@ -1,3 +1,4 @@
+# directories
 /bin/
 /nbproject/private/
 /build/
@@ -5,7 +6,7 @@
 /output/
 /target/
 
-# settings
+# ide settings
 /.metadata/
 /.settings/
 /.vscode/

@@ -2610,26 +2610,40 @@ public class Presenter {
         
         private void displayChart(JFreeChart barChart)
         {
-            ChartPanel chartPanel = new ChartPanel( barChart );
-            Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-            int screenWidth = (int) screenSize.getWidth();
-            int screenHeight = (int) screenSize.getHeight();
-            int windowSize = (int) (Math.min(screenWidth, screenHeight) * 0.75);
+            String APPLICATION_TITLE = "ApplicationFrame";
 
+            if (!detectHPC()) {
+                ChartPanel chartPanel = new ChartPanel( barChart );
+                Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+                int screenWidth = (int) screenSize.getWidth();
+                int screenHeight = (int) screenSize.getHeight();
+                int windowSize = (int) (Math.min(screenWidth, screenHeight) * 0.75);
 
-            
-            //chartPanel.setPreferredSize(new java.awt.Dimension( 2240 , 734 ) );        
-            chartPanel.setPreferredSize(new java.awt.Dimension((int) (windowSize * 1.5), windowSize));        
-            //chartPanel.setPreferredSize(new java.awt.Dimension( 560 , 367 ) );
+                //chartPanel.setPreferredSize(new java.awt.Dimension( 2240 , 734 ) );        
+                chartPanel.setPreferredSize(new java.awt.Dimension((int) (windowSize * 1.5), windowSize));        
+                //chartPanel.setPreferredSize(new java.awt.Dimension( 560 , 367 ) );
+                
+                ApplicationFrame appFrame = new ApplicationFrame(APPLICATION_TITLE);
 
-            // detect opearting system:
-            // setContentPane( chartPanel ); 
-            // pack() ;
-            // setVisible(true) ;
+                // detect opearting system:
+                appFrame.setContentPane(chartPanel) ; 
+                appFrame.pack() ;
+                appFrame.setVisible(true) ;
+            }
+            else {
+                LOGGER.info("HPC detected, display not possible.") ;
+            }
 
-            // used to determine OS:
-            LOGGER.info(System.getProperty("os.name")) ;
+        }
 
+        /**
+         * TODO: Come up with a way to truly detect HPC
+         * At the moment, we simply check if the OS is Linux based
+         * 
+         */
+        private boolean detectHPC() {
+            if (System.getProperty("os.name").equals("Linux")) return true;
+            else return false;
         }
         
         /**
