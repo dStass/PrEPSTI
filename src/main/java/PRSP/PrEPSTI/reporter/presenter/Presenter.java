@@ -1104,7 +1104,6 @@ public class Presenter {
         //LOGGER.info("callPlotChart()") ;
         // Extract data from reportArray
         ArrayList<ArrayList<String>> scoreList = parseReportArrays(scoreName, reportArrays) ;
-        LOGGER.info("MY SCORE LIST::\n\n\n" + scoreList.toString());
         // Send data to be processed and presented
         chart_awt.callPlotChart(chartTitle,scoreList,scoreName,legend) ;
     }
@@ -1844,7 +1843,6 @@ public class Presenter {
 
             for (Object category : categoryEntry)
             {
-                // LOGGER.info("@@@category = " + category.toString() + ", property=" + property);
                 String scoreString = Reporter.EXTRACT_VALUE(property,report.get(category)) ;
                 if (int.class.isInstance(scoreString) || Integer.class.isInstance(scoreString)) 
                     scoreValue = Integer.valueOf(scoreString) ;
@@ -1901,14 +1899,8 @@ public class Presenter {
 
                 String[] extractedMeanAndCI = (String[]) report.get(property).get(category);
                 ArrayList<String> meanAndCI = new ArrayList<String> ( Arrays.asList(extractedMeanAndCI) );
-                LOGGER.info("@@@@@\n"+meanAndCI.toString());
 
                 double xValue = Double.valueOf(category);
-
-                if (xValue == 0) {
-                    LOGGER.info("@@@@|@@@\n@@@@||@@@@\n" + String.valueOf(xValue) + "cat="+category);
-                }
-
                 // TODO: these are hard-coded at the moment
                 double yMean = Double.valueOf(extractedMeanAndCI[0]);
                 double yLower95 = Double.valueOf(extractedMeanAndCI[1]);
@@ -2022,12 +2014,11 @@ public class Presenter {
      * private class to specifically handle JFreeChart functions such as
      * handling Datasets and plotting charts.
      */
-    private class BarChart_AWT extends ApplicationFrame {
+    private class BarChart_AWT {
    
         String chartTitle ;
         private BarChart_AWT( String applicationTitle , String chartTitle ) 
         {
-            super( applicationTitle );        
             this.chartTitle = chartTitle ;
         }
         
@@ -2527,7 +2518,7 @@ public class Presenter {
             r.setCapLength(15);
             r.setErrorStroke(new BasicStroke(2.0f));
 
-            displayChart(lineChart) ;
+            // displayChart(lineChart) ;
             saveChart(lineChart);
         }
 
@@ -2630,9 +2621,9 @@ public class Presenter {
             //chartPanel.setPreferredSize(new java.awt.Dimension( 2240 , 734 ) );        
             chartPanel.setPreferredSize(new java.awt.Dimension((int) (windowSize * 1.5), windowSize));        
             //chartPanel.setPreferredSize(new java.awt.Dimension( 560 , 367 ) );        
-            setContentPane( chartPanel ); 
-            pack() ;
-            setVisible(true) ;
+            // setContentPane( chartPanel ); 
+            // pack() ;
+            // setVisible(true) ;
 
             // used to determine OS:
             LOGGER.info(System.getProperty("os.name")) ;
@@ -2661,11 +2652,13 @@ public class Presenter {
             //LOGGER.info(file.getCanonicalPath());
             //for (String fileName : files)
               //  LOGGER.info(fileName);
+                LOGGER.info("Saving successful");
                 ChartUtils.saveChartAsJPEG(file, barChart, width, height);
             }
             catch ( IOException ioe)
             {
-                //LOGGER.log(Level.SEVERE, ioe.getMessage());
+                LOGGER.info("Saving failed");
+                LOGGER.log(Level.SEVERE, ioe.getMessage());
                 LOGGER.info(ioe.getLocalizedMessage());
             }
         }
