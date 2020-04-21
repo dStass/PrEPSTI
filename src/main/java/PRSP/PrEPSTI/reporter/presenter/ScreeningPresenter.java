@@ -72,7 +72,7 @@ public class ScreeningPresenter extends Presenter {
     }
 
     // static String[] simNames = new String[] {"REPORT_APop2500Cycles2920", "REPORT_BPop2500Cycles2920", "REPORT_CPop2500Cycles2920", "REPORT_DPop2500Cycles2920", "REPORT_EPop2500Cycles2920", "REPORT_FPop2500Cycles2920"} ; //, "to2017newSort17baPop40000Cycles5110","to2017newSort17caPop40000Cycles5110","to2017newSort17daPop40000Cycles5110","to2017newSort17eaPop40000Cycles5110",
-    static String[] simNames = new String[] {"REPORT_APop2500Cycles2920", "REPORT_BPop2500Cycles2920", "REPORT_CPop2500Cycles2920"};
+    static String[] simNames = new String[] {"REPORT_APop2500Cycles1460", "REPORT_BPop2500Cycles1460", "REPORT_CPop2500Cycles1460"};
 
     
     //      "to2017newSort17faPop40000Cycles5110", "to2017newSort17gaPop40000Cycles5110","to2017newSort17haPop40000Cycles5110","to2017newSort17iaPop40000Cycles5110","to2017newSort17jaPop40000Cycles5110"} ;
@@ -102,7 +102,7 @@ public class ScreeningPresenter extends Presenter {
         //String simName = "to2017newSort17aaPop40000Cycles5110" ;
         //String simName = "to2012max3sameScreen34cPop40000Cycles4380" ;
         //String simName = "to2014agentAdjust29aPop40000Cycles4920" ;
-        String simName = "REPORT_APop2500Cycles2920" ;
+        String simName = "REPORT_APop2500Cycles1460" ;
         //String simName = simNames[0] ;
         
         boolean unique = false ;
@@ -178,12 +178,12 @@ public class ScreeningPresenter extends Presenter {
         //screeningPresenter.multiPlotScreening(new Object[] {"prevalence","prevalence",new String[] {"Pharynx","Rectum","Urethra"}});
         //screeningPresenter.plotIncidencePerCycle(siteNames) ;
         // screeningPresenter.plotFinalAtRiskIncidentsRecord(siteNames,0,"statusHIV") ;
-        // screeningPresenter.plotYearsAtRiskIncidenceReport(siteNames, 8, 2019, "statusHIV") ;  // !! line chart here
+        screeningPresenter.plotYearsAtRiskIncidenceReport(siteNames, 4, 2019, "statusHIV") ;  // !! line chart here
         // screeningPresenter.plotYearsBeenTestedReport(13, 0, 0, 2019, "statusHIV") ;
         //screeningPresenter.plotNotificationsPerCycle(siteNames) ;
         // screeningPresenter.plotSitePrevalence(siteNames) ;
         // screeningPresenter.plotSiteSymptomPrevalence(siteNames) ;
-        screeningPresenter.plotPrevalence(siteNames) ;  // points on plot may not make sense here?
+        // screeningPresenter.plotPrevalence(siteNames) ;  // points on plot may not make sense here?
         // screeningPresenter.plotPrevalenceYears(siteNames,5,2025) ;
         // screeningPresenter.plotSortedPrevalenceYears(siteNames, 2 ,2019,"statusHIV") ;
         // screeningPresenter.plotFinalSymptomatic(new String[] {"Pharynx","Rectum","Urethra"}) ;

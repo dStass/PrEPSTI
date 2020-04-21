@@ -9,9 +9,9 @@ import PRSP.PrEPSTI.reporter.*;
 import PRSP.PrEPSTI.community.Community;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Font ;
+import java.awt.Font;
 import java.awt.GraphicsEnvironment;
-import java.awt.Shape ;
+import java.awt.Shape;
 import java.awt.BasicStroke;
 import java.awt.geom.Ellipse2D;
 import java.awt.Toolkit;
@@ -19,34 +19,36 @@ import java.awt.font.TextAttribute;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 
-import org.jfree.chart.* ;
-import org.jfree.chart.ui.ApplicationFrame ;
-import org.jfree.chart.plot.* ;
-import org.jfree.chart.axis.* ;
-import org.jfree.chart.ui.RectangleAnchor ;
-import org.jfree.chart.ui.RectangleEdge ;
+import org.jfree.chart.*;
+import org.jfree.chart.ui.ApplicationFrame;
+import org.jfree.chart.plot.*;
+import org.jfree.chart.axis.*;
+import org.jfree.chart.ui.RectangleAnchor;
+import org.jfree.chart.ui.RectangleEdge;
+import org.jfree.chart.ui.RectangleInsets;
 //import org.jfree.chart.ui.RefineryUtilities;
 import org.jfree.chart.ui.TextAnchor;
-import org.jfree.chart.title.LegendTitle ;
+import org.jfree.chart.title.LegendTitle;
 
-import org.jfree.chart.plot.PlotOrientation ;
+import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.CategoryPlot;
-import org.jfree.chart.ChartUtils ;
-import org.jfree.chart.renderer.category.GroupedStackedBarRenderer ;
-import org.jfree.chart.renderer.category.StackedBarRenderer ;
-import org.jfree.chart.renderer.category.BarRenderer ;
-import org.jfree.chart.renderer.category.StandardBarPainter ;
-import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer ;
+import org.jfree.chart.ChartUtils;
+import org.jfree.chart.renderer.category.GroupedStackedBarRenderer;
+import org.jfree.chart.renderer.category.StackedBarRenderer;
+import org.jfree.chart.renderer.category.BarRenderer;
+import org.jfree.chart.renderer.category.StandardBarPainter;
+import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.chart.renderer.xy.XYErrorRenderer;
-import org.jfree.chart.annotations.XYTextAnnotation ;
+import org.jfree.chart.renderer.xy.DeviationRenderer;
+import org.jfree.chart.annotations.XYTextAnnotation;
 import org.jfree.data.KeyToGroupMap;
-import org.jfree.data.category.* ;
+import org.jfree.data.category.*;
 //import org.jfree.data.general.* ;
-import org.jfree.data.xy.XYDataset; 
+import org.jfree.data.xy.XYDataset;
 
-import org.jfree.data.xy.XYSeries ;  
-import org.jfree.data.xy.XYSeriesCollection ;
-
+import org.jfree.data.xy.XYSeries;
+import org.jfree.data.xy.XYSeriesCollection;
+import org.jfree.data.xy.YIntervalSeriesCollection;
 import org.jfree.data.xy.XYIntervalSeries;
 import org.jfree.data.xy.XYIntervalSeriesCollection ;  
 import org.jfree.chart.util.ShapeUtils;
@@ -1307,6 +1309,11 @@ public class Presenter {
         chart_awt.plotLineChart(chartTitle,xySeriesCollection, yLabel, xLabel, newLegend) ;
     }
 
+    protected void plotShadedHashMapStringCI(HashMap<String,HashMap> report, String yLabel, String xLabel, String[] legend) {
+        XYIntervalSeriesCollection xyIntervalSeriesCollection = parseReportHashMapCI(report, legend) ;
+        chart_awt.plotShadedChart(chartTitle,xyIntervalSeriesCollection, yLabel, xLabel, legend) ;
+    }
+
     protected void plotHashMapStringCI(HashMap<String,HashMap> report, String yLabel, String xLabel, String[] legend)
     {
         // Extract data from reportArray
@@ -2387,6 +2394,9 @@ public class Presenter {
             // define lineChart and set error renderer
             JFreeChart lineChart = ChartFactory.createXYLineChart(chartTitle,xLabel,
                 yLabel,dataset,PlotOrientation.VERTICAL,showLegend, true, false);
+
+
+            // DeviationRenderer r = new DeviationRenderer(true, false);
             XYErrorRenderer r = new XYErrorRenderer();
             lineChart.getXYPlot().setRenderer(r);
             
@@ -2461,6 +2471,7 @@ public class Presenter {
             else                r.setDrawYError(false);
 
             r.setDrawXError(false);
+            // r.setAlpha(0.4f);
 
             boolean val = false;
 
@@ -2476,7 +2487,7 @@ public class Presenter {
 
             for (int numSeries = 0; numSeries < legend.length; ++numSeries) {
                 // XYLineAndShapeRenderer r = (XYLineAndShapeRenderer) lineChart.getXYPlot().getRenderer();
-
+                
                 r.setSeriesShape(numSeries, shape);
                 r.setSeriesLinesVisible(numSeries, true);
                 if (drawPoints) r.setSeriesShapesVisible(numSeries, true);
@@ -2486,8 +2497,9 @@ public class Presenter {
                 ArrayList<Integer> rgb = colours.remove(0);
                 colours.add(rgb);
                 r.setSeriesPaint(numSeries, new Color(rgb.get(0).intValue(),rgb.get(1).intValue(),rgb.get(2).intValue()));
+                r.setSeriesFillPaint(numSeries, new Color(rgb.get(0).intValue(),rgb.get(1).intValue(),rgb.get(2).intValue()));
                 
-                // r.setErrorPaint(Color.BLACK); // sets error paint
+                r.setErrorPaint(Color.BLACK); // sets error paint
                 // set line thickness
                 r.setSeriesStroke(numSeries, new BasicStroke(2.0f));
             }
@@ -2608,6 +2620,11 @@ public class Presenter {
             //saveChart(areaChart) ;
             displayChart(areaChart) ;
         }
+
+
+        private void plotShadedChart(String chartTitle, XYDataset dataset, String yLabel, String xLabel, String[] legend) { 
+
+        }
         
         private void displayChart(JFreeChart barChart)
         {
@@ -2638,12 +2655,10 @@ public class Presenter {
         }
 
         /**
-         * TODO: Come up with a way to truly detect HPC
-         * At the moment, we simply check if the OS is Linux based
-         * 
+         * method detects whether the current environment's state is headless
+         * we 
          */
         private boolean detectHPC() {
-            // if (System.getProperty("java.awt.headless").equals("true")) return true;
             if (GraphicsEnvironment.isHeadless()) return true;
             else return false;
         }
