@@ -10,6 +10,7 @@ import PRSP.PrEPSTI.community.Community;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font ;
+import java.awt.GraphicsEnvironment;
 import java.awt.Shape ;
 import java.awt.BasicStroke;
 import java.awt.geom.Ellipse2D;
@@ -2642,7 +2643,8 @@ public class Presenter {
          * 
          */
         private boolean detectHPC() {
-            if (System.getProperty("os.name").equals("Linux")) return true;
+            // if (System.getProperty("java.awt.headless").equals("true")) return true;
+            if (GraphicsEnvironment.isHeadless()) return true;
             else return false;
         }
         
