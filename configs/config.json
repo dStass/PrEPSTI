@@ -1,0 +1,12 @@
+{   
+    "community" : {
+        "POPULATION" : "2500",
+        "NAME_ROOT" : "REPORT_C",
+        "MAX_CYCLES" : "8"
+    },
+
+    "msm" : {
+        "GROUP_SEX_EVENT_SIZE" : "13",
+        "HIV_RISKY_CORRELATION" : "2.5"
+    }
+}

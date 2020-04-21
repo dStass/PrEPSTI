@@ -1,7 +1,17 @@
+# directories
 /bin/
 /nbproject/private/
 /build/
 /dist/
 /output/
-*.metadata/
+/target/
+
+# ide settings
+/.metadata/
+/.settings/
+/.vscode/
+
+# files
+*.csv
 *.class
+/reports/*.csv
