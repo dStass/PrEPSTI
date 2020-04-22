@@ -107,7 +107,8 @@ public class Presenter {
     private String folderPath = Community.FILE_PATH ;
 
 
-
+    public static int FIGURE_WIDTH;
+    public static int FIGURE_HEIGHT;
 
 
     /* * * * * * * * * * * * * * * * * * * * * *
@@ -2654,16 +2655,16 @@ public class Presenter {
 
         }
         
-        private void displayChart(JFreeChart barChart)
+        private void displayChart(JFreeChart chart)
         {
 
-            try {Thread.sleep(1000);}
-            catch (InterruptedException e) {e.printStackTrace();}
+            try { Thread.sleep(1000); }
+            catch (InterruptedException e) { e.printStackTrace(); }
 
             String APPLICATION_TITLE = "ApplicationFrame";
 
             if (!detectHPC()) {
-                ChartPanel chartPanel = new ChartPanel( barChart );
+                ChartPanel chartPanel = new ChartPanel( chart );
                 Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
                 int screenWidth = (int) screenSize.getWidth();
                 int screenHeight = (int) screenSize.getHeight();
@@ -2688,7 +2689,7 @@ public class Presenter {
 
         /**
          * method detects whether the current environment's state is headless
-         * we 
+         * assume if an environment is headless, project is being executed on HPC
          */
         private boolean detectHPC() {
             if (GraphicsEnvironment.isHeadless()) return true;
@@ -2699,20 +2700,20 @@ public class Presenter {
          * Saves the plot to a .jpg file
          * @param barChart 
          */
-        private void saveChart(JFreeChart barChart)
+        private void saveChart(JFreeChart chart)
         {
-            try {Thread.sleep(1000);}
-            catch (InterruptedException e) {e.printStackTrace();}
+            try { Thread.sleep(1000); }
+            catch (InterruptedException e) { e.printStackTrace(); }
 
             String directory = folderPath ;
             String address = directory + applicationTitle + chartTitle + ".jpg" ;
-            LOGGER.info("SAVING TO " + address);
-            LOGGER.info(address) ;
+            LOGGER.info("Saving figure " + address);
+
+            int width = FIGURE_WIDTH ;
+            int height = FIGURE_HEIGHT ;
             //int width = 2560 ;
-            int width = 1280 ;
             //int width = 640 ;
             //int height = 960 ;
-            int height = 1280 ;
             File file = new File(address) ;
             //File file = new File(directory) ;
             //String[] files = file.list() ;
@@ -2722,7 +2723,7 @@ public class Presenter {
             //for (String fileName : files)
               //  LOGGER.info(fileName);
                 LOGGER.info("Saving successful");
-                ChartUtils.saveChartAsJPEG(file, barChart, width, height);
+                ChartUtils.saveChartAsJPEG(file, chart, width, height);
             }
             catch ( IOException ioe)
             {
