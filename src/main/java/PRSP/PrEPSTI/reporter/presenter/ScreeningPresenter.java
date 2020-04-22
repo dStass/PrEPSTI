@@ -991,8 +991,10 @@ public class ScreeningPresenter extends Presenter {
 
 
 
-        // @@@ 
-        // plotHashMapString(atRiskIncidenceReport,INCIDENCE,"year", legend) ;
+        // set drawing information
+        setDrawCI(true);
+        setErrorType(ERROR_BARS);
+
         plotHashMapStringCI(propertyToMeanAndCI,INCIDENCE,"year", legend) ;
     }
     

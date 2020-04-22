@@ -113,7 +113,12 @@ public class Presenter {
     /* * * * * * * * * * * * * * * * * * * * * *
      *         LINE GRAPH DRAWING INFO         *
      * * * * * * * * * * * * * * * * * * * * * */
+    public final String ERROR_BARS = "ERROR_BARS";
+    public final String SHADED_REGION = "SHADED_REGION";
 
+
+    // !!
+    private String lineGraphErrorType = ERROR_BARS;
     private boolean drawPoints = false ;  // draw each individual point for a line graph true by default
     private boolean drawCI = false ;
     private boolean xLogarithmic = false ;
@@ -2016,6 +2021,9 @@ public class Presenter {
         this.yLogarithmic = val;
     }
 
+    public void setErrorType(String val) {
+        this.lineGraphErrorType = val;
+    }
 
 
     /**
@@ -2396,9 +2404,36 @@ public class Presenter {
                 yLabel,dataset,PlotOrientation.VERTICAL,showLegend, true, false);
 
 
+            // declare renderer used
+            XYLineAndShapeRenderer r = null;
+            
+            switch (lineGraphErrorType) {
+                case ERROR_BARS:
+                    r = new XYErrorRenderer();
+                    
+                    // determine whether to draw confidence intervals
+                    if (getDrawCI())    ((XYErrorRenderer) r).setDrawYError(true);
+                    else                ((XYErrorRenderer) r).setDrawYError(false);
+
+                    ((XYErrorRenderer) r).setDrawXError(false);
+
+                    // confidence interval styles
+                    ((XYErrorRenderer) r).setErrorStroke(new BasicStroke(2.0f));
+                    // ((XYErrorRenderer) r).setErrorPaint(Color.BLACK); // sets error paint
+                    ((XYErrorRenderer) r).setCapLength(15);
+                    lineChart.getXYPlot().setRenderer(((XYErrorRenderer) r));
+                    break;
+
+                case SHADED_REGION:
+                    r = new DeviationRenderer(true, true);
+                    ((DeviationRenderer) r).setAlpha(0.4f);
+                    lineChart.getXYPlot().setRenderer(((DeviationRenderer) r));
+                    break;
+            }
             // DeviationRenderer r = new DeviationRenderer(true, false);
-            XYErrorRenderer r = new XYErrorRenderer();
-            lineChart.getXYPlot().setRenderer(r);
+            
+
+            // lineChart.getXYPlot().setRenderer(r);
             
             // axes information:
             // setting logarithmic 
@@ -2466,16 +2501,8 @@ public class Presenter {
                 setDrawPoints(true);
                 setDrawCI(true);
             }
-
-            if (getDrawCI())    r.setDrawYError(true);
-            else                r.setDrawYError(false);
-
-            r.setDrawXError(false);
-            // r.setAlpha(0.4f);
-
-            boolean val = false;
-
-            r.setCapLength(2.5);
+            
+            
 
             // set shape of points
             double circleWidth = 8.0;
@@ -2496,10 +2523,10 @@ public class Presenter {
                 // set line colours - remove from start and add to the end just in case we run out of colours
                 ArrayList<Integer> rgb = colours.remove(0);
                 colours.add(rgb);
-                r.setSeriesPaint(numSeries, new Color(rgb.get(0).intValue(),rgb.get(1).intValue(),rgb.get(2).intValue()));
-                r.setSeriesFillPaint(numSeries, new Color(rgb.get(0).intValue(),rgb.get(1).intValue(),rgb.get(2).intValue()));
+                Color paintColour = new Color(rgb.get(0).intValue(),rgb.get(1).intValue(),rgb.get(2).intValue());
+                r.setSeriesPaint(numSeries, paintColour);
+                r.setSeriesFillPaint(numSeries, paintColour);
                 
-                r.setErrorPaint(Color.BLACK); // sets error paint
                 // set line thickness
                 r.setSeriesStroke(numSeries, new BasicStroke(2.0f));
             }
@@ -2512,7 +2539,7 @@ public class Presenter {
             Font labelFont = new Font(UNIFORM_FONT, Font.PLAIN, 15);
             Font legendFont = new Font(UNIFORM_FONT, Font.PLAIN, 10);
             Font tickFont = new Font(UNIFORM_FONT, Font.PLAIN, 8);
-
+            
             // title:
             lineChart.getTitle().setFont(titleFont);
             
@@ -2526,11 +2553,7 @@ public class Presenter {
             // legend
             lineChart.getLegend().setItemFont(legendFont);
             
-
-            // set CI error bars:
-            r.setCapLength(15);
-            r.setErrorStroke(new BasicStroke(2.0f));
-
+            
             displayChart(lineChart) ;
             saveChart(lineChart);
         }
