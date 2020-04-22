@@ -113,12 +113,12 @@ public class Presenter {
     /* * * * * * * * * * * * * * * * * * * * * *
      *         LINE GRAPH DRAWING INFO         *
      * * * * * * * * * * * * * * * * * * * * * */
-    public final String ERROR_BARS = "ERROR_BARS";
+    public final String ERROR_INTERVALS = "ERROR_INTERVALS";
     public final String SHADED_REGION = "SHADED_REGION";
 
 
     // !!
-    private String lineGraphErrorType = ERROR_BARS;
+    private String lineGraphErrorType = ERROR_INTERVALS;
     private boolean drawPoints = false ;  // draw each individual point for a line graph true by default
     private boolean drawCI = false ;
     private boolean xLogarithmic = false ;
@@ -1325,7 +1325,8 @@ public class Presenter {
         XYIntervalSeriesCollection xyIntervalSeriesCollection = parseReportHashMapCI(report, legend) ;
 
         
-
+        setDrawCI(true);
+        setErrorType(SHADED_REGION);
             
         // // Send data to be processed and presented
         chart_awt.plotLineChart(chartTitle,xyIntervalSeriesCollection, yLabel, xLabel, legend) ;
@@ -2403,37 +2404,42 @@ public class Presenter {
             JFreeChart lineChart = ChartFactory.createXYLineChart(chartTitle,xLabel,
                 yLabel,dataset,PlotOrientation.VERTICAL,showLegend, true, false);
 
+            LOGGER.info("LEGEND:" + Arrays.toString(legend));
 
             // declare renderer used
             XYLineAndShapeRenderer r = null;
             
             switch (lineGraphErrorType) {
-                case ERROR_BARS:
-                    r = new XYErrorRenderer();
+                case ERROR_INTERVALS:
+                    XYErrorRenderer rErrorRenderer = new XYErrorRenderer();
                     
                     // determine whether to draw confidence intervals
-                    if (getDrawCI())    ((XYErrorRenderer) r).setDrawYError(true);
-                    else                ((XYErrorRenderer) r).setDrawYError(false);
+                    if (getDrawCI())    rErrorRenderer.setDrawYError(true);
+                    else                rErrorRenderer.setDrawYError(false);
 
-                    ((XYErrorRenderer) r).setDrawXError(false);
+                    rErrorRenderer.setDrawXError(false);
 
                     // confidence interval styles
-                    ((XYErrorRenderer) r).setErrorStroke(new BasicStroke(2.0f));
+                    rErrorRenderer.setErrorStroke(new BasicStroke(2.0f));
                     // ((XYErrorRenderer) r).setErrorPaint(Color.BLACK); // sets error paint
-                    ((XYErrorRenderer) r).setCapLength(15);
-                    lineChart.getXYPlot().setRenderer(((XYErrorRenderer) r));
+                    rErrorRenderer.setCapLength(15);
+                    // lineChart.getXYPlot().setRenderer(((XYErrorRenderer) r));
+
+                    r = rErrorRenderer;
                     break;
 
                 case SHADED_REGION:
-                    r = new DeviationRenderer(true, true);
-                    ((DeviationRenderer) r).setAlpha(0.4f);
-                    lineChart.getXYPlot().setRenderer(((DeviationRenderer) r));
+                    DeviationRenderer rDeviationRenderer = new DeviationRenderer(true, true);
+                    rDeviationRenderer.setAlpha(0.4f);
+                    // lineChart.getXYPlot().setRenderer(((DeviationRenderer) r));
+
+                    r = rDeviationRenderer;
                     break;
             }
             // DeviationRenderer r = new DeviationRenderer(true, false);
             
 
-            // lineChart.getXYPlot().setRenderer(r);
+            lineChart.getXYPlot().setRenderer(r);
             
             // axes information:
             // setting logarithmic 
@@ -2483,8 +2489,7 @@ public class Presenter {
                 LegendTitle plotLegend = lineChart.getLegend() ;
                 plotLegend.setPosition(RectangleEdge.RIGHT);
             }
-            
-            
+
             /* !!!
             * * * * * * * * * * * * * * * * * * * * *
             *         XYPlot Render Settings        *
@@ -2651,6 +2656,10 @@ public class Presenter {
         
         private void displayChart(JFreeChart barChart)
         {
+
+            try {Thread.sleep(1000);}
+            catch (InterruptedException e) {e.printStackTrace();}
+
             String APPLICATION_TITLE = "ApplicationFrame";
 
             if (!detectHPC()) {
@@ -2692,8 +2701,12 @@ public class Presenter {
          */
         private void saveChart(JFreeChart barChart)
         {
+            try {Thread.sleep(1000);}
+            catch (InterruptedException e) {e.printStackTrace();}
+
             String directory = folderPath ;
             String address = directory + applicationTitle + chartTitle + ".jpg" ;
+            LOGGER.info("SAVING TO " + address);
             LOGGER.info(address) ;
             //int width = 2560 ;
             int width = 1280 ;
