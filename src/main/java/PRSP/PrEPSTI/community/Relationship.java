@@ -41,7 +41,7 @@ public class Relationship {
     
     //static String FOLDER_PATH = "/srv/scratch/z3524276/prepsti/"
     //static String FOLDER_PATH = "/short/is14/mw7704/prepsti/"
-    public static String FOLDER_PATH = "";
+    public static String FOLDER_PATH ;
     
     /** Generate and record Random number seed. */
     static long RANDOM_SEED = System.nanoTime() ;
@@ -198,7 +198,7 @@ public class Relationship {
         {
             for (String relationshipName : relationshipClassNames)
             {
-                Class relationshipClazz = Class.forName("community.".concat(relationshipName)) ;
+                Class relationshipClazz = Class.forName("PRSP.PrEPSTI.community.".concat(relationshipName)) ;
                 for (ArrayList<Comparable> relationshipIdList : relationshipsRecord.get(relationshipName).values())
                 {
                     for (Object relationshipId : relationshipIdList)
@@ -305,7 +305,7 @@ public class Relationship {
 
                 // Find Relationship Class and create Relationship
                 relationshipClazzName = Reporter.EXTRACT_VALUE("relationship", relationshipString) ;
-                Class relationshipClazz = Class.forName("community.".concat(relationshipClazzName)) ;
+                Class relationshipClazz = Class.forName("PRSP.PrEPSTI.community.".concat(relationshipClazzName)) ;
 
                 Relationship relationship = (Relationship) relationshipClazz.newInstance();
                 relationship.addAgents(agents.get(agentIndex0), agents.get(agentIndex1)) ;

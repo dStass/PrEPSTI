@@ -6,12 +6,12 @@
     },
 
     "community" : {
-        "FILE_PATH" : "output/",
+        "FILE_PATH" : "/srv/scratch/z3524276/prepsti/output/to2025/",
         "NAME_ROOT" : "test",
         "POPULATION" : "40000",
         "COMMENT" : "",
         "DYNAMIC" : "true",
-        "RELOAD_SIMULATION" : "",
+        "RELOAD_SIMULATION" : "Pop40000Cycles6570",
         "endYear" : "2025",
         "methods" : {
             "interveneCommunity" : {
