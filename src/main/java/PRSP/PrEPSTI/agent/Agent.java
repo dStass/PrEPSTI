@@ -612,6 +612,10 @@ public abstract class Agent {
     private int initAge(int startAge)
     {
         int ageYears ;
+        if (startAge >= Agent.MAX_LIFE) {
+            return startAge;
+        }
+
         if (startAge == -1) // Choose random starting Age from 16 to 65
             ageYears = RAND.nextInt(50) + 16 ;
         else if (startAge == 0) // Choose random starting Age from 16 to 25, reaching sexual maturity

@@ -135,7 +135,7 @@ public class Community {
         Community.AGENTS_PER_DAY = Community.POPULATION / 365 ;
 
         // MAX_CYCLES
-        Community.MAX_CYCLES = Community.generateTrueCycles(Community.DEFAULT_MAX_CYCLES) / 2;
+        Community.MAX_CYCLES = Community.generateTrueCycles(Community.DEFAULT_MAX_CYCLES);
         
         // Pop[POPULATION]Cycles[MAX_CYCLES]
         Community.NAME_SUFFIX = "Pop" + String.valueOf(Community.POPULATION) 
@@ -217,7 +217,7 @@ public class Community {
     
         // Establish Community of Agents for simulation
         LOGGER.info(SIM_NAME);
-        
+        LOGGER.info("RELOAD_SIMULATION = " + RELOAD_SIMULATION);
         Community community = new Community(RELOAD_SIMULATION,200) ;
         
         
@@ -376,7 +376,7 @@ public class Community {
         String[] relationshipClassNames = new String[] {"Casual","Regular","Monogomous"} ; // "Casual","Regular","Monogomous"
         
         
-        encounterReporter = new EncounterReporter(SIM_NAME,FILE_PATH) ;
+        // encounterReporter = new EncounterReporter(SIM_NAME,FILE_PATH) ;
         screeningReporter = new ScreeningReporter(SIM_NAME,FILE_PATH) ;
         
         //screeningReporter = new ScreeningReporter(SIM_NAME,FILE_PATH) ;
@@ -520,6 +520,7 @@ public class Community {
     private void rebootRandomSeeds(String simName)
     {
         Reporter reporter = new Reporter(simName,"output/test/") ;
+        long oldseed = RANDOM_SEED;
         long seed = Long.valueOf(reporter.getMetaDatum("Community.REBOOT_SEED")) ;
         RANDOM_SEED = seed ;
         RAND = new Random(seed) ;
@@ -561,6 +562,7 @@ public class Community {
             System.out.println(initialiseCommunity()) ;
         else
         {
+            rebootRandomSeeds(simName) ;
             this.agents = Agent.REBOOT_AGENTS(simName) ;
             this.initialRecord = "" ; 
             for (Agent agent : agents)
@@ -569,7 +571,6 @@ public class Community {
             
             Relationship.REBOOT_RELATIONSHIPS(simName, agents) ;
             
-            rebootRandomSeeds(simName) ;
             scribe = new Scribe(SIM_NAME, new String[] {"relationship","encounter","screening", "population"}) ;
         }
     }
@@ -1246,18 +1247,18 @@ public class Community {
         metaLabels.add("Community.MAX_CYCLES") ;
         metaData.add(Community.MAX_CYCLES) ;
         metaLabels.add("Community.REBOOT_SEED") ;
-        metaData.add(RAND.nextLong()) ;
+        metaData.add(RANDOM_SEED) ;
         
         metaLabels.add("Agent.SITE_NAMES") ;
         metaData.add(Arrays.asList(MSM.SITE_NAMES)) ; //TODO: Use Agent.SITE_NAMES
         metaLabels.add("Agent.REBOOT_SEED") ;
-        metaData.add(Agent.GET_REBOOT_SEED()) ;
+        metaData.add(Agent.GET_RANDOM_SEED()) ;
         
         metaLabels.add("Site.REBOOT_SEED") ;
-        metaData.add(Site.GET_REBOOT_SEED()) ;
+        metaData.add(Site.GET_RANDOM_SEED()) ;
         
         metaLabels.add("Relationship.REBOOT_SEED") ;
-        metaData.add(Relationship.GET_REBOOT_SEED()) ;
+        metaData.add(Relationship.GET_RANDOM_SEED()) ;
         metaLabels.add("Relationship.BURNIN_COMMENCE") ;
         metaData.add(Relationship.BURNIN_COMMENCE) ;
         metaLabels.add("Relationship.BURNIN_BREAKUP") ;
@@ -1336,7 +1337,7 @@ public class Community {
             if (!breakupList.contains(relationshipId)) 
             {
                 returnString += boundedString ;
-                String relationshipClazzName = "community." + Reporter.EXTRACT_VALUE("relationship", boundedString) ;
+                String relationshipClazzName = "PRSP.PrEPSTI.community."+ Reporter.EXTRACT_VALUE("relationship", boundedString) ;
                 try
                 {
                     Relationship relationship = (Relationship) Class.forName(relationshipClazzName).newInstance();
