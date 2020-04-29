@@ -36,8 +36,6 @@ import org.json.simple.JSONObject;
  *
  *******************************************************************/
 public class Community {
-    static final public String DEFAULT_JSON = "default_config.json";
-
     
     // Default variables
     static public String FILE_PATH;
@@ -135,29 +133,39 @@ public class Community {
         Community.AGENTS_PER_DAY = Community.POPULATION / 365 ;
 
         // MAX_CYCLES
-        Community.MAX_CYCLES = Community.generateTrueCycles(Community.DEFAULT_MAX_CYCLES);
+        Community.MAX_CYCLES = Community.generateTrueCycles(Community.DEFAULT_MAX_CYCLES) ;
         
         // Pop[POPULATION]Cycles[MAX_CYCLES]
         Community.NAME_SUFFIX = "Pop" + String.valueOf(Community.POPULATION) 
                               + "Cycles" + String.valueOf(Community.MAX_CYCLES);
 
-        Community.SIM_NAME = Community.NAME_ROOT + Community.NAME_SUFFIX;
-        Community.OUTPUT_RETURN += Community.SIM_NAME + " " ;
         
-        // Name of test run passed in via argument
-        if (args.length > 0) {
-            switch (args[0]) {
-                case "gadi":
-                    Community.FILE_PATH = "/scratch/is14/mw7704/prepsti/" + Community.FILE_PATH; 
-                    Community.DUMP_CYCLE = 500;
-                    break;
-                case "katana":
-                    Community.FILE_PATH = "/srv/scratch/z3524276/prepsti/" + Community.FILE_PATH ;
-                    Community.DUMP_CYCLE = 500;
-                    break;
-            }
+        switch (args.length) {
+            default:
+            case 3:
+                switch (args[2]) {
+                    case "gadi":
+                        //Community.FILE_PATH = "/scratch/is14/mw7704/prepsti/" + Community.FILE_PATH; 
+                        Community.DUMP_CYCLE = 500 ;
+                        break ;
+                    case "katana":
+                        //Community.FILE_PATH = "/srv/scratch/z3524276/prepsti/" + Community.FILE_PATH ;
+                        Community.DUMP_CYCLE = 500 ;
+                        break ;
+                    default:
+                        break ;
+                    }
+            case 2:
+                RELOAD_SIMULATION = args[1] + RELOAD_SIMULATION ;
+            case 1:
+                Community.NAME_ROOT = args[0] ;
+            case 0:
+                break ;
         }
 
+
+        Community.SIM_NAME = Community.NAME_ROOT ; // + Community.NAME_SUFFIX;
+        Community.OUTPUT_RETURN += Community.SIM_NAME + " " ;
 
         
         // if (args.length > argIndex)
@@ -544,8 +552,8 @@ public class Community {
     {
         initialRecord = "" ;
 
-        if (!simName.isEmpty())
-            rebootRandomSeeds(simName) ;
+        //if (!simName.isEmpty())
+          //  rebootRandomSeeds(simName) ;
         System.out.println(initialiseCommunity()) ;
                 
     }
@@ -571,6 +579,7 @@ public class Community {
             
             Relationship.REBOOT_RELATIONSHIPS(simName, agents) ;
             
+            //rebootRandomSeeds(simName) ;
             scribe = new Scribe(SIM_NAME, new String[] {"relationship","encounter","screening", "population"}) ;
         }
     }

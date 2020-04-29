@@ -15,3 +15,4 @@
 *.csv
 *.class
 /reports/*.csv
+/configs/katana_default_config.json

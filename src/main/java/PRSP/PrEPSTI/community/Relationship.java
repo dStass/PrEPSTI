@@ -41,7 +41,7 @@ public class Relationship {
     
     //static String FOLDER_PATH = "/srv/scratch/z3524276/prepsti/"
     //static String FOLDER_PATH = "/short/is14/mw7704/prepsti/"
-    public static String FOLDER_PATH = "";
+    public static String FOLDER_PATH ;
     
     /** Generate and record Random number seed. */
     static long RANDOM_SEED = System.nanoTime() ;
