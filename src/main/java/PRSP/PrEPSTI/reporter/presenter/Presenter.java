@@ -107,13 +107,19 @@ public class Presenter {
     private String folderPath = Community.FILE_PATH ;
 
 
-
+    public static int FIGURE_WIDTH;
+    public static int FIGURE_HEIGHT;
 
 
     /* * * * * * * * * * * * * * * * * * * * * *
      *         LINE GRAPH DRAWING INFO         *
      * * * * * * * * * * * * * * * * * * * * * */
+    public final String ERROR_INTERVALS = "ERROR_INTERVALS";
+    public final String SHADED_REGION = "SHADED_REGION";
 
+
+    // !!
+    private String lineGraphErrorType = ERROR_INTERVALS;
     private boolean drawPoints = false ;  // draw each individual point for a line graph true by default
     private boolean drawCI = false ;
     private boolean xLogarithmic = false ;
@@ -1320,7 +1326,8 @@ public class Presenter {
         XYIntervalSeriesCollection xyIntervalSeriesCollection = parseReportHashMapCI(report, legend) ;
 
         
-
+        setDrawCI(true);
+        setErrorType(SHADED_REGION);
             
         // // Send data to be processed and presented
         chart_awt.plotLineChart(chartTitle,xyIntervalSeriesCollection, yLabel, xLabel, legend) ;
@@ -2016,6 +2023,9 @@ public class Presenter {
         this.yLogarithmic = val;
     }
 
+    public void setErrorType(String val) {
+        this.lineGraphErrorType = val;
+    }
 
 
     /**
@@ -2395,9 +2405,41 @@ public class Presenter {
             JFreeChart lineChart = ChartFactory.createXYLineChart(chartTitle,xLabel,
                 yLabel,dataset,PlotOrientation.VERTICAL,showLegend, true, false);
 
+            LOGGER.info("LEGEND:" + Arrays.toString(legend));
 
+            // declare renderer used
+            XYLineAndShapeRenderer r = null;
+            
+            switch (lineGraphErrorType) {
+                case ERROR_INTERVALS:
+                    XYErrorRenderer rErrorRenderer = new XYErrorRenderer();
+                    
+                    // determine whether to draw confidence intervals
+                    if (getDrawCI())    rErrorRenderer.setDrawYError(true);
+                    else                rErrorRenderer.setDrawYError(false);
+
+                    rErrorRenderer.setDrawXError(false);
+
+                    // confidence interval styles
+                    rErrorRenderer.setErrorStroke(new BasicStroke(2.0f));
+                    // ((XYErrorRenderer) r).setErrorPaint(Color.BLACK); // sets error paint
+                    rErrorRenderer.setCapLength(15);
+                    // lineChart.getXYPlot().setRenderer(((XYErrorRenderer) r));
+
+                    r = rErrorRenderer;
+                    break;
+
+                case SHADED_REGION:
+                    DeviationRenderer rDeviationRenderer = new DeviationRenderer(true, true);
+                    rDeviationRenderer.setAlpha(0.4f);
+                    // lineChart.getXYPlot().setRenderer(((DeviationRenderer) r));
+
+                    r = rDeviationRenderer;
+                    break;
+            }
             // DeviationRenderer r = new DeviationRenderer(true, false);
-            XYErrorRenderer r = new XYErrorRenderer();
+            
+
             lineChart.getXYPlot().setRenderer(r);
             
             // axes information:
@@ -2448,8 +2490,7 @@ public class Presenter {
                 LegendTitle plotLegend = lineChart.getLegend() ;
                 plotLegend.setPosition(RectangleEdge.RIGHT);
             }
-            
-            
+
             /* !!!
             * * * * * * * * * * * * * * * * * * * * *
             *         XYPlot Render Settings        *
@@ -2466,16 +2507,8 @@ public class Presenter {
                 setDrawPoints(true);
                 setDrawCI(true);
             }
-
-            if (getDrawCI())    r.setDrawYError(true);
-            else                r.setDrawYError(false);
-
-            r.setDrawXError(false);
-            // r.setAlpha(0.4f);
-
-            boolean val = false;
-
-            r.setCapLength(2.5);
+            
+            
 
             // set shape of points
             double circleWidth = 8.0;
@@ -2496,10 +2529,10 @@ public class Presenter {
                 // set line colours - remove from start and add to the end just in case we run out of colours
                 ArrayList<Integer> rgb = colours.remove(0);
                 colours.add(rgb);
-                r.setSeriesPaint(numSeries, new Color(rgb.get(0).intValue(),rgb.get(1).intValue(),rgb.get(2).intValue()));
-                r.setSeriesFillPaint(numSeries, new Color(rgb.get(0).intValue(),rgb.get(1).intValue(),rgb.get(2).intValue()));
+                Color paintColour = new Color(rgb.get(0).intValue(),rgb.get(1).intValue(),rgb.get(2).intValue());
+                r.setSeriesPaint(numSeries, paintColour);
+                r.setSeriesFillPaint(numSeries, paintColour);
                 
-                r.setErrorPaint(Color.BLACK); // sets error paint
                 // set line thickness
                 r.setSeriesStroke(numSeries, new BasicStroke(2.0f));
             }
@@ -2512,7 +2545,7 @@ public class Presenter {
             Font labelFont = new Font(UNIFORM_FONT, Font.PLAIN, 15);
             Font legendFont = new Font(UNIFORM_FONT, Font.PLAIN, 10);
             Font tickFont = new Font(UNIFORM_FONT, Font.PLAIN, 8);
-
+            
             // title:
             lineChart.getTitle().setFont(titleFont);
             
@@ -2526,11 +2559,7 @@ public class Presenter {
             // legend
             lineChart.getLegend().setItemFont(legendFont);
             
-
-            // set CI error bars:
-            r.setCapLength(15);
-            r.setErrorStroke(new BasicStroke(2.0f));
-
+            
             displayChart(lineChart) ;
             saveChart(lineChart);
         }
@@ -2626,12 +2655,16 @@ public class Presenter {
 
         }
         
-        private void displayChart(JFreeChart barChart)
+        private void displayChart(JFreeChart chart)
         {
+
+            try { Thread.sleep(1000); }
+            catch (InterruptedException e) { e.printStackTrace(); }
+
             String APPLICATION_TITLE = "ApplicationFrame";
 
             if (!detectHPC()) {
-                ChartPanel chartPanel = new ChartPanel( barChart );
+                ChartPanel chartPanel = new ChartPanel( chart );
                 Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
                 int screenWidth = (int) screenSize.getWidth();
                 int screenHeight = (int) screenSize.getHeight();
@@ -2656,7 +2689,7 @@ public class Presenter {
 
         /**
          * method detects whether the current environment's state is headless
-         * we 
+         * assume if an environment is headless, project is being executed on HPC
          */
         private boolean detectHPC() {
             if (GraphicsEnvironment.isHeadless()) return true;
@@ -2667,16 +2700,20 @@ public class Presenter {
          * Saves the plot to a .jpg file
          * @param barChart 
          */
-        private void saveChart(JFreeChart barChart)
+        private void saveChart(JFreeChart chart)
         {
+            try { Thread.sleep(1000); }
+            catch (InterruptedException e) { e.printStackTrace(); }
+
             String directory = folderPath ;
             String address = directory + applicationTitle + chartTitle + ".jpg" ;
-            LOGGER.info(address) ;
+            LOGGER.info("Saving figure " + address);
+
+            int width = FIGURE_WIDTH ;
+            int height = FIGURE_HEIGHT ;
             //int width = 2560 ;
-            int width = 1280 ;
             //int width = 640 ;
             //int height = 960 ;
-            int height = 1280 ;
             File file = new File(address) ;
             //File file = new File(directory) ;
             //String[] files = file.list() ;
@@ -2686,7 +2723,7 @@ public class Presenter {
             //for (String fileName : files)
               //  LOGGER.info(fileName);
                 LOGGER.info("Saving successful");
-                ChartUtils.saveChartAsJPEG(file, barChart, width, height);
+                ChartUtils.saveChartAsJPEG(file, chart, width, height);
             }
             catch ( IOException ioe)
             {

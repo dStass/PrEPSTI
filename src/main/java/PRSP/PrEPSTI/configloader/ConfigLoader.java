@@ -69,7 +69,6 @@ public class ConfigLoader {
         ConfigLoader.loadInformationIntoClasses();
         ConfigLoader.readJSON("config");
         ConfigLoader.loadInformationIntoClasses();
-        LOGGER.info("Test Loading Defaults");
     }
 
 
@@ -252,6 +251,12 @@ public class ConfigLoader {
         JSONArray DATA_SCORE = (JSONArray) presenterJSON.get("DATA_SCORE");
         if (DATA_SCORE != null)
             Presenter.DATA_SCORE = ConfigLoader.convertJSONArrayToStringArray(DATA_SCORE);
+
+        String FIGURE_WIDTH = (String) presenterJSON.get("FIGURE_WIDTH");
+        if (FIGURE_WIDTH != null) Presenter.FIGURE_WIDTH = Integer.parseInt(FIGURE_WIDTH);
+
+        String FIGURE_HEIGHT = (String) presenterJSON.get("FIGURE_HEIGHT");
+        if (FIGURE_HEIGHT != null) Presenter.FIGURE_HEIGHT = Integer.parseInt(FIGURE_HEIGHT);
     }
 
 
