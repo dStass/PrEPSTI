@@ -376,7 +376,7 @@ public class Community {
         String[] relationshipClassNames = new String[] {"Casual","Regular","Monogomous"} ; // "Casual","Regular","Monogomous"
         
         
-        // encounterReporter = new EncounterReporter(SIM_NAME,FILE_PATH) ;
+        encounterReporter = new EncounterReporter(SIM_NAME,FILE_PATH) ;
         screeningReporter = new ScreeningReporter(SIM_NAME,FILE_PATH) ;
         
         //screeningReporter = new ScreeningReporter(SIM_NAME,FILE_PATH) ;
