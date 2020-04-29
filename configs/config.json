@@ -1,9 +1,9 @@
 {   
     "community" : {
         "POPULATION" : "500",
-        "NAME_ROOT" : "ABC",
-        "MAX_CYCLES" : "6",
-        "RELOAD_SIMULATION" : ""
+        "NAME_ROOT" : "TEST",
+        "MAX_CYCLES" : "3",
+        "RELOAD_SIMULATION" : "TEST"
     },
 
     "msm" : {

@@ -23,10 +23,6 @@
             "request": "launch",
             "mainClass": "PRSP.PrEPSTI.community.Community",
             "args": [
-                "test",
-                "3",
-                "output/",
-                "E"
             ]
         },
         {
