@@ -15,4 +15,4 @@
 *.csv
 *.class
 /reports/*.csv
-/configs/katana_default_config.json
+/configs/gadi_default_config.json

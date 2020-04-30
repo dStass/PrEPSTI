@@ -245,7 +245,7 @@ public class Community {
         // To record cycle number in every record
         String cycleString ;
         
-        System.out.println("population: " + POPULATION + ", Cycles: " + MAX_CYCLES );
+        System.out.println("population: " + POPULATION + ", Cycles: " + Community.MAX_CYCLES );
         /*
         int outputInterval ;
         if (POPULATION < MAX_CYCLES)
@@ -314,7 +314,7 @@ public class Community {
         populationRecord = cycleString + Reporter.ADD_REPORT_LABEL("birth") + community.initialRecord ;
         
         //outputInterval = 1 ;
-        for (int cycle = 0; cycle < MAX_CYCLES; cycle++)
+        for (int cycle = 0; cycle < Community.MAX_CYCLES; cycle++)
         {	
             //if ((cycle % 10) == 0) //((cycle/outputInterval) * outputInterval))
               //  LOGGER.log(Level.INFO, "Cycle no. {0}", cycleString);
@@ -446,10 +446,10 @@ public class Community {
         //HashMap<Comparable,String> incidenceReportPrep = new HashMap<Comparable,String>() ;
         if (DYNAMIC)
         {
-            int startYear = 2015 ;
+            int startYear = 2020 ; // ConfigLoader.getMethodVariableInteger("community", "interveneCommunity", "startYear");; // = 2015 ; // int startYear = a2015 ;
 
             // loading endYear from ConfigLoader
-            int endYear = ConfigLoader.getMethodVariableInteger("community", "main", "endYear");
+            int endYear = 2025 ; //ConfigLoader.getMethodVariableInteger("community", "main", "endYear");
 
             incidenceReport = screeningReporter.prepareYearsAtRiskIncidenceReport(siteNames, endYear + 1 - startYear, endYear, "statusHIV") ;
             //incidenceReportPrep = screeningReporter.prepareYearsAtRiskIncidenceReport(siteNames, 16, 2022, "prepStatus") ;

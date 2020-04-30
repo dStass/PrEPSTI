@@ -1,12 +1,27 @@
 {   
     "community" : {
-        "POPULATION" : "2500",
-        "NAME_ROOT" : "REPORT_C",
-        "MAX_CYCLES" : "8"
+        "NAME_ROOT" : "to2025",
+        "MAX_CYCLES" : "6",
+        "COMMENT" : "Gradual increase among HIV-positive in U=U from 2020",
+        "methods" : {
+            "interveneCommunity" : {
+                "startCycle" : "4",
+                "startYear" : "2020"
+            },
+            "main" : {
+                "endYear" : "2025"
+            }
     },
 
     "msm" : {
-        "GROUP_SEX_EVENT_SIZE" : "13",
-        "HIV_RISKY_CORRELATION" : "2.5"
+        "methods": {
+            "reInitScreenCycle" : {
+                "checkPrepStatus" : "true",
+                "useStatus" : "true"
+            },
+            "REINIT_RISK_CASUAL" : {
+                "prepHasTests" : "true"
+            }
+        }
     }
 }

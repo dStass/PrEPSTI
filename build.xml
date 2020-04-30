@@ -10,7 +10,7 @@
     <property name="target" value="1.8"/>
     <property name="source" value="1.8"/>
 
-    <!-- Modifcations to the build should be done here, simply modify the value -->
+    <!-- Modifications to the build should be done here, simply modify the value -->
     <property name="main-class" value="PRSP.PrEPSTI.community.Community"/>
     <property name="build-name" value="PrEPSTI"/>
     <property name="compiled-folder" value="./bin"/>
