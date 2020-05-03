@@ -85,6 +85,16 @@ public class ScreeningPresenter extends Presenter {
 
         ConfigLoader.load();
         
+        String prefix = "to2025UeqUto2019oldParams33" ;
+        String suffix = "Pop40000Cycles2190" ;
+        ArrayList<String> simNameList = new ArrayList<String>() ;
+        String letter0 = "" ;
+        //for (String letter0 : new String[] {"a","b","c","d","e","f","g","h","i","j"})
+            for (String letter1: new String[] {"Ebi"}) //,"Dbc","Eje","Hji","Jce","Iae","Iad","Cfi","Fjc","Chh","Bci","Dhj","Bhi","Ibe","Keg","Kjc","Kbh","Fag","Jad","Bfd","Idg","Keh","Ggb","Dee","Ghh","Dac","Dgd","Fab","Hdh","Ibg","Fcc","Ghd","Hfa","Fci","Ifd","Gfd","Hje","Eei","Hhb","Aah","Gdh","Bjh","Cbf","Dcg","Ifc","Kej","Ajc","Fii","Hfb","Cdd"} ;
+                simNameList.add(prefix + letter0 + letter1 + suffix) ;
+
+        String folderPath = "/scratch/is14/mw7704/prepsti/output/to2025/" ;
+
         //         String prefix = "old1p5Params26" ;
         //         //String prefix = "to2019fix23" ;
         //         String suffix = "Pop40000Cycles6570" ;
@@ -102,8 +112,7 @@ public class ScreeningPresenter extends Presenter {
         //String simName = "to2017newSort17aaPop40000Cycles5110" ;
         //String simName = "to2012max3sameScreen34cPop40000Cycles4380" ;
         //String simName = "to2014agentAdjust29aPop40000Cycles4920" ;
-        String simName = "REPORT_APop5000Cycles2920" ;
-        //String simName = simNames[0] ;
+        String simName = simNames[0] ;
         
         boolean unique = false ;
         int notifications = 1 ; 
@@ -134,11 +143,12 @@ public class ScreeningPresenter extends Presenter {
         //String reportFileName = "output/untouchable/" ; // args[2] ;
         //String reportFileName = "output/prep/" ; // args[2] ;
         //String reportFileName = "output/prePrEP/" ; // args[2] ;
-        String reportFileName = "output/" ; // args[2] ;
+        //String reportFileName = "output/" ; // args[2] ;
         //String reportFileName = "output/to2025/" ; // args[2] ;
         //String reportFileName = "output/year2012/" ; // args[2] ;
         //String reportFileName = "output/year2010/" ; // args[2] ;
         //String reportFileName = "output/year2007/" ; // args[2] ;
+        String reportFileName = folderPath ;
         
         LOGGER.info(chartTitle) ;
         

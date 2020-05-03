@@ -2906,7 +2906,8 @@ public class Reporter {
     
     public Reporter()
     {
-        
+	// Needed to work around HPC access issues.
+        reader = new Reader() ;
     }
     
     public Reporter(String simname, ArrayList<String> report)
@@ -3294,20 +3295,21 @@ public class Reporter {
     public static void main(String[] args)
     {
         ConfigLoader.load();
-        String folderPath = "output/prep/" ;
+        String folderPath = "/scratch/is14/mw7704/prepsti/output/to2025/" ;
+        //String folderPath = "output/prep/" ;
         //String folderPath = "output/prePrEP/" ;
         //String[] simNames = new String[] {"to2017newSort17aaPop40000Cycles5110", "to2017newSort17baPop40000Cycles5110","to2017newSort17caPop40000Cycles5110","to2017newSort17daPop40000Cycles5110","to2017newSort17eaPop40000Cycles5110",
           //  "to2017newSort17faPop40000Cycles5110", "to2017newSort17gaPop40000Cycles5110","to2017newSort17haPop40000Cycles5110","to2017newSort17iaPop40000Cycles5110","to2017newSort17jaPop40000Cycles5110"} ;
         //String[] simNames = new String[] {"from2007seek27aPop40000Cycles5475","from2007seek27bPop40000Cycles5475","from2007seek27cPop40000Cycles5475","from2007seek27dPop40000Cycles5475","from2007seek27ePop40000Cycles5475",
         //"from2007seek27fPop40000Cycles5475","from2007seek27gPop40000Cycles5475","from2007seek27hPop40000Cycles5475","from2007seek27iPop40000Cycles5475","from2007seek27jPop40000Cycles5475"} ;
     
-        String prefix = "to2019chooseCondom1" ;
+        String prefix = "to2025UeqUto2019oldParams33" ;
         //String prefix = "from2015to2025linearPrep23" ;
-        String suffix = "Pop40000Cycles6570" ;
+        String suffix = "Pop40000Cycles2190" ;
         ArrayList<String> simNameList = new ArrayList<String>() ;
         //String letter0 = "a" ;
         for (String letter0 : new String[] {"a","b","c","d","e","f","g","h","i","j"})
-            for (String letter1: new String[] {"a","b","c"}) // ,"d","e","f"}) //,"g","h"})
+            for (String letter1: new String[] {"Ebi","Dbc","Eje","Hji","Jce","Iae","Iad","Cfi","Fjc","Chh","Bci","Dhj","Bhi","Ibe","Keg","Kjc","Kbh","Fag","Jad","Bfd","Idg","Keh","Ggb","Dee","Ghh","Dac","Dgd","Fab","Hdh","Ibg","Fcc","Ghd","Hfa","Fci","Ifd","Gfd","Hje","Eei","Hhb","Aah","Gdh","Bjh","Cbf","Dcg","Ifc","Kej","Ajc","Fii","Hfb","Cdd"}) 
                 for (String letter2 : new String[] {""}) //,"B"})
                     simNameList.add(prefix + letter2 + letter0 + letter1 + suffix) ;
         
@@ -3315,7 +3317,6 @@ public class Reporter {
         //simNames = new String[] {"regularP6Risk47aaPop40000Cycles1825"} ;
         
         //String[] simNames = new String[] {"newSortRisk12aPop40000Cycles1825"} ;
-        //String[] simNames = new String[] {"newSortRisk12aPop40000Cycles730","newSortRisk11aPop40000Cycles730","newSortRisk10aPop40000Cycles730","newSortRisk9aPop40000Cycles730","newSortRisk8aPop40000Cycles730"} ;
         //ArrayList<String> closestSimulations
         // simNameList = CLOSEST_SIMULATIONS(simNameList, "year", "all_false", "riskyIncidence_HIV", folderPath, "gonoGoneWild", "data_files/") ;
         // LOGGER.info(String.valueOf(simNameList.size()) + " simulations included.") ;
@@ -3331,7 +3332,7 @@ public class Reporter {
     /**
      * Object to read saved File output and feed it to Reporter
      */
-    protected class Reader
+    private class Reader
     {
     //	ArrayList<String> encounterReports, ArrayList<String> clearReports, ArrayList<String> screenReports)
         private ArrayList<String> fileNames = new ArrayList<String>() ;
@@ -3341,12 +3342,12 @@ public class Reporter {
         private String simName ;
         ArrayList<String> metaData ;
         
-        protected Reader()
+        private Reader()
         {
             
         }
         
-        protected Reader(String simName, String reporterName, String filePath)
+        private Reader(String simName, String reporterName, String filePath)
         {
             this.simName = simName ;
             this.folderPath = filePath ;
@@ -3360,7 +3361,7 @@ public class Reporter {
          * 
          * @return (String) path to folder with Reader's files.
          */
-        protected String getFolderPath()
+        private String getFolderPath()
         {
             return folderPath ;
         }
@@ -3370,7 +3371,7 @@ public class Reporter {
          * TODO: Implement all this with an iterator.
          * @return Updated Reporter.input .
          */
-        protected ArrayList<String> updateOutputArray()
+        private ArrayList<String> updateOutputArray()
         {
             ArrayList<String> outputArray = new ArrayList<String>() ;
             String record ;
@@ -3419,7 +3420,7 @@ public class Reporter {
          * @param simName
          * @return ArrayList of fileNames, excluding the METADATA file.
          */
-        final protected ArrayList<String> initFileNames(String simName)
+        private ArrayList<String> initFileNames(String simName)
         {
             ArrayList<String> nameArray = new ArrayList<String>() ;
             File folder = new File(folderPath) ;
