@@ -1,8 +1,9 @@
 {   
     "community" : {
-        "POPULATION" : "2500",
-        "NAME_ROOT" : "REPORT_C",
-        "MAX_CYCLES" : "8"
+        "POPULATION" : "500",
+        "NAME_ROOT" : "TEST",
+        "MAX_CYCLES" : "3",
+        "RELOAD_SIMULATION" : "TEST"
     },
 
     "msm" : {
