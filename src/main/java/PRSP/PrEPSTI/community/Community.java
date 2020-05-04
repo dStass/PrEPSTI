@@ -58,7 +58,6 @@ public class Community {
     static String NAME_SUFFIX;
     static int AGENTS_PER_DAY;
 
-    static boolean TO_PLOT ; //= true ;
     //static public String FILE_PATH = "/srv/scratch/z3524276/prepsti/output/test/" ;
     //static public String FILE_PATH = "/short/is14/mw7704/prepsti/output/year2007/" ;
     
@@ -207,9 +206,6 @@ public class Community {
         COMMENT += MSM.TRANSMISSION_PROBABILITY_REPORT() ;
         String comment = COMMENT;
         
-        // Whether to plot prevalence upon completion.
-        // Must be false when run on an HPC cluster.
-        TO_PLOT = (!FILE_PATH.contains("prepsti")) ;
         // Needed to avoid NoClassDefFoundError on HPC
         PopulationReporter populationReporter = new PopulationReporter() ;
         RelationshipReporter relationshipReporter = new RelationshipReporter() ;
@@ -377,7 +373,6 @@ public class Community {
         System.out.println("Elapsed running time: " + seconds + "seconds") ;
         System.out.println("Elapsed running time: " + minutes + "minutes") ;
         
-        //if (TO_PLOT)
         String[] relationshipClassNames = new String[] {"Casual","Regular","Monogomous"} ; // "Casual","Regular","Monogomous"
         
         
@@ -398,12 +393,11 @@ public class Community {
         //screeningPresenter2.plotNotificationsPerCycle();
 
 
-        LOGGER.info(MSM.TRANSMISSION_PROBABILITY_REPORT());
-        if (TO_PLOT) {
-            ScreeningPresenter screeningPresenter3 
-                    = new ScreeningPresenter(SIM_NAME,"multi prevalence",screeningReporter) ;
-            screeningPresenter3.multiPlotScreening(new Object[] {"prevalence","prevalence",new String[] {"Pharynx","Rectum","Urethra"}}) ;  // ,"coprevalence",new String[] {"Pharynx","Rectum"},new String[] {"Urethra","Rectum"}
-        }
+        // LOGGER.info(MSM.TRANSMISSION_PROBABILITY_REPORT());
+
+        ScreeningPresenter screeningPresenter3 = new ScreeningPresenter(SIM_NAME, "multi prevalence", screeningReporter) ;
+        screeningPresenter3.multiPlotScreening(new Object[] {"prevalence","prevalence", new String[] {"Pharynx","Rectum","Urethra"}}) ;  // ,"coprevalence",new String[] {"Pharynx","Rectum"},new String[] {"Urethra","Rectum"}
+        
         
         HashMap<Object,Number> finalNotificationsRecord = new HashMap<Object,Number>() ;
         
