@@ -139,7 +139,7 @@ public class Community {
         Community.NAME_SUFFIX = "Pop" + String.valueOf(Community.POPULATION) 
                               + "Cycles" + String.valueOf(Community.MAX_CYCLES);
 
-        
+        // handle arguments 
         switch (args.length) {
             default:
             case 3:
@@ -163,10 +163,8 @@ public class Community {
                 break ;
         }
 
-
         Community.SIM_NAME = Community.NAME_ROOT ; // + Community.NAME_SUFFIX;
         Community.OUTPUT_RETURN += Community.SIM_NAME + " " ;
-
         
         // if (args.length > argIndex)
         // {
@@ -207,17 +205,16 @@ public class Community {
         // }
         
         COMMENT += MSM.TRANSMISSION_PROBABILITY_REPORT() ;
+        String comment = COMMENT;
         
         // Whether to plot prevalence upon completion.
         // Must be false when run on an HPC cluster.
         TO_PLOT = (!FILE_PATH.contains("prepsti")) ;
-        
         // Needed to avoid NoClassDefFoundError on HPC
         PopulationReporter populationReporter = new PopulationReporter() ;
         RelationshipReporter relationshipReporter = new RelationshipReporter() ;
         EncounterReporter encounterReporter = new EncounterReporter() ;
         ScreeningReporter screeningReporter = new ScreeningReporter() ;
-        
         
         // Record starting time to measure running time
         long startTime = System.nanoTime() ;
@@ -226,9 +223,9 @@ public class Community {
         // Establish Community of Agents for simulation
         LOGGER.info(SIM_NAME);
         LOGGER.info("RELOAD_SIMULATION = " + RELOAD_SIMULATION);
-        Community community = new Community(RELOAD_SIMULATION,200) ;
+        Community community = new Community(RELOAD_SIMULATION, 200) ;
         
-        
+
         // Establish conditions for specific simulation questions
         //System.out.println(community.initialiseCommunity()) ;
 
@@ -1382,10 +1379,14 @@ public class Community {
     * * * * * * * * * * * * * * * * * * * * *
     */
 
+    /**
+     * returns cycles if it is less than MAX_YEARS,
+     * otherwise, we multiply it by DAYS_PER_YEAR and return that
+     */
     private static int generateTrueCycles(int cycles) {
-        cycles = cycles > 99 
+        cycles = cycles > ConfigLoader.MAX_YEARS 
                         ? cycles 
-                        : cycles * Reporter.DAYS_PER_YEAR;
+                        : cycles * ConfigLoader.DAYS_PER_YEAR;
         return cycles;
     }
     

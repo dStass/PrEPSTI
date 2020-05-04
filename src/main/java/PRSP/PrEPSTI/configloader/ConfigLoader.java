@@ -31,7 +31,7 @@ public class ConfigLoader {
 
     // final definitions 
     private static final String CONFIG_PATH = "configs/";
-    private static final String DEFAULT_JSON_FILE = ConfigLoader.CONFIG_PATH + "default_json.json";
+    private static final String DEFAULT_JSON_FILE = ConfigLoader.CONFIG_PATH + "default_config.json";
     private static final String CONFIG_JSON_FILE = ConfigLoader.CONFIG_PATH + "config.json";
 
     // loaded JSONObjects
@@ -43,8 +43,9 @@ public class ConfigLoader {
     // contains colours
     private static ArrayList<ArrayList<Integer>> colours;
 
-    // constant definitions
-    public static final int MAX_YEARS = 99; // used for drawing points
+    // final definitions
+    public static final int MAX_YEARS = 99;
+    public static final int DAYS_PER_YEAR = 365; 
 
 
     /**

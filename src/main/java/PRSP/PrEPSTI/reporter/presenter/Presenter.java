@@ -1316,8 +1316,14 @@ public class Presenter {
     }
 
     protected void plotShadedHashMapStringCI(HashMap<String,HashMap> report, String yLabel, String xLabel, String[] legend) {
+        // Extract data from reportArray
         XYIntervalSeriesCollection xyIntervalSeriesCollection = parseReportHashMapCI(report, legend) ;
-        chart_awt.plotShadedChart(chartTitle,xyIntervalSeriesCollection, yLabel, xLabel, legend) ;
+
+        setDrawCI(true);
+        setErrorType(SHADED_REGION);
+            
+        // Send data to be processed and presented
+        chart_awt.plotLineChart(chartTitle,xyIntervalSeriesCollection, yLabel, xLabel, legend) ;
     }
 
     protected void plotHashMapStringCI(HashMap<String,HashMap> report, String yLabel, String xLabel, String[] legend)
@@ -1325,11 +1331,10 @@ public class Presenter {
         // Extract data from reportArray
         XYIntervalSeriesCollection xyIntervalSeriesCollection = parseReportHashMapCI(report, legend) ;
 
-        
         setDrawCI(true);
-        setErrorType(SHADED_REGION);
+        setErrorType(ERROR_INTERVALS);
             
-        // // Send data to be processed and presented
+        // Send data to be processed and presented
         chart_awt.plotLineChart(chartTitle,xyIntervalSeriesCollection, yLabel, xLabel, legend) ;
     }
     
@@ -2648,20 +2653,18 @@ public class Presenter {
             areaChart.getPlot().setBackgroundPaint(Color.WHITE) ;
             //saveChart(areaChart) ;
             displayChart(areaChart) ;
-        }
-
-
-        private void plotShadedChart(String chartTitle, XYDataset dataset, String yLabel, String xLabel, String[] legend) { 
-
-        }
-        
+        }   
+        /**
+         * Opens an interactive window with the chart if HPC hasn't been detected
+         * @param chart 
+         */
         private void displayChart(JFreeChart chart)
         {
-
+            // fix any concurrency problems within JFreeChart, notably legend elements doubling up
             try { Thread.sleep(1000); }
             catch (InterruptedException e) { e.printStackTrace(); }
 
-            String APPLICATION_TITLE = "ApplicationFrame";
+            String APPLICATION_TITLE = chartTitle;
 
             if (!detectHPC()) {
                 ChartPanel chartPanel = new ChartPanel( chart );
@@ -2684,7 +2687,6 @@ public class Presenter {
             else {
                 LOGGER.info("HPC detected, display not possible.") ;
             }
-
         }
 
         /**
@@ -2778,7 +2780,6 @@ public class Presenter {
             {
                 LOGGER.log(Level.SEVERE, e.toString());
             }
-
         }
         
         /**
