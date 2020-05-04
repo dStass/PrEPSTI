@@ -8,6 +8,7 @@
     "community" : {
         "FILE_PATH" : "output/",
         "NAME_ROOT" : "test",
+        "MAX_CYCLES" : "6",
         "POPULATION" : "40000",
         "COMMENT" : "",
         "DYNAMIC" : "true",
@@ -19,7 +20,7 @@
                 "startYear" : "2007"
             },
             "main" : {
-                "endYear" : "2025"
+                "endYear" : "2019"
             }
         }
     },
@@ -39,7 +40,7 @@
     },
 
     "reporter" : {
-        "WRITE_REPORT" : "true"
+        "WRITE_REPORT" : "false"
     },
 
     "presenter" : {
