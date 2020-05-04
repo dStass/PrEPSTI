@@ -1375,7 +1375,7 @@ public class ScreeningPresenter extends Presenter {
             propertyToMeanAndCI.put(property, meanAndCI);
         }
 
-        plotHashMapStringCI(propertyToMeanAndCI, "Y", "Year", fileNames);
+        plotShadedHashMapStringCI(propertyToMeanAndCI, "Y", "Year", fileNames);
     }
     
 }
