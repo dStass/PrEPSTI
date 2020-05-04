@@ -10,12 +10,16 @@
     <property name="target" value="1.8"/>
     <property name="source" value="1.8"/>
 
+    <!-- Build information -->
+    <property file="build.properties"/>
+
     <!-- Modifications to the build should be done here, simply modify the value -->
-    <property name="main-class" value="PRSP.PrEPSTI.community.Community"/>
+    <property name="main-class" value="${mainClass}"/>
     <property name="build-name" value="PrEPSTI"/>
     <property name="compiled-folder" value="./bin"/>
     <property name="build-folder" value="./build"/>
 
+    
     <!-- this value gets appended after the file name -->
     <property name="version" value="0.0.1"/>
 
@@ -40,11 +44,6 @@
         <path refid="Maven Dependencies.libraryclasspath"/>
     </path>
 
-    <path id="run.Community.classpath">
-        <path refid="PrEPSTI.classpath"/>
-        <path refid="Maven Dependencies.libraryclasspath"/>
-    </path>
-
     <target name="init">
         <mkdir dir="${compiled-folder}/classes"/>
         <copy includeemptydirs="false" todir="${compiled-folder}/classes">
@@ -64,7 +63,7 @@
 
     <target depends="build-project" name="build">
         <!-- Create the jar directory -->
-        <echo message="Building project . . . "/>
+        <echo message="Building project, main-class=${mainClass}"/>
         <mkdir dir="build" />
 
         <jar destfile="${build-folder}/${build-name}-${version}.jar" basedir="${compiled-folder}/classes" >

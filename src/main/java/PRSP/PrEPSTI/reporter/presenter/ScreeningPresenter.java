@@ -72,7 +72,7 @@ public class ScreeningPresenter extends Presenter {
     }
 
     // static String[] simNames = new String[] {"REPORT_APop2500Cycles2920", "REPORT_BPop2500Cycles2920", "REPORT_CPop2500Cycles2920", "REPORT_DPop2500Cycles2920", "REPORT_EPop2500Cycles2920", "REPORT_FPop2500Cycles2920"} ; //, "to2017newSort17baPop40000Cycles5110","to2017newSort17caPop40000Cycles5110","to2017newSort17daPop40000Cycles5110","to2017newSort17eaPop40000Cycles5110",
-    static String[] simNames = new String[] {"REPORT_APop2500Cycles1460", "REPORT_BPop2500Cycles1460", "REPORT_CPop2500Cycles1460"};
+    static String[] simNames = new String[] {"REPORT_APop5000Cycles2920", "REPORT_BPop5000Cycles2920", "REPORT_CPop5000Cycles2920"};
 
     
     //      "to2017newSort17faPop40000Cycles5110", "to2017newSort17gaPop40000Cycles5110","to2017newSort17haPop40000Cycles5110","to2017newSort17iaPop40000Cycles5110","to2017newSort17jaPop40000Cycles5110"} ;
@@ -188,7 +188,7 @@ public class ScreeningPresenter extends Presenter {
         //screeningPresenter.multiPlotScreening(new Object[] {"prevalence","prevalence",new String[] {"Pharynx","Rectum","Urethra"}});
         //screeningPresenter.plotIncidencePerCycle(siteNames) ;
         // screeningPresenter.plotFinalAtRiskIncidentsRecord(siteNames,0,"statusHIV") ;
-        screeningPresenter.plotYearsAtRiskIncidenceReport(siteNames, 4, 2019, "statusHIV") ;  // !! line chart here
+        // screeningPresenter.plotYearsAtRiskIncidenceReport(siteNames, 8, 2019, "statusHIV") ;  // !! line chart here
         // screeningPresenter.plotYearsBeenTestedReport(13, 0, 0, 2019, "statusHIV") ;
         //screeningPresenter.plotNotificationsPerCycle(siteNames) ;
         // screeningPresenter.plotSitePrevalence(siteNames) ;
@@ -208,7 +208,7 @@ public class ScreeningPresenter extends Presenter {
         // screeningPresenter.plotSiteProportionSymptomatic(siteNames) ;
 
 
-        // screeningPresenter.plotIntervalMeansFromCSVFileNames(testSimNames);
+        screeningPresenter.plotIntervalMeansFromCSVFileNames(testSimNames);
 
 
         //String methodName = args[3] ;
@@ -1001,8 +1001,10 @@ public class ScreeningPresenter extends Presenter {
 
 
 
-        // @@@ 
-        // plotHashMapString(atRiskIncidenceReport,INCIDENCE,"year", legend) ;
+        // set drawing information
+        setDrawCI(true);
+        setErrorType(SHADED_REGION);
+
         plotHashMapStringCI(propertyToMeanAndCI,INCIDENCE,"year", legend) ;
     }
     

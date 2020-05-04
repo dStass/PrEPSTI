@@ -6,13 +6,13 @@
     },
 
     "community" : {
-        "FILE_PATH" : "/scratch/is14/mw7704/prepsti/output/to2025/",
+        "FILE_PATH" : "output/",
         "NAME_ROOT" : "test",
         "MAX_CYCLES" : "6",
         "POPULATION" : "40000",
         "COMMENT" : "",
         "DYNAMIC" : "true",
-        "RELOAD_SIMULATION" : "Pop40000Cycles6570",
+        "RELOAD_SIMULATION" : "",
         "endYear" : "2025",
         "methods" : {
             "interveneCommunity" : {
@@ -51,7 +51,9 @@
             "urethral_gone_wild",
             "rectal_gone_wild",
             "pharyngeal_gone_wild" 
-        ]
+        ],
+        "FIGURE_WIDTH" : "1280",
+        "FIGURE_HEIGHT": "1280"
     },
 
     "config_loader" : {
