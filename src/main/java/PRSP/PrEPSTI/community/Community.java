@@ -1043,7 +1043,7 @@ public class Community {
                     //LOGGER.info("screening agentId:"+String.valueOf(agent.getAgentId())) ;
                     for (Site site : agent.getSites())
                     {
-                        if (agent.getInfectedStatus(site) != 0)
+                        if (agent.getInfectedStatus(site))
                             record += Reporter.ADD_REPORT_PROPERTY(site.toString(), agent.getSymptomatic(site)) ;
                     }
                 // boolean tested = ((record.contains("Rectum") || record.contains("Urethra")) || !(RAND.nextDouble() < 0.5)) ;
@@ -1063,7 +1063,7 @@ public class Community {
                 record += Reporter.ADD_REPORT_PROPERTY("agentId",agent.getAgentId()) ;
                 for (Site site : agent.getSites())
                 {
-                    if (agent.getInfectedStatus(site) > 0)
+                    if (agent.getInfectedStatus(site))
                         record += Reporter.ADD_REPORT_PROPERTY(site.toString(), agent.getSymptomatic(site)) ;
                     //LOGGER.info(site.toString()) ;
                 }
@@ -1121,7 +1121,7 @@ public class Community {
             
             for (Site site : agent.getSites())
             {
-                siteInfected = (site.getInfectedStatus() != 0) ;
+                siteInfected = (site.getInfectedStatus()) ;
                 //LOGGER.log(Level.INFO, "{0} {1}", new Object[] {site.toString(),siteInfected}) ;
 
                 // Due for an STI screen?
