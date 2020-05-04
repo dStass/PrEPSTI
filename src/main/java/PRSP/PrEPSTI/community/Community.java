@@ -50,7 +50,7 @@ public class Community {
     // static public HashMap<String, HashMap> METHOD_CONFIG;
 
     // input variables
-    static public int DEFAULT_MAX_CYCLES;
+    static public int LOADED_MAX_CYCLES;
     static private int MAX_CYCLES;
     
     // derived variables
@@ -133,7 +133,7 @@ public class Community {
         Community.AGENTS_PER_DAY = Community.POPULATION / 365 ;
 
         // MAX_CYCLES
-        Community.MAX_CYCLES = Community.generateTrueCycles(Community.DEFAULT_MAX_CYCLES) ;
+        Community.MAX_CYCLES = Community.generateTrueCycles(Community.LOADED_MAX_CYCLES) ;
         
         // Pop[POPULATION]Cycles[MAX_CYCLES]
         Community.NAME_SUFFIX = "Pop" + String.valueOf(Community.POPULATION) 
