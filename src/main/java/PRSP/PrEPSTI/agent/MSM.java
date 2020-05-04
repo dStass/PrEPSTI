@@ -221,8 +221,10 @@ public class MSM extends Agent {
         // Start from year 2012
         double[] positiveTrustUndetectable = new double[] {0.0,0.483,0.772,
             0.695, 0.720, 0.757, 0.830, 0.727} ;
+	    //0.830, 0.865, 0.900, 0.935, 0.970, 1.0} ;
         double[] negativeTrustUndetectable = new double[] {0.0,0.106,0.094,
             0.129, 0.154, 0.203, 0.231, 0.194} ;
+            //0.231, 0.265, 0.300, 0.335, 0.370, 0.405, 0.440} ;
         
         if (year >= positiveTrustUndetectable.length)
             year = positiveTrustUndetectable.length - 1 ;
