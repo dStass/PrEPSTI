@@ -1,20 +1,17 @@
 {   
     "community" : {
-        "POPULATION" : "5000",
-        "NAME_ROOT" : "TEST",
+        "POPULATION" : "505",
+        "NAME_ROOT" : "TEST_TIME",
         "MAX_CYCLES" : "3",
         "RELOAD_SIMULATION" : ""
     },
 
     "msm" : {
-        "methods": {
-            "reInitScreenCycle" : {
-                "checkPrepStatus" : "true",
-                "useStatus" : "true"
-            },
-            "REINIT_RISK_CASUAL" : {
-                "prepHasTests" : "true"
-            }
-        }
+        "GROUP_SEX_EVENT_SIZE" : "13",
+        "HIV_RISKY_CORRELATION" : "2.5"
+    },
+
+    "reporter" : {
+        "WRITE_REPORT" : "true"
     }
 }

@@ -328,7 +328,7 @@ public class Reporter {
             }     
             if (!hashMap1.keySet().isEmpty())
                 sortedReport.put(value, hashMap1) ;
-            LOGGER.log(Level.INFO, "{0}", sortedReport);
+          // logger.log(level.info, "{0}", sortedReport);
         }
         return sortedReport ;
     }
@@ -385,7 +385,7 @@ public class Reporter {
             String checkRecord = BOUNDED_STRING_BY_CONTENTS(propertyName,bound,record) ;
             if (checkRecord.isEmpty())
             {
-                LOGGER.info(propertyName + " " + bound + " checkRecord is empty " + record);
+                LOGGER.warning(propertyName + " " + bound + " checkRecord is empty " + record);
                 continue ;
             }
             indexStart = Reporter.INDEX_OF_PROPERTY(bound,checkRecord);
@@ -1329,7 +1329,7 @@ public class Reporter {
                 {
                     String record = report.get(key) ;
                     String valueStr = Reporter.EXTRACT_VALUE(propertyName,record) ;
-                    LOGGER.info("Test " + valueStr + " " + String.valueOf(nbReports) + "\n");
+                    // LOGGER.info("Test " + valueStr + " " + String.valueOf(nbReports) + "\n");
 
                     try
                     {
@@ -1608,7 +1608,7 @@ public class Reporter {
             {
                 HashMap<Comparable,String> hashMapReport = hashMapReports.get(reportIndex) ;
                 properties = IDENTIFY_PROPERTIES(hashMapReport.get(year)) ;
-                LOGGER.info(reportNames.get(reportIndex) + " " + properties.toString() + " " + hashMapReport.get(year));
+                // LOGGER.info(reportNames.get(reportIndex) + " " + properties.toString() + " " + hashMapReport.get(year));
                 //LOGGER.log(Level.INFO, "{0}", prevalenceRecordYears.get(year));
                 for (int propertyIndex = 0 ; propertyIndex < properties.size() ; propertyIndex++ )    // 
                 {
@@ -1690,7 +1690,7 @@ public class Reporter {
         }
         catch( Exception e )
         {
-            LOGGER.info(e.toString()) ;
+            LOGGER.severe(e.toString()) ;
         }
     }
 
@@ -1739,7 +1739,7 @@ public class Reporter {
         }
         catch( Exception e )
         {
-            LOGGER.info(e.toString()) ;
+            LOGGER.severe(e.toString()) ;
             return false ;
         }
         
@@ -1810,7 +1810,7 @@ public class Reporter {
         }
         catch ( Exception e )
         {
-            LOGGER.info("values are not Arrays");
+            LOGGER.severe("values are not Arrays");
             nbProperties = 1 ;
         }
         //LOGGER.log(Level.INFO, "nbProperties:{1}", new Object[] {nbProperties});
@@ -1839,7 +1839,7 @@ public class Reporter {
         }
         catch( Exception e )
         {
-            LOGGER.info(e.toString()) ;
+            LOGGER.severe(e.toString()) ;
             return false ;
         }
         return true ;
@@ -1905,66 +1905,19 @@ public class Reporter {
             {
                 fileWriter.write(row) ; 
                 fileWriter.newLine() ;
-                LOGGER.info(row);
+                // LOGGER.info(row);
             }
             fileWriter.close() ;
         }
         catch( Exception e )
         {
-            LOGGER.info(e.toString()) ;
+            LOGGER.severe(e.toString()) ;
             return false ;
         }
         
         return true ;        
     }
     
-
-    // public static boolean COMBINE_FILES_AS_ON_MEAN_AND_CI(ArrayList<String> fileNames, String folderPath) {
-       
-    //     HashMap<String, ArrayList<String>> yearMap = new HashMap<String, ArrayList<String>>();
-
-    //     // for (int i = 0; i < properties.size(); ++i) {
-    //     //     properties.put()
-    //     // }
-        
-    //     for (int i = 0; i < fileNames.size(); ++i) {
-    //         String fileName = fileNames.get(i); 
-    //         HashMap<Comparable, String[]> readCSV = Reporter.READ_CSV_STRING(fileName, folderPath);
-    //         for (Comparable key : readCSV.keySet()) {
-
-    //             String[] entries = readCSV.get(key);
-    //             String mean = entries[0];
-    //             if (!yearMap.containsKey(key)) {
-    //                 ArrayList<String> meansForYear = new ArrayList<String>();
-    //                 yearMap.put(key.toString(), meansForYear);
-    //             }
-
-
-    //             ArrayList<String> meansForYear = yearMap.get(key);
-    //             meansForYear.add(mean);
-
-    //             // for (int e = 1; e < entries.length; ++e) {
-                    
-                    
-    //                 // }
-    //         }
-    //     }
-
-    //     // LOGGER.info("@@@@@@\n@@@@@@\n@@@@@ " + yearMap.toString());
-        
-
-    //     return true;
-    // }
-
-
-
-
-
-
-
-
-
-
 
     /**
      * Reads in values from multiple files whose names are derived from simNames 
@@ -2178,7 +2131,7 @@ public class Reporter {
         }
         catch( Exception e )
         {
-            LOGGER.info(e.toString()) ;
+            LOGGER.severe(e.toString()) ;
             return false ;
         }
         
@@ -2350,12 +2303,11 @@ public class Reporter {
                 if (!comparisonReport.containsKey(residualSum))
                     comparisonReport.put(residualSum,new ArrayList<String>()) ;
                 comparisonReport.get(residualSum).add(simulationName) ;
-                LOGGER.info(comparisonReport.toString()) ;
             }
             catch ( Exception e )
             {
-                LOGGER.info(e.toString());
-                LOGGER.info(simulationName) ;
+                LOGGER.severe(e.toString());
+                LOGGER.severe(simulationName) ;
                 //simNames.remove(simIndex) ;
             }
 
@@ -2435,7 +2387,7 @@ public class Reporter {
         }
         catch ( Exception e )
         {
-            LOGGER.info(e.toString());
+            LOGGER.severe(e.toString());
         }
      
         return report ;
@@ -2557,7 +2509,6 @@ public class Reporter {
     static public boolean DUMP_OUTPUT(String reportName, String simName, String folderPath, Object dumpReport)
     {
         String fileName = reportName + "_" + simName + ".txt" ;
-        LOGGER.info(fileName) ;
         try
         {
             BufferedWriter metadataWriter = new BufferedWriter(new FileWriter(folderPath + fileName,true)) ;
@@ -2651,7 +2602,7 @@ public class Reporter {
         }
         catch( Exception e )
         {
-            LOGGER.info(e.toString()) ;
+            LOGGER.severe(e.toString()) ;
             return false ;
         }
         
@@ -2808,7 +2759,7 @@ public class Reporter {
             }
             averagedReport.add(meanRecord) ;
         }
-        LOGGER.log(Level.INFO, "{0}", averagedReport);
+      // logger.log(level.info, "{0}", averagedReport);
         return averagedReport ;
     }
 
@@ -3076,7 +3027,7 @@ public class Reporter {
         }
         catch( Exception e )
         {
-            LOGGER.info(e.toString()) ;
+            LOGGER.severe(e.toString()) ;
         }
         return initialRecord ;
     }
@@ -3094,7 +3045,7 @@ public class Reporter {
         }
         catch( Exception e )
         {
-            LOGGER.info(e.toString()) ;
+            LOGGER.severe(e.toString()) ;
         }
         return finalRecord ;
     }
@@ -3324,7 +3275,7 @@ public class Reporter {
         if (simNameList.size() < cutoff)
             cutoff = simNameList.size() ;
         MULTI_WRITE_CSV(simNameList.subList(0, cutoff), "year", "Pharynx_false", "riskyIncidence_HIV", folderPath) ; // "C:\\Users\\MichaelWalker\\OneDrive - UNSW\\gonorrhoeaPrEP\\simulator\\PrEPSTI\\output\\prep\\") ; // 
-        LOGGER.info(String.valueOf(cutoff) + " simulations included.") ;
+        // LOGGER.info(String.valueOf(cutoff) + " simulations included.") ;
         //PREPARE_GRAY_REPORT(simNames,folderPath,2007,2017) ;
     }
 
@@ -3385,7 +3336,7 @@ public class Reporter {
                 BufferedReader fileReader = new BufferedReader(new FileReader(folderPath + getFileName())) ;
                 record = fileReader.readLine() ;
                 if (record == null)
-                    LOGGER.info(Level.WARNING + ":Empty report file");
+                    LOGGER.warning("Empty report file");
                 while (record != null)
                 {
                     outputArray.add(record) ;
@@ -3466,7 +3417,7 @@ public class Reporter {
             fileReader.close() ;
             //LOGGER.info(record) ;
             if (record == null)
-                LOGGER.info(Level.WARNING + ":Empty report file");
+                LOGGER.warning("Empty report file");
 
             return record ;
         }
@@ -3487,7 +3438,7 @@ public class Reporter {
             fileReader.close() ;
             
             if (outputString.isEmpty())
-                LOGGER.info(Level.WARNING + ":Empty report file");
+                LOGGER.warning("Empty report file");
 
             return outputString ;
         }
@@ -3591,7 +3542,7 @@ public class Reporter {
             ArrayList<String> fileList = new ArrayList<String>() ;
             
             int cycleFileIndex = fileNames.size() - 1 ;
-            LOGGER.info("cycleFileIndex:" + String.valueOf(cycleFileIndex));
+            // LOGGER.info("cycleFileIndex:" + String.valueOf(cycleFileIndex));
             // From which line do we had files
             int fromLine = 0 ;
             
@@ -3647,7 +3598,7 @@ public class Reporter {
             }
             catch (Exception e)
             {
-                LOGGER.info(e.toString()) ;
+                LOGGER.severe(e.toString()) ;
             }
         }
         

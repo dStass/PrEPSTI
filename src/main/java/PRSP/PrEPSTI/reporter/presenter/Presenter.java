@@ -220,7 +220,7 @@ public class Presenter {
         for (Object key : report.keySet())
         {
             scoreValueArray = report.get(key) ;
-            LOGGER.log(Level.INFO,"{0}",scoreValueArray) ;
+          // logger.log(level.info,"{0}",scoreValueArray) ;
             //if (dataset.getColumnKeys().contains(String.valueOf(key))) 
                 for (int scoreIndex = 0 ; scoreIndex < scoreValueArray.length ; scoreIndex++ )
                 {
@@ -356,7 +356,7 @@ public class Presenter {
         }
         catch ( Exception e )
         {
-            LOGGER.info(e.toString());
+            LOGGER.severe(e.toString());
         }
         
         return hashMapNumber ;
@@ -396,7 +396,7 @@ public class Presenter {
             while ((record != null) && (!record.isEmpty()))
             {
                 valueArray = new Number[recordLength - 1] ;
-                LOGGER.info(record);
+                // LOGGER.info(record);
                 recordArray = record.split(COMMA) ;
                 try
                 {
@@ -428,7 +428,7 @@ public class Presenter {
         }
         catch ( Exception e )
         {
-            LOGGER.info(e.toString());
+            LOGGER.severe(e.toString());
         }
         
         return hashMapNumberArray ;
@@ -510,7 +510,7 @@ public class Presenter {
         //String chartTitle = "Pharynx" ;
         //String chartTitle = "meanNb" ;
         String chartTitle = "positivity" ;
-        LOGGER.info(chartTitle) ;
+        // LOGGER.info(chartTitle) ;
         String[] relationshipClassNames = new String[] {"Casual","Regular","Monogomous"} ; // "Casual","Regular","Monogomous"
         String[] siteNames  = new String[] {"Urethra"} ; // "Pharynx","Rectum","Urethra"} ;
         String[] simNames = new String[] {"adjustCondom1Y16bPop40000Cycles4420","adjustCondom1Y16cPop40000Cycles4420","adjustCondom1Y16dPop40000Cycles4420","adjustCondom1Y16ePop40000Cycles4420"} ; // 
@@ -533,14 +533,14 @@ public class Presenter {
 //        averagedHashMap.remove(2013) ;
 //        averagedHashMap.remove(2014) ;
 //        for (Object key : averagedHashMap.keySet())
-//            LOGGER.log(Level.INFO, "{0} {1}", new Object[] {key,averagedHashMap.get(key)[0]});
+//          // logger.log(level.info, "{0} {1}", new Object[] {key,averagedHashMap.get(key)[0]});
         //screeningPresenter.plotHashMap("year", siteNames, averagedHashMap) ;
         /*
         ScreeningReporter screeningReporter = 
                 //new ScreeningReporter("prevalence",community.screeningReport) ;
                 new ScreeningReporter(simName,folder) ;
         ArrayList<Object> pharynxPrevalenceReport = screeningReporter.preparePrevalenceReport("Pharynx") ;
-        LOGGER.log(Level.INFO, "{0}", pharynxPrevalenceReport.get(0));
+      // logger.log(level.info, "{0}", pharynxPrevalenceReport.get(0));
         Reporter.WRITE_CSV(pharynxPrevalenceReport, "Pharynx", simName, folder);
         */
         
@@ -550,7 +550,7 @@ public class Presenter {
         LOGGER.info("prepareMeanNumberRelationshipsReport");
         ArrayList<HashMap<Object,String>> meanNumberRelationshipsReport 
                 = relationshipReporter.prepareMeanNumberRelationshipsReport(relationshipClassNames) ;
-        LOGGER.log(Level.INFO, "{0}", meanNumberRelationshipsReport);
+      // logger.log(level.info, "{0}", meanNumberRelationshipsReport);
         
         ArrayList<ArrayList<Object>> plotReport = new ArrayList<ArrayList<Object>>() ;
         for (HashMap<Object,String> report : meanNumberRelationshipsReport)
@@ -677,7 +677,7 @@ public class Presenter {
         }
         catch ( Exception e )
         {
-            LOGGER.info(e.toString());
+            LOGGER.severe(e.toString());
         }
         
         if (recordLength > 2)
@@ -687,7 +687,7 @@ public class Presenter {
         }
         else
         {
-            LOGGER.log(Level.INFO, "{0}", hashMapNumber) ;
+          // logger.log(level.info, "{0}", hashMapNumber) ;
             plotHashMap(arrayHeader[0],arrayHeader[1],hashMapNumber) ;
         }
     }
@@ -915,13 +915,13 @@ public class Presenter {
             // Add bin to dataset
             binned.put(categoryValue, (Number[]) scoreValue.toArray(new Number[0])) ;
                     
-            LOGGER.log(Level.INFO, "closeSegmentNb {0}, openSegmentNb {1}, categoryValue {2}", new Object[] {closeSegmentNb,openSegmentNb,categoryValue}) ;
+          // logger.log(level.info, "closeSegmentNb {0}, openSegmentNb {1}, categoryValue {2}", new Object[] {closeSegmentNb,openSegmentNb,categoryValue}) ;
             // prepare for next bin
             //openSegmentNb = closeSegmentNb ;    // (int) Math.pow(base, binIndex) - 1 ;    // -1 java counts from 0
             //closeSegmentNb = (closeSegmentNb) * base   ;    // (int) Math.pow(base, nextIndex) - 1 ;    // -1 include closeSegmentNB in for-loop
-            ////categoryValue = "-" + String.valueOf(categoryEntry.get(closeSegmentNb - 1)) ;
+            //categoryValue = "-" + String.valueOf(categoryEntry.get(closeSegmentNb - 1)) ;
             //
-            LOGGER.log(Level.INFO, "{0} {1} {2} {3}", binned.get(categoryValue)) ;
+          // logger.log(level.info, "{0} {1} {2} {3}", binned.get(categoryValue)) ;
                     
         }
 
@@ -1259,7 +1259,7 @@ public class Presenter {
      */
     protected void plotHashMap(String categoryName, String[] scoreNames, HashMap<Comparable,Number[]> hashMapReport )
     {
-        LOGGER.info("plotHashMap()") ;
+        LOGGER.severe("plotHashMap()") ;
         //ArrayList<String> categoryInteger = new ArrayList<String>() ;
         ArrayList<ArrayList<Number>> scoreNumbers = new ArrayList<ArrayList<Number>>() ;
         ArrayList<Object> categoryEntry = new ArrayList<Object>() ;
@@ -1308,9 +1308,7 @@ public class Presenter {
             xySeriesCollection = EXPAND_DATASET(xySeriesCollection,dataReport, DATA_SCORE) ;
             
         }
-        for (String entry : legend)
-                LOGGER.info(entry);
-            
+
         // Send data to be processed and presented
         chart_awt.plotLineChart(chartTitle,xySeriesCollection, yLabel, xLabel, newLegend) ;
     }
@@ -1467,7 +1465,7 @@ public class Presenter {
     public void multiPlotValues(String record, String yLabel, String xLabel)
     {
         DefaultCategoryDataset dataset = parseSortedRecord(record) ;
-        LOGGER.log(Level.INFO, "{0}",dataset);
+      // logger.log(level.info, "{0}",dataset);
         chart_awt.plotBarChart(chartTitle, dataset, yLabel, xLabel) ;
     }            
     
@@ -1526,7 +1524,7 @@ public class Presenter {
         }
         catch ( Exception e )
         {
-            LOGGER.info(e.getLocalizedMessage());
+            LOGGER.severe(e.getLocalizedMessage());
         }
         return reportArray ;
     }
@@ -1663,7 +1661,7 @@ public class Presenter {
         Number value ;
         for (String scoreName : scoreNames)
         {
-            LOGGER.info(scoreName);
+            // LOGGER.info(scoreName);
             plotList = new ArrayList<Number>() ;
             valueString = Reporter.EXTRACT_VALUE(scoreName,record) ;
             if (Integer.class.isInstance(valueString))
@@ -1722,7 +1720,7 @@ public class Presenter {
     private ArrayList<ArrayList<String>> parseReportArray(String scoreName, ArrayList<String> report)
     {       
         ArrayList<ArrayList<String>> scoreList = new ArrayList<ArrayList<String>>() ;
-        LOGGER.info(report.toString());
+        // LOGGER.info(report.toString());
         ArrayList<String> plotList = new ArrayList<String>() ;
         for (Object record : report)
         {
@@ -1996,7 +1994,7 @@ public class Presenter {
                 value = Reporter.EXTRACT_VALUE(property,scoreRecord) ;
                 plotList.add(value) ;
             }
-            LOGGER.log(Level.INFO, "{0} {1}", new Object[] {scoreName, value});
+          // logger.log(level.info, "{0} {1}", new Object[] {scoreName, value});
             scoreList.add((ArrayList<String>) plotList.clone()) ;
         }
         
@@ -2172,7 +2170,7 @@ public class Presenter {
          */
         private void callStackedPlotChart(String chartTitle, ArrayList<Object> categoryList, ArrayList<ArrayList<Number>> scoreLists, String[] scoreNames, String xLabel)
         {
-            LOGGER.info("callPlotChartInteger()") ;
+            // LOGGER.info("callPlotChartInteger()") ;
             boolean bin = false ;    // Comparable.class.isInstance(categoryList.get(0)) ;
             boolean readInputFile = false ;
             DefaultCategoryDataset dataset ;
@@ -2182,7 +2180,7 @@ public class Presenter {
             {
                 // Data from file
                 HashMap<Comparable,Number[]> dataReport = READ_HASHMAP_NUMBER_ARRAY_CSV(FILENAME) ;
-                LOGGER.log(Level.INFO, "{0}", dataReport);
+              // logger.log(level.info, "{0}", dataReport);
                 // Match categories to input file
                 if (readInputFile && (categoryList.size() > dataReport.size()))
                 {
@@ -2201,7 +2199,7 @@ public class Presenter {
                 //dataset.removeRow(DATA_SCORE[1]) ;
                 //dataset.removeRow(DATA_SCORE[2]) ;
                 //dataset.removeRow(DATA_SCORE[3]) ;
-                LOGGER.log(Level.INFO, "{0}", dataset);
+              // logger.log(level.info, "{0}", dataset);
                 
                 finalNames = new String[scoreNames.length + 1] ; // DATA_SCORE.length] ;
                 for (int scoreIndex = 0 ; scoreIndex < scoreNames.length ; scoreIndex++ )
@@ -2266,7 +2264,7 @@ public class Presenter {
          */
         private void plotBarChart(String chartTitle, CategoryDataset dataset, String yLabel, String xLabel)
         {
-            LOGGER.info("plotBarChart()");
+            // LOGGER.info("plotBarChart()");
             JFreeChart barChart = ChartFactory.createBarChart(chartTitle,xLabel,
                 yLabel,dataset,PlotOrientation.VERTICAL,true, true, false);
             
@@ -2300,7 +2298,7 @@ public class Presenter {
          */
         private void plotStackedBarChart(String chartTitle, CategoryDataset dataset, String[] scoreNames , String xLabel)
         {
-            LOGGER.info("plotBarChart()");
+            // LOGGER.info("plotBarChart()");
             //if (grouped)
             String[] nameList ;
             
@@ -2410,7 +2408,7 @@ public class Presenter {
             JFreeChart lineChart = ChartFactory.createXYLineChart(chartTitle,xLabel,
                 yLabel,dataset,PlotOrientation.VERTICAL,showLegend, true, false);
 
-            LOGGER.info("LEGEND:" + Arrays.toString(legend));
+            // LOGGER.info("LEGEND:" + Arrays.toString(legend));
 
             // declare renderer used
             XYLineAndShapeRenderer r = null;
@@ -2685,7 +2683,7 @@ public class Presenter {
                 appFrame.setVisible(true) ;
             }
             else {
-                LOGGER.info("HPC detected, display not possible.") ;
+                LOGGER.warning("HPC detected, display not possible.") ;
             }
         }
 
@@ -2709,7 +2707,6 @@ public class Presenter {
 
             String directory = folderPath ;
             String address = directory + applicationTitle + chartTitle + ".jpg" ;
-            LOGGER.info("Saving figure " + address);
 
             int width = FIGURE_WIDTH ;
             int height = FIGURE_HEIGHT ;
@@ -2724,14 +2721,13 @@ public class Presenter {
             //LOGGER.info(file.getCanonicalPath());
             //for (String fileName : files)
               //  LOGGER.info(fileName);
-                LOGGER.info("Saving successful");
                 ChartUtils.saveChartAsJPEG(file, chart, width, height);
             }
             catch ( IOException ioe)
             {
-                LOGGER.info("Saving failed");
-                LOGGER.log(Level.SEVERE, ioe.getMessage());
-                LOGGER.info(ioe.getLocalizedMessage());
+                LOGGER.severe("Saving failed");
+                LOGGER.severe(ioe.getMessage());
+                LOGGER.severe(ioe.getLocalizedMessage());
             }
         }
         
@@ -2885,7 +2881,7 @@ public class Presenter {
             
             String scoreName ;
             boolean cumulative = scoreNames[0].contains("umulative") ;
-            LOGGER.log(Level.INFO, "cumulative:{0} {1}", new Object[] {String.valueOf(cumulative),scoreNames}) ;
+          // logger.log(level.info, "cumulative:{0} {1}", new Object[] {String.valueOf(cumulative),scoreNames}) ;
             String categoryValue = "" ;
             ArrayList<Number> scoreValueArray ;
             ArrayList<Number> scoreValue ;
@@ -3167,7 +3163,7 @@ public class Presenter {
                     }
                     catch ( CloneNotSupportedException cnse )
                     {
-                        LOGGER.info(cnse.toString());
+                        LOGGER.severe(cnse.toString());
                         hubSeriesCollection.addSeries(hubSeries);
                     }
                 }

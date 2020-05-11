@@ -72,7 +72,7 @@ public class SortReporter extends Reporter {
         }
         catch ( Exception e )
         {
-            LOGGER.info(e.toString()) ;
+            LOGGER.severe(e.toString()) ;
         }
         
     }
@@ -261,7 +261,7 @@ public class SortReporter extends Reporter {
         // Report of numbers of new Relationships in given time to agentIds
         ArrayList<ArrayList<Object>> sortAgentConcurrencyReport 
             = prepareAgentConcurrencyReport(maxConcurrency, backYears, backMonths, backDays, recordIndex) ;
-        LOGGER.log(Level.INFO, "{0}", sortAgentConcurrencyReport);
+      // logger.log(level.info, "{0}", sortAgentConcurrencyReport);
 
         // Reference population for determining relative bar widths
         double referencePopulation = sortAgentConcurrencyReport.get(0).size() ;

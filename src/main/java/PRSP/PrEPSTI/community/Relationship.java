@@ -221,7 +221,7 @@ public class Relationship {
                 }
 
             }
-            LOGGER.info("nbRelationships:".concat(String.valueOf(nbRelationships)));
+            // LOGGER.info("nbRelationships:".concat(String.valueOf(nbRelationships)));
         }
         catch ( Exception e )
         {
@@ -312,7 +312,7 @@ public class Relationship {
                 NB_RELATIONSHIPS++ ;
                 relationship.setRelationshipId(relationshipId) ;
             }
-            LOGGER.info("nbRelationships:".concat(String.valueOf(NB_RELATIONSHIPS)));
+            // LOGGER.info("nbRelationships:".concat(String.valueOf(NB_RELATIONSHIPS)));
         }
         catch ( Exception e )
         {

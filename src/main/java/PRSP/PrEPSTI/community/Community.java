@@ -126,6 +126,8 @@ public class Community {
     static final java.util.logging.Logger LOGGER = java.util.logging.Logger.getLogger("reporter") ;
 
     public static void main(String[] args) {
+        long timeInitial = System.nanoTime();
+        float timeAging = 0f;
         ConfigLoader.load();  // set static variables
         
         // derived variables
@@ -214,11 +216,10 @@ public class Community {
         
         // Record starting time to measure running time
         long startTime = System.nanoTime() ;
-        LOGGER.log(Level.INFO, "Seed:{0}", System.currentTimeMillis());
+        // LOGGER.log(Level.INFO, "Seed:{0}", System.currentTimeMillis());
     
         // Establish Community of Agents for simulation
-        LOGGER.info(SIM_NAME);
-        LOGGER.info("RELOAD_SIMULATION = " + RELOAD_SIMULATION);
+        // LOGGER.info(SIM_NAME);
         Community community = new Community(RELOAD_SIMULATION, 200) ;
         
 
@@ -237,7 +238,7 @@ public class Community {
         // To record cycle number in every record
         String cycleString ;
         
-        System.out.println("population: " + POPULATION + ", Cycles: " + Community.MAX_CYCLES );
+        // System.out.println("population: " + POPULATION + ", Cycles: " + Community.MAX_CYCLES );
         /*
         int outputInterval ;
         if (POPULATION < MAX_CYCLES)
@@ -269,7 +270,7 @@ public class Community {
             ArrayList<String> commenceList = new ArrayList<String>() ;
             ArrayList<Comparable> breakupList ;
             
-            LOGGER.info("burning in Relationships") ;
+            // LOGGER.info("burning in Relationships") ;
             for (int burnin = 0 ; burnin < 2500 ; burnin++ ) // 20000
             {
                 commenceString = community.generateRelationships() ;
@@ -309,7 +310,7 @@ public class Community {
         for (int cycle = 0; cycle < Community.MAX_CYCLES; cycle++)
         {	
             //if ((cycle % 10) == 0) //((cycle/outputInterval) * outputInterval))
-              //  LOGGER.log(Level.INFO, "Cycle no. {0}", cycleString);
+              // logger.log(level.info, "Cycle no. {0}", cycleString);
 
             if (DYNAMIC)
                 populationRecord += community.interveneCommunity(cycle) ;
@@ -346,7 +347,10 @@ public class Community {
 
             // Deal with effects of aging.
             // To include in populationRecord move this above community.submitRecords()
+            float t1 = System.nanoTime();
             community.ageOneDay();
+            float t2 = System.nanoTime();
+            timeAging += (t2-t1);
 
             if (PARTIAL_DUMP)
                 if ((((cycle+1)/DUMP_CYCLE) * DUMP_CYCLE) == (cycle+1) )
@@ -403,7 +407,7 @@ public class Community {
         
         for (boolean unique : new boolean[] {})    // false,
         {
-            LOGGER.info("unique:" + String.valueOf(unique)) ;
+            // LOGGER.info("unique:" + String.valueOf(unique)) ;
             //HashMap<Object,Number> finalPositivityRecord = new HashMap<Object,Number>() ;
             String notificationsRecord = screeningReporter.prepareFinalNotificationsRecord(new String[] {"Pharynx","Rectum","Urethra"}, unique, 0, Reporter.DAYS_PER_YEAR) ;
             //HashMap<Object,Number[]> notificationsRecord = screeningReporter.prepareFinalNotificationsRecord(new String[] {"Pharynx","Rectum","Urethra"}, unique, 0, Reporter.DAYS_PER_YEAR) ;
@@ -427,10 +431,10 @@ public class Community {
         {
             prevalenceReport = screeningReporter.preparePrevalenceReport(siteName) ;
             //LOGGER.info(String.valueOf(prevalenceReport.size())) ;
-            LOGGER.log(Level.INFO,"{0} {1}", new Object[] {siteName, prevalenceReport.get(prevalenceReport.size() - 1)}) ;
+            // LOGGER.log(Level.INFO,"{0} {1}", new Object[] {siteName, prevalenceReport.get(prevalenceReport.size() - 1)}) ;
         }
         prevalenceReport = screeningReporter.preparePrevalenceReport() ;
-        LOGGER.log(Level.INFO,"{0} {1}", new Object[] {"all", prevalenceReport.get(prevalenceReport.size() - 1)}) ;
+        // LOGGER.log(Level.INFO,"{0} {1}", new Object[] {"all", prevalenceReport.get(prevalenceReport.size() - 1)}) ;
 
         HashMap<Comparable,String> incidenceReport = new HashMap<Comparable,String>() ;
         //HashMap<Comparable,String> incidenceReportPrep = new HashMap<Comparable,String>() ;
@@ -444,15 +448,22 @@ public class Community {
             incidenceReport = screeningReporter.prepareYearsAtRiskIncidenceReport(siteNames, endYear + 1 - startYear, endYear, "statusHIV") ;
             //incidenceReportPrep = screeningReporter.prepareYearsAtRiskIncidenceReport(siteNames, 16, 2022, "prepStatus") ;
         }
-        LOGGER.info("by HIV-status " + screeningReporter.prepareFinalAtRiskIncidentsRecord(siteNames, 0, "statusHIV")) ;
+        
+        
         //String finalPrevalencesRecord = screeningReporter.prepareFinalPrevalencesSortedRecord(siteNames, "statusHIV") ;
         //LOGGER.log(Level.INFO, "prevalence {0}", finalPrevalencesRecord) ;
         
         //EncounterReporter encounterReporter = new EncounterReporter("Agent to Agent",community.encounterReport) ;
         //encounterReporter = new EncounterReporter(Community.SIM_NAME,Community.FILE_PATH) ;
-        LOGGER.info("Incidence " + encounterReporter.prepareFinalIncidenceRecord(new String[] {"Pharynx","Rectum","Urethra"}, 0, 0, 365, MAX_CYCLES).toString());
-        LOGGER.info("Incidence " + encounterReporter.prepareSortedFinalIncidenceRecord(siteNames, 0, 0, 365, MAX_CYCLES, "statusHIV").toString());
-//            EncounterPresenter encounterPresenter
+        
+        // commented out:
+        // LOGGER.info("by HIV-status " + screeningReporter.prepareFinalAtRiskIncidentsRecord(siteNames, 0, "statusHIV")) ;
+        // LOGGER.info("Incidence " + encounterReporter.prepareFinalIncidenceRecord(new String[] {"Pharynx","Rectum","Urethra"}, 0, 0, 365, MAX_CYCLES).toString());
+        // LOGGER.info("Incidence " + encounterReporter.prepareSortedFinalIncidenceRecord(siteNames, 0, 0, 365, MAX_CYCLES, "statusHIV").toString());
+
+
+        // old code
+        //            EncounterPresenter encounterPresenter
 //                    = new EncounterPresenter(SIM_NAME,"multi prevalence",encounterReporter) ;
 //            encounterPresenter.multiPlotScreening(new Object[] {"prevalence","prevalence",new String[] {"Pharynx","Rectum","Urethra"}}) ;  // ,"coprevalence",new String[] {"Pharynx","Rectum"},new String[] {"Urethra","Rectum"}
         //HashMap<Object,Number> finalTransmissionsRecord = encounterReporter.prepareFinalIncidenceRecord(new String[] {"Pharynx","Rectum","Urethra"}, 0, Reporter.DAYS_PER_YEAR) ;
@@ -477,9 +488,9 @@ public class Community {
             //Reporter.DUMP_OUTPUT("riskyIncidencePrep",SIM_NAME,FILE_PATH,incidenceReportPrep);
         }
         
-
-        LOGGER.info("Task completed");
-
+        long timeFinal = System.nanoTime();
+        float timeRan = (timeFinal - timeInitial)/  1000000000f;
+        LOGGER.info("Task completed in " + String.valueOf(timeRan) + " seconds and timeAging = " + String.valueOf(timeAging/1000000000f));
     }
  
 
@@ -545,7 +556,7 @@ public class Community {
 
         //if (!simName.isEmpty())
           //  rebootRandomSeeds(simName) ;
-        System.out.println(initialiseCommunity()) ;
+        initialiseCommunity();
                 
     }
     
@@ -558,7 +569,7 @@ public class Community {
     public Community(String simName, int fromCycle)
     {
         if (simName.isEmpty())
-            System.out.println(initialiseCommunity()) ;
+            initialiseCommunity();
         else
         {
             rebootRandomSeeds(simName) ;
@@ -928,17 +939,17 @@ public class Community {
                 }
                 catch (NoSuchMethodException nsme)
                 {
-                    LOGGER.info(nsme.getLocalizedMessage());
+                    LOGGER.severe(nsme.getLocalizedMessage());
                     record += nsme.toString(); //  .getMessage() ;
                 }
                 catch (InvocationTargetException ite)
                 {
-                    LOGGER.info(ite.getLocalizedMessage());
+                    LOGGER.severe(ite.getLocalizedMessage());
                     //record += ite.getMessage() ;
                 }
                 catch (IllegalAccessException iae)
                 {
-                    LOGGER.info(iae.getLocalizedMessage());
+                    LOGGER.severe(iae.getLocalizedMessage());
                     record += iae.getMessage() ;
                 }
             }
@@ -1292,7 +1303,7 @@ public class Community {
      */
     private void dumpRebootData()
     {
-        LOGGER.info("dumpRebootData()");
+        // LOGGER.info("dumpRebootData()");
         ArrayList<String> metaLabels = new ArrayList<String>() ; 
         ArrayList<Object> metaData = new ArrayList<Object>() ; 
         
@@ -1310,7 +1321,7 @@ public class Community {
                     relationshipReboot +=relationship.getRecord() ;
         metaData.add(relationshipReboot) ; 
      
-        LOGGER.info("scribe.dumpRebootData()");
+        // LOGGER.info("scribe.dumpRebootData()");
         scribe.dumpRebootData(metaLabels, metaData);
     }
     
@@ -1451,7 +1462,7 @@ public class Community {
                 }
             }
             dumpsSoFar++ ;
-            LOGGER.log(Level.INFO, "dumpsSoFar:{0} nb_Files:{1} properties:{2}", new Object[] {dumpsSoFar,(new File(globalFolder)).listFiles().length,properties.length});
+            // LOGGER.log(Level.INFO, "dumpsSoFar:{0} nb_Files:{1} properties:{2}", new Object[] {dumpsSoFar,(new File(globalFolder)).listFiles().length,properties.length});
         }
         
         /**
@@ -1470,7 +1481,7 @@ public class Community {
             } 
             catch ( Exception e )
             {
-                LOGGER.info(e.toString());
+                LOGGER.severe(e.toString());
             }
         }
         
@@ -1482,7 +1493,7 @@ public class Community {
         protected void dumpRebootData(ArrayList<String> metaLabels, ArrayList<Object> metaData)
         {
             String fileName = simName + "-REBOOT" + extension ;
-            LOGGER.info(fileName);
+            // LOGGER.info(fileName);
             try
             {
                 BufferedWriter metadataWriter = new BufferedWriter(new FileWriter(globalFolder + fileName,false)) ;
@@ -1491,7 +1502,7 @@ public class Community {
             } 
             catch ( Exception e )
             {
-                LOGGER.info(e.toString());
+                LOGGER.severe(e.toString());
             }
         }
         

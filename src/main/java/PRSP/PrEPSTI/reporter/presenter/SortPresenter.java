@@ -34,7 +34,7 @@ public class SortPresenter extends Presenter {
         String chartTitle = "proportion_by_nb_partners" ;
         String reportFileName = "output/test/" ; // args[2] ;
         
-        System.out.println(chartTitle) ;
+        // System.out.println(chartTitle) ;
         
         //SortPresenter sortPresenter = new SortPresenter(simName,chartTitle,reportFileName,"encounter","relationship") ;
         //sortPresenter.plotSortIncidence(5,1,3,0,0) ;    // nbRelationships, binSize, backYears, backMonths, backDays
@@ -201,7 +201,7 @@ public class SortPresenter extends Presenter {
     {
         HashMap<Object,Number[]> sortConcurrencyIncidenceReport = reporter.prepareSortConcurrencyIncidenceReport(partnerCount, backYears, backMonths, backDays) ;
         String scoreName = "incidence" ;
-        LOGGER.log(Level.INFO, "{0}", sortConcurrencyIncidenceReport);
+      // logger.log(level.info, "{0}", sortConcurrencyIncidenceReport);
         
         String timePeriod = GET_TIME_PERIOD_STRING(backYears,backMonths,backDays) ;
         

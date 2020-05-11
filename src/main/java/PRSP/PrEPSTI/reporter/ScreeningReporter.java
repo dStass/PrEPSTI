@@ -140,7 +140,7 @@ public class ScreeningReporter extends Reporter {
             //HashMap<Object,Number[]> notificationsRecord ;
             for (int year = 0 ; year < backYears ; year++ )
             {
-                LOGGER.info(String.valueOf(year));
+                LOGGER.severe(String.valueOf(year));
                 //Number[] yearlyNotificationsRecord = new Number[siteNames.length + 1] ;
                 //String yearlyNotificationsString = "" ;
                 //endCycle = maxCycles - year * DAYS_PER_YEAR ;
@@ -184,7 +184,7 @@ public class ScreeningReporter extends Reporter {
 
             for (Object sortingValue : sortedAgentReport.keySet())
             {
-                LOGGER.log(Level.INFO, "value:{0} population:{1}", new Object[] {sortingValue,sortedAgentReport.get(sortingValue).size()});
+              // logger.log(level.info, "value:{0} population:{1}", new Object[] {sortingValue,sortedAgentReport.get(sortingValue).size()});
                 HashMap<Comparable,String> yearsNotificationsRecord = new HashMap<Comparable,String>() ; 
                 yearsNotificationsRecord = prepareYearsNotificationsRecord(siteNames, backYears, lastYear, sortedAgentReport.get(sortingValue)) ;
                 
@@ -286,7 +286,7 @@ public class ScreeningReporter extends Reporter {
         
         for (Object sortingValue : sortedAgentReport.keySet())
         {
-            LOGGER.info(sortingValue.toString());
+            // LOGGER.info(sortingValue.toString());
             //HashMap<Object,Number[]> finalNotificationsRecord = prepareFinalNotificationsRecord(siteNames,unique, backYears, backMonths, backDays, endCycle, sortedAgentReport.get(sortingValue)) ;
             String finalNotificationsRecord = prepareFinalNotificationsRecord(siteNames,unique, backYears, backMonths, backDays, endCycle, sortedAgentReport.get(sortingValue)) ;
             //HashMap<Object,Number> notificationsRecord = new HashMap<Object,Number>() ;
@@ -361,7 +361,7 @@ public class ScreeningReporter extends Reporter {
             countedAgents.retainAll(agentsAliveReport) ;
             population = countedAgents.size() ;
         }
-        LOGGER.info("population:" + String.valueOf(population));
+        // LOGGER.info("population:" + String.valueOf(population));
         
         // Adjust for portion of year sampled //! and units of 100 person-years
         double denominator = ((double) getBackCycles(0,backMonths,backDays)*population)/(100*DAYS_PER_YEAR) ; // daysBetweenTests) ; //DAYS_PER_YEAR) ; // *population/100000
@@ -641,7 +641,7 @@ public class ScreeningReporter extends Reporter {
                 prevalenceRecordYears.put(lastYear - year, prevalenceRecord) ;
                 prevalenceRecord = "" ;
             }
-            LOGGER.info(prevalenceRecordYears.toString());
+            // LOGGER.info(prevalenceRecordYears.toString());
             
             return prevalenceRecordYears ;
         }
@@ -1064,8 +1064,8 @@ public class ScreeningReporter extends Reporter {
         {
             if (agentTestingReport.containsKey(nbTests))
                 tested += ((Number) agentTestingReport.get(nbTests)).intValue() ;
-            else
-                LOGGER.info("No Agents have taken precisely " + String.valueOf(nbTests) + " tests.") ;
+            // else
+            //     LOGGER.info("No Agents have taken precisely " + String.valueOf(nbTests) + " tests.") ;
             cumulativeAgentTestingRecord.put(nbTests,tested) ;
         }
         if (tested != (population-agentTestingReport.get(0).intValue()))
@@ -1257,7 +1257,7 @@ public class ScreeningReporter extends Reporter {
 
                 sortedCumulativeAgentTestingRecord.put(sortingValue, (Number[]) cumulativeAgentTestingRecord.clone()) ;
             
-            LOGGER.log(Level.INFO, "population:{0} report:{1}", new Object[] {population,sortedCumulativeAgentTestingRecord.get(sortingValue)[0]});
+          // logger.log(level.info, "population:{0} report:{1}", new Object[] {population,sortedCumulativeAgentTestingRecord.get(sortingValue)[0]});
                 sortedBeenTestedRecord.put(sortingValue, sortedCumulativeAgentTestingRecord.get(sortingValue)[0].doubleValue()/population) ;
             }
             yearsBeenTestedReport.put(lastYear - year, (HashMap<Object,Number>) sortedBeenTestedRecord.clone()) ;
@@ -1557,7 +1557,7 @@ public class ScreeningReporter extends Reporter {
 
             incidentRateReport.put(lastYear - year, yearlyNumberAgentsEnteredRelationship) ;
         }
-        LOGGER.info(incidentRateReport.toString()) ;
+        // LOGGER.info(incidentRateReport.toString()) ;
 
         return incidentRateReport ;
     }
