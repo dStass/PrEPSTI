@@ -26,11 +26,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.logging.Level;
 
-// JSON imports:
-import org.json.simple.parser.*;
-import org.json.simple.JSONArray; 
-import org.json.simple.JSONObject; 
-
 /******************************************************************
  * @author Michael Luke Walker
  *
@@ -357,8 +352,6 @@ public class Community {
                 {
                     community.dump();
                 }
-                    
-
             cycleString = Integer.toString(cycle+1) + "," ;
             populationRecord = cycleString + community.births(deltaPopulation) ;
         }
@@ -529,19 +522,20 @@ public class Community {
      */
     private void rebootRandomSeeds(String simName)
     {
-        Reporter reporter = new Reporter(simName,"output/test/") ;
-        long oldseed = RANDOM_SEED;
-        long seed = Long.valueOf(reporter.getMetaDatum("Community.REBOOT_SEED")) ;
+        // Reporter reporter = new Reporter(simName,"output/test/") ;
+        // long oldseed = RANDOM_SEED;
+        HashMap<String, Long> seeds = Reporter.parseSeedsFromMetadata(simName, "output/test/");
+        long seed = Long.valueOf(seeds.get("Community.REBOOT_SEED")) ;
         RANDOM_SEED = seed ;
         RAND = new Random(seed) ;
 
-        seed = Long.valueOf(reporter.getMetaDatum("Agent.REBOOT_SEED")) ;
+        seed = Long.valueOf(seeds.get("Agent.REBOOT_SEED")) ;
         Agent.SET_RAND(seed) ;
 
-        seed = Long.valueOf(reporter.getMetaDatum("Site.REBOOT_SEED")) ;
+        seed = Long.valueOf(seeds.get("Site.REBOOT_SEED")) ;
         Site.SET_RAND(seed) ;
 
-        seed = Long.valueOf(reporter.getMetaDatum("Relationship.REBOOT_SEED")) ;
+        seed = Long.valueOf(seeds.get("Relationship.REBOOT_SEED")) ;
         Relationship.SET_RAND(seed) ;
     }
     

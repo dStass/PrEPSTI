@@ -3237,6 +3237,43 @@ public class Reporter {
     {
         return simName ;
     }
+
+    /**
+     * 
+     * @param fileName
+     * @param filePath
+     * @return
+     */
+    public static HashMap<String, Long> parseSeedsFromMetadata(String fileName, String filePath) {
+        
+        HashMap<String, Long> toReturn = new HashMap<String, Long>();
+        BufferedReader reader;
+        String STOP_READING = "Relationship.BURNIN_COMMENCE:";
+
+        Set<String> seedTypes = new HashSet<String>(
+            Arrays.asList("Community.REBOOT_SEED", "Agent.REBOOT_SEED", "Site.REBOOT_SEED", "Relationship.REBOOT_SEED"));
+
+        try {
+            reader = new BufferedReader(new FileReader(filePath+fileName+"-METADATA.txt"));
+            String line = reader.readLine();
+            while (line != null) {
+                if (line.startsWith(STOP_READING)) break;
+                boolean colonExists = line.contains(":");
+                if (colonExists) {
+                    int colonIndex = line.indexOf(":");
+                    String extractedType = line.substring(0, colonIndex);
+                    if (seedTypes.contains(extractedType)) {
+                        toReturn.put(extractedType, Long.valueOf(line.substring(colonIndex + 1, line.length()).stripTrailing()));
+                    }
+                }
+                line = reader.readLine();
+            }
+
+        } catch (IOException e) {
+            LOGGER.severe(e.toString());
+        }
+        return toReturn;
+    }
     
     /**
      * 
