@@ -1328,9 +1328,6 @@ public class Presenter {
     {
         // Extract data from reportArray
         XYIntervalSeriesCollection xyIntervalSeriesCollection = parseReportHashMapCI(report, legend) ;
-
-        setDrawCI(true);
-        setErrorType(ERROR_INTERVALS);
             
         // Send data to be processed and presented
         chart_awt.plotLineChart(chartTitle,xyIntervalSeriesCollection, yLabel, xLabel, legend) ;

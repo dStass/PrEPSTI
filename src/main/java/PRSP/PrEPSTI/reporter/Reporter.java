@@ -1950,8 +1950,8 @@ public class Reporter {
         
         // Set up header
         String firstLine = "mean" + COMMA ;
-        firstLine += "lower95" + COMMA;
-        firstLine += "upper95" + COMMA;
+        firstLine += "lower" + COMMA;
+        firstLine += "upper" + COMMA;
 
         // String firstLine = "";
         // if (reportName.contains("riskyIncidence_HIV"))
@@ -2069,7 +2069,6 @@ public class Reporter {
         int nbPriors = firstLine.split(COMMA).length - simNames.size() -1 ;
         String outputValue ;
         for (Comparable categoryValue : outputReport.keySet() ) {
-            // LOGGER.info("@@\n@@\n@@\n" + categoryValue.toString());
             String valuesCommaSeparatedString = outputReport.get(categoryValue);
 
             // extract information into an arraylist, remove leading and trailing whitespace before and after a comma
@@ -2077,28 +2076,36 @@ public class Reporter {
             ArrayList<String> valuesArrayList = new ArrayList<String>(Arrays.asList(valuesCommaSeparatedString.split("\\s*,\\s*")));
             String year = valuesArrayList.remove(0); // remove the year and store it in a variable
             
+            ArrayList<Double> sortedValues = Reporter.convertArrayListStringToSortedArrayDouble(valuesArrayList);
+
+            // remove if sim goes to 0, ie the first element in sortedValues = 0
+            // if (sortedValues.get(0) == 0.0) break;
+
             // extract pre-calculated mean
             Double meanValue = totalReport.get(categoryValue)/nbSimulations;
 
             // calculate standard deviation
             Double standardDeviation = Reporter.getStandardDeviationDoubleValueFromArrayListOfStrings(valuesArrayList, meanValue);
 
+            // transform sorted data to remove outliers
+            // Reporter.removeOutliersFromSortedArrayListNtileMethod(sortedValues);
+            Reporter.removeOutliersFromSortedArrayListDeviationMethod(sortedValues, meanValue, standardDeviation);
+
+            // get the median from a sorted array list
+            Double median = Reporter.extractMedianFromSortedArrayList(sortedValues);
+
             // calculate confidence intervals
             Double[] confidenceInterval = Reporter.get95ConfidenceIntervalDoubleArray(  meanValue,
                                                                                         standardDeviation,
                                                                                         (double) nbSimulations);
 
-            // insert year -> mean -> lower95 -> upper95 into array list
+            // insert year -> mean -> lower -> upper into array list
             // this then gets converted into a comma separated string
-            int YEAR_INDEX = 0;
-            int MEAN_INDEX = 1;
-            int LOWER95_INDEX = 2;
-            int HIGHER95_INDEX = 3;
 
-            valuesArrayList.add(YEAR_INDEX, year);
-            valuesArrayList.add(MEAN_INDEX, String.valueOf(meanValue));
-            valuesArrayList.add(LOWER95_INDEX, String.valueOf(confidenceInterval[0]));
-            valuesArrayList.add(HIGHER95_INDEX, String.valueOf(confidenceInterval[1]));
+            valuesArrayList.add(0, String.valueOf(sortedValues.get(sortedValues.size() - 1) ) );  // add higher to the start of values
+            valuesArrayList.add(0, String.valueOf(sortedValues.get(0)));  // add lower to start of values
+            valuesArrayList.add(0, String.valueOf(median));  // add mean to start of values
+            valuesArrayList.add(0, year);  // add year to start of values
             
             outputValue = String.join(",", valuesArrayList);
             outputReport.put(categoryValue, outputValue);
@@ -2136,6 +2143,72 @@ public class Reporter {
         }
         
         return true ;
+    }
+
+    private static Double extractMedianFromSortedArrayList(ArrayList<Double> values) {
+        int valuesSize = values.size();
+        if (valuesSize == 0) return 0.0;
+        if (valuesSize % 2 == 1) return values.get(valuesSize/2);
+        else {
+            int midLeft = valuesSize/2 - 1;
+            int midRight = valuesSize/2;
+            return (values.get(midLeft) + values.get(midRight))/2;
+        }
+    }
+
+    private static void removeOutliersFromSortedArrayListNtileMethod(ArrayList<Double> values) {
+        double QUARTILE = 0.25;
+        double DECILE = 0.10;
+
+        double ntile = DECILE;  // between 0 and 0.5
+        int removeFromEnds = (int) (ntile * values.size()); // flooring
+
+        // Remove outliers from the left
+        for (int i = 0; i < removeFromEnds; ++i) values.remove(0);
+
+        // Remove outliers from the right
+        for (int i = 0; i < removeFromEnds; ++i) values.remove(values.size() - 1);
+    }
+
+    private static void removeOutliersFromSortedArrayListDeviationMethod(ArrayList<Double> values, Double mean, Double standardDeviation) {       
+        Double MAX_DEVIATION = 0.5;  // 1 = 68, 2 = 95, 3 = 99.7 (68-95-99.7 rule)
+        int removeFromLeft = 0;
+        int removeFromRight = 0;
+        
+        // Find how many outliers lower than the mean
+        while (removeFromLeft < values.size()) {
+            Double differenceFromMean = values.get(removeFromLeft) - mean;
+            Double deviationFromMean = Math.abs(differenceFromMean / standardDeviation);
+            if (deviationFromMean <= MAX_DEVIATION) break;
+            removeFromLeft += 1;
+        }
+        
+        // Find how many outliers larger than the mean
+        while (removeFromRight < values.size()) {
+            Double differenceFromMean = values.get(values.size() - 1 - removeFromRight) - mean;
+            Double deviationFromMean = Math.abs(differenceFromMean / standardDeviation);
+            if (deviationFromMean <= MAX_DEVIATION) break;
+            removeFromRight += 1;
+        }
+        
+        if (removeFromLeft + removeFromRight > values.size()) return;
+        if (removeFromLeft + removeFromRight > 0) {
+            LOGGER.info("TEST");
+        }
+
+        // Remove outliers from the left
+        for (int i = 0; i < removeFromLeft; ++i) values.remove(0);
+
+        // Remove outliers from the right
+        for (int i = 0; i < removeFromRight; ++i) values.remove(values.size() - 1);
+    }
+    
+
+    private static ArrayList<Double> convertArrayListStringToSortedArrayDouble(ArrayList<String> strArrayList) {
+        ArrayList<Double> toReturn = new ArrayList<Double>();
+        for (String s : strArrayList) toReturn.add(Double.valueOf(s));
+        Collections.sort(toReturn);
+        return toReturn;
     }
 
 

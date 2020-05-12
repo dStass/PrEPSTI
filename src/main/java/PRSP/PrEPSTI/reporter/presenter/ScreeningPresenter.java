@@ -72,7 +72,9 @@ public class ScreeningPresenter extends Presenter {
     }
 
     // static String[] simNames = new String[] {"REPORT_APop2500Cycles2920", "REPORT_BPop2500Cycles2920", "REPORT_CPop2500Cycles2920", "REPORT_DPop2500Cycles2920", "REPORT_EPop2500Cycles2920", "REPORT_FPop2500Cycles2920"} ; //, "to2017newSort17baPop40000Cycles5110","to2017newSort17caPop40000Cycles5110","to2017newSort17daPop40000Cycles5110","to2017newSort17eaPop40000Cycles5110",
-    static String[] simNames = new String[] {"REPORT_APop5000Cycles2920", "REPORT_BPop5000Cycles2920", "REPORT_CPop5000Cycles2920"};
+    static String[] simNames = new String[] {"REPORT_A", "REPORT_B", "REPORT_C", "REPORT_D", "REPORT_E", "REPORT_F", "REPORT_G", "REPORT_H", "REPORT_I", "REPORT_J"};
+    // static String[] simNames = new String[] {"REPORT_A", "REPORT_B", "REPORT_C"};
+
 
     
     //      "to2017newSort17faPop40000Cycles5110", "to2017newSort17gaPop40000Cycles5110","to2017newSort17haPop40000Cycles5110","to2017newSort17iaPop40000Cycles5110","to2017newSort17jaPop40000Cycles5110"} ;
@@ -85,15 +87,15 @@ public class ScreeningPresenter extends Presenter {
 
         ConfigLoader.load();
         
-        String prefix = "to2025UeqUto2019oldParams33" ;
-        String suffix = "Pop40000Cycles2190" ;
-        ArrayList<String> simNameList = new ArrayList<String>() ;
-        String letter0 = "" ;
-        //for (String letter0 : new String[] {"a","b","c","d","e","f","g","h","i","j"})
-            for (String letter1: new String[] {"Ebi"}) //,"Dbc","Eje","Hji","Jce","Iae","Iad","Cfi","Fjc","Chh","Bci","Dhj","Bhi","Ibe","Keg","Kjc","Kbh","Fag","Jad","Bfd","Idg","Keh","Ggb","Dee","Ghh","Dac","Dgd","Fab","Hdh","Ibg","Fcc","Ghd","Hfa","Fci","Ifd","Gfd","Hje","Eei","Hhb","Aah","Gdh","Bjh","Cbf","Dcg","Ifc","Kej","Ajc","Fii","Hfb","Cdd"} ;
-                simNameList.add(prefix + letter0 + letter1 + suffix) ;
+        // String prefix = "to2025UeqUto2019oldParams33" ;
+        // String suffix = "Pop40000Cycles2190" ;
+        // ArrayList<String> simNameList = new ArrayList<String>() ;
+        // String letter0 = "" ;
+        // //for (String letter0 : new String[] {"a","b","c","d","e","f","g","h","i","j"})
+        //     for (String letter1: new String[] {"Ebi"}) //,"Dbc","Eje","Hji","Jce","Iae","Iad","Cfi","Fjc","Chh","Bci","Dhj","Bhi","Ibe","Keg","Kjc","Kbh","Fag","Jad","Bfd","Idg","Keh","Ggb","Dee","Ghh","Dac","Dgd","Fab","Hdh","Ibg","Fcc","Ghd","Hfa","Fci","Ifd","Gfd","Hje","Eei","Hhb","Aah","Gdh","Bjh","Cbf","Dcg","Ifc","Kej","Ajc","Fii","Hfb","Cdd"} ;
+        //         simNameList.add(prefix + letter0 + letter1 + suffix) ;
 
-        String folderPath = "/scratch/is14/mw7704/prepsti/output/to2025/" ;
+        // String folderPath = "/scratch/is14/mw7704/prepsti/output/to2025/" ;
 
         //         String prefix = "old1p5Params26" ;
         //         //String prefix = "to2019fix23" ;
@@ -143,12 +145,15 @@ public class ScreeningPresenter extends Presenter {
         //String reportFileName = "output/untouchable/" ; // args[2] ;
         //String reportFileName = "output/prep/" ; // args[2] ;
         //String reportFileName = "output/prePrEP/" ; // args[2] ;
-        //String reportFileName = "output/" ; // args[2] ;
         //String reportFileName = "output/to2025/" ; // args[2] ;
         //String reportFileName = "output/year2012/" ; // args[2] ;
         //String reportFileName = "output/year2010/" ; // args[2] ;
         //String reportFileName = "output/year2007/" ; // args[2] ;
-        String reportFileName = folderPath ;        
+        // String reportFileName = folderPath ;  
+        
+        
+        String reportFileName = "output/" ; // args[2] ;
+        // reportFileName = "reports/";
         ScreeningPresenter screeningPresenter = new ScreeningPresenter(simName,chartTitle,reportFileName) ;
 
         // // set information of plots based on whether we are plotting years
@@ -185,7 +190,7 @@ public class ScreeningPresenter extends Presenter {
         //screeningPresenter.multiPlotScreening(new Object[] {"prevalence","prevalence",new String[] {"Pharynx","Rectum","Urethra"}});
         //screeningPresenter.plotIncidencePerCycle(siteNames) ;
         // screeningPresenter.plotFinalAtRiskIncidentsRecord(siteNames,0,"statusHIV") ;
-        // screeningPresenter.plotYearsAtRiskIncidenceReport(siteNames, 8, 2019, "statusHIV") ;  // !! line chart here
+        screeningPresenter.plotYearsAtRiskIncidenceReport(siteNames, 5, 2019, "statusHIV") ;  // !! line chart here
         // screeningPresenter.plotYearsBeenTestedReport(13, 0, 0, 2019, "statusHIV") ;
         //screeningPresenter.plotNotificationsPerCycle(siteNames) ;
         // screeningPresenter.plotSitePrevalence(siteNames) ;
@@ -205,7 +210,7 @@ public class ScreeningPresenter extends Presenter {
         // screeningPresenter.plotSiteProportionSymptomatic(siteNames) ;
 
 
-        screeningPresenter.plotIntervalMeansFromCSVFileNames(testSimNames);
+        // screeningPresenter.plotIntervalMeansFromCSVFileNames(testSimNames);
 
 
         //String methodName = args[3] ;

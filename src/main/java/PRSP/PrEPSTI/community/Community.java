@@ -394,7 +394,7 @@ public class Community {
 
         ScreeningPresenter screeningPresenter3 = new ScreeningPresenter(SIM_NAME, "multi prevalence", screeningReporter) ;
         screeningPresenter3.multiPlotScreening(new Object[] {"prevalence","prevalence", new String[] {"Pharynx","Rectum","Urethra"}}) ;  // ,"coprevalence",new String[] {"Pharynx","Rectum"},new String[] {"Urethra","Rectum"}
-        
+        // screeningPresenter3.plotYearsAtRiskIncidenceReport(new String[] {"Pharynx","Rectum","Urethra"}, 3, 2020, "statusHIV");
         
         HashMap<Object,Number> finalNotificationsRecord = new HashMap<Object,Number>() ;
         

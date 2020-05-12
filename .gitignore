@@ -3,8 +3,6 @@
 /nbproject/private/
 /build/
 /dist/
-/output/*.*
-/output/test/*.*
 /target/
 
 # ide settings
@@ -13,12 +11,14 @@
 /.vscode/
 
 # files
+/output/*.*
+/output/test/*.*
+/data_files/*.*
 *.csv
 *.class
 /reports/*.csv
 /configs/gadi_default_config.json
 .DS_Store
-
 
 # exceptions
 !output/.gitkeep

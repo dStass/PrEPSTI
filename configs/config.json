@@ -1,14 +1,14 @@
 {   
     "community" : {
-        "POPULATION" : "1000",
-        "NAME_ROOT" : "TEST_TIME2",
-        "MAX_CYCLES" : "3",
-        "RELOAD_SIMULATION" : "TEST_TIME"
+        "POPULATION" : "1500",
+        "NAME_ROOT" : "REPORT_J",
+        "MAX_CYCLES" : "4",
+        "RELOAD_SIMULATION" : ""
     },
 
     "msm" : {
-        "GROUP_SEX_EVENT_SIZE" : "13",
-        "HIV_RISKY_CORRELATION" : "2.5"
+        "GROUP_SEX_EVENT_SIZE" : "25",
+        "HIV_RISKY_CORRELATION" : "10.5"
     },
 
     "reporter" : {
