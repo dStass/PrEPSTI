@@ -2153,7 +2153,7 @@ public class Reporter {
         // most of the data (outliers do not factor in the calculations of this number)
         ArrayList<Double> sortedValuesInterdecile = new ArrayList<Double>();
         for (Double value : sortedValues) sortedValuesInterdecile.add(value);
-        // Reporter.removeOutliersFromSortedArrayListPercentileMethod(sortedValuesInterdecile, 0.05);        
+        Reporter.removeOutliersFromSortedArrayListPercentileMethod(sortedValuesInterdecile, 0.05);        
         Double numValues = (double) sortedValuesInterdecile.size();
         Double meanValue = 0.0;
         for (int i = 0; i < sortedValuesInterdecile.size(); ++i) meanValue += sortedValuesInterdecile.get(i);
