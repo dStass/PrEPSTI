@@ -19,6 +19,8 @@ import java.util.HashMap ;
 
 import java.util.logging.Level;
 
+import org.apache.commons.math3.stat.descriptive.moment.Mean;
+
 //import org.jfree.chart.* ;
 
 /**
@@ -1293,80 +1295,80 @@ public class Reporter {
     }
 
 
-    /**
-     * 
-     * Averages over reports in (ArrayList) REPORT_LIST and saves it if static variable
- WRITE_REPORT is true.
-     * @param reportList
-     * @param categoryName
-     * @param reportName
-     * @param nameSimulation
-     * @return (ArrayList) report with (ArrayList) subreports where the values 
-     * in the subreports are averaged over the innermost ArrayList.
-     */
-    static public HashMap<Comparable,String> 
-        PREPARE_MEAN_CI_HASHMAP_REPORT(ArrayList<HashMap<Comparable,String>> reportList, String categoryName, String reportName, String nameSimulation)
-    {
-        // Find mean of reports
-        HashMap<Comparable,String> meanReport = new HashMap<Comparable,String>() ;
+//     /**
+//      * 
+//      * Averages over reports in (ArrayList) REPORT_LIST and saves it if static variable
+//  WRITE_REPORT is true.
+//      * @param reportList
+//      * @param categoryName
+//      * @param reportName
+//      * @param nameSimulation
+//      * @return (ArrayList) report with (ArrayList) subreports where the values 
+//      * in the subreports are averaged over the innermost ArrayList.
+//      */
+//     static public HashMap<Comparable,String> 
+//         PREPARE_MEAN_CI_HASHMAP_REPORT(ArrayList<HashMap<Comparable,String>> reportList, String categoryName, String reportName, String nameSimulation)
+//     {
+//         // Find mean of reports
+//         HashMap<Comparable,String> meanReport = new HashMap<Comparable,String>() ;
         
-        HashMap<Comparable,String> firstReport = reportList.get(0) ;
-        int nbReports = reportList.size() ;
-        String firstReportString = (String) String.valueOf(firstReport.values().iterator().next()) ;
-        String meanRecord = "" ;
-        ArrayList<String> reportProperties = IDENTIFY_PROPERTIES(firstReportString) ;
+//         HashMap<Comparable,String> firstReport = reportList.get(0) ;
+//         int nbReports = reportList.size() ;
+//         String firstReportString = (String) String.valueOf(firstReport.values().iterator().next()) ;
+//         String meanRecord = "" ;
+//         ArrayList<String> reportProperties = IDENTIFY_PROPERTIES(firstReportString) ;
         
         
-        for (Comparable key : firstReport.keySet())
-        {
-            //LOGGER.info("year:" + key.toString());
-            for (String propertyName : reportProperties)
-            {
-                Double itemValue = 0.0 ;
-                ArrayList<String> values = new ArrayList<String>();
+//         for (Comparable key : firstReport.keySet())
+//         {
+//             //LOGGER.info("year:" + key.toString());
+//             for (String propertyName : reportProperties)
+//             {
+//                 Double itemValue = 0.0 ;
+//                 ArrayList<String> values = new ArrayList<String>();
 
-                for (HashMap<Comparable,String> report : reportList)
-                {
-                    String record = report.get(key) ;
-                    String valueStr = Reporter.EXTRACT_VALUE(propertyName,record) ;
-                    // LOGGER.info("Test " + valueStr + " " + String.valueOf(nbReports) + "\n");
+//                 for (HashMap<Comparable,String> report : reportList)
+//                 {
+//                     String record = report.get(key) ;
+//                     String valueStr = Reporter.EXTRACT_VALUE(propertyName,record) ;
+//                     // LOGGER.info("Test " + valueStr + " " + String.valueOf(nbReports) + "\n");
 
-                    try
-                    {
-                        itemValue += Double.valueOf(valueStr) ;
-                        values.add(valueStr);
-                    }
-                    catch (Exception e)
-                    {
-                        LOGGER.log(Level.SEVERE,"report:{0} propertyName:{1} {2}", new Object[] {reportList.indexOf(report),propertyName,e.toString()}) ;
-                        itemValue += 0.0 ;
-                        values.add("0.0");
-                    }
-                }
+//                     try
+//                     {
+//                         itemValue += Double.valueOf(valueStr) ;
+//                         values.add(valueStr);
+//                     }
+//                     catch (Exception e)
+//                     {
+//                         LOGGER.log(Level.SEVERE,"report:{0} propertyName:{1} {2}", new Object[] {reportList.indexOf(report),propertyName,e.toString()}) ;
+//                         itemValue += 0.0 ;
+//                         values.add("0.0");
+//                     }
+//                 }
 
 
-                Double mean = itemValue / Double.valueOf(nbReports) ;
-                Double stdDev = Reporter.getStandardDeviationDoubleValueFromArrayListOfStrings(values, mean);
-                Double[] confidenceInerval = Reporter.get95ConfidenceIntervalDoubleArray(mean, stdDev, Double.valueOf(values.size()));
+//                 Double mean = itemValue / Double.valueOf(nbReports) ;
+//                 Double stdDev = Reporter.getStandardDeviationDoubleValueFromArrayListOfDouble(values, mean);
+//                 Double[] confidenceInerval = Reporter.get95ConfidenceIntervalDoubleArray(mean, stdDev, Double.valueOf(values.size()));
                 
-                String meanAndCIString =    String.valueOf(mean) + " " +
-                                            String.valueOf(confidenceInerval[0]) + " " +
-                                            String.valueOf(confidenceInerval[1]) ;
+//                 String meanAndCIString =    String.valueOf(mean) + " " +
+//                                             String.valueOf(confidenceInerval[0]) + " " +
+//                                             String.valueOf(confidenceInerval[1]) ;
 
-                String itemString = Reporter.ADD_REPORT_PROPERTY(propertyName, meanAndCIString) ;
-                meanRecord = meanRecord.concat(itemString) ;
-            }
-            meanReport.put(key,meanRecord) ;
+//                 String itemString = Reporter.ADD_REPORT_PROPERTY(propertyName, meanAndCIString) ;
+//                 meanRecord = meanRecord.concat(itemString) ;
+//             }
+//             meanReport.put(key,meanRecord) ;
             
-            // Prepare for next key
-            meanRecord = "" ;
-        }
+//             // Prepare for next key
+//             meanRecord = "" ;
+//         }
         
-        if (WRITE_REPORT)
-            WRITE_CSV_STRING(meanReport, categoryName, reportName, nameSimulation, REPORT_FOLDER) ;
+//         if (WRITE_REPORT)
+//             WRITE_CSV_STRING(meanReport, categoryName, reportName, nameSimulation, REPORT_FOLDER) ;
         
-        return meanReport ;
-    }
+//         return meanReport ;
+//     }
 
 
     static public String 
@@ -2085,10 +2087,10 @@ public class Reporter {
             Double meanValue = totalReport.get(categoryValue)/nbSimulations;
 
             // calculate standard deviation
-            Double standardDeviation = Reporter.getStandardDeviationDoubleValueFromArrayListOfStrings(valuesArrayList, meanValue);
+            Double standardDeviation = Reporter.getStandardDeviationDoubleValueFromArrayListOfDoubles(sortedValues, meanValue);
 
             // transform sorted data to remove outliers
-            // Reporter.removeOutliersFromSortedArrayListNtileMethod(sortedValues);
+            // Reporter.removeOutliersFromSortedArrayListQuantileMethod(sortedValues);
             Reporter.removeOutliersFromSortedArrayListDeviationMethod(sortedValues, meanValue, standardDeviation);
 
             // get the median from a sorted array list
@@ -2145,6 +2147,44 @@ public class Reporter {
         return true ;
     }
 
+    public static String[] generateMedianAndRangeArrayFromValuesArray(String[] values) {
+        int VALUES_TO_ADD = 3; // y-value, lower, upper
+        String[] toReturn = new String[VALUES_TO_ADD];
+
+        ArrayList<String> valuesArrayList = new ArrayList<String>(Arrays.asList(values));
+        String year = valuesArrayList.remove(0); // remove the year and store it in a variable
+        ArrayList<Double> sortedValues = Reporter.convertArrayListStringToSortedArrayDouble(valuesArrayList);
+        Double numValues = (double) sortedValues.size();
+
+        // calculate mean
+        Double meanValue = 0.0;
+        for (int i = 0; i < sortedValues.size(); ++i) {
+            meanValue += sortedValues.get(i);
+        }
+        meanValue /= numValues;
+
+        // calculate standard deviation
+        Double standardDeviation = Reporter.getStandardDeviationDoubleValueFromArrayListOfDoubles(sortedValues, meanValue);
+        
+        // transform sorted data to remove outliers
+        Reporter.removeOutliersFromSortedArrayListQuantileMethod(sortedValues);
+        // Reporter.removeOutliersFromSortedArrayListDeviationMethod(sortedValues, meanValue, standardDeviation);
+
+        // get the median from a sorted array list
+        Double medianValue = Reporter.extractMedianFromSortedArrayList(sortedValues);
+
+        int yValueIndex = 0;
+        int lowerIndex = 1;
+        int upperIndex = 2;
+
+        toReturn[yValueIndex] = String.valueOf(medianValue);
+        toReturn[lowerIndex] = String.valueOf(sortedValues.get(0));
+        toReturn[upperIndex] = String.valueOf(sortedValues.get(sortedValues.size() - 1));
+        
+
+        return toReturn;
+    }
+
     private static Double extractMedianFromSortedArrayList(ArrayList<Double> values) {
         int valuesSize = values.size();
         if (valuesSize == 0) return 0.0;
@@ -2156,12 +2196,13 @@ public class Reporter {
         }
     }
 
-    private static void removeOutliersFromSortedArrayListNtileMethod(ArrayList<Double> values) {
+    private static void removeOutliersFromSortedArrayListQuantileMethod(ArrayList<Double> values) {
         double QUARTILE = 0.25;
         double DECILE = 0.10;
+        double CUTOFF = 0.025;
 
-        double ntile = DECILE;  // between 0 and 0.5
-        int removeFromEnds = (int) (ntile * values.size()); // flooring
+        double quantile = DECILE;  // between 0 and 0.5
+        int removeFromEnds = (int) (quantile * values.size()); // flooring
 
         // Remove outliers from the left
         for (int i = 0; i < removeFromEnds; ++i) values.remove(0);
@@ -2171,7 +2212,7 @@ public class Reporter {
     }
 
     private static void removeOutliersFromSortedArrayListDeviationMethod(ArrayList<Double> values, Double mean, Double standardDeviation) {       
-        Double MAX_DEVIATION = 0.5;  // 1 = 68, 2 = 95, 3 = 99.7 (68-95-99.7 rule)
+        Double MAX_DEVIATION = 1.96;  // 1 = 68, 2 = 95, 3 = 99.7 (68-95-99.7 rule)
         int removeFromLeft = 0;
         int removeFromRight = 0;
         
@@ -2218,10 +2259,10 @@ public class Reporter {
      * @param mean - double value
      * @return - a double representing the standard deviation
      */
-    private static Double getStandardDeviationDoubleValueFromArrayListOfStrings(ArrayList<String> values, Double mean) {
+    private static Double getStandardDeviationDoubleValueFromArrayListOfDoubles(ArrayList<Double> values, Double mean) {
         Double squaredDifferenceOngoingSum = 0.0;
         for (int i = 0; i < values.size(); ++i) {
-            Double valueDouble = Double.parseDouble(values.get(i));
+            Double valueDouble = values.get(i);
             squaredDifferenceOngoingSum += Math.pow((valueDouble - mean), 2);            
         }
         Double variance = squaredDifferenceOngoingSum/ values.size();

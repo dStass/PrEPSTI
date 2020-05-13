@@ -81,7 +81,9 @@ public class ScreeningPresenter extends Presenter {
             //"from2007seek57fPop40000Cycles5475","from2007seek57gPop40000Cycles5475","from2007seek57hPop40000Cycles5475","from2007seek57iPop40000Cycles5475","from2007seek57jPop40000Cycles5475"} ;
     //static String[] simNames = new String[] {"newSortaPop40000Cycles1825","seek68bPop40000Cycles1825","seek68cPop40000Cycles1825","seek68dPop40000Cycles1825"} ; // ,"seek53ePop40000Cycles1825",
       //      "seek53fPop40000Cycles1825","seek53gPop40000Cycles1825","seek53hPop40000Cycles1825","seek53iPop40000Cycles1825","seek53jPop40000Cycles1825"} ;
-    static String[] testSimNames = new String[] {"riskyIncidence_all_from2020to2025prep0p5cycleParams33aaPop40000Cycles2190", "riskyIncidence_all_from2020to2025prep1p0cycleParams33aaPop40000Cycles2190", "riskyIncidence_all_from2020to2025prep0p75cycleParams33aaPop40000Cycles2190" };
+    // static String[] testSimNames = new String[] {"riskyIncidence_all_from2020to2025prep0p5cycleParams33aaPop40000Cycles2190", "riskyIncidence_all_from2020to2025prep1p0cycleParams33aaPop40000Cycles2190", "riskyIncidence_all_from2020to2025prep0p75cycleParams33aaPop40000Cycles2190" };
+    static String[] testSimNames = new String[] {"csv1", "csv2", "csv3"};
+    
     public static void main(String[] args)
     {
 
@@ -190,7 +192,9 @@ public class ScreeningPresenter extends Presenter {
         //screeningPresenter.multiPlotScreening(new Object[] {"prevalence","prevalence",new String[] {"Pharynx","Rectum","Urethra"}});
         //screeningPresenter.plotIncidencePerCycle(siteNames) ;
         // screeningPresenter.plotFinalAtRiskIncidentsRecord(siteNames,0,"statusHIV") ;
+
         screeningPresenter.plotYearsAtRiskIncidenceReport(siteNames, 5, 2019, "statusHIV") ;  // !! line chart here
+
         // screeningPresenter.plotYearsBeenTestedReport(13, 0, 0, 2019, "statusHIV") ;
         //screeningPresenter.plotNotificationsPerCycle(siteNames) ;
         // screeningPresenter.plotSitePrevalence(siteNames) ;
@@ -1370,9 +1374,26 @@ public class ScreeningPresenter extends Presenter {
         for (int i = 0; i < fileNames.length; ++i) {
             String property = fileNames[i];
             String fileName = fileNames[i];
-
-            
             HashMap<Comparable, String[]> readCSV = Reporter.READ_CSV_STRING(fileName, reporter.getFolderPath(), 1);
+            
+            int VALUES_TO_ADD = 3; // y-value, lower, upper
+            int yValueIndex = 0;
+            int lowerIndex = 1;
+            int upperIndex = 2;
+
+            for (Comparable keyCmp : readCSV.keySet()) {
+                String[] values = readCSV.get(keyCmp);
+                String[] to_add = Reporter.generateMedianAndRangeArrayFromValuesArray(values);
+
+                String[] newValues = new String[values.length + VALUES_TO_ADD];
+                newValues[yValueIndex] = to_add[yValueIndex];
+                newValues[lowerIndex] = to_add[lowerIndex];
+                newValues[upperIndex] = to_add[upperIndex];
+                for (int j = 0; j < values.length; ++j)
+                    newValues[VALUES_TO_ADD+j] = values[j];
+                readCSV.put(keyCmp, newValues); 
+            }
+            
             HashMap<String, String[]> meanAndCI = Reporter.extractMeanAndCI(readCSV);
             propertyToMeanAndCI.put(property, meanAndCI);
         }
