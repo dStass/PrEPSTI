@@ -121,7 +121,7 @@ public class Presenter {
     // !!
     private String lineGraphErrorType = ERROR_INTERVALS;
     private boolean drawPoints = false ;  // draw each individual point for a line graph true by default
-    private boolean drawCI = false ;
+    private boolean drawError = false ;
     private boolean xLogarithmic = false ;
     private boolean yLogarithmic = false ;
 
@@ -1315,9 +1315,9 @@ public class Presenter {
 
     protected void plotShadedHashMapStringCI(HashMap<String,HashMap> report, String yLabel, String xLabel, String[] legend) {
         // Extract data from reportArray
-        XYIntervalSeriesCollection xyIntervalSeriesCollection = parseReportHashMapCI(report, legend) ;
+        XYIntervalSeriesCollection xyIntervalSeriesCollection = parseReportHashMapError(report, legend) ;
 
-        setDrawCI(true);
+        setDrawError(true);
         setErrorType(SHADED_REGION);
             
         // Send data to be processed and presented
@@ -1327,7 +1327,7 @@ public class Presenter {
     protected void plotHashMapStringCI(HashMap<String,HashMap> report, String yLabel, String xLabel, String[] legend)
     {
         // Extract data from reportArray
-        XYIntervalSeriesCollection xyIntervalSeriesCollection = parseReportHashMapCI(report, legend) ;
+        XYIntervalSeriesCollection xyIntervalSeriesCollection = parseReportHashMapError(report, legend) ;
             
         // Send data to be processed and presented
         chart_awt.plotLineChart(chartTitle,xyIntervalSeriesCollection, yLabel, xLabel, legend) ;
@@ -1889,7 +1889,7 @@ public class Presenter {
         return xySeriesCollection ;
     }
 
-    private XYIntervalSeriesCollection parseReportHashMapCI(HashMap<String, HashMap> report, String[] legend) {
+    private XYIntervalSeriesCollection parseReportHashMapError(HashMap<String, HashMap> report, String[] legend) {
         XYIntervalSeriesCollection xyIntervalSeriesCollection = new XYIntervalSeriesCollection() ;
 
         // Sorted ArrayList of HashMap keys
@@ -1911,21 +1911,15 @@ public class Presenter {
 
             // TODO: at the moment, we assume data is valid, checks can and should be added
             for (String category : propertyToCategories.keySet()) {
-
-                String[] extractedMeanAndCI = (String[]) report.get(property).get(category);
-                ArrayList<String> meanAndCI = new ArrayList<String> ( Arrays.asList(extractedMeanAndCI) );
-
+                String[] extractedYAndRange = (String[]) report.get(property).get(category);
                 double xValue = Double.valueOf(category);
-                // TODO: these are hard-coded at the moment
-                double yMean = Double.valueOf(extractedMeanAndCI[0]);
-                double yLower95 = Double.valueOf(extractedMeanAndCI[1]);
-                double yUpper95 = Double.valueOf(extractedMeanAndCI[2]);
+
+                // TODO: these are hard-coded at the moment - extract based on col
+                double yMean = Double.valueOf(extractedYAndRange[0]);
+                double yLower95 = Double.valueOf(extractedYAndRange[1]);
+                double yUpper95 = Double.valueOf(extractedYAndRange[2]);
 
                 xyIntervalSeries.add(xValue, xValue, xValue, yMean, yLower95, yUpper95);
-
-
-                
-                
             }
 
             try
@@ -2007,12 +2001,12 @@ public class Presenter {
         this.drawPoints = val;
     }
 
-    public void setDrawCI(boolean val) {
-        this.drawCI = val;
+    public void setDrawError(boolean val) {
+        this.drawError = val;
     }
 
     public boolean getDrawCI() {
-        return this.drawCI;
+        return this.drawError;
     }
 
     public void setXLogarithmic(boolean val) {
@@ -2502,10 +2496,10 @@ public class Presenter {
 
             if (upperBound > ConfigLoader.MAX_YEARS) {
                 setDrawPoints(false);
-                setDrawCI(false);
+                setDrawError(false);
             } else {
                 setDrawPoints(true);
-                setDrawCI(true);
+                setDrawError(true);
             }
             
             

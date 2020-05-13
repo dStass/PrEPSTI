@@ -2070,43 +2070,33 @@ public class Reporter {
         int nbSimulations = simNames.size() ;
         int nbPriors = firstLine.split(COMMA).length - simNames.size() -1 ;
         String outputValue ;
+
+        // indices for medianAndRange matches with the one declared in
+        // Reporter.generateMedianAndRangeArrayFromValuesArray
+        int yValueIndex = 0;
+        int lowerIndex = 1;
+        int upperIndex = 2;
+        
         for (Comparable categoryValue : outputReport.keySet() ) {
             String valuesCommaSeparatedString = outputReport.get(categoryValue);
 
             // extract information into an arraylist, remove leading and trailing whitespace before and after a comma
-
-            ArrayList<String> valuesArrayList = new ArrayList<String>(Arrays.asList(valuesCommaSeparatedString.split("\\s*,\\s*")));
+            String[] valuesArray = valuesCommaSeparatedString.split("\\s*,\\s*"); // split on comma and leading/trailing spaces
+            ArrayList<String> valuesArrayList = new ArrayList<String>(Arrays.asList(valuesArray));
             String year = valuesArrayList.remove(0); // remove the year and store it in a variable
             
-            ArrayList<Double> sortedValues = Reporter.convertArrayListStringToSortedArrayDouble(valuesArrayList);
+            String[] medianAndRange = Reporter.generateMedianAndRangeArrayFromValuesArray(valuesArray);
 
-            // remove if sim goes to 0, ie the first element in sortedValues = 0
-            // if (sortedValues.get(0) == 0.0) break;
-
-            // extract pre-calculated mean
-            Double meanValue = totalReport.get(categoryValue)/nbSimulations;
-
-            // calculate standard deviation
-            Double standardDeviation = Reporter.getStandardDeviationDoubleValueFromArrayListOfDoubles(sortedValues, meanValue);
-
-            // transform sorted data to remove outliers
-            // Reporter.removeOutliersFromSortedArrayListQuantileMethod(sortedValues);
-            Reporter.removeOutliersFromSortedArrayListDeviationMethod(sortedValues, meanValue, standardDeviation);
-
-            // get the median from a sorted array list
-            Double median = Reporter.extractMedianFromSortedArrayList(sortedValues);
-
-            // calculate confidence intervals
-            Double[] confidenceInterval = Reporter.get95ConfidenceIntervalDoubleArray(  meanValue,
-                                                                                        standardDeviation,
-                                                                                        (double) nbSimulations);
+            // // calculate confidence intervals
+            // Double[] confidenceInterval = Reporter.get95ConfidenceIntervalDoubleArray(  meanValue,
+            //                                                                             standardDeviation,
+            //                                                                             (double) nbSimulations);
 
             // insert year -> mean -> lower -> upper into array list
-            // this then gets converted into a comma separated string
-
-            valuesArrayList.add(0, String.valueOf(sortedValues.get(sortedValues.size() - 1) ) );  // add higher to the start of values
-            valuesArrayList.add(0, String.valueOf(sortedValues.get(0)));  // add lower to start of values
-            valuesArrayList.add(0, String.valueOf(median));  // add mean to start of values
+            // this then gets converted back into a comma separated string
+            valuesArrayList.add(0, medianAndRange[upperIndex] );  // add higher to the start of values
+            valuesArrayList.add(0, medianAndRange[lowerIndex] );  // add lower to start of values
+            valuesArrayList.add(0, medianAndRange[yValueIndex]);  // add median to start of values
             valuesArrayList.add(0, year);  // add year to start of values
             
             outputValue = String.join(",", valuesArrayList);
@@ -2116,13 +2106,8 @@ public class Reporter {
         ArrayList<String> categoryValues = new ArrayList<String>() ;
         Collections.addAll(categoryValues, outputReport.keySet().toArray(new String[] {})) ;
         Collections.sort(categoryValues,String.CASE_INSENSITIVE_ORDER) ;
-        // Open BufferedWriter file
-//        for (String categoryValue : categoryValues)
-//        {
-//            fileWriter.writeLine(outputReport.get(categoryValue)) ;
-//            fileWriter.newLine() ;
-//        }
 
+        // write to csv
         String filePath = folderPath + reportName + "_" + scoreName + "_" + simNames.get(0) + ".csv" ;
         try
         {
@@ -2147,6 +2132,14 @@ public class Reporter {
         return true ;
     }
 
+    /**
+     * Returns an array with 3 strings where:
+     * String[3], String[0] = median, String[1] = lower range, String[2] = upper range
+     * 
+     * @param values : String[], does not need to be sorted
+     * @return String[]
+     * @author dstass
+     */
     public static String[] generateMedianAndRangeArrayFromValuesArray(String[] values) {
         int VALUES_TO_ADD = 3; // y-value, lower, upper
         String[] toReturn = new String[VALUES_TO_ADD];
@@ -2154,21 +2147,22 @@ public class Reporter {
         ArrayList<String> valuesArrayList = new ArrayList<String>(Arrays.asList(values));
         String year = valuesArrayList.remove(0); // remove the year and store it in a variable
         ArrayList<Double> sortedValues = Reporter.convertArrayListStringToSortedArrayDouble(valuesArrayList);
-        Double numValues = (double) sortedValues.size();
-
-        // calculate mean
-        Double meanValue = 0.0;
-        for (int i = 0; i < sortedValues.size(); ++i) {
-            meanValue += sortedValues.get(i);
-        }
-        meanValue /= numValues;
-
-        // calculate standard deviation
-        Double standardDeviation = Reporter.getStandardDeviationDoubleValueFromArrayListOfDoubles(sortedValues, meanValue);
         
-        // transform sorted data to remove outliers
-        Reporter.removeOutliersFromSortedArrayListQuantileMethod(sortedValues);
-        // Reporter.removeOutliersFromSortedArrayListDeviationMethod(sortedValues, meanValue, standardDeviation);
+        // calculate standard deviation of the interdecile range of values
+        // this will hopefully remove some outliers so this standard deviation represents 
+        // most of the data (outliers do not factor in the calculations of this number)
+        ArrayList<Double> sortedValuesInterdecile = new ArrayList<Double>();
+        for (Double value : sortedValues) sortedValuesInterdecile.add(value);
+        // Reporter.removeOutliersFromSortedArrayListPercentileMethod(sortedValuesInterdecile, 0.05);        
+        Double numValues = (double) sortedValuesInterdecile.size();
+        Double meanValue = 0.0;
+        for (int i = 0; i < sortedValuesInterdecile.size(); ++i) meanValue += sortedValuesInterdecile.get(i);
+        meanValue /= numValues;
+        Double standardDeviation = Reporter.getStandardDeviationDoubleValueFromArrayListOfDoubles(sortedValuesInterdecile, meanValue);
+        
+        // transform sorted data by removing outliers
+        // Reporter.removeOutliersFromSortedArrayListPercentileMethod(sortedValues, 0.10);
+        Reporter.removeOutliersFromSortedArrayListDeviationMethod(sortedValues, meanValue, standardDeviation);
 
         // get the median from a sorted array list
         Double medianValue = Reporter.extractMedianFromSortedArrayList(sortedValues);
@@ -2181,10 +2175,14 @@ public class Reporter {
         toReturn[lowerIndex] = String.valueOf(sortedValues.get(0));
         toReturn[upperIndex] = String.valueOf(sortedValues.get(sortedValues.size() - 1));
         
-
         return toReturn;
     }
-
+    /**
+     * Returns median of a sorted list
+     * @param values : ArrayList<Double>, sorted ascending, size > 0
+     * @return Double: median
+     * @author dstass
+     */
     private static Double extractMedianFromSortedArrayList(ArrayList<Double> values) {
         int valuesSize = values.size();
         if (valuesSize == 0) return 0.0;
@@ -2195,15 +2193,22 @@ public class Reporter {
             return (values.get(midLeft) + values.get(midRight))/2;
         }
     }
-
-    private static void removeOutliersFromSortedArrayListQuantileMethod(ArrayList<Double> values) {
-        double QUARTILE = 0.25;
-        double DECILE = 0.10;
-        double CUTOFF = 0.025;
-
-        double quantile = DECILE;  // between 0 and 0.5
-        int removeFromEnds = (int) (quantile * values.size()); // flooring
-
+    /**
+     * Description:
+     * Remove values outside of given interpercentile range
+     * 
+     * Example of interpercentile values:
+     * QUARTILE = 0.25
+     * DECILE = 0.10
+     * 0.025 --> 2.5% -> 97.5%
+     * 
+     * @param values : ArrayList<Double>, sorted ascending
+     * @param interpercentile : Double, 0 < interpercentile < 0.5
+     */
+    private static void removeOutliersFromSortedArrayListPercentileMethod(ArrayList<Double> values, double interpercentile) {
+        int removeFromEnds = (int) (interpercentile * values.size()); // flooring
+        int removeFromLeft = removeFromEnds;
+        int removeFromRight = removeFromEnds;
         // Remove outliers from the left
         for (int i = 0; i < removeFromEnds; ++i) values.remove(0);
 
@@ -2211,12 +2216,21 @@ public class Reporter {
         for (int i = 0; i < removeFromEnds; ++i) values.remove(values.size() - 1);
     }
 
+    /**
+     * 
+     * Description: Remove data points that are over 3 standard deviations from the mean of the dataset
+     * 
+     * @param values : ArrayList<Double>, sorted ascending
+     * @param mean : Double
+     * @param standardDeviation : Double
+     * @author dstass
+     */
     private static void removeOutliersFromSortedArrayListDeviationMethod(ArrayList<Double> values, Double mean, Double standardDeviation) {       
-        Double MAX_DEVIATION = 1.96;  // 1 = 68, 2 = 95, 3 = 99.7 (68-95-99.7 rule)
+        Double MAX_DEVIATION = 3.0;  // 1 = 68, 2 = 95, 3 = 99.7
         int removeFromLeft = 0;
         int removeFromRight = 0;
         
-        // Find how many outliers lower than the mean
+        // Find how many outliers on the lower end (lower than mean)
         while (removeFromLeft < values.size()) {
             Double differenceFromMean = values.get(removeFromLeft) - mean;
             Double deviationFromMean = Math.abs(differenceFromMean / standardDeviation);
@@ -2224,7 +2238,7 @@ public class Reporter {
             removeFromLeft += 1;
         }
         
-        // Find how many outliers larger than the mean
+        // Find how many outliers on the upper end (higher than the mean)
         while (removeFromRight < values.size()) {
             Double differenceFromMean = values.get(values.size() - 1 - removeFromRight) - mean;
             Double deviationFromMean = Math.abs(differenceFromMean / standardDeviation);
@@ -2234,7 +2248,7 @@ public class Reporter {
         
         if (removeFromLeft + removeFromRight > values.size()) return;
         if (removeFromLeft + removeFromRight > 0) {
-            LOGGER.info("TEST");
+            int debugTotalRemoves = removeFromLeft + removeFromRight;
         }
 
         // Remove outliers from the left
@@ -2258,6 +2272,7 @@ public class Reporter {
      * @param values - arraylist of Strings that can be parsed as a double
      * @param mean - double value
      * @return - a double representing the standard deviation
+     * @author dstass
      */
     private static Double getStandardDeviationDoubleValueFromArrayListOfDoubles(ArrayList<Double> values, Double mean) {
         Double squaredDifferenceOngoingSum = 0.0;
@@ -2277,6 +2292,7 @@ public class Reporter {
      * @param standardDeviation
      * @param sampleSize - must not be zero
      * @return an array containing two doubles, lower and upper values ofr 95% CI
+     * @author dstass
      */
     private static Double[] get95ConfidenceIntervalDoubleArray(Double meanValue, Double standardDeviation, Double sampleSize) {
         
@@ -2292,17 +2308,17 @@ public class Reporter {
     }
 
 
-    public static HashMap<String, String[]> extractMeanAndCI(HashMap<Comparable, String[]> csvHashMap) {
+    public static HashMap<String, String[]> extractYValueAndRange(HashMap<Comparable, String[]> csvHashMap) {
         int FIRST_N_ITEMS_TO_EXTRACT = 3; // mean, upper and lower
 
         int MEAN_INDEX = 0;
-        String MEAN_STRING = "mean";
+        String MEAN_STRING = "yValue";
 
         int LOWER_INDEX = 1;
-        String LOWER_STRING = "lower95";
+        String LOWER_STRING = "lower";
 
         int HIGHER_INDEX = 2;
-        String HIGHER_STRING = "higher95";
+        String HIGHER_STRING = "higher";
 
         HashMap<String, String[]> toReturn = new HashMap<String, String[]>();
 

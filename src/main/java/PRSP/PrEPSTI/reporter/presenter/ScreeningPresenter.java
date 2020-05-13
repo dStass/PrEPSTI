@@ -161,13 +161,13 @@ public class ScreeningPresenter extends Presenter {
         // // set information of plots based on whether we are plotting years
         // if (ScreeningPresenter.PLOT_YEARS) {
         //     screeningPresenter.setDrawPoints(true);
-        //     screeningPresenter.setDrawCI(true);
+        //     screeningPresenter.setDrawError(true);
         // }
 
         // // set graphical info for plotting days
         // else {
         //     screeningPresenter.setDrawPoints(false);
-        //     screeningPresenter.setDrawCI(false);
+        //     screeningPresenter.setDrawError(false);
         // }
 
 
@@ -193,7 +193,7 @@ public class ScreeningPresenter extends Presenter {
         //screeningPresenter.plotIncidencePerCycle(siteNames) ;
         // screeningPresenter.plotFinalAtRiskIncidentsRecord(siteNames,0,"statusHIV") ;
 
-        screeningPresenter.plotYearsAtRiskIncidenceReport(siteNames, 5, 2019, "statusHIV") ;  // !! line chart here
+        // screeningPresenter.plotYearsAtRiskIncidenceReport(siteNames, 5, 2019, "statusHIV") ;  // !! line chart here
 
         // screeningPresenter.plotYearsBeenTestedReport(13, 0, 0, 2019, "statusHIV") ;
         //screeningPresenter.plotNotificationsPerCycle(siteNames) ;
@@ -214,7 +214,7 @@ public class ScreeningPresenter extends Presenter {
         // screeningPresenter.plotSiteProportionSymptomatic(siteNames) ;
 
 
-        // screeningPresenter.plotIntervalMeansFromCSVFileNames(testSimNames);
+        screeningPresenter.plotIntervalMeansFromCSVFileNames(testSimNames);
 
 
         //String methodName = args[3] ;
@@ -984,7 +984,7 @@ public class ScreeningPresenter extends Presenter {
         // keep all the csv file names without extensions
         ArrayList<String> fileNames = new ArrayList<String>();
 
-        HashMap<String, HashMap> propertyToMeanAndCI = new HashMap<String, HashMap>();
+        HashMap<String, HashMap> propertyToYAndRange = new HashMap<String, HashMap>();
 
         for (int legendIndex = 0 ; legendIndex < legend.length ; legendIndex++ )
         {
@@ -998,20 +998,16 @@ public class ScreeningPresenter extends Presenter {
             fileNames.add(fileName);
 
             HashMap<Comparable, String[]> readCSV = Reporter.READ_CSV_STRING(fileName, reporter.getFolderPath(), 1);
-            HashMap<String, String[]> meanAndCI = Reporter.extractMeanAndCI(readCSV);
-            propertyToMeanAndCI.put(property, meanAndCI);
-            // LOGGER.info("@@@ MY HASH MAP = " + meanAndCI.toString());
+            HashMap<String, String[]> yAndRange = Reporter.extractYValueAndRange(readCSV);
+            propertyToYAndRange.put(property, yAndRange);
         }
         
 
-
-
-
         // set drawing information
-        setDrawCI(true);
+        setDrawError(true);
         setErrorType(SHADED_REGION);
 
-        plotHashMapStringCI(propertyToMeanAndCI,INCIDENCE,"year", legend) ;
+        plotHashMapStringCI(propertyToYAndRange,INCIDENCE,"year", legend) ;
     }
     
     public void plotNumberAgentTestingReport(int backYears, int backMonths, int backDays) {
@@ -1369,7 +1365,7 @@ public class ScreeningPresenter extends Presenter {
     // Used for testing purposes
     public void plotIntervalMeansFromCSVFileNames(String[] fileNames) {
         // String EXTENSION = ".csv" ;
-        HashMap<String, HashMap> propertyToMeanAndCI = new HashMap<String, HashMap>();
+        HashMap<String, HashMap> propertyToYAndRange = new HashMap<String, HashMap>();
 
         for (int i = 0; i < fileNames.length; ++i) {
             String property = fileNames[i];
@@ -1394,11 +1390,11 @@ public class ScreeningPresenter extends Presenter {
                 readCSV.put(keyCmp, newValues); 
             }
             
-            HashMap<String, String[]> meanAndCI = Reporter.extractMeanAndCI(readCSV);
-            propertyToMeanAndCI.put(property, meanAndCI);
+            HashMap<String, String[]> yAndRange = Reporter.extractYValueAndRange(readCSV);
+            propertyToYAndRange.put(property, yAndRange);
         }
 
-        plotShadedHashMapStringCI(propertyToMeanAndCI, "Y", "Year", fileNames);
+        plotShadedHashMapStringCI(propertyToYAndRange, "Y", "Year", fileNames);
     }
     
 }

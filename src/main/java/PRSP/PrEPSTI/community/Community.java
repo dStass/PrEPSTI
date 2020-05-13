@@ -494,7 +494,7 @@ public class Community {
      */
     public Community() {
         // Populate community with agents
-        System.out.println(initialiseCommunity()) ;
+        initialiseCommunity();
         /*
         initialRecord = "0," ;
         for (int id = 0 ; id < population ; id++ ) 
@@ -522,8 +522,6 @@ public class Community {
      */
     private void rebootRandomSeeds(String simName)
     {
-        // Reporter reporter = new Reporter(simName,"output/test/") ;
-        // long oldseed = RANDOM_SEED;
         HashMap<String, Long> seeds = Reporter.parseSeedsFromMetadata(simName, "output/test/");
         long seed = Long.valueOf(seeds.get("Community.REBOOT_SEED")) ;
         RANDOM_SEED = seed ;
@@ -548,10 +546,8 @@ public class Community {
     {
         initialRecord = "" ;
 
-        //if (!simName.isEmpty())
-          //  rebootRandomSeeds(simName) ;
-        initialiseCommunity();
-                
+        if (!simName.isEmpty()) rebootRandomSeeds(simName) ;
+        initialiseCommunity();         
     }
     
     /**
@@ -574,8 +570,6 @@ public class Community {
             initialRecord.concat("!") ;
             
             Relationship.REBOOT_RELATIONSHIPS(simName, agents) ;
-            
-            //rebootRandomSeeds(simName) ;
             scribe = new Scribe(SIM_NAME, new String[] {"relationship","encounter","screening", "population"}) ;
         }
     }
