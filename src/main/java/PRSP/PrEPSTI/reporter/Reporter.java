@@ -3393,7 +3393,7 @@ public class Reporter {
                     int colonIndex = line.indexOf(":");
                     String extractedType = line.substring(0, colonIndex);
                     if (seedTypes.contains(extractedType)) {
-                        toReturn.put(extractedType, Long.valueOf(line.substring(colonIndex + 1, line.length()).stripTrailing()));
+                        toReturn.put(extractedType, Long.valueOf(line.substring(colonIndex + 1, line.length()).trim() ));
                     }
                 }
                 line = reader.readLine();

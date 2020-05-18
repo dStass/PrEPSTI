@@ -441,6 +441,11 @@ public class Community {
             incidenceReport = screeningReporter.prepareYearsAtRiskIncidenceReport(siteNames, endYear + 1 - startYear, endYear, "statusHIV") ;
             //incidenceReportPrep = screeningReporter.prepareYearsAtRiskIncidenceReport(siteNames, 16, 2022, "prepStatus") ;
         }
+
+        screeningReporter.prepareFinalAtRiskIncidentsRecord(siteNames, 0, "statusHIV");
+        encounterReporter.prepareFinalIncidenceRecord(new String[] {"Pharynx","Rectum","Urethra"}, 0, 0, 365, MAX_CYCLES).toString();
+        encounterReporter.prepareSortedFinalIncidenceRecord(siteNames, 0, 0, 365, MAX_CYCLES, "statusHIV").toString();
+
         
         
         //String finalPrevalencesRecord = screeningReporter.prepareFinalPrevalencesSortedRecord(siteNames, "statusHIV") ;

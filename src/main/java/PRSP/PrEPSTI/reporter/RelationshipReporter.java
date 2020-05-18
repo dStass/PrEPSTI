@@ -490,6 +490,9 @@ public class RelationshipReporter extends Reporter {
         // LOGGER.info("prepareRelationshipAgentReport()");
         HashMap<Object,String[]> relationshipAgentReport = new HashMap<Object,String[]>() ;
         
+        Object getReportObject = getReport("commence", this);
+
+        LOGGER.info("test => " + getReportObject.getClass().toString());
         ArrayList<String> commenceReport = (ArrayList<String>) getReport("commence",this) ; //  
         
         ArrayList<String> relationshipRecords ;
