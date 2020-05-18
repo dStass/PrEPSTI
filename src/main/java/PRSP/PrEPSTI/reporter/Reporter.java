@@ -19,6 +19,8 @@ import java.util.HashMap ;
 
 import java.util.logging.Level;
 
+import org.apache.commons.math3.stat.descriptive.moment.Mean;
+
 //import org.jfree.chart.* ;
 
 /**
@@ -328,7 +330,7 @@ public class Reporter {
             }     
             if (!hashMap1.keySet().isEmpty())
                 sortedReport.put(value, hashMap1) ;
-            LOGGER.log(Level.INFO, "{0}", sortedReport);
+          // logger.log(level.info, "{0}", sortedReport);
         }
         return sortedReport ;
     }
@@ -385,7 +387,7 @@ public class Reporter {
             String checkRecord = BOUNDED_STRING_BY_CONTENTS(propertyName,bound,record) ;
             if (checkRecord.isEmpty())
             {
-                LOGGER.info(propertyName + " " + bound + " checkRecord is empty " + record);
+                LOGGER.warning(propertyName + " " + bound + " checkRecord is empty " + record);
                 continue ;
             }
             indexStart = Reporter.INDEX_OF_PROPERTY(bound,checkRecord);
@@ -1293,80 +1295,80 @@ public class Reporter {
     }
 
 
-    /**
-     * 
-     * Averages over reports in (ArrayList) REPORT_LIST and saves it if static variable
- WRITE_REPORT is true.
-     * @param reportList
-     * @param categoryName
-     * @param reportName
-     * @param nameSimulation
-     * @return (ArrayList) report with (ArrayList) subreports where the values 
-     * in the subreports are averaged over the innermost ArrayList.
-     */
-    static public HashMap<Comparable,String> 
-        PREPARE_MEAN_CI_HASHMAP_REPORT(ArrayList<HashMap<Comparable,String>> reportList, String categoryName, String reportName, String nameSimulation)
-    {
-        // Find mean of reports
-        HashMap<Comparable,String> meanReport = new HashMap<Comparable,String>() ;
+//     /**
+//      * 
+//      * Averages over reports in (ArrayList) REPORT_LIST and saves it if static variable
+//  WRITE_REPORT is true.
+//      * @param reportList
+//      * @param categoryName
+//      * @param reportName
+//      * @param nameSimulation
+//      * @return (ArrayList) report with (ArrayList) subreports where the values 
+//      * in the subreports are averaged over the innermost ArrayList.
+//      */
+//     static public HashMap<Comparable,String> 
+//         PREPARE_MEAN_CI_HASHMAP_REPORT(ArrayList<HashMap<Comparable,String>> reportList, String categoryName, String reportName, String nameSimulation)
+//     {
+//         // Find mean of reports
+//         HashMap<Comparable,String> meanReport = new HashMap<Comparable,String>() ;
         
-        HashMap<Comparable,String> firstReport = reportList.get(0) ;
-        int nbReports = reportList.size() ;
-        String firstReportString = (String) String.valueOf(firstReport.values().iterator().next()) ;
-        String meanRecord = "" ;
-        ArrayList<String> reportProperties = IDENTIFY_PROPERTIES(firstReportString) ;
+//         HashMap<Comparable,String> firstReport = reportList.get(0) ;
+//         int nbReports = reportList.size() ;
+//         String firstReportString = (String) String.valueOf(firstReport.values().iterator().next()) ;
+//         String meanRecord = "" ;
+//         ArrayList<String> reportProperties = IDENTIFY_PROPERTIES(firstReportString) ;
         
         
-        for (Comparable key : firstReport.keySet())
-        {
-            //LOGGER.info("year:" + key.toString());
-            for (String propertyName : reportProperties)
-            {
-                Double itemValue = 0.0 ;
-                ArrayList<String> values = new ArrayList<String>();
+//         for (Comparable key : firstReport.keySet())
+//         {
+//             //LOGGER.info("year:" + key.toString());
+//             for (String propertyName : reportProperties)
+//             {
+//                 Double itemValue = 0.0 ;
+//                 ArrayList<String> values = new ArrayList<String>();
 
-                for (HashMap<Comparable,String> report : reportList)
-                {
-                    String record = report.get(key) ;
-                    String valueStr = Reporter.EXTRACT_VALUE(propertyName,record) ;
-                    LOGGER.info("Test " + valueStr + " " + String.valueOf(nbReports) + "\n");
+//                 for (HashMap<Comparable,String> report : reportList)
+//                 {
+//                     String record = report.get(key) ;
+//                     String valueStr = Reporter.EXTRACT_VALUE(propertyName,record) ;
+//                     // LOGGER.info("Test " + valueStr + " " + String.valueOf(nbReports) + "\n");
 
-                    try
-                    {
-                        itemValue += Double.valueOf(valueStr) ;
-                        values.add(valueStr);
-                    }
-                    catch (Exception e)
-                    {
-                        LOGGER.log(Level.SEVERE,"report:{0} propertyName:{1} {2}", new Object[] {reportList.indexOf(report),propertyName,e.toString()}) ;
-                        itemValue += 0.0 ;
-                        values.add("0.0");
-                    }
-                }
+//                     try
+//                     {
+//                         itemValue += Double.valueOf(valueStr) ;
+//                         values.add(valueStr);
+//                     }
+//                     catch (Exception e)
+//                     {
+//                         LOGGER.log(Level.SEVERE,"report:{0} propertyName:{1} {2}", new Object[] {reportList.indexOf(report),propertyName,e.toString()}) ;
+//                         itemValue += 0.0 ;
+//                         values.add("0.0");
+//                     }
+//                 }
 
 
-                Double mean = itemValue / Double.valueOf(nbReports) ;
-                Double stdDev = Reporter.getStandardDeviationDoubleValueFromArrayListOfStrings(values, mean);
-                Double[] confidenceInerval = Reporter.get95ConfidenceIntervalDoubleArray(mean, stdDev, Double.valueOf(values.size()));
+//                 Double mean = itemValue / Double.valueOf(nbReports) ;
+//                 Double stdDev = Reporter.getStandardDeviationDoubleValueFromArrayListOfDouble(values, mean);
+//                 Double[] confidenceInerval = Reporter.get95ConfidenceIntervalDoubleArray(mean, stdDev, Double.valueOf(values.size()));
                 
-                String meanAndCIString =    String.valueOf(mean) + " " +
-                                            String.valueOf(confidenceInerval[0]) + " " +
-                                            String.valueOf(confidenceInerval[1]) ;
+//                 String meanAndCIString =    String.valueOf(mean) + " " +
+//                                             String.valueOf(confidenceInerval[0]) + " " +
+//                                             String.valueOf(confidenceInerval[1]) ;
 
-                String itemString = Reporter.ADD_REPORT_PROPERTY(propertyName, meanAndCIString) ;
-                meanRecord = meanRecord.concat(itemString) ;
-            }
-            meanReport.put(key,meanRecord) ;
+//                 String itemString = Reporter.ADD_REPORT_PROPERTY(propertyName, meanAndCIString) ;
+//                 meanRecord = meanRecord.concat(itemString) ;
+//             }
+//             meanReport.put(key,meanRecord) ;
             
-            // Prepare for next key
-            meanRecord = "" ;
-        }
+//             // Prepare for next key
+//             meanRecord = "" ;
+//         }
         
-        if (WRITE_REPORT)
-            WRITE_CSV_STRING(meanReport, categoryName, reportName, nameSimulation, REPORT_FOLDER) ;
+//         if (WRITE_REPORT)
+//             WRITE_CSV_STRING(meanReport, categoryName, reportName, nameSimulation, REPORT_FOLDER) ;
         
-        return meanReport ;
-    }
+//         return meanReport ;
+//     }
 
 
     static public String 
@@ -1608,7 +1610,7 @@ public class Reporter {
             {
                 HashMap<Comparable,String> hashMapReport = hashMapReports.get(reportIndex) ;
                 properties = IDENTIFY_PROPERTIES(hashMapReport.get(year)) ;
-                LOGGER.info(reportNames.get(reportIndex) + " " + properties.toString() + " " + hashMapReport.get(year));
+                // LOGGER.info(reportNames.get(reportIndex) + " " + properties.toString() + " " + hashMapReport.get(year));
                 //LOGGER.log(Level.INFO, "{0}", prevalenceRecordYears.get(year));
                 for (int propertyIndex = 0 ; propertyIndex < properties.size() ; propertyIndex++ )    // 
                 {
@@ -1690,7 +1692,7 @@ public class Reporter {
         }
         catch( Exception e )
         {
-            LOGGER.info(e.toString()) ;
+            LOGGER.severe(e.toString()) ;
         }
     }
 
@@ -1739,7 +1741,7 @@ public class Reporter {
         }
         catch( Exception e )
         {
-            LOGGER.info(e.toString()) ;
+            LOGGER.severe(e.toString()) ;
             return false ;
         }
         
@@ -1810,7 +1812,7 @@ public class Reporter {
         }
         catch ( Exception e )
         {
-            LOGGER.info("values are not Arrays");
+            LOGGER.severe("values are not Arrays");
             nbProperties = 1 ;
         }
         //LOGGER.log(Level.INFO, "nbProperties:{1}", new Object[] {nbProperties});
@@ -1839,7 +1841,7 @@ public class Reporter {
         }
         catch( Exception e )
         {
-            LOGGER.info(e.toString()) ;
+            LOGGER.severe(e.toString()) ;
             return false ;
         }
         return true ;
@@ -1905,66 +1907,19 @@ public class Reporter {
             {
                 fileWriter.write(row) ; 
                 fileWriter.newLine() ;
-                LOGGER.info(row);
+                // LOGGER.info(row);
             }
             fileWriter.close() ;
         }
         catch( Exception e )
         {
-            LOGGER.info(e.toString()) ;
+            LOGGER.severe(e.toString()) ;
             return false ;
         }
         
         return true ;        
     }
     
-
-    // public static boolean COMBINE_FILES_AS_ON_MEAN_AND_CI(ArrayList<String> fileNames, String folderPath) {
-       
-    //     HashMap<String, ArrayList<String>> yearMap = new HashMap<String, ArrayList<String>>();
-
-    //     // for (int i = 0; i < properties.size(); ++i) {
-    //     //     properties.put()
-    //     // }
-        
-    //     for (int i = 0; i < fileNames.size(); ++i) {
-    //         String fileName = fileNames.get(i); 
-    //         HashMap<Comparable, String[]> readCSV = Reporter.READ_CSV_STRING(fileName, folderPath);
-    //         for (Comparable key : readCSV.keySet()) {
-
-    //             String[] entries = readCSV.get(key);
-    //             String mean = entries[0];
-    //             if (!yearMap.containsKey(key)) {
-    //                 ArrayList<String> meansForYear = new ArrayList<String>();
-    //                 yearMap.put(key.toString(), meansForYear);
-    //             }
-
-
-    //             ArrayList<String> meansForYear = yearMap.get(key);
-    //             meansForYear.add(mean);
-
-    //             // for (int e = 1; e < entries.length; ++e) {
-                    
-                    
-    //                 // }
-    //         }
-    //     }
-
-    //     // LOGGER.info("@@@@@@\n@@@@@@\n@@@@@ " + yearMap.toString());
-        
-
-    //     return true;
-    // }
-
-
-
-
-
-
-
-
-
-
 
     /**
      * Reads in values from multiple files whose names are derived from simNames 
@@ -1997,8 +1952,8 @@ public class Reporter {
         
         // Set up header
         String firstLine = "mean" + COMMA ;
-        firstLine += "lower95" + COMMA;
-        firstLine += "upper95" + COMMA;
+        firstLine += "lower" + COMMA;
+        firstLine += "upper" + COMMA;
 
         // String firstLine = "";
         // if (reportName.contains("riskyIncidence_HIV"))
@@ -2115,37 +2070,34 @@ public class Reporter {
         int nbSimulations = simNames.size() ;
         int nbPriors = firstLine.split(COMMA).length - simNames.size() -1 ;
         String outputValue ;
+
+        // indices for medianAndRange matches with the one declared in
+        // Reporter.generateMedianAndRangeArrayFromValuesArray
+        int yValueIndex = 0;
+        int lowerIndex = 1;
+        int upperIndex = 2;
+        
         for (Comparable categoryValue : outputReport.keySet() ) {
-            // LOGGER.info("@@\n@@\n@@\n" + categoryValue.toString());
             String valuesCommaSeparatedString = outputReport.get(categoryValue);
 
             // extract information into an arraylist, remove leading and trailing whitespace before and after a comma
-
-            ArrayList<String> valuesArrayList = new ArrayList<String>(Arrays.asList(valuesCommaSeparatedString.split("\\s*,\\s*")));
+            String[] valuesArray = valuesCommaSeparatedString.split("\\s*,\\s*"); // split on comma and leading/trailing spaces
+            ArrayList<String> valuesArrayList = new ArrayList<String>(Arrays.asList(valuesArray));
             String year = valuesArrayList.remove(0); // remove the year and store it in a variable
             
-            // extract pre-calculated mean
-            Double meanValue = totalReport.get(categoryValue)/nbSimulations;
+            String[] medianAndRange = Reporter.generateMedianAndRangeArrayFromValuesArray(valuesArray);
 
-            // calculate standard deviation
-            Double standardDeviation = Reporter.getStandardDeviationDoubleValueFromArrayListOfStrings(valuesArrayList, meanValue);
+            // // calculate confidence intervals
+            // Double[] confidenceInterval = Reporter.get95ConfidenceIntervalDoubleArray(  meanValue,
+            //                                                                             standardDeviation,
+            //                                                                             (double) nbSimulations);
 
-            // calculate confidence intervals
-            Double[] confidenceInterval = Reporter.get95ConfidenceIntervalDoubleArray(  meanValue,
-                                                                                        standardDeviation,
-                                                                                        (double) nbSimulations);
-
-            // insert year -> mean -> lower95 -> upper95 into array list
-            // this then gets converted into a comma separated string
-            int YEAR_INDEX = 0;
-            int MEAN_INDEX = 1;
-            int LOWER95_INDEX = 2;
-            int HIGHER95_INDEX = 3;
-
-            valuesArrayList.add(YEAR_INDEX, year);
-            valuesArrayList.add(MEAN_INDEX, String.valueOf(meanValue));
-            valuesArrayList.add(LOWER95_INDEX, String.valueOf(confidenceInterval[0]));
-            valuesArrayList.add(HIGHER95_INDEX, String.valueOf(confidenceInterval[1]));
+            // insert year -> mean -> lower -> upper into array list
+            // this then gets converted back into a comma separated string
+            valuesArrayList.add(0, medianAndRange[upperIndex] );  // add higher to the start of values
+            valuesArrayList.add(0, medianAndRange[lowerIndex] );  // add lower to start of values
+            valuesArrayList.add(0, medianAndRange[yValueIndex]);  // add median to start of values
+            valuesArrayList.add(0, year);  // add year to start of values
             
             outputValue = String.join(",", valuesArrayList);
             outputReport.put(categoryValue, outputValue);
@@ -2154,13 +2106,8 @@ public class Reporter {
         ArrayList<String> categoryValues = new ArrayList<String>() ;
         Collections.addAll(categoryValues, outputReport.keySet().toArray(new String[] {})) ;
         Collections.sort(categoryValues,String.CASE_INSENSITIVE_ORDER) ;
-        // Open BufferedWriter file
-//        for (String categoryValue : categoryValues)
-//        {
-//            fileWriter.writeLine(outputReport.get(categoryValue)) ;
-//            fileWriter.newLine() ;
-//        }
 
+        // write to csv
         String filePath = folderPath + reportName + "_" + scoreName + "_" + simNames.get(0) + ".csv" ;
         try
         {
@@ -2178,12 +2125,145 @@ public class Reporter {
         }
         catch( Exception e )
         {
-            LOGGER.info(e.toString()) ;
+            LOGGER.severe(e.toString()) ;
             return false ;
         }
         
         return true ;
+    }
+
+    /**
+     * Returns an array with 3 strings where:
+     * String[3], String[0] = median, String[1] = lower range, String[2] = upper range
+     * 
+     * @param values : String[], does not need to be sorted
+     * @return String[]
+     * @author dstass
+     */
+    public static String[] generateMedianAndRangeArrayFromValuesArray(String[] values) {
+        int VALUES_TO_ADD = 3; // y-value, lower, upper
+        String[] toReturn = new String[VALUES_TO_ADD];
+
+        ArrayList<String> valuesArrayList = new ArrayList<String>(Arrays.asList(values));
+        String year = valuesArrayList.remove(0); // remove the year and store it in a variable
+        ArrayList<Double> sortedValues = Reporter.convertArrayListStringToSortedArrayDouble(valuesArrayList);
         
+        // calculate standard deviation of the interdecile range of values
+        // this will hopefully remove some outliers so this standard deviation represents 
+        // most of the data (outliers do not factor in the calculations of this number)
+        ArrayList<Double> sortedValuesInterdecile = new ArrayList<Double>();
+        for (Double value : sortedValues) sortedValuesInterdecile.add(value);
+        Reporter.removeOutliersFromSortedArrayListPercentileMethod(sortedValuesInterdecile, 0.05);        
+        Double numValues = (double) sortedValuesInterdecile.size();
+        Double meanValue = 0.0;
+        for (int i = 0; i < sortedValuesInterdecile.size(); ++i) meanValue += sortedValuesInterdecile.get(i);
+        meanValue /= numValues;
+        Double standardDeviation = Reporter.getStandardDeviationDoubleValueFromArrayListOfDoubles(sortedValuesInterdecile, meanValue);
+        
+        // transform sorted data by removing outliers
+        // Reporter.removeOutliersFromSortedArrayListPercentileMethod(sortedValues, 0.10);
+        Reporter.removeOutliersFromSortedArrayListDeviationMethod(sortedValues, meanValue, standardDeviation);
+
+        // get the median from a sorted array list
+        Double medianValue = Reporter.extractMedianFromSortedArrayList(sortedValues);
+
+        int yValueIndex = 0;
+        int lowerIndex = 1;
+        int upperIndex = 2;
+
+        toReturn[yValueIndex] = String.valueOf(medianValue);
+        toReturn[lowerIndex] = String.valueOf(sortedValues.get(0));
+        toReturn[upperIndex] = String.valueOf(sortedValues.get(sortedValues.size() - 1));
+        
+        return toReturn;
+    }
+    /**
+     * Returns median of a sorted list
+     * @param values : ArrayList<Double>, sorted ascending, size > 0
+     * @return Double: median
+     * @author dstass
+     */
+    private static Double extractMedianFromSortedArrayList(ArrayList<Double> values) {
+        int valuesSize = values.size();
+        if (valuesSize == 0) return 0.0;
+        if (valuesSize % 2 == 1) return values.get(valuesSize/2);
+        else {
+            int midLeft = valuesSize/2 - 1;
+            int midRight = valuesSize/2;
+            return (values.get(midLeft) + values.get(midRight))/2;
+        }
+    }
+    /**
+     * Description:
+     * Remove values outside of given interpercentile range
+     * 
+     * Example of interpercentile values:
+     * QUARTILE = 0.25
+     * DECILE = 0.10
+     * 0.025 --> 2.5% -> 97.5%
+     * 
+     * @param values : ArrayList<Double>, sorted ascending
+     * @param interpercentile : Double, 0 < interpercentile < 0.5
+     */
+    private static void removeOutliersFromSortedArrayListPercentileMethod(ArrayList<Double> values, double interpercentile) {
+        int removeFromEnds = (int) (interpercentile * values.size()); // flooring
+        int removeFromLeft = removeFromEnds;
+        int removeFromRight = removeFromEnds;
+        // Remove outliers from the left
+        for (int i = 0; i < removeFromEnds; ++i) values.remove(0);
+
+        // Remove outliers from the right
+        for (int i = 0; i < removeFromEnds; ++i) values.remove(values.size() - 1);
+    }
+
+    /**
+     * 
+     * Description: Remove data points that are over 3 standard deviations from the mean of the dataset
+     * 
+     * @param values : ArrayList<Double>, sorted ascending
+     * @param mean : Double
+     * @param standardDeviation : Double
+     * @author dstass
+     */
+    private static void removeOutliersFromSortedArrayListDeviationMethod(ArrayList<Double> values, Double mean, Double standardDeviation) {       
+        Double MAX_DEVIATION = 3.0;  // 1 = 68, 2 = 95, 3 = 99.7
+        int removeFromLeft = 0;
+        int removeFromRight = 0;
+        
+        // Find how many outliers on the lower end (lower than mean)
+        while (removeFromLeft < values.size()) {
+            Double differenceFromMean = values.get(removeFromLeft) - mean;
+            Double deviationFromMean = Math.abs(differenceFromMean / standardDeviation);
+            if (deviationFromMean <= MAX_DEVIATION) break;
+            removeFromLeft += 1;
+        }
+        
+        // Find how many outliers on the upper end (higher than the mean)
+        while (removeFromRight < values.size()) {
+            Double differenceFromMean = values.get(values.size() - 1 - removeFromRight) - mean;
+            Double deviationFromMean = Math.abs(differenceFromMean / standardDeviation);
+            if (deviationFromMean <= MAX_DEVIATION) break;
+            removeFromRight += 1;
+        }
+        
+        if (removeFromLeft + removeFromRight > values.size()) return;
+        if (removeFromLeft + removeFromRight > 0) {
+            int debugTotalRemoves = removeFromLeft + removeFromRight;
+        }
+
+        // Remove outliers from the left
+        for (int i = 0; i < removeFromLeft; ++i) values.remove(0);
+
+        // Remove outliers from the right
+        for (int i = 0; i < removeFromRight; ++i) values.remove(values.size() - 1);
+    }
+    
+
+    private static ArrayList<Double> convertArrayListStringToSortedArrayDouble(ArrayList<String> strArrayList) {
+        ArrayList<Double> toReturn = new ArrayList<Double>();
+        for (String s : strArrayList) toReturn.add(Double.valueOf(s));
+        Collections.sort(toReturn);
+        return toReturn;
     }
 
 
@@ -2192,11 +2272,12 @@ public class Reporter {
      * @param values - arraylist of Strings that can be parsed as a double
      * @param mean - double value
      * @return - a double representing the standard deviation
+     * @author dstass
      */
-    private static Double getStandardDeviationDoubleValueFromArrayListOfStrings(ArrayList<String> values, Double mean) {
+    private static Double getStandardDeviationDoubleValueFromArrayListOfDoubles(ArrayList<Double> values, Double mean) {
         Double squaredDifferenceOngoingSum = 0.0;
         for (int i = 0; i < values.size(); ++i) {
-            Double valueDouble = Double.parseDouble(values.get(i));
+            Double valueDouble = values.get(i);
             squaredDifferenceOngoingSum += Math.pow((valueDouble - mean), 2);            
         }
         Double variance = squaredDifferenceOngoingSum/ values.size();
@@ -2211,6 +2292,7 @@ public class Reporter {
      * @param standardDeviation
      * @param sampleSize - must not be zero
      * @return an array containing two doubles, lower and upper values ofr 95% CI
+     * @author dstass
      */
     private static Double[] get95ConfidenceIntervalDoubleArray(Double meanValue, Double standardDeviation, Double sampleSize) {
         
@@ -2226,17 +2308,17 @@ public class Reporter {
     }
 
 
-    public static HashMap<String, String[]> extractMeanAndCI(HashMap<Comparable, String[]> csvHashMap) {
+    public static HashMap<String, String[]> extractYValueAndRange(HashMap<Comparable, String[]> csvHashMap) {
         int FIRST_N_ITEMS_TO_EXTRACT = 3; // mean, upper and lower
 
         int MEAN_INDEX = 0;
-        String MEAN_STRING = "mean";
+        String MEAN_STRING = "yValue";
 
         int LOWER_INDEX = 1;
-        String LOWER_STRING = "lower95";
+        String LOWER_STRING = "lower";
 
         int HIGHER_INDEX = 2;
-        String HIGHER_STRING = "higher95";
+        String HIGHER_STRING = "higher";
 
         HashMap<String, String[]> toReturn = new HashMap<String, String[]>();
 
@@ -2351,12 +2433,11 @@ public class Reporter {
                 if (!comparisonReport.containsKey(residualSum))
                     comparisonReport.put(residualSum,new ArrayList<String>()) ;
                 comparisonReport.get(residualSum).add(simulationName) ;
-                LOGGER.info(comparisonReport.toString()) ;
             }
             catch ( Exception e )
             {
-                LOGGER.info(e.toString());
-                LOGGER.info(simulationName) ;
+                LOGGER.severe(e.toString());
+                LOGGER.severe(simulationName) ;
                 //simNames.remove(simIndex) ;
             }
 
@@ -2436,7 +2517,7 @@ public class Reporter {
         }
         catch ( Exception e )
         {
-            LOGGER.info(e.toString());
+            LOGGER.severe(e.toString());
         }
      
         return report ;
@@ -2558,7 +2639,6 @@ public class Reporter {
     static public boolean DUMP_OUTPUT(String reportName, String simName, String folderPath, Object dumpReport)
     {
         String fileName = reportName + "_" + simName + ".txt" ;
-        LOGGER.info(fileName) ;
         try
         {
             BufferedWriter metadataWriter = new BufferedWriter(new FileWriter(folderPath + fileName,true)) ;
@@ -2652,7 +2732,7 @@ public class Reporter {
         }
         catch( Exception e )
         {
-            LOGGER.info(e.toString()) ;
+            LOGGER.severe(e.toString()) ;
             return false ;
         }
         
@@ -2809,7 +2889,7 @@ public class Reporter {
             }
             averagedReport.add(meanRecord) ;
         }
-        LOGGER.log(Level.INFO, "{0}", averagedReport);
+      // logger.log(level.info, "{0}", averagedReport);
         return averagedReport ;
     }
 
@@ -3077,7 +3157,7 @@ public class Reporter {
         }
         catch( Exception e )
         {
-            LOGGER.info(e.toString()) ;
+            LOGGER.severe(e.toString()) ;
         }
         return initialRecord ;
     }
@@ -3095,7 +3175,7 @@ public class Reporter {
         }
         catch( Exception e )
         {
-            LOGGER.info(e.toString()) ;
+            LOGGER.severe(e.toString()) ;
         }
         return finalRecord ;
     }
@@ -3287,6 +3367,43 @@ public class Reporter {
     {
         return simName ;
     }
+
+    /**
+     * 
+     * @param fileName
+     * @param filePath
+     * @return
+     */
+    public static HashMap<String, Long> parseSeedsFromMetadata(String fileName, String filePath) {
+        
+        HashMap<String, Long> toReturn = new HashMap<String, Long>();
+        BufferedReader reader;
+        String STOP_READING = "Relationship.BURNIN_COMMENCE:";
+
+        Set<String> seedTypes = new HashSet<String>(
+            Arrays.asList("Community.REBOOT_SEED", "Agent.REBOOT_SEED", "Site.REBOOT_SEED", "Relationship.REBOOT_SEED"));
+
+        try {
+            reader = new BufferedReader(new FileReader(filePath+fileName+"-METADATA.txt"));
+            String line = reader.readLine();
+            while (line != null) {
+                if (line.startsWith(STOP_READING)) break;
+                boolean colonExists = line.contains(":");
+                if (colonExists) {
+                    int colonIndex = line.indexOf(":");
+                    String extractedType = line.substring(0, colonIndex);
+                    if (seedTypes.contains(extractedType)) {
+                        toReturn.put(extractedType, Long.valueOf(line.substring(colonIndex + 1, line.length()).trim() ));
+                    }
+                }
+                line = reader.readLine();
+            }
+
+        } catch (IOException e) {
+            LOGGER.severe(e.toString());
+        }
+        return toReturn;
+    }
     
     /**
      * 
@@ -3325,7 +3442,7 @@ public class Reporter {
         if (simNameList.size() < cutoff)
             cutoff = simNameList.size() ;
         MULTI_WRITE_CSV(simNameList.subList(0, cutoff), "year", "Pharynx_false", "riskyIncidence_HIV", folderPath) ; // "C:\\Users\\MichaelWalker\\OneDrive - UNSW\\gonorrhoeaPrEP\\simulator\\PrEPSTI\\output\\prep\\") ; // 
-        LOGGER.info(String.valueOf(cutoff) + " simulations included.") ;
+        // LOGGER.info(String.valueOf(cutoff) + " simulations included.") ;
         //PREPARE_GRAY_REPORT(simNames,folderPath,2007,2017) ;
     }
 
@@ -3386,7 +3503,7 @@ public class Reporter {
                 BufferedReader fileReader = new BufferedReader(new FileReader(folderPath + getFileName())) ;
                 record = fileReader.readLine() ;
                 if (record == null)
-                    LOGGER.info(Level.WARNING + ":Empty report file");
+                    LOGGER.warning("Empty report file");
                 while (record != null)
                 {
                     outputArray.add(record) ;
@@ -3467,7 +3584,7 @@ public class Reporter {
             fileReader.close() ;
             //LOGGER.info(record) ;
             if (record == null)
-                LOGGER.info(Level.WARNING + ":Empty report file");
+                LOGGER.warning("Empty report file");
 
             return record ;
         }
@@ -3488,7 +3605,7 @@ public class Reporter {
             fileReader.close() ;
             
             if (outputString.isEmpty())
-                LOGGER.info(Level.WARNING + ":Empty report file");
+                LOGGER.warning("Empty report file");
 
             return outputString ;
         }
@@ -3592,7 +3709,7 @@ public class Reporter {
             ArrayList<String> fileList = new ArrayList<String>() ;
             
             int cycleFileIndex = fileNames.size() - 1 ;
-            LOGGER.info("cycleFileIndex:" + String.valueOf(cycleFileIndex));
+            // LOGGER.info("cycleFileIndex:" + String.valueOf(cycleFileIndex));
             // From which line do we had files
             int fromLine = 0 ;
             
@@ -3648,7 +3765,7 @@ public class Reporter {
             }
             catch (Exception e)
             {
-                LOGGER.info(e.toString()) ;
+                LOGGER.severe(e.toString()) ;
             }
         }
         

@@ -29,9 +29,9 @@ public class PopulationPresenter extends Presenter{
         String chartTitle = "age_at_death" ; // args[1] ;
         String reportFileName = "output/test/" ; // args[2] ;
         //String reportFileName = "output/year2007/" ; // args[2] ;
-        LOGGER.info(chartTitle) ;
-        PopulationPresenter populationPresenter = new PopulationPresenter(simName,chartTitle,reportFileName) ;
-        System.out.println(populationPresenter.reporter.preparePropertyCorrelationReport("statusHIV", "riskyStatus"));
+        // LOGGER.info(chartTitle) ;
+        // PopulationPresenter populationPresenter = new PopulationPresenter(simName,chartTitle,reportFileName) ;
+        // System.out.println(populationPresenter.reporter.preparePropertyCorrelationReport("statusHIV", "riskyStatus"));
         //populationPresenter.plotAgeAtDeath();
         
     }
@@ -98,7 +98,7 @@ public class PopulationPresenter extends Presenter{
     public void plotAgeAtDeath()
     {
         HashMap<Comparable,Number> ageAtDeathReport = reporter.prepareAgeAtDeathReport() ;
-        LOGGER.log(Level.INFO,"{0}",ageAtDeathReport) ;
+      // logger.log(level.info,"{0}",ageAtDeathReport) ;
         plotHashMap("Age", "Number of deaths", binHashMap(ageAtDeathReport,"Nb_of_deaths") ) ;
     }
 

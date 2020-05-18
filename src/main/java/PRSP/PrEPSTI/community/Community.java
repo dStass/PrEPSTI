@@ -26,11 +26,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.logging.Level;
 
-// JSON imports:
-import org.json.simple.parser.*;
-import org.json.simple.JSONArray; 
-import org.json.simple.JSONObject; 
-
 /******************************************************************
  * @author Michael Luke Walker
  *
@@ -50,7 +45,7 @@ public class Community {
     // static public HashMap<String, HashMap> METHOD_CONFIG;
 
     // input variables
-    static public int DEFAULT_MAX_CYCLES;
+    static public int LOADED_MAX_CYCLES;
     static private int MAX_CYCLES;
     
     // derived variables
@@ -58,7 +53,6 @@ public class Community {
     static String NAME_SUFFIX;
     static int AGENTS_PER_DAY;
 
-    static boolean TO_PLOT ; //= true ;
     //static public String FILE_PATH = "/srv/scratch/z3524276/prepsti/output/test/" ;
     //static public String FILE_PATH = "/short/is14/mw7704/prepsti/output/year2007/" ;
     
@@ -127,19 +121,24 @@ public class Community {
     static final java.util.logging.Logger LOGGER = java.util.logging.Logger.getLogger("reporter") ;
 
     public static void main(String[] args) {
+        long timeInitial = System.nanoTime();
+        float timeAging = 0f;
         ConfigLoader.load();  // set static variables
+
+        try { Thread.sleep(5000); }
+        catch (InterruptedException e) { e.printStackTrace(); }
         
         // derived variables
         Community.AGENTS_PER_DAY = Community.POPULATION / 365 ;
 
         // MAX_CYCLES
-        Community.MAX_CYCLES = Community.generateTrueCycles(Community.DEFAULT_MAX_CYCLES) ;
+        Community.MAX_CYCLES = Community.generateTrueCycles(Community.LOADED_MAX_CYCLES) ;
         
         // Pop[POPULATION]Cycles[MAX_CYCLES]
         Community.NAME_SUFFIX = "Pop" + String.valueOf(Community.POPULATION) 
                               + "Cycles" + String.valueOf(Community.MAX_CYCLES);
 
-        
+        // handle arguments 
         switch (args.length) {
             default:
             case 3:
@@ -163,10 +162,8 @@ public class Community {
                 break ;
         }
 
-
         Community.SIM_NAME = Community.NAME_ROOT ; // + Community.NAME_SUFFIX;
         Community.OUTPUT_RETURN += Community.SIM_NAME + " " ;
-
         
         // if (args.length > argIndex)
         // {
@@ -207,10 +204,7 @@ public class Community {
         // }
         
         COMMENT += MSM.TRANSMISSION_PROBABILITY_REPORT() ;
-        
-        // Whether to plot prevalence upon completion.
-        // Must be false when run on an HPC cluster.
-        TO_PLOT = (!FILE_PATH.contains("prepsti")) ;
+        String comment = COMMENT;
         
         // Needed to avoid NoClassDefFoundError on HPC
         PopulationReporter populationReporter = new PopulationReporter() ;
@@ -218,17 +212,15 @@ public class Community {
         EncounterReporter encounterReporter = new EncounterReporter() ;
         ScreeningReporter screeningReporter = new ScreeningReporter() ;
         
-        
         // Record starting time to measure running time
         long startTime = System.nanoTime() ;
-        LOGGER.log(Level.INFO, "Seed:{0}", System.currentTimeMillis());
+        // LOGGER.log(Level.INFO, "Seed:{0}", System.currentTimeMillis());
     
         // Establish Community of Agents for simulation
-        LOGGER.info(SIM_NAME);
-        LOGGER.info("RELOAD_SIMULATION = " + RELOAD_SIMULATION);
-        Community community = new Community(RELOAD_SIMULATION,200) ;
+        // LOGGER.info(SIM_NAME);
+        Community community = new Community(RELOAD_SIMULATION, 200) ;
         
-        
+
         // Establish conditions for specific simulation questions
         //System.out.println(community.initialiseCommunity()) ;
 
@@ -244,7 +236,7 @@ public class Community {
         // To record cycle number in every record
         String cycleString ;
         
-        System.out.println("population: " + POPULATION + ", Cycles: " + Community.MAX_CYCLES );
+        // System.out.println("population: " + POPULATION + ", Cycles: " + Community.MAX_CYCLES );
         /*
         int outputInterval ;
         if (POPULATION < MAX_CYCLES)
@@ -276,7 +268,7 @@ public class Community {
             ArrayList<String> commenceList = new ArrayList<String>() ;
             ArrayList<Comparable> breakupList ;
             
-            LOGGER.info("burning in Relationships") ;
+            // LOGGER.info("burning in Relationships") ;
             for (int burnin = 0 ; burnin < 2500 ; burnin++ ) // 20000
             {
                 commenceString = community.generateRelationships() ;
@@ -316,7 +308,7 @@ public class Community {
         for (int cycle = 0; cycle < Community.MAX_CYCLES; cycle++)
         {	
             //if ((cycle % 10) == 0) //((cycle/outputInterval) * outputInterval))
-              //  LOGGER.log(Level.INFO, "Cycle no. {0}", cycleString);
+              // logger.log(level.info, "Cycle no. {0}", cycleString);
 
             if (DYNAMIC)
                 populationRecord += community.interveneCommunity(cycle) ;
@@ -353,15 +345,16 @@ public class Community {
 
             // Deal with effects of aging.
             // To include in populationRecord move this above community.submitRecords()
+            float t1 = System.nanoTime();
             community.ageOneDay();
+            float t2 = System.nanoTime();
+            timeAging += (t2-t1);
 
             if (PARTIAL_DUMP)
                 if ((((cycle+1)/DUMP_CYCLE) * DUMP_CYCLE) == (cycle+1) )
                 {
                     community.dump();
                 }
-                    
-
             cycleString = Integer.toString(cycle+1) + "," ;
             populationRecord = cycleString + community.births(deltaPopulation) ;
         }
@@ -380,7 +373,6 @@ public class Community {
         System.out.println("Elapsed running time: " + seconds + "seconds") ;
         System.out.println("Elapsed running time: " + minutes + "minutes") ;
         
-        //if (TO_PLOT)
         String[] relationshipClassNames = new String[] {"Casual","Regular","Monogomous"} ; // "Casual","Regular","Monogomous"
         
         
@@ -401,18 +393,17 @@ public class Community {
         //screeningPresenter2.plotNotificationsPerCycle();
 
 
-        LOGGER.info(MSM.TRANSMISSION_PROBABILITY_REPORT());
-        if (TO_PLOT) {
-            ScreeningPresenter screeningPresenter3 
-                    = new ScreeningPresenter(SIM_NAME,"multi prevalence",screeningReporter) ;
-            screeningPresenter3.multiPlotScreening(new Object[] {"prevalence","prevalence",new String[] {"Pharynx","Rectum","Urethra"}}) ;  // ,"coprevalence",new String[] {"Pharynx","Rectum"},new String[] {"Urethra","Rectum"}
-        }
+        // LOGGER.info(MSM.TRANSMISSION_PROBABILITY_REPORT());
+
+        ScreeningPresenter screeningPresenter3 = new ScreeningPresenter(SIM_NAME, "multi prevalence", screeningReporter) ;
+        screeningPresenter3.multiPlotScreening(new Object[] {"prevalence","prevalence", new String[] {"Pharynx","Rectum","Urethra"}}) ;  // ,"coprevalence",new String[] {"Pharynx","Rectum"},new String[] {"Urethra","Rectum"}
+        // screeningPresenter3.plotYearsAtRiskIncidenceReport(new String[] {"Pharynx","Rectum","Urethra"}, 3, 2020, "statusHIV");
         
         HashMap<Object,Number> finalNotificationsRecord = new HashMap<Object,Number>() ;
         
         for (boolean unique : new boolean[] {})    // false,
         {
-            LOGGER.info("unique:" + String.valueOf(unique)) ;
+            // LOGGER.info("unique:" + String.valueOf(unique)) ;
             //HashMap<Object,Number> finalPositivityRecord = new HashMap<Object,Number>() ;
             String notificationsRecord = screeningReporter.prepareFinalNotificationsRecord(new String[] {"Pharynx","Rectum","Urethra"}, unique, 0, Reporter.DAYS_PER_YEAR) ;
             //HashMap<Object,Number[]> notificationsRecord = screeningReporter.prepareFinalNotificationsRecord(new String[] {"Pharynx","Rectum","Urethra"}, unique, 0, Reporter.DAYS_PER_YEAR) ;
@@ -436,10 +427,10 @@ public class Community {
         {
             prevalenceReport = screeningReporter.preparePrevalenceReport(siteName) ;
             //LOGGER.info(String.valueOf(prevalenceReport.size())) ;
-            LOGGER.log(Level.INFO,"{0} {1}", new Object[] {siteName, prevalenceReport.get(prevalenceReport.size() - 1)}) ;
+            // LOGGER.log(Level.INFO,"{0} {1}", new Object[] {siteName, prevalenceReport.get(prevalenceReport.size() - 1)}) ;
         }
         prevalenceReport = screeningReporter.preparePrevalenceReport() ;
-        LOGGER.log(Level.INFO,"{0} {1}", new Object[] {"all", prevalenceReport.get(prevalenceReport.size() - 1)}) ;
+        // LOGGER.log(Level.INFO,"{0} {1}", new Object[] {"all", prevalenceReport.get(prevalenceReport.size() - 1)}) ;
 
         HashMap<Comparable,String> incidenceReport = new HashMap<Comparable,String>() ;
         //HashMap<Comparable,String> incidenceReportPrep = new HashMap<Comparable,String>() ;
@@ -453,15 +444,27 @@ public class Community {
             incidenceReport = screeningReporter.prepareYearsAtRiskIncidenceReport(siteNames, endYear + 1 - startYear, endYear, "statusHIV") ;
             //incidenceReportPrep = screeningReporter.prepareYearsAtRiskIncidenceReport(siteNames, 16, 2022, "prepStatus") ;
         }
-        LOGGER.info("by HIV-status " + screeningReporter.prepareFinalAtRiskIncidentsRecord(siteNames, 0, "statusHIV")) ;
+
+        screeningReporter.prepareFinalAtRiskIncidentsRecord(siteNames, 0, "statusHIV");
+        encounterReporter.prepareFinalIncidenceRecord(new String[] {"Pharynx","Rectum","Urethra"}, 0, 0, 365, MAX_CYCLES).toString();
+        encounterReporter.prepareSortedFinalIncidenceRecord(siteNames, 0, 0, 365, MAX_CYCLES, "statusHIV").toString();
+
+        
+        
         //String finalPrevalencesRecord = screeningReporter.prepareFinalPrevalencesSortedRecord(siteNames, "statusHIV") ;
         //LOGGER.log(Level.INFO, "prevalence {0}", finalPrevalencesRecord) ;
         
         //EncounterReporter encounterReporter = new EncounterReporter("Agent to Agent",community.encounterReport) ;
         //encounterReporter = new EncounterReporter(Community.SIM_NAME,Community.FILE_PATH) ;
-        LOGGER.info("Incidence " + encounterReporter.prepareFinalIncidenceRecord(new String[] {"Pharynx","Rectum","Urethra"}, 0, 0, 365, MAX_CYCLES).toString());
-        LOGGER.info("Incidence " + encounterReporter.prepareSortedFinalIncidenceRecord(siteNames, 0, 0, 365, MAX_CYCLES, "statusHIV").toString());
-//            EncounterPresenter encounterPresenter
+        
+        // commented out:
+        // LOGGER.info("by HIV-status " + screeningReporter.prepareFinalAtRiskIncidentsRecord(siteNames, 0, "statusHIV")) ;
+        // LOGGER.info("Incidence " + encounterReporter.prepareFinalIncidenceRecord(new String[] {"Pharynx","Rectum","Urethra"}, 0, 0, 365, MAX_CYCLES).toString());
+        // LOGGER.info("Incidence " + encounterReporter.prepareSortedFinalIncidenceRecord(siteNames, 0, 0, 365, MAX_CYCLES, "statusHIV").toString());
+
+
+        // old code
+        //            EncounterPresenter encounterPresenter
 //                    = new EncounterPresenter(SIM_NAME,"multi prevalence",encounterReporter) ;
 //            encounterPresenter.multiPlotScreening(new Object[] {"prevalence","prevalence",new String[] {"Pharynx","Rectum","Urethra"}}) ;  // ,"coprevalence",new String[] {"Pharynx","Rectum"},new String[] {"Urethra","Rectum"}
         //HashMap<Object,Number> finalTransmissionsRecord = encounterReporter.prepareFinalIncidenceRecord(new String[] {"Pharynx","Rectum","Urethra"}, 0, Reporter.DAYS_PER_YEAR) ;
@@ -486,9 +489,9 @@ public class Community {
             //Reporter.DUMP_OUTPUT("riskyIncidencePrep",SIM_NAME,FILE_PATH,incidenceReportPrep);
         }
         
-
-        LOGGER.info("Task completed");
-
+        long timeFinal = System.nanoTime();
+        float timeRan = (timeFinal - timeInitial)/  1000000000f;
+        LOGGER.info("Task completed in " + String.valueOf(timeRan) + " seconds and timeAging = " + String.valueOf(timeAging/1000000000f));
     }
  
 
@@ -499,7 +502,7 @@ public class Community {
      */
     public Community() {
         // Populate community with agents
-        System.out.println(initialiseCommunity()) ;
+        initialiseCommunity();
         /*
         initialRecord = "0," ;
         for (int id = 0 ; id < population ; id++ ) 
@@ -527,19 +530,18 @@ public class Community {
      */
     private void rebootRandomSeeds(String simName)
     {
-        Reporter reporter = new Reporter(simName,"output/test/") ;
-        long oldseed = RANDOM_SEED;
-        long seed = Long.valueOf(reporter.getMetaDatum("Community.REBOOT_SEED")) ;
+        HashMap<String, Long> seeds = Reporter.parseSeedsFromMetadata(simName, "output/test/");
+        long seed = Long.valueOf(seeds.get("Community.REBOOT_SEED")) ;
         RANDOM_SEED = seed ;
         RAND = new Random(seed) ;
 
-        seed = Long.valueOf(reporter.getMetaDatum("Agent.REBOOT_SEED")) ;
+        seed = Long.valueOf(seeds.get("Agent.REBOOT_SEED")) ;
         Agent.SET_RAND(seed) ;
 
-        seed = Long.valueOf(reporter.getMetaDatum("Site.REBOOT_SEED")) ;
+        seed = Long.valueOf(seeds.get("Site.REBOOT_SEED")) ;
         Site.SET_RAND(seed) ;
 
-        seed = Long.valueOf(reporter.getMetaDatum("Relationship.REBOOT_SEED")) ;
+        seed = Long.valueOf(seeds.get("Relationship.REBOOT_SEED")) ;
         Relationship.SET_RAND(seed) ;
     }
     
@@ -552,10 +554,8 @@ public class Community {
     {
         initialRecord = "" ;
 
-        //if (!simName.isEmpty())
-          //  rebootRandomSeeds(simName) ;
-        System.out.println(initialiseCommunity()) ;
-                
+        if (!simName.isEmpty()) rebootRandomSeeds(simName) ;
+        initialiseCommunity();         
     }
     
     /**
@@ -567,7 +567,7 @@ public class Community {
     public Community(String simName, int fromCycle)
     {
         if (simName.isEmpty())
-            System.out.println(initialiseCommunity()) ;
+            initialiseCommunity();
         else
         {
             rebootRandomSeeds(simName) ;
@@ -578,8 +578,6 @@ public class Community {
             initialRecord.concat("!") ;
             
             Relationship.REBOOT_RELATIONSHIPS(simName, agents) ;
-            
-            //rebootRandomSeeds(simName) ;
             scribe = new Scribe(SIM_NAME, new String[] {"relationship","encounter","screening", "population"}) ;
         }
     }
@@ -937,17 +935,17 @@ public class Community {
                 }
                 catch (NoSuchMethodException nsme)
                 {
-                    LOGGER.info(nsme.getLocalizedMessage());
+                    LOGGER.severe(nsme.getLocalizedMessage());
                     record += nsme.toString(); //  .getMessage() ;
                 }
                 catch (InvocationTargetException ite)
                 {
-                    LOGGER.info(ite.getLocalizedMessage());
+                    LOGGER.severe(ite.getLocalizedMessage());
                     //record += ite.getMessage() ;
                 }
                 catch (IllegalAccessException iae)
                 {
-                    LOGGER.info(iae.getLocalizedMessage());
+                    LOGGER.severe(iae.getLocalizedMessage());
                     record += iae.getMessage() ;
                 }
             }
@@ -1043,7 +1041,7 @@ public class Community {
                     //LOGGER.info("screening agentId:"+String.valueOf(agent.getAgentId())) ;
                     for (Site site : agent.getSites())
                     {
-                        if (agent.getInfectedStatus(site) != 0)
+                        if (agent.getInfectedStatus(site))
                             record += Reporter.ADD_REPORT_PROPERTY(site.toString(), agent.getSymptomatic(site)) ;
                     }
                 // boolean tested = ((record.contains("Rectum") || record.contains("Urethra")) || !(RAND.nextDouble() < 0.5)) ;
@@ -1063,7 +1061,7 @@ public class Community {
                 record += Reporter.ADD_REPORT_PROPERTY("agentId",agent.getAgentId()) ;
                 for (Site site : agent.getSites())
                 {
-                    if (agent.getInfectedStatus(site) > 0)
+                    if (agent.getInfectedStatus(site))
                         record += Reporter.ADD_REPORT_PROPERTY(site.toString(), agent.getSymptomatic(site)) ;
                     //LOGGER.info(site.toString()) ;
                 }
@@ -1121,7 +1119,7 @@ public class Community {
             
             for (Site site : agent.getSites())
             {
-                siteInfected = (site.getInfectedStatus() != 0) ;
+                siteInfected = (site.getInfectedStatus()) ;
                 //LOGGER.log(Level.INFO, "{0} {1}", new Object[] {site.toString(),siteInfected}) ;
 
                 // Due for an STI screen?
@@ -1301,7 +1299,7 @@ public class Community {
      */
     private void dumpRebootData()
     {
-        LOGGER.info("dumpRebootData()");
+        // LOGGER.info("dumpRebootData()");
         ArrayList<String> metaLabels = new ArrayList<String>() ; 
         ArrayList<Object> metaData = new ArrayList<Object>() ; 
         
@@ -1319,7 +1317,7 @@ public class Community {
                     relationshipReboot +=relationship.getRecord() ;
         metaData.add(relationshipReboot) ; 
      
-        LOGGER.info("scribe.dumpRebootData()");
+        // LOGGER.info("scribe.dumpRebootData()");
         scribe.dumpRebootData(metaLabels, metaData);
     }
     
@@ -1382,10 +1380,14 @@ public class Community {
     * * * * * * * * * * * * * * * * * * * * *
     */
 
+    /**
+     * returns cycles if it is less than MAX_YEARS,
+     * otherwise, we multiply it by DAYS_PER_YEAR and return that
+     */
     private static int generateTrueCycles(int cycles) {
-        cycles = cycles > 99 
+        cycles = cycles > ConfigLoader.MAX_YEARS 
                         ? cycles 
-                        : cycles * Reporter.DAYS_PER_YEAR;
+                        : cycles * ConfigLoader.DAYS_PER_YEAR;
         return cycles;
     }
     
@@ -1456,7 +1458,7 @@ public class Community {
                 }
             }
             dumpsSoFar++ ;
-            LOGGER.log(Level.INFO, "dumpsSoFar:{0} nb_Files:{1} properties:{2}", new Object[] {dumpsSoFar,(new File(globalFolder)).listFiles().length,properties.length});
+            // LOGGER.log(Level.INFO, "dumpsSoFar:{0} nb_Files:{1} properties:{2}", new Object[] {dumpsSoFar,(new File(globalFolder)).listFiles().length,properties.length});
         }
         
         /**
@@ -1475,7 +1477,7 @@ public class Community {
             } 
             catch ( Exception e )
             {
-                LOGGER.info(e.toString());
+                LOGGER.severe(e.toString());
             }
         }
         
@@ -1487,7 +1489,7 @@ public class Community {
         protected void dumpRebootData(ArrayList<String> metaLabels, ArrayList<Object> metaData)
         {
             String fileName = simName + "-REBOOT" + extension ;
-            LOGGER.info(fileName);
+            // LOGGER.info(fileName);
             try
             {
                 BufferedWriter metadataWriter = new BufferedWriter(new FileWriter(globalFolder + fileName,false)) ;
@@ -1496,7 +1498,7 @@ public class Community {
             } 
             catch ( Exception e )
             {
-                LOGGER.info(e.toString());
+                LOGGER.severe(e.toString());
             }
         }
         

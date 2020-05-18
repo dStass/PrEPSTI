@@ -49,7 +49,7 @@ public class EncounterPresenter extends Presenter {
         //String reportFileName = "output/year2007/" ; // args[2] ;
         //String reportFileName = "output/year2010/" ; // args[2] ;
         //String reportFileName = "output/year2012/" ; // args[2] ;
-        LOGGER.info(chartTitle) ;
+        // LOGGER.info(chartTitle) ;
         String[] siteNames  = new String[] {"Pharynx","Rectum","Urethra"} ;
         
         String prefix = "to2019u60gradual49" ;
@@ -169,7 +169,7 @@ public class EncounterPresenter extends Presenter {
         // HashMap to be plotted
         // (String) key has format infectedsiteToReceivingsite
         HashMap<Comparable,Number> fromSiteToSiteReport = reporter.prepareFromSiteToSiteReport(siteNames, startCycle) ;
-        LOGGER.log(Level.INFO,"{0}",fromSiteToSiteReport) ;
+      // logger.log(level.info,"{0}",fromSiteToSiteReport) ;
         plotHashMap("Site to Site","transmissions",fromSiteToSiteReport) ;        
     }
     
@@ -190,12 +190,12 @@ public class EncounterPresenter extends Presenter {
     public void plotNumberAgentTransmissionReport(String sortingProperty)
     {
         HashMap<Comparable,HashMap<Comparable,Number>> numberAgentTransmissionReport = reporter.prepareNumberAgentTransmissionReport(sortingProperty) ;
-        LOGGER.log(Level.INFO, "{0}", numberAgentTransmissionReport);
+      // logger.log(level.info, "{0}", numberAgentTransmissionReport);
         
         //(HashMap) unsortedKey maps to (Number[]) values in order determined by 
         // looping through keySet.
         HashMap<Comparable,Number[]> plotHashMap = prepareSortedHashMap(numberAgentTransmissionReport) ;
-        LOGGER.log(Level.INFO, "{0}", plotHashMap);
+      // logger.log(level.info, "{0}", plotHashMap);
         
         String[] legend = new String[numberAgentTransmissionReport.keySet().size()] ;
         int nameIndex = 0 ;
@@ -236,7 +236,7 @@ public class EncounterPresenter extends Presenter {
         for (int siteIndex = 0 ; siteIndex < siteList.size() ; siteIndex++ )
             finalSiteNames[siteIndex] = siteList.get(siteIndex) ;
         
-        LOGGER.log(Level.INFO, "{0}", finalIncidenceRecord);
+      // logger.log(level.info, "{0}", finalIncidenceRecord);
         
         callPlotChartDefault(finalSiteNames, EncounterReporter.INCIDENCE, "Site", finalIncidenceRecord) ;
         //plotValues("incidence", finalIncidenceRecord) ;        
@@ -255,7 +255,7 @@ public class EncounterPresenter extends Presenter {
         String finalIncidenceRecord = reporter.prepareSortedFinalIncidenceRecord(siteNames, 0, backMonths, backDays, endCycle, sortingProperty) ;
         //HashMap<Object,Number> finalIncidenceRecord = reporter.prepareFinalIncidenceRecord(siteNames, 0, backMonths, backDays, endCycle) ;
             
-        LOGGER.log(Level.INFO, "{0}", finalIncidenceRecord);
+      // logger.log(level.info, "{0}", finalIncidenceRecord);
         //plotHashMapString(finalIncidenceRecord, "incidence", "site", siteNames) ;        
         multiPlotValues(finalIncidenceRecord, EncounterReporter.INCIDENCE, "Site") ;
     }
@@ -288,7 +288,7 @@ public class EncounterPresenter extends Presenter {
         Reporter.WRITE_CSV_DISTRIBUTION(reports, EncounterReporter.INCIDENCE, simNames[0], "output/prep/") ;
         incidenceRecordYears = Reporter.PREPARE_MEAN_HASHMAP_REPORT(reports,"year","INCIDENCE",simNames[0]) ;
         
-        LOGGER.log(Level.INFO, "{0}", incidenceRecordYears);
+      // logger.log(level.info, "{0}", incidenceRecordYears);
         String[] scoreNames = Reporter.IDENTIFY_PROPERTIES(incidenceRecordYears.get(lastYear)).toArray(new String[0]) ;
         for (String property : scoreNames)
         {
@@ -320,7 +320,7 @@ public class EncounterPresenter extends Presenter {
     {
         HashMap<Comparable,Number> finalTransmissionsRecord = reporter.prepareFinalTransmissionsRecord(siteNames) ;
             
-        LOGGER.log(Level.INFO, "{0}", finalTransmissionsRecord);
+      // logger.log(level.info, "{0}", finalTransmissionsRecord);
         plotHashMap("Sites","prevalence",finalTransmissionsRecord) ;        
     }
     
@@ -423,7 +423,7 @@ public class EncounterPresenter extends Presenter {
         //Reporter.WRITE_CSV_DISTRIBUTION(reports, "at-risk incidence-rate", simNames[0], "output/prep/") ;
         
         HashMap<Comparable,String> yearsCondomUseReport = Reporter.PREPARE_MEAN_HASHMAP_REPORT(reports,"year","condomUse",simNames[0]) ;
-        LOGGER.log(Level.INFO, "{0}", yearsCondomUseReport) ;
+      // logger.log(level.info, "{0}", yearsCondomUseReport) ;
         plotHashMapString(yearsCondomUseReport,"","year",reportProperties) ;
     }
     
@@ -535,7 +535,7 @@ public class EncounterPresenter extends Presenter {
         if (!concordanceName.isEmpty())
             chartTitle += "_" + concordanceName + "_" + String.valueOf(concordant) ;
         
-        LOGGER.info(percentAgentCondomlessReport.toString()) ;
+        // LOGGER.info(percentAgentCondomlessReport.toString()) ;
         multiPlotValues(percentAgentCondomlessReport, "percentage engaged in CLAI","Class of Relationships") ;
     }
     
@@ -544,7 +544,7 @@ public class EncounterPresenter extends Presenter {
         HashMap<Comparable,String> percentAgentCondomlessYears 
                 = reporter.preparePercentAgentCondomlessYears(relationshipClassNames, backYears, lastYear, concordanceName, concordant, sortingProperty) ;
         
-        LOGGER.log(Level.INFO, "{0}", percentAgentCondomlessYears) ;
+      // logger.log(level.info, "{0}", percentAgentCondomlessYears) ;
         //Reporter.WRITE_CSV(percentAgentCondomlessYears, "year", relationshipClassNames, "discordant_relationships", simNames[0], reporter.getFolderPath()) ;
         String[] legend = Reporter.IDENTIFY_PROPERTIES(percentAgentCondomlessYears.get(lastYear)).toArray(new String[0]) ;
         plotHashMapString(percentAgentCondomlessYears,"percentage engaged in CLAI","year", legend) ;
@@ -657,17 +657,17 @@ public class EncounterPresenter extends Presenter {
      */
     public void plotReceiveSortPrepStatusReport(String value)
     {
-        LOGGER.info("prepareReceiveSortPrepStatusReport");
+        // LOGGER.info("prepareReceiveSortPrepStatusReport");
         HashMap<Comparable,HashMap<Comparable,ArrayList<Comparable>>> receiveSortPrepStatusReport 
                 = reporter.prepareReceiveSortPrepStatusReport(value) ;
-        LOGGER.log(Level.INFO, "{0}", receiveSortPrepStatusReport);
+        // LOGGER.log(Level.INFO, "{0}", receiveSortPrepStatusReport);
         HashMap<Comparable,HashMap<Comparable,ArrayList<Comparable>>> invertedPrepStatusReport 
                 = SortReporter.INVERT_HASHMAP_HASHMAP(receiveSortPrepStatusReport) ;
-        LOGGER.info("prepareTransmissionCountReport");
+        // LOGGER.info("prepareTransmissionCountReport");
         ArrayList<ArrayList<Comparable>> nbTransmissionReport 
                 = reporter.prepareReceiveCountReport(invertedPrepStatusReport) ;
-        LOGGER.log(Level.INFO, "{0}", nbTransmissionReport);
-        LOGGER.info("plotCycleValue");
+        // LOGGER.log(Level.INFO, "{0}", nbTransmissionReport);
+        // LOGGER.info("plotCycleValue");
         plotEventsPerCycle("nbTransmissions", nbTransmissionReport) ;
     }
     

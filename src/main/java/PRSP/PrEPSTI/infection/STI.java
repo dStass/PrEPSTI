@@ -34,11 +34,11 @@ abstract public class STI {
         
         for (Class stiClass : stiClasses)
         {
-            LOGGER.info(stiClass.getSimpleName()) ;
+            // LOGGER.info(stiClass.getSimpleName()) ;
             if (STI.class.equals(stiClass.getSuperclass()))
                 stiList.add(stiClass) ;
         }
-        LOGGER.info(stiList.toString()) ;
+        // LOGGER.info(stiList.toString()) ;
         STI_LIST = stiList ;
     }
     

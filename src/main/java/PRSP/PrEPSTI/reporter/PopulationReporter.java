@@ -193,7 +193,7 @@ public class PopulationReporter extends Reporter {
         double proportionNot1with2 = property2not1/(propertyNeither + property2not1) ;
         double proportionNot2with1 = property1not2/(propertyNeither + property1not2) ;
         
-        LOGGER.log(Level.INFO,"{0} {1} {2} {3}", new Object[] {property2not1, property1not2, property1and2, propertyNeither});
+        // LOGGER.log(Level.INFO,"{0} {1} {2} {3}", new Object[] {property2not1, property1not2, property1and2, propertyNeither});
         
         report = "Of those with " + property1 + " true, " ;
         report += String.valueOf(proportion1with2) + " had " + property2 + " true.\n" ;
@@ -639,8 +639,8 @@ public class PopulationReporter extends Reporter {
             if (endPropertyIndex < 0)
                 endPropertyIndex = record.indexOf("!", propertyIndex) ;
             propertyRecord = record.substring(propertyIndex + findPropertyName.length() + 1, endPropertyIndex) ;
-//            if ("riskiness".equals(propertyName))
-//                LOGGER.info(propertyRecord);
+            // if ("riskiness".equals(propertyName))
+            // LOGGER.info(propertyRecord);
             propertyChangeReport.add(propertyRecord) ;
         }
         

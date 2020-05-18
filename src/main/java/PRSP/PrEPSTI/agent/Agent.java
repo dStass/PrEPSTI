@@ -360,7 +360,7 @@ public abstract class Agent {
             }
             catch (Exception e)
             {
-                LOGGER.info(e.toString()) ;
+                LOGGER.severe(e.toString()) ;
             }
         }
         
@@ -642,7 +642,7 @@ public abstract class Agent {
         }
         catch ( Exception e )
         {
-            LOGGER.log(Level.INFO, "{0}", e.getLocalizedMessage());
+            LOGGER.severe(e.getLocalizedMessage());
         }
 
     }
@@ -903,7 +903,7 @@ public abstract class Agent {
             }
             catch ( NoSuchMethodException nsme)
             {
-                LOGGER.log(Level.INFO, "NSME {0} {1}", new Object[]{fieldName, nsme.getLocalizedMessage()});
+              // logger.log(level.info, "NSME {0} {1}", new Object[]{fieldName, nsme.getLocalizedMessage()});
             }
             catch (IllegalAccessException iae) 
             {
@@ -919,11 +919,11 @@ public abstract class Agent {
             }
             //catch ( ClassNotFoundException cnfe)
             {
-              //  LOGGER.log(Level.INFO, "CNFE {0} {1}", new Object[]{fieldName, cnfe.getLocalizedMessage()});
+              // logger.log(level.info, "CNFE {0} {1}", new Object[]{fieldName, cnfe.getLocalizedMessage()});
             } 
             //catch (NoSuchFieldException nsfe)
             {
-              //  LOGGER.log(Level.INFO, "{0} {1}", new Object[]{fieldName, nsfe.getMessage()}) ;
+              // logger.log(level.info, "{0} {1}", new Object[]{fieldName, nsfe.getMessage()}) ;
             }
         }*/
         return censusReport ;
@@ -1303,7 +1303,7 @@ public abstract class Agent {
             return false ;
         
         for (Site site : sites)
-            if ((site.getInfectedStatus()!=0))
+            if (site.getInfectedStatus())
                 site.treat() ;
 //            if ((site.getInfectedStatus()!=0))
 //                successful = (successful && site.treat()) ;
@@ -1323,7 +1323,7 @@ public abstract class Agent {
         Site[] sites = getSites() ;
         boolean successful = true ;
         for (Site site : sites)
-            if ((site.getInfectedStatus()!=0))
+            if (site.getInfectedStatus())
                 site.treat() ; //
         infectedStatus = false ;
         clearSymptomatic();
@@ -1383,7 +1383,7 @@ public abstract class Agent {
      * @param site
      * @return site.infectedStatus
      */
-    public int getInfectedStatus(Site site)
+    public boolean getInfectedStatus(Site site)
     {
         return site.getInfectedStatus() ;
     }
@@ -1408,7 +1408,7 @@ public abstract class Agent {
         infectedStatus = false ;
         Site[] sites = getSites() ;
         for (Site site : sites)
-            infectedStatus = (infectedStatus || (site.getInfectedStatus() != 0)) ;
+            infectedStatus = (infectedStatus || site.getInfectedStatus()) ;
         symptomatic = false ;
         if (infectedStatus)
             for (Site site : sites)
@@ -1425,7 +1425,7 @@ public abstract class Agent {
         Site[] sites = getSites() ;
         boolean stillInfected = false ;
         for (Site site : sites)
-            if (site.getInfectedStatus() > 0)
+            if (site.getInfectedStatus())
                 stillInfected = ((!site.progressInfection()) || stillInfected ) ;
         
         setInfectedStatus(stillInfected) ;
@@ -1686,24 +1686,17 @@ public abstract class Agent {
         }
         catch ( IllegalAccessException iae)
         {
-            LOGGER.info(iae.getLocalizedMessage());
+            LOGGER.severe(iae.getLocalizedMessage());
         }
         catch ( InvocationTargetException ite )
         {
-            LOGGER.info(ite.getLocalizedMessage());
+            LOGGER.severe(ite.getLocalizedMessage());
         }
         catch ( NoSuchMethodException nsme )
         {
-            LOGGER.info(nsme.getLocalizedMessage()) ;
+            LOGGER.severe(nsme.getLocalizedMessage()) ;
         }
 
-        /*String debug = Integer.toString(relationship.getPartnerId(agentId)) + "::" ;
-        for (int partnerI : currentPartnerIds)
-        {
-            debug += Integer.toString(partnerI) + " " ;
-            debug += Integer.toString(currentPartnerIds.indexOf(partnerI)) + " : ";
-        }
-        LOGGER.info(debug);*/
         int partnerId = relationship.getPartnerId(agentId) ;
         int partnerIndex = currentPartnerIds.indexOf(partnerId) ;
         currentPartnerIds.remove(partnerIndex) ;
@@ -1711,7 +1704,6 @@ public abstract class Agent {
         currentRelationships.remove(relationshipIndex) ;
         Relationship.DIMINISH_NB_RELATIONSHIPS() ;
         nbRelationships-- ;
-        
     }
 
     /**

@@ -43,8 +43,6 @@ public class RelationshipPresenter extends Presenter{
         //String reportFileName = "output/year2010/" ; // args[2] ;
         //String reportFileName = "output/prep/" ; // args[2] ;
         
-        LOGGER.info(chartTitle) ;
-        LOGGER.info(simName) ;
         String[] relationshipClazzNames = new String[] {"Casual","Regular","Monogomous"} ; // "Casual","Regular","Monogomous"
         RelationshipPresenter relationshipPresenter = new RelationshipPresenter(simName,chartTitle,reportFileName) ;
         //relationshipPresenter.plotBreakupsPerCycle() ;
@@ -216,7 +214,7 @@ public class RelationshipPresenter extends Presenter{
         String agentRelationshipsMean
             = reporter.prepareAgentRelationshipsMean(relationshipClassNames, backYears, backMonths, backDays, sortingProperty) ;
         
-        LOGGER.info(agentRelationshipsMean.toString());
+        // LOGGER.info(agentRelationshipsMean.toString());
         String timePeriod = GET_TIME_PERIOD_STRING(backYears, backMonths, backDays) ;
         
         //String[] legend = new String[relationshipClassNames.length * agentRelationshipsMean.size()] ;
@@ -317,7 +315,7 @@ public class RelationshipPresenter extends Presenter{
             output.put(className, outputEntry) ;
         }
         
-        LOGGER.log(Level.INFO, "{0}", output) ;
+      // logger.log(level.info, "{0}", output) ;
         
         plotHashMap("Class of Relationships","Number of Agents",output) ;
     }
@@ -362,7 +360,7 @@ public class RelationshipPresenter extends Presenter{
         
         //HashMap<Object,Number[]> invertedHashMap 
           //      = Reporter.INVERT_HASHMAP_LIST(cumulativeRelationshipRecord, new String[] {relationshipClassName}) ;
-        LOGGER.log(Level.INFO, "{0}", cumulativeRelationshipRecord) ;
+      // logger.log(level.info, "{0}", cumulativeRelationshipRecord) ;
         
         plotHashMap("Cumulative number of partners","Number of agents",
                 binHashMap(cumulativeRelationshipRecord.get(relationshipClassName),"Nb_of_partners")) ; 
@@ -386,7 +384,7 @@ public class RelationshipPresenter extends Presenter{
         
         HashMap<Comparable,Number[]> invertedHashMap 
                 = Reporter.INVERT_HASHMAP_LIST(recentRelationshipsReport,relationshipClassNewNames) ;
-        LOGGER.info(invertedHashMap.toString());
+        // LOGGER.info(invertedHashMap.toString());
         
         for (int index = 0 ; index < relationshipClassNewNames.length ; index++ )
             relationshipClassNewNames[index] = relationshipClassNewNames[index] + GROUP + relationshipClassNewNames[index] ;
@@ -396,7 +394,7 @@ public class RelationshipPresenter extends Presenter{
                 + String.valueOf(backDays) + " days " ;
         
         HashMap<Comparable,Number[]> binnedReport = binHashMap(invertedHashMap, relationshipClassNewNames) ;
-        LOGGER.info(reporter.getFolderPath());
+        // LOGGER.info(reporter.getFolderPath());
         Reporter.WRITE_CSV(binnedReport, chartTitle, relationshipClassNewNames, "nb_Relationships", simName, reporter.getFolderPath()) ;
         plotHashMap("partners in " + timePeriod,relationshipClassNewNames,binnedReport) ;
     }
@@ -410,7 +408,7 @@ public class RelationshipPresenter extends Presenter{
         // (ArrayList) records of mean number of each Relationship class per Agent
         ArrayList<HashMap<Object,String>> meanNumberRelationshipsReport 
                 = reporter.prepareMeanNumberRelationshipsReport(relationshipClassNames) ;
-        LOGGER.log(Level.INFO, "{0}", meanNumberRelationshipsReport);
+      // logger.log(level.info, "{0}", meanNumberRelationshipsReport);
         //ArrayList<ArrayList<Object>> invertedReport = Reporter.INVERT_ARRAY_HASHMAP(meanNumberRelationshipsReport,relationshipClassNames) ;
         //LOGGER.log(Level.INFO, "{0}", invertedReport);
         ArrayList<ArrayList<String>> invertedReport = new ArrayList<ArrayList<String>>() ;
@@ -423,7 +421,7 @@ public class RelationshipPresenter extends Presenter{
             }
             invertedReport.add((ArrayList<String>) record.clone()) ;
         }
-        LOGGER.log(Level.INFO, "{0}", invertedReport);
+      // logger.log(level.info, "{0}", invertedReport);
         multiPlotCycleValue("meanNb",invertedReport,relationshipClassNames) ;
     }
     
@@ -459,7 +457,7 @@ public class RelationshipPresenter extends Presenter{
         HashMap<Comparable,Number> relationshipCumulativeTransmissionReport
         = reporter.prepareRelationshipCumulativeTransmissionReport(encounterReporter) ;
         
-        LOGGER.log(Level.INFO, "{0}", relationshipCumulativeTransmissionReport) ;
+      // logger.log(level.info, "{0}", relationshipCumulativeTransmissionReport) ;
         
         plotSpline("Number of Transmissions","Cumulative relationships",relationshipCumulativeTransmissionReport) ;
     }

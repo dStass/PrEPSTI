@@ -235,7 +235,7 @@ public class RelationshipReporter extends Reporter {
         ArrayList<Object> currentRelationshipIds = new ArrayList<Object>() ;
         //for (boolean nextInput = true ; nextInput ; nextInput = updateReport())
         int nbCycles = encounterReport.size() ;
-        LOGGER.info("nbCycles:" + String.valueOf(nbCycles));
+        // LOGGER.info("nbCycles:" + String.valueOf(nbCycles));
         for (int cycle = 0 ; cycle < nbCycles ; cycle++ )
         {
             for (Object relationshipId : relationshipCommenceReport.get(cycle))
@@ -253,7 +253,7 @@ public class RelationshipReporter extends Reporter {
                 {
                     String relationshipId = EXTRACT_VALUE("relationshipId",encounter) ;
                     encounterAgentIds = relationshipAgentReport.get(relationshipId) ; // EXTRACT_AGENTIDS(encounter) ;
-                    LOGGER.log(Level.INFO, "encounterAgentIds", encounterAgentIds);
+                  // logger.log(level.info, "encounterAgentIds", encounterAgentIds);
                     relationshipTransmissionReport = INCREMENT_HASHMAP(relationshipId,relationshipTransmissionReport) ;
                     /**
                      * for (Object relationshipId : currentRelationshipIds)
@@ -292,7 +292,7 @@ public class RelationshipReporter extends Reporter {
         HashMap<Comparable,Number> cumulativeRelationshipTransmissionReport = new HashMap<Comparable,Number>() ;
 
         HashMap<Comparable,Number> relationshipTransmissionReport = prepareRelationshipTransmissionReport(encounterReporter) ;
-        LOGGER.log(Level.INFO, "{0}", relationshipTransmissionReport);
+      // logger.log(level.info, "{0}", relationshipTransmissionReport);
         
         Collection<Number> relationshipTransmissionValues = relationshipTransmissionReport.values() ;
         
@@ -359,7 +359,7 @@ public class RelationshipReporter extends Reporter {
                         agentLastRelationship.put(agentId, EXTRACT_VALUE(RELATIONSHIPID,relationshipString)) ;
                 }
             }
-            LOGGER.info(String.valueOf(index)+":");
+            // LOGGER.info(String.valueOf(index)+":");
             // Find last Relationship breakup
             try
             {
@@ -368,7 +368,7 @@ public class RelationshipReporter extends Reporter {
             }
             catch ( Exception e )
             {
-                LOGGER.log(Level.INFO,"{0}", breakupReport) ;
+              // logger.log(level.info,"{0}", breakupReport) ;
                 assert(false) ;
             }
             for (String relationshipString : relationshipArray)
@@ -487,9 +487,12 @@ public class RelationshipReporter extends Reporter {
      */
     public HashMap<Object,String[]> prepareRelationshipAgentReport(boolean ignoreBreakups)
     {
-        LOGGER.info("prepareRelationshipAgentReport()");
+        // LOGGER.info("prepareRelationshipAgentReport()");
         HashMap<Object,String[]> relationshipAgentReport = new HashMap<Object,String[]>() ;
         
+        Object getReportObject = getReport("commence", this);
+
+        LOGGER.info("test => " + getReportObject.getClass().toString());
         ArrayList<String> commenceReport = (ArrayList<String>) getReport("commence",this) ; //  
         
         ArrayList<String> relationshipRecords ;
@@ -1004,7 +1007,7 @@ public class RelationshipReporter extends Reporter {
         int total ;
         for (String relationshipClazzName : relationshipClassNames)
         {
-            LOGGER.info(relationshipClazzName) ;
+            // LOGGER.info(relationshipClazzName) ;
             HashMap<Object,Integer> agentRelationshipsTotal = new HashMap<Object,Integer>() ;
             HashMap<Object,Integer> nbAgentsMap = new HashMap<Object,Integer>() ;
             // agentId maps to number of given Relationships
@@ -1030,8 +1033,8 @@ public class RelationshipReporter extends Reporter {
                 nbAgents = nbAgentsMap.get(propertyValue) ;
                 nbAgentsMap.put(propertyValue,nbAgents + 1) ;
             }
-//            LOGGER.info(agentRelationshipsTotal.toString());
-//            LOGGER.info(nbAgentsMap.toString()) ;
+            // LOGGER.info(agentRelationshipsTotal.toString());
+            // LOGGER.info(nbAgentsMap.toString()) ;
             for (Object sortingValue : agentRelationshipsTotal.keySet())
                 agentRelationshipsMean += ADD_REPORT_PROPERTY(relationshipClazzName + "_" + sortingValue.toString(),
                     ((double) agentRelationshipsTotal.get(sortingValue))/nbAgentsMap.get(sortingValue)) ;
@@ -1363,12 +1366,12 @@ public class RelationshipReporter extends Reporter {
                 = prepareAgentsEnteredRelationshipReport(relationshipClassNames) ;
         //for (HashMap<Object,HashMap<Object,ArrayList<Object>>> aerRecord : agentsEnteredRelationshipReport)
             //LOGGER.log(Level.INFO, "agentsEnteredRelationship{0}", aerRecord) ;
-        LOGGER.log(Level.INFO, "{0}", agentsEnteredRelationshipReport);
+      // logger.log(level.info, "{0}", agentsEnteredRelationshipReport);
         // relationshipId maps to relationshipClassName ;
         HashMap<Object,String> relationshipClazzReport 
                 = (HashMap<Object,String>) getReport("relationshipClazz",this) ;
         //prepareRelationshipClazzReport() ;
-        LOGGER.log(Level.INFO, "{0}", relationshipClazzReport);
+      // logger.log(level.info, "{0}", relationshipClazzReport);
         
         ArrayList<String> breakupReport = (ArrayList<String>) getReport("breakup",this) ; //   prepareBreakupReport() ;
     
@@ -1386,7 +1389,7 @@ public class RelationshipReporter extends Reporter {
         for (Object relationshipClassName : relationshipClassNames)
             agentRelationshipsCount.put(relationshipClassName, new HashMap<Object,Integer>()) ;
         
-        LOGGER.info("Find the Relationships entered into up to and including given cycle") ;
+        // LOGGER.info("Find the Relationships entered into up to and including given cycle") ;
         for (int enteredIndex = 0 ; enteredIndex < reportsSize ; enteredIndex++ )
         {
             // Formation of new Relationships
@@ -1435,7 +1438,7 @@ public class RelationshipReporter extends Reporter {
         for (String relationshipClassName : relationshipClassNames)
             agentBreakupsCount.put(relationshipClassName, new HashMap<Comparable,Number>()) ;
         
-        LOGGER.info("// Find the Relationships broken up from up to given cycle") ;
+        // LOGGER.info("// Find the Relationships broken up from up to given cycle") ;
         for (int breakupIndex = 0 ; breakupIndex < (reportsSize-1) ; breakupIndex++ )
         {
             // Formation of new Relationships
@@ -1473,7 +1476,7 @@ public class RelationshipReporter extends Reporter {
             agentBreakupRelationshipsReport.add((HashMap<Object,HashMap<Object,Integer>>) breakupAgentRelationshipsCount.clone()) ;
         }
         
-        LOGGER.info("// Subtract broken-up Relationships from commenced Relationships for each Agent.") ;
+        // LOGGER.info("// Subtract broken-up Relationships from commenced Relationships for each Agent.") ;
         for (int breakupIndex = 0 ; breakupIndex < (reportsSize-1) ; breakupIndex++ )
         {
             HashMap<Object,HashMap<Object,Integer>> numberRelationshipsCount = new HashMap<Object,HashMap<Object,Integer>>() ;
@@ -1496,9 +1499,9 @@ public class RelationshipReporter extends Reporter {
                     }
                     catch (Exception e)
                     {
-                        LOGGER.log(Level.INFO,"agentId:{0} relationshipClassName:{1} index:{2}", new Object[] {agentId,relationshipClassName,breakupIndex}) ;
-                        LOGGER.log(Level.INFO, "{0}", enterRecord.get(relationshipClassName));
-                        LOGGER.log(Level.INFO, "{0}", breakupRecord.get(relationshipClassName));
+                      // logger.log(level.info,"agentId:{0} relationshipClassName:{1} index:{2}", new Object[] {agentId,relationshipClassName,breakupIndex}) ;
+                      // logger.log(level.info, "{0}", enterRecord.get(relationshipClassName));
+                      // logger.log(level.info, "{0}", breakupRecord.get(relationshipClassName));
                         //assert(false) ;
                         //numberRelationshipsCount.get(relationshipClassName).
                             //    put(agentId, enterRecord.get(relationshipClassName).get(agentId) - breakupRecord.get(relationshipClassName).get(agentId)) ;
@@ -2087,7 +2090,7 @@ public class RelationshipReporter extends Reporter {
     protected ArrayList<String> prepareCommenceReport()
     {
         ArrayList<String> commenceReport = new ArrayList<String>() ;
-        LOGGER.info("prepareCommenceReport");
+        // LOGGER.info("prepareCommenceReport");
         //Include burn-in Relationships
         //ArrayList<String> inputString = new ArrayList<String>() ;
         //LOGGER.info(Relationship.BURNIN_COMMENCE) ;
@@ -2116,7 +2119,7 @@ public class RelationshipReporter extends Reporter {
                 if (relationshipIdIndex >= 0 && (relationshipIdIndex < clearIndex)) 
                     record = inputRecord.substring(relationshipIdIndex,clearIndex) + record ;
                 else 
-                    LOGGER.info("No Relationships commenced in record " + inputRecord) ;
+                    LOGGER.warning("No Relationships commenced in record " + inputRecord) ;
                 commenceReport.add(record) ;
                 record = "" ;
             }
@@ -2144,8 +2147,8 @@ public class RelationshipReporter extends Reporter {
             burninCommenceStatic = getMetaDatum("Relationship.BURNIN_COMMENCE") ;
             burninBreakupStatic = getMetaDatum("Relationship.BURNIN_BREAKUP") ;
         }
-        else
-            LOGGER.info(burninBreakupStatic) ;
+        // else
+        //     LOGGER.info(burninBreakupStatic) ;
         burninCommenceList = EXTRACT_ARRAYLIST(burninCommenceStatic,RELATIONSHIPID) ;
         burninBreakup = EXTRACT_ALL_VALUES(RELATIONSHIPID,burninBreakupStatic,0) ;
         

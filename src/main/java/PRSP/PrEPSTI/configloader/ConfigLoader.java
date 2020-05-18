@@ -1,30 +1,25 @@
 package PRSP.PrEPSTI.configloader;
 
-/*
- * Imports
- */
+// imports
 
-// JSON imports:
+// JAVA imports:
 import java.io.* ;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Collections;
 
-
+// JSON imports:
 import org.json.simple.parser.*;
 import org.json.simple.JSONArray; 
 import org.json.simple.JSONObject; 
 
-
+// PrEPSTI imports
 import PRSP.PrEPSTI.agent.Agent;
 import PRSP.PrEPSTI.agent.MSM;
 import PRSP.PrEPSTI.community.Community;
 import PRSP.PrEPSTI.community.Relationship;
 import PRSP.PrEPSTI.reporter.Reporter;
 import PRSP.PrEPSTI.reporter.presenter.Presenter;
-import PRSP.PrEPSTI.reporter.presenter.ScreeningPresenter;
-
 
 
 /**
@@ -33,8 +28,6 @@ import PRSP.PrEPSTI.reporter.presenter.ScreeningPresenter;
  * @author David
  */
 public class ConfigLoader {
-    // Michael's LOGGER
-    private static final java.util.logging.Logger LOGGER = java.util.logging.Logger.getLogger("reporter");
 
     // final definitions 
     private static final String CONFIG_PATH = "configs/";
@@ -50,11 +43,14 @@ public class ConfigLoader {
     // contains colours
     private static ArrayList<ArrayList<Integer>> colours;
 
-    // constant definitions
-    public static final int MAX_YEARS = 99; // used for drawing points
+    // final definitions
+    public static final int MAX_YEARS = 99;
+    public static final int DAYS_PER_YEAR = 365; 
 
-    
-    // load jsons into class
+
+    /**
+     * method to load 
+     */
     public static void load() {
 
         // Instantiations:
@@ -70,7 +66,6 @@ public class ConfigLoader {
         ConfigLoader.readJSON("config");
         ConfigLoader.loadInformationIntoClasses();
     }
-
 
 
     /*
@@ -124,7 +119,6 @@ public class ConfigLoader {
 
         JSONArray coloursJSONArray = (JSONArray) configLoaderJSON.get("colours");
 
-
         for (int i = 0; i < coloursJSONArray.size(); ++i) {
             JSONArray rgbJSONArray = (JSONArray) coloursJSONArray.get(i);
 
@@ -135,7 +129,6 @@ public class ConfigLoader {
             }
             ConfigLoader.colours.add(rgbArrayList);
         }
-        LOGGER.info(ConfigLoader.colours.toString());
     }
 
 
@@ -143,7 +136,7 @@ public class ConfigLoader {
         JSONObject communityJSON = (JSONObject) ConfigLoader.loadedJSON.get("community");
         if (communityJSON == null) return;
             
-        // Set community defaults
+        // load variables:
         String FILE_PATH = (String) communityJSON.get("FILE_PATH");
         if (FILE_PATH != null) Community.FILE_PATH = FILE_PATH;
         
@@ -160,7 +153,7 @@ public class ConfigLoader {
         if (DYNAMIC != null) Community.DYNAMIC = Boolean.parseBoolean(DYNAMIC);
 
         String MAX_CYCLES = (String) communityJSON.get("MAX_CYCLES");
-        if (MAX_CYCLES != null) Community.DEFAULT_MAX_CYCLES = Integer.parseInt(MAX_CYCLES);
+        if (MAX_CYCLES != null) Community.LOADED_MAX_CYCLES = Integer.parseInt(MAX_CYCLES);
 
         String RELOAD_SIMULATION = (String) communityJSON.get("RELOAD_SIMULATION");
         if (RELOAD_SIMULATION != null) Community.RELOAD_SIMULATION = RELOAD_SIMULATION;
@@ -199,6 +192,7 @@ public class ConfigLoader {
         }
     }
 
+
     /**
      * handles loading MSM default values
      * contains default variables inside methods
@@ -224,7 +218,6 @@ public class ConfigLoader {
         // this converts from JSON format to a Java HashMap
         // for easy access from within the MSM class (remove the need to deal with JSONObjects)
         loadMethodVariablesHashMap("msm", msmJSON);
-
     }
 
 
@@ -238,10 +231,12 @@ public class ConfigLoader {
         }
     }
 
+
     private static void loadPresenter() {
         JSONObject presenterJSON = (JSONObject) ConfigLoader.loadedJSON.get("presenter");
         if (presenterJSON == null) return;
-
+        
+        // load variables
         String PLOT_FILE = (String) presenterJSON.get("PLOT_FILE");
         if (PLOT_FILE != null) Presenter.PLOT_FILE = Boolean.parseBoolean(PLOT_FILE);
         
@@ -260,15 +255,12 @@ public class ConfigLoader {
     }
 
 
-
-
     /*
      * * * * * * * * * * * * * * * * * * * * *
      *            HELPER FUNCTIONS           *
      * * * * * * * * * * * * * * * * * * * * *
      */
 
-    
     private static HashMap<String, HashMap> getMethodsHashMapFromJSONObject(JSONObject jsonObject) {
         JSONObject methodsJSON = (JSONObject) jsonObject.get("methods");
 
@@ -295,7 +287,6 @@ public class ConfigLoader {
      * @post returns a hashmap with each key value pair
      *  
      */
-    
     private static HashMap <String, HashMap> convertJSONObjectToHashMap_StringToNewHashMap(JSONObject jsonObject) {
         HashMap<String, HashMap> toReturn = new HashMap();
 
@@ -306,6 +297,7 @@ public class ConfigLoader {
 
         return toReturn;
     }
+
 
     private static HashMap<String, String> convertJSONObjectToHashMap_StringToString(JSONObject jsonObject) {
         HashMap<String, String> toReturn = new HashMap();
@@ -318,11 +310,13 @@ public class ConfigLoader {
         return toReturn;
     }
 
+
     private static String[] convertJSONArrayToStringArray (JSONArray jsonArray) {
         String[] toReturn = new String[jsonArray.size()];
         for (int i = 0; i < toReturn.length; ++i) {
             toReturn[i] = (String) (jsonArray.get(i));
-        }        
+        }
+
         return toReturn;
     }
 
@@ -368,7 +362,6 @@ public class ConfigLoader {
         HashMap<String, HashMap> classHashMap = ConfigLoader.classMethodVariablesHashMap.get(className);
         HashMap<String, String> methodHashMap = classHashMap.get(methodName);
         String value = methodHashMap.get(variableName);
-
         return value;
     }
 
@@ -390,5 +383,4 @@ public class ConfigLoader {
         Collections.shuffle(cloneList);
         return cloneList;
     }
-
 }

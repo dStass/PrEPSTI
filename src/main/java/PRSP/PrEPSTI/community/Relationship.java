@@ -221,7 +221,7 @@ public class Relationship {
                 }
 
             }
-            LOGGER.info("nbRelationships:".concat(String.valueOf(nbRelationships)));
+            // LOGGER.info("nbRelationships:".concat(String.valueOf(nbRelationships)));
         }
         catch ( Exception e )
         {
@@ -312,7 +312,7 @@ public class Relationship {
                 NB_RELATIONSHIPS++ ;
                 relationship.setRelationshipId(relationshipId) ;
             }
-            LOGGER.info("nbRelationships:".concat(String.valueOf(NB_RELATIONSHIPS)));
+            // LOGGER.info("nbRelationships:".concat(String.valueOf(NB_RELATIONSHIPS)));
         }
         catch ( Exception e )
         {
@@ -482,8 +482,8 @@ public class Relationship {
             Site site1 = sites[1] ;
             
             // Are contact sites infected?
-            int infectStatus0 = site0.getInfectedStatus() ;
-            int infectStatus1 = site1.getInfectedStatus() ;
+            boolean infectStatus0 = site0.getInfectedStatus() ;
+            boolean infectStatus1 = site1.getInfectedStatus() ;
             // no risk of transmission if both sites have same infectStatus
             // Comment this out if interested in HIV prevention and other sexual practices
             if (infectStatus0 == infectStatus1) 
@@ -527,7 +527,7 @@ public class Relationship {
                     //	Agent.class, int.class, Site.class, Site.class ) ;
             // Method getInfectionMethod = Agent.class.getMethod("GET_INFECT_PROBABILITY", Agent.class,
                     //	Agent.class, int.class, Site.class, Site.class ) ;
-            if ((infectStatus0 != 0)) // && (infectStatus1 == 0))
+            if (infectStatus0) // && (infectStatus1 == 0))
             {
                 infectProbability*= MSM.GET_INFECT_PROBABILITY(site0, site1) ; 
                                 //(double) getInfectionMethod.
@@ -537,7 +537,7 @@ public class Relationship {
                 //site1.receive(infectName0,transmit0) ;
                 report += Reporter.ADD_REPORT_PROPERTY("transmission", Boolean.toString(agent1.receiveInfection(infectProbability,site1))) ;  
             }
-            else if ((infectStatus1 != 0)) // && (infectStatus0 == 0))    // agent1 must be infected
+            else if (infectStatus1) // && (infectStatus0 == 0))    // agent1 must be infected
             {
                 infectProbability*= MSM.GET_INFECT_PROBABILITY(site1, site0) ;
                 //infectProbability*= (double) getInfectionMethod.

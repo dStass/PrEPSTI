@@ -277,9 +277,9 @@ public class EncounterReporter extends Reporter {
             // Select encounters where TRANSMISSION occurred
             record = encounterByValue(TRANSMISSION,TRUE,finalIncidentsRecord) ;
             
-            //record = record.substring(record.lastIndexOf(RELATIONSHIPID)) ;
-            //if (COUNT_VALUE_INCIDENCE(RELATIONSHIPID,"",record,0)[1] > 1)
-              //  LOGGER.info(record);
+            // record = record.substring(record.lastIndexOf(RELATIONSHIPID)) ;
+            // if (COUNT_VALUE_INCIDENCE(RELATIONSHIPID,"",record,0)[1] > 1)
+            // LOGGER.info(record);
             // Count them
             incidents += COUNT_VALUE_INCIDENCE(RELATIONSHIPID,"",record,0)[1] ;
         }
@@ -555,15 +555,15 @@ public class EncounterReporter extends Reporter {
     public HashMap<Object,HashMap<Comparable,HashMap<Comparable,ArrayList<Comparable>>>> 
         prepareReceiveSortPrepStatusReport(String[] values )
     {
-        LOGGER.info("prepareAgentToAgentReport()") ;
+        // LOGGER.info("prepareAgentToAgentReport()") ;
         HashMap<Comparable,HashMap<Comparable,ArrayList<Comparable>>> transmissionReport = prepareAgentToAgentReport() ;
         //LOGGER.log(Level.INFO, "{0}", transmissionReport);
-        LOGGER.info("sortPrepStatus()");
+        // LOGGER.info("sortPrepStatus()");
         PopulationReporter populationReporter = new PopulationReporter(getMetaDatum("Community.NAME_ROOT"), getFolderPath()); 
         HashMap<Comparable,ArrayList<Comparable>> sortingReport = populationReporter.sortPrepStatus() ;
-        LOGGER.log(Level.INFO, "{0}", sortingReport);
+        // LOGGER.log(Level.INFO, "{0}", sortingReport);
         
-        LOGGER.info("sortReport()");
+        // LOGGER.info("sortReport()");
         //String[] values = new String[] {TRUE, FALSE} ;
         return Reporter.SORT_REPORT(transmissionReport, sortingReport, values) ;
     }
@@ -956,7 +956,7 @@ public class EncounterReporter extends Reporter {
             PopulationReporter populationReporter = new PopulationReporter(simName,getFolderPath()) ;
             sortedAgentReport = populationReporter.agentIdSorted(sortingProperty) ;
         }
-        LOGGER.info("sortedAgentReport " + sortedAgentReport.toString()) ;
+        // LOGGER.info("sortedAgentReport " + sortedAgentReport.toString()) ;
         
         for (String relationshipClazzName : relationshipClassNames)
         {
@@ -1023,12 +1023,12 @@ public class EncounterReporter extends Reporter {
             yearlyNumberAgentsEnteredRelationship 
                 = preparePercentAgentCondomlessReport(relationshipClassNames, 0, 0, DAYS_PER_YEAR, endCycle, concordanceName, concordant, sortingProperty);
 
-//                for (int classIndex = 0 ; classIndex < relationshipClassNames.length ; classIndex++ )
-//                    yearlyNumberAgentsEnteredRelationship[classIndex] = percentAgentCondomlessRecord.get(relationshipClassNames[classIndex]) ;
+            // for (int classIndex = 0 ; classIndex < relationshipClassNames.length ; classIndex++ )
+            //     yearlyNumberAgentsEnteredRelationship[classIndex] = percentAgentCondomlessRecord.get(relationshipClassNames[classIndex]) ;
 
             percentAgentCondomlessYears.put(lastYear - year, yearlyNumberAgentsEnteredRelationship) ;
         }
-        LOGGER.info(percentAgentCondomlessYears.toString()) ;
+        // LOGGER.info(percentAgentCondomlessYears.toString()) ;
 
         return percentAgentCondomlessYears ;
     }
@@ -1229,10 +1229,10 @@ public class EncounterReporter extends Reporter {
                     finished = !(agentProperties.containsKey(agentIds[0]) && agentProperties.containsKey(agentIds[1])) ;
                     for (String agentId : agentIds)
                     {
-                        if (!(agentProperties.containsKey(agentId)))
-                            LOGGER.info("Missing agentId " + agentId); 
+                        // if (!(agentProperties.containsKey(agentId)))
+                        //     LOGGER.info("Missing agentId " + agentId); 
                     
-                        if (false && EXTRACT_VALUE("seroSort",agentProperties.get(agentId)).equals(TRUE))
+                        if (EXTRACT_VALUE("seroSort",agentProperties.get(agentId)).equals(TRUE))
                         {
                             seroSort = true ;
                             break ;
@@ -1283,7 +1283,7 @@ public class EncounterReporter extends Reporter {
                 protectionReport.add(protectionRecord) ;
             }    // report
         }
-        LOGGER.log(Level.INFO, "{0}", protectionReport);
+        // LOGGER.log(Level.INFO, "{0}", protectionReport);
         return protectionReport ;    
     }
         
@@ -1467,7 +1467,7 @@ public class EncounterReporter extends Reporter {
         
         PopulationReporter sortingReporter = new PopulationReporter(simName,getFolderPath()) ;
         HashMap<Object,Object> sortingReport = sortingReporter.sortedAgentIds(sortingProperty) ;
-        LOGGER.log(Level.INFO, "{0}", sortingReport);
+        // LOGGER.log(Level.INFO, "{0}", sortingReport);
         HashMap<Comparable,HashMap<Comparable,Integer>> sortedAgentTransmissionCountReport 
                 = SORT_REPORT(agentTransmissionCountReport, sortingReport) ;
         
