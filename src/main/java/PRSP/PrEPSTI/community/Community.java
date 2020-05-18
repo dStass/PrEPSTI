@@ -124,6 +124,9 @@ public class Community {
         long timeInitial = System.nanoTime();
         float timeAging = 0f;
         ConfigLoader.load();  // set static variables
+
+        try { Thread.sleep(5000); }
+        catch (InterruptedException e) { e.printStackTrace(); }
         
         // derived variables
         Community.AGENTS_PER_DAY = Community.POPULATION / 365 ;
