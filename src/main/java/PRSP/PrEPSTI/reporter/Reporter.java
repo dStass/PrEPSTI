@@ -1136,6 +1136,42 @@ public class Reporter {
         }
         return outputHashMap ;
     }
+
+    /**
+     * converts a space separated string with colon separated key:value pairs into a hashmap 
+     * @param string
+     * @return
+     */
+    public HashMap<String, String> STRING_TO_HASHMAP(String string) {
+        HashMap<String, String> toReturn = new HashMap<String, String>();
+
+        String[] stringSplit = string.split(" ");
+
+        for (String s : stringSplit) {
+            s = s.trim();
+            String[] sSplit = s.split(":");
+            toReturn.put(sSplit[0], sSplit[1]);
+        }
+
+        return toReturn;
+    }
+
+    /**
+     * converts a hashmap into a string with space-separated key:value pairs
+     * @param report
+     * @param properties
+     * @return
+     */
+    public String HASHMAP_TO_STRING(HashMap<String, String> report, String[] properties) {
+        String toReturn = "";
+        Set<String> keySet = report.keySet();
+        for (String property : properties) {
+            if (keySet.contains(property)) {
+                toReturn += property + ":" + report.get(property) + " ";
+            }
+        }
+        return toReturn.trim();
+    }
     
     /**
      * Used to go back from end of Report by a specified amount. Checks that this 
@@ -3403,6 +3439,85 @@ public class Reporter {
             LOGGER.severe(e.toString());
         }
         return toReturn;
+    }
+
+    /**
+     * 
+     * TODO: Duplicate of parseSeedsFromMetadata
+     */
+    public static HashMap<String, Long> parseInformationFromMetadata(String fileName, String filePath) {
+        HashMap<String, Long> toReturn = new HashMap<String, Long>();
+        BufferedReader reader;
+        String STOP_READING = "Relationship.BURNIN_COMMENCE:";
+
+        Set<String> information = new HashSet<String>(Arrays.asList("Community.MAX_CYCLES"));
+
+        try {
+            reader = new BufferedReader(new FileReader(filePath+fileName+"-METADATA.txt"));
+            String line = reader.readLine();
+            while (line != null) {
+                if (line.startsWith(STOP_READING)) break;
+                boolean colonExists = line.contains(":");
+                if (colonExists) {
+                    int colonIndex = line.indexOf(":");
+                    String extractedType = line.substring(0, colonIndex);
+                    if (information.contains(extractedType)) {
+                        toReturn.put(extractedType, Long.valueOf(line.substring(colonIndex + 1, line.length()).trim() ));
+                    }
+                }
+                line = reader.readLine();
+            }
+
+        } catch (IOException e) {
+            LOGGER.severe(e.toString());
+        }
+        return toReturn;
+    }
+
+    /**
+     * TODO: Assumes: DUMP_CYCLE = 250
+     * @param simName
+     * @param cycle
+     */
+    public static void GENERATE_REBOOT_UPTO(String simName, int uptoCycle) {
+        
+
+
+        // String FOLDER_PATH = "output/test/";
+        // HashMap<String, Long> metadata = Reporter.parseInformationFromMetadata(simName, FOLDER_PATH);
+        // int maxCycles = Integer.parseInt(String.valueOf(metadata.get("Community.MAX_CYCLES")));
+        // int maxCyclesLength = String.valueOf(metadata.get("Community.MAX_CYCLES")).length();
+        // // TODO: parse dump cycles
+        // int dumpCycles = 250;
+        // for (int cycle = 0; cycle < dumpCycles; ++cycle) {
+        //     if (cycle % dumpCycles == 0) {
+        //         // read new file
+        //         String fileNumber = String.valueOf(cycle);
+
+        //         // pad with zeros
+        //         while (fileNumber.length() < maxCyclesLength) fileNumber = '0' + fileNumber;
+
+                
+        //         // Handle Agents
+        //         try {
+        //             // read each reboot file
+        //             String fileToRead = FOLDER_PATH + simName + "-populationReport" + fileNumber + ".txt";
+        //             BufferedReader fileReader = new BufferedReader(new FileReader(fileToRead));
+        //             for (String record = "" ;  record != null ; record = fileReader.readLine() )
+        //             {   
+        //                 String BIRTH = "!birth:"
+        //             }
+        //             fileReader.close() ;
+        //         } catch (Exception e) {
+        //             LOGGER.severe(e.toString());
+        //         }
+
+        //         // Handle 
+                
+        //     }
+        // }
+
+
     }
     
     /**

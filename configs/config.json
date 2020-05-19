@@ -4,7 +4,7 @@
         "NAME_ROOT" : "MIDONEHUNDRED",
         "MAX_CYCLES" : "1",
         "RELOAD_SIMULATION" : "MIDWAY",
-        "REBOOT_FROM_CYCLE" : "200"
+        "REBOOT_FROM_CYCLE" : "255"
     },
 
     "msm" : {

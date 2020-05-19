@@ -5,8 +5,10 @@
  */
 package PRSP.PrEPSTI.reporter;
 
-import java.util.ArrayList ;
-import java.util.HashSet ;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.Collections ;
 import java.util.HashMap ;
 import java.util.logging.Level ;
@@ -782,6 +784,99 @@ public class PopulationReporter extends Reporter {
                 censusPropertyReport.put(agentId, propertyValue) ;
             }
         }
+        return censusPropertyReport ;
+    }
+
+    public HashMap<String, String> prepareCensusReport(int endCycle)     {
+        HashMap<String, HashMap<String, String>> rawReport = new HashMap<String, HashMap<String, String>>();
+        
+        // Census at birth
+        HashMap<Object,String>  birthReport = prepareCensusPropertyReport() ;
+
+        // key set
+        HashSet<String> agentIdSet = new HashSet<String>() ;
+        Collections.addAll(agentIdSet, birthReport.keySet().toArray(new String[0])) ;
+
+        // 
+        for (String agentId : agentIdSet) {
+            HashMap<String, String> birthReportHashMap = STRING_TO_HASHMAP(birthReport.get(agentId));
+            rawReport.put(agentId, birthReportHashMap);     
+        }
+
+        // TODO: Site Rectum, Urethra, Pharynx
+        String properties[] = {
+            "agentId",
+            "agent",
+            "age",
+            "concurrency",
+            "infidelity",
+            "probabilityUseCondom",
+            "probabilityUseCondomCasual",
+            "probabilityUseCondomRegular",
+            "screenCycle",
+            "screenTime",
+            "prepStatus",
+            "statusHIV",
+            "discloseStatusHIV",
+            "seroSortCasual",
+            "seroSortRegular",
+            "seroSortMonogomous",
+            "seroPosition",
+            "riskyStatus",
+            "riskyStatusCasual",
+            "riskyStatusRegular",
+            "probabilityUseCondom",
+            "probabilityUseCondomCasual",
+            "probabilityUseCondomRegular",
+            "undetectableStatus",
+            "trustUndetectable",
+            "trustPrep",
+            "consentCasualProbability"
+        };
+
+        for (String property : properties) {
+            ArrayList<String> changeReport = prepareChangeReport(property, endCycle) ;
+            
+            // changeReport.size() is zero if no changes are made
+            for (int index = changeReport.size() - 1 ; index >= 0 ; index-- )
+            {
+                String changeRecord = changeReport.get(index) ;
+                ArrayList<String> changeAgentIds = IDENTIFY_PROPERTIES(changeRecord) ;
+                //LOGGER.info(changeAgentIds.toString()) ;
+                changeAgentIds.retainAll(agentIdSet) ;
+                
+                for (String agentId : changeAgentIds)
+                {
+                    int agentIndex = INDEX_OF_PROPERTY(agentId.toString(),changeRecord) ;
+                    int colonIndex = changeRecord.indexOf(":",agentIndex) ;
+                    int nextColonIndex = changeRecord.indexOf(":",colonIndex + 1) ;
+                    int spaceIndex = changeRecord.lastIndexOf(SPACE, nextColonIndex) ;
+                    if (spaceIndex < 0)
+                    spaceIndex = changeRecord.length() ;
+                    String value = changeRecord.substring(colonIndex + 1, spaceIndex) ;
+                    
+                    // map changes
+                    if (value.startsWith("{"))
+                    {
+                        value = value.replace("=", ":") ;
+                        value = value.substring(0, value.length() - 1) ;
+                    }
+                    rawReport.get(agentId).put(property, value) ;
+                    agentIdSet.remove(agentId) ;
+                }
+                if (agentIdSet.isEmpty())
+                break ;
+            }
+        }
+
+        // convert raw report to <String, String> report
+        HashMap<String,String> censusPropertyReport = new HashMap<String,String>() ;
+        for (String agentId : agentIdSet) {
+            String value = HASHMAP_TO_STRING(rawReport.get(agentId), properties);
+            value += " Site:Rectum Site:Urethra Site:Pharynx";
+            censusPropertyReport.put(agentId, value);
+        }
+        
         return censusPropertyReport ;
     }
     

@@ -39,7 +39,7 @@ public class Community {
     static public String COMMENT;
     static public boolean DYNAMIC; // Whether parameters change throughout simulation.
     static public String RELOAD_SIMULATION; // "to2014fix3Choice23aaPop40000Cycles4745" ; // "debugRebootPop20000Cycles1825" ;
-    static public String REBOOT_FROM_CYCLE;
+    static public String REBOOT_FROM_CYCLE = "-1";
     
     // hashmap with key = method name, value = hashmap that contains
     // variable names and its literal value as a String
@@ -220,7 +220,7 @@ public class Community {
     
         // Establish Community of Agents for simulation
         // LOGGER.info(SIM_NAME);
-        Community community = new Community(RELOAD_SIMULATION, 200) ;
+        Community community = new Community(RELOAD_SIMULATION, Integer.valueOf(REBOOT_FROM_CYCLE)) ;
         
 
         // Establish conditions for specific simulation questions
@@ -572,6 +572,13 @@ public class Community {
             initialiseCommunity();
         else
         {
+
+            if (fromCycle >= 0) {
+                PopulationReporter populationReporter = new PopulationReporter(simName, "output/test/");
+
+                HashMap<String, String> populationCensusUpToCycle = populationReporter.prepareCensusReport(fromCycle);
+
+            }
             rebootRandomSeeds(simName) ;
             this.agents = Agent.REBOOT_AGENTS(simName) ;
             this.initialRecord = "" ; 
