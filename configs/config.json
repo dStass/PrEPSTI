@@ -1,9 +1,10 @@
 {   
     "community" : {
-        "POPULATION" : "1500",
-        "NAME_ROOT" : "REPORT_J",
-        "MAX_CYCLES" : "4",
-        "RELOAD_SIMULATION" : ""
+        "POPULATION" : "100",
+        "NAME_ROOT" : "MIDONEHUNDRED",
+        "MAX_CYCLES" : "1",
+        "RELOAD_SIMULATION" : "MIDWAY",
+        "REBOOT_FROM_CYCLE" : "200"
     },
 
     "msm" : {

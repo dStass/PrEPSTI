@@ -38,7 +38,8 @@ public class Community {
     static public int POPULATION;
     static public String COMMENT;
     static public boolean DYNAMIC; // Whether parameters change throughout simulation.
-    static public String RELOAD_SIMULATION; // "to2014fix3Choice23aaPop40000Cycles4745" ; // "debugRebootPop20000Cycles1825" ; 
+    static public String RELOAD_SIMULATION; // "to2014fix3Choice23aaPop40000Cycles4745" ; // "debugRebootPop20000Cycles1825" ;
+    static public String REBOOT_FROM_CYCLE;
     
     // hashmap with key = method name, value = hashmap that contains
     // variable names and its literal value as a String
@@ -125,6 +126,7 @@ public class Community {
         float timeAging = 0f;
         ConfigLoader.load();  // set static variables
 
+        // pause simulation while config data are read in
         try { Thread.sleep(5000); }
         catch (InterruptedException e) { e.printStackTrace(); }
         

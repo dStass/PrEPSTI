@@ -158,6 +158,9 @@ public class ConfigLoader {
         String RELOAD_SIMULATION = (String) communityJSON.get("RELOAD_SIMULATION");
         if (RELOAD_SIMULATION != null) Community.RELOAD_SIMULATION = RELOAD_SIMULATION;
 
+        String REBOOT_FROM_CYCLE = (String) communityJSON.get("REBOOT_FROM_CYCLE");
+        if (REBOOT_FROM_CYCLE != null) Community.REBOOT_FROM_CYCLE = REBOOT_FROM_CYCLE;
+
         // load methods:
         loadMethodVariablesHashMap("community", communityJSON);
     }
