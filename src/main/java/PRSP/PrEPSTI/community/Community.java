@@ -3,27 +3,28 @@
  */
 package PRSP.PrEPSTI.community;
 
-import PRSP.PrEPSTI.agent.* ;
-import PRSP.PrEPSTI.site.* ;
-import PRSP.PrEPSTI.reporter.* ;
-        
-import java.io.* ;
+import PRSP.PrEPSTI.agent.*;
+import PRSP.PrEPSTI.site.*;
+import PRSP.PrEPSTI.reporter.*;
+
+import java.io.*;
 //import java.io.FileWriter ;
 //import java.io.IOException;
 
 //import reporter.* ; 
 //import reporter.ScreeningReporter ;
-import PRSP.PrEPSTI.reporter.presenter.* ;
+import PRSP.PrEPSTI.reporter.presenter.*;
 
 import PRSP.PrEPSTI.configloader.ConfigLoader;
 
 import java.util.Random;
-
+import java.util.TreeSet;
 import java.lang.reflect.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.logging.Level;
 
 /******************************************************************
@@ -572,21 +573,47 @@ public class Community {
             initialiseCommunity();
         else
         {
-
+            String rebootedSimName = simName;
             if (fromCycle >= 0) {
                 PopulationReporter populationReporter = new PopulationReporter(simName, "output/test/");
+                int cycleToGenerateCensusReportUpTo = fromCycle;
 
-                HashMap<String, String> populationCensusUpToCycle = populationReporter.prepareCensusReport(fromCycle);
+                // generate our reboot census
+                // TODO: handle age
+                HashMap<String, String> populationCensusUpToCycle = populationReporter.prepareCensusReport(cycleToGenerateCensusReportUpTo);
+                
+                // TODO: generate rebooted relationships
 
+                // generate rebooted metalabels and metadata
+                ArrayList<String> metaLabels = new ArrayList<String>() ; 
+                ArrayList<Object> metaData = new ArrayList<Object>() ;
+
+                // extract census data and write to internal metadata
+                metaLabels.add("Agents") ;
+                String agentsReboot = "" ;
+                // List<?> sortedList = Collections.sort(new ArrayList<>(populationCensusUpToCycle.keySet()));
+                TreeSet<String> sortedKeySet = new TreeSet<String>();
+                sortedKeySet.addAll(populationCensusUpToCycle.keySet());
+                for (String agentId : sortedKeySet)
+                    agentsReboot += "agentId:" + agentId + ' ' + populationCensusUpToCycle.get(agentId) + ' ' ;
+                metaData.add(agentsReboot) ;
+                
+                // extract relationship data and write to internal metadata
+
+
+                // dump new metadata
+                rebootedSimName = simName + "-GENERATED";
+                dumpRebootData("test/" + rebootedSimName, metaLabels, metaData);
+                LOGGER.info("pause");
             }
             rebootRandomSeeds(simName) ;
-            this.agents = Agent.REBOOT_AGENTS(simName) ;
+            this.agents = Agent.REBOOT_AGENTS(rebootedSimName) ;
             this.initialRecord = "" ; 
             for (Agent agent : agents)
                 initialRecord += agent.getCensusReport() ;
             initialRecord.concat("!") ;
             
-            Relationship.REBOOT_RELATIONSHIPS(simName, agents) ;
+            Relationship.REBOOT_RELATIONSHIPS(rebootedSimName, agents) ;
             scribe = new Scribe(SIM_NAME, new String[] {"relationship","encounter","screening", "population"}) ;
         }
     }
@@ -1329,6 +1356,12 @@ public class Community {
         // LOGGER.info("scribe.dumpRebootData()");
         scribe.dumpRebootData(metaLabels, metaData);
     }
+
+    public void dumpRebootData(String simName, ArrayList<String> metaLabels, ArrayList<Object> metaData) {
+        Scribe scribe = new Scribe();
+        scribe.dumpRebootData(simName, metaLabels, metaData);      
+        
+    }
     
     /**
      * Reloads the Relationships saved during burn-in of a previous simulation.
@@ -1510,6 +1543,28 @@ public class Community {
                 LOGGER.severe(e.toString());
             }
         }
+
+        /**
+         * Opens file and writes metadata to it.
+         * @param metaLabels
+         * @param metaData 
+         */
+        protected void dumpRebootData(String simName, ArrayList<String> metaLabels, ArrayList<Object> metaData)
+        {
+            String fileName = simName + "-REBOOT" + extension ;
+            // LOGGER.info(fileName);
+            try
+            {
+                BufferedWriter metadataWriter = new BufferedWriter(new FileWriter(globalFolder + fileName,false)) ;
+                writeMetaData(metadataWriter,metaLabels,metaData) ;
+                metadataWriter.close() ;
+            } 
+            catch ( Exception e )
+            {
+                LOGGER.severe(e.toString());
+            }
+        }
+
         
         /**
          * Filenames are appended according to their first cycle. This cycle 

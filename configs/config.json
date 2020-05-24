@@ -1,9 +1,9 @@
 {   
     "community" : {
-        "POPULATION" : "100",
+        "POPULATION" : "5000",
         "NAME_ROOT" : "MIDONEHUNDRED",
-        "MAX_CYCLES" : "1",
-        "RELOAD_SIMULATION" : "MIDWAY",
+        "MAX_CYCLES" : "4",
+        "RELOAD_SIMULATION" : "TIMETEST",
         "REBOOT_FROM_CYCLE" : "255"
     },
 
