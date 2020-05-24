@@ -588,18 +588,20 @@ public class Community {
                 ArrayList<String> metaLabels = new ArrayList<String>() ; 
                 ArrayList<Object> metaData = new ArrayList<Object>() ;
 
-                // extract census data and write to internal metadata
-                metaLabels.add("Agents") ;
-                String agentsReboot = "" ;
-                // List<?> sortedList = Collections.sort(new ArrayList<>(populationCensusUpToCycle.keySet()));
+                // extract agent census data and write to internal metadata
+                // sort agents by id
                 TreeSet<String> sortedKeySet = new TreeSet<String>();
                 sortedKeySet.addAll(populationCensusUpToCycle.keySet());
+                
+                // add rebooted agent data to metadata
+                metaLabels.add("Agents") ;
+                String agentsReboot = "" ;
                 for (String agentId : sortedKeySet)
                     agentsReboot += "agentId:" + agentId + ' ' + populationCensusUpToCycle.get(agentId) + ' ' ;
                 metaData.add(agentsReboot) ;
                 
                 // extract relationship data and write to internal metadata
-
+                
 
                 // dump new metadata
                 rebootedSimName = simName + "-GENERATED";
