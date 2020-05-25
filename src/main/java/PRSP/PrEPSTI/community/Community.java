@@ -576,37 +576,57 @@ public class Community {
             String rebootedSimName = simName;
             if (fromCycle >= 0) {
                 PopulationReporter populationReporter = new PopulationReporter(simName, ConfigLoader.REBOOT_PATH);
-                int cycleToGenerateCensusReportUpTo = fromCycle;
-
-                // generate our reboot census
-                // TODO: handle age
-                HashMap<String, String> populationCensusUpToCycle = populationReporter.prepareCensusReport(cycleToGenerateCensusReportUpTo);
-                
-                // TODO: generate rebooted relationships
+                RelationshipReporter relationshipReporter = new RelationshipReporter(simName, ConfigLoader.REBOOT_PATH);
+                int cycleToGenerateReportUpTo = fromCycle;
 
                 // generate rebooted metalabels and metadata
                 ArrayList<String> metaLabels = new ArrayList<String>() ; 
                 ArrayList<Object> metaData = new ArrayList<Object>() ;
 
+
+                /* * * * * * * * * *
+                 *      AGENTS     *
+                 * * * * * * * * * */
+
+                // generate our reboot census
+                // TODO: handle age
+                HashMap<String, String> populationCensusUpToCycle = populationReporter.prepareCensusReport(cycleToGenerateReportUpTo);
+                
                 // extract agent census data and write to internal metadata
                 // sort agents by id
-                TreeSet<String> sortedKeySet = new TreeSet<String>();
-                sortedKeySet.addAll(populationCensusUpToCycle.keySet());
+                TreeSet<String> sortedAgentKeySet = new TreeSet<String>();
+                sortedAgentKeySet.addAll(populationCensusUpToCycle.keySet());
                 
                 // add rebooted agent data to metadata
                 metaLabels.add("Agents") ;
                 String agentsReboot = "" ;
-                for (String agentId : sortedKeySet)
+                for (String agentId : sortedAgentKeySet)
                     agentsReboot += "agentId:" + agentId + ' ' + populationCensusUpToCycle.get(agentId) + ' ' ;
                 metaData.add(agentsReboot) ;
-                
-                // extract relationship data and write to internal metadata
-                
 
+
+                /* * * * * * * * * *
+                 *  RELATIONSHIPS  *
+                 * * * * * * * * * */
+
+                // extract relationship data and write to internal metadata
+                HashMap<String, String> relationshipRecordHashMap = relationshipReporter.prepareRelationshipRecordHashMap(cycleToGenerateReportUpTo);
+                
+                TreeSet<String> sortedRelationshipKeySet = new TreeSet<String>();
+                sortedRelationshipKeySet.addAll(relationshipRecordHashMap.keySet());
+                
+                // add rebooted relationship data to metadata
+                metaLabels.add("Relationships") ;
+                String relationshipsReboot = "" ;
+                for (String relationshipId : sortedRelationshipKeySet)
+                    relationshipsReboot += relationshipRecordHashMap.get(relationshipId) + ' ' ;
+                metaData.add(relationshipsReboot) ;
+                
                 // dump new metadata
                 rebootedSimName = simName + "-GENERATED";
+
+                // TODO: extract "test/" from CONFIG
                 dumpRebootData("test/" + rebootedSimName, metaLabels, metaData);
-                LOGGER.info("pause");
             }
             rebootRandomSeeds(simName) ;
             this.agents = Agent.REBOOT_AGENTS(rebootedSimName) ;

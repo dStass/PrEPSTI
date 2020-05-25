@@ -120,6 +120,44 @@ public class RelationshipReporter extends Reporter {
         return relationshipCommenceReport ;
     }
     
+
+    /**
+     * Prepares a HashMap representing relationships up to a specific cycle
+     * This is done by getting a commencement report and breakup report
+     * Add new relationships from the commencement report and remove those that
+     * exists in breakup report
+     * @param endCycle
+     * @return HashMap with key = relationship ID, value = relationship record
+     */
+    public HashMap<String, String> prepareRelationshipRecordHashMap(int endCycle) {
+        HashMap<String, String> relationshipReport = new HashMap<String, String>();
+
+        // add commenced relationships to our relationshipReport
+        ArrayList<String> commenceReport = (ArrayList<String>) getReport("commence", this) ;
+        ArrayList<String> breakupReport = (ArrayList<String>) getReport("breakup", this) ;
+
+        for (int numReport = 0 ; numReport < endCycle ; numReport++ )
+        {
+            // extract all new relationship records
+            String commenceRecord = commenceReport.get(numReport) ;            
+            HashMap<String, String> extractedCommenceReport = SPLIT_RECORD_BY_PROPERTY(RELATIONSHIPID, commenceRecord);
+            for (String commenceId : extractedCommenceReport.keySet()) {
+                relationshipReport.put(commenceId, extractedCommenceReport.get(commenceId));
+            }
+            
+            // remove breakups 
+            String breakupRecord = breakupReport.get(numReport) ;
+            HashMap<String, String> extractedBreakupReport = SPLIT_RECORD_BY_PROPERTY(RELATIONSHIPID, breakupRecord);
+            for (String breakupId : extractedBreakupReport.keySet()){
+                if (relationshipReport.containsKey(breakupId)) {
+                    relationshipReport.remove(breakupId);
+                }
+            }
+        }
+        return relationshipReport;
+    }
+
+
     /**
      * 
      * @return (ArrayList) of every Relationship to have ever broken up until backYears, backMonths, backDays

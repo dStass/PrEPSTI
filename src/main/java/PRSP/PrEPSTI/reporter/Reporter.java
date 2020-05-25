@@ -509,6 +509,32 @@ public class Reporter {
         return string.substring(index0, index1) ;
 
     }
+    
+    /**
+     * Split a record string by a specific property and save to a hashmap
+     * where the key is the property extracted from each sub-record
+     * @param property
+     * @param record
+     * @return
+     */
+    public static HashMap<String, String> SPLIT_RECORD_BY_PROPERTY(String property, String record) {
+        HashMap<String, String> splitRecord = new HashMap<>();
+
+        int previousIndex = 0;
+        int count  = 0;
+
+        // Identify where property exists in the string one by one
+        for (int i = -1; (i = record.indexOf(property, i + 1)) != -1; ++i) {
+            if (count > 0) {
+                String recordString = record.substring(previousIndex, i).trim();
+                splitRecord.put(EXTRACT_VALUE(property, recordString), recordString);
+            }
+            previousIndex = i;
+            count++;
+        } 
+
+        return splitRecord;
+    }
 
     /**
      * When position within string is not known, call EXTRACT_VALUE(startIndex = 0)
