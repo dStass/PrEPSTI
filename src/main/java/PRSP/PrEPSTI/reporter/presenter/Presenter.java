@@ -1315,7 +1315,7 @@ public class Presenter {
 
     /**
      * - Calls plotLineChart and setting the appropriate fields to draw a shaded graph
-     * @param report: type HashMap<String, HashMap> 
+     * @param report: type HashMap<String, HashMap> contains ConfidenceInterval/Range (String) used to draw shaded bounds
      * @param yLabel
      * @param xLabel
      * @param legend
@@ -1331,6 +1331,7 @@ public class Presenter {
         chart_awt.plotLineChart(chartTitle,xyIntervalSeriesCollection, yLabel, xLabel, legend) ;
     }
 
+    
     protected void plotHashMapStringCI(HashMap<String,HashMap> report, String yLabel, String xLabel, String[] legend)
     {
         // Extract data from reportArray
