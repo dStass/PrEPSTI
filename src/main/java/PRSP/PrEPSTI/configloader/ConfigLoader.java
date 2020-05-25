@@ -45,7 +45,9 @@ public class ConfigLoader {
 
     // final definitions
     public static final int MAX_YEARS = 99;
-    public static final int DAYS_PER_YEAR = 365; 
+    public static final int DAYS_PER_YEAR = 365;
+    public static final int DAYS_PER_MONTH = 30;
+    public static final int DAYS_PER_WEEK = 7;
 
     // some global paths
     public static String REBOOT_PATH;
