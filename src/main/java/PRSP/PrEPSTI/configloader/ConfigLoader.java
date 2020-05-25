@@ -47,6 +47,9 @@ public class ConfigLoader {
     public static final int MAX_YEARS = 99;
     public static final int DAYS_PER_YEAR = 365; 
 
+    // some global paths
+    public static String REBOOT_PATH;
+
 
     /**
      * method to load 
@@ -181,6 +184,7 @@ public class ConfigLoader {
         if (rebootPath != null) {
             Relationship.FOLDER_PATH = rebootPath;
             Agent.FOLDER_PATH = rebootPath;
+            ConfigLoader.REBOOT_PATH = rebootPath;
         }
 
         // report path for Reporter

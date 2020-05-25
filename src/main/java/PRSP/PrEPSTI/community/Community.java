@@ -533,7 +533,7 @@ public class Community {
      */
     private void rebootRandomSeeds(String simName)
     {
-        HashMap<String, Long> seeds = Reporter.parseSeedsFromMetadata(simName, "output/test/");
+        HashMap<String, Long> seeds = Reporter.parseSeedsFromMetadata(simName, ConfigLoader.REBOOT_PATH);
         long seed = Long.valueOf(seeds.get("Community.REBOOT_SEED")) ;
         RANDOM_SEED = seed ;
         RAND = new Random(seed) ;
@@ -575,7 +575,7 @@ public class Community {
         {
             String rebootedSimName = simName;
             if (fromCycle >= 0) {
-                PopulationReporter populationReporter = new PopulationReporter(simName, "output/test/");
+                PopulationReporter populationReporter = new PopulationReporter(simName, ConfigLoader.REBOOT_PATH);
                 int cycleToGenerateCensusReportUpTo = fromCycle;
 
                 // generate our reboot census
