@@ -2182,7 +2182,7 @@ public class Reporter {
 
         ArrayList<String> valuesArrayList = new ArrayList<String>(Arrays.asList(values));
         String year = valuesArrayList.remove(0); // remove the year and store it in a variable
-        ArrayList<Double> sortedValues = Reporter.convertArrayListStringToSortedArrayDouble(valuesArrayList);
+        ArrayList<Double> sortedValues = Reporter.convertArrayListStringToSortedArrayListDouble(valuesArrayList);
         
         // calculate standard deviation of the interdecile range of values
         // this will hopefully remove some outliers so this standard deviation represents 
@@ -2294,8 +2294,12 @@ public class Reporter {
         for (int i = 0; i < removeFromRight; ++i) values.remove(values.size() - 1);
     }
     
-
-    private static ArrayList<Double> convertArrayListStringToSortedArrayDouble(ArrayList<String> strArrayList) {
+    /**
+     * Converts an ArrayList<String> to a sorted ArrayList<Double>
+     * @param strArrayList
+     * @return
+     */
+    private static ArrayList<Double> convertArrayListStringToSortedArrayListDouble(ArrayList<String> strArrayList) {
         ArrayList<Double> toReturn = new ArrayList<Double>();
         for (String s : strArrayList) toReturn.add(Double.valueOf(s));
         Collections.sort(toReturn);
@@ -2343,18 +2347,22 @@ public class Reporter {
         return toReturn;
     }
 
-
+    /**
+     * Extracts the first three items where items at index:
+     * 1) y-value
+     * 2) lower bound (such as lower range)
+     * 3) upper bound
+     * returns a HashMap with key being the given HashMap's key and 
+     * value being a String array String[] with 3 items described above in that order
+     * @param csvHashMap
+     * @return
+     */
     public static HashMap<String, String[]> extractYValueAndRange(HashMap<Comparable, String[]> csvHashMap) {
         int FIRST_N_ITEMS_TO_EXTRACT = 3; // mean, upper and lower
 
-        int MEAN_INDEX = 0;
-        String MEAN_STRING = "yValue";
-
+        int Y_INDEX = 0;
         int LOWER_INDEX = 1;
-        String LOWER_STRING = "lower";
-
         int HIGHER_INDEX = 2;
-        String HIGHER_STRING = "higher";
 
         HashMap<String, String[]> toReturn = new HashMap<String, String[]>();
 
@@ -2364,13 +2372,11 @@ public class Reporter {
 
             String[] toExtract = new String[FIRST_N_ITEMS_TO_EXTRACT];
 
-            toExtract[MEAN_INDEX] = keyValue[MEAN_INDEX];
+            toExtract[Y_INDEX] = keyValue[Y_INDEX];
             toExtract[LOWER_INDEX] = keyValue[LOWER_INDEX];
             toExtract[HIGHER_INDEX] = keyValue[HIGHER_INDEX];
 
             toReturn.put(key.toString(), toExtract);
-            
-            // LOGGER.info("PAIR: " + key.toString() + ": " + keyValueString);
         }
 
         return toReturn;
@@ -3019,7 +3025,6 @@ public class Reporter {
         return hashMapReport ;
     }
 
-    
     public Reporter()
     {
 	// Needed to work around HPC access issues.

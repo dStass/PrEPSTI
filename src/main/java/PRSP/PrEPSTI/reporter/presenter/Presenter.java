@@ -1313,6 +1313,13 @@ public class Presenter {
         chart_awt.plotLineChart(chartTitle,xySeriesCollection, yLabel, xLabel, newLegend) ;
     }
 
+    /**
+     * - Calls plotLineChart and setting the appropriate fields to draw a shaded graph
+     * @param report: type HashMap<String, HashMap> 
+     * @param yLabel
+     * @param xLabel
+     * @param legend
+     */
     protected void plotShadedHashMapStringCI(HashMap<String,HashMap> report, String yLabel, String xLabel, String[] legend) {
         // Extract data from reportArray
         XYIntervalSeriesCollection xyIntervalSeriesCollection = parseReportHashMapError(report, legend) ;

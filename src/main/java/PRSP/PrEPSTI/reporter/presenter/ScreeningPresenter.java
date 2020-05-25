@@ -1002,12 +1002,11 @@ public class ScreeningPresenter extends Presenter {
             propertyToYAndRange.put(property, yAndRange);
         }
         
+        // // set drawing information
+        // setDrawError(true);
+        // setErrorType(SHADED_REGION);
 
-        // set drawing information
-        setDrawError(true);
-        setErrorType(SHADED_REGION);
-
-        plotHashMapStringCI(propertyToYAndRange,INCIDENCE,"year", legend) ;
+        plotShadedHashMapStringCI(propertyToYAndRange,INCIDENCE,"year", legend) ;
     }
     
     public void plotNumberAgentTestingReport(int backYears, int backMonths, int backDays) {
@@ -1360,11 +1359,13 @@ public class ScreeningPresenter extends Presenter {
     
     }
 
-
-
-    // Used for testing purposes
+    /**
+     * Extracts information from a range of .csv files
+     * where each .csv file is a property
+     * used primarily for testing purposes
+     * @param fileNames
+     */
     public void plotIntervalMeansFromCSVFileNames(String[] fileNames) {
-        // String EXTENSION = ".csv" ;
         HashMap<String, HashMap> propertyToYAndRange = new HashMap<String, HashMap>();
 
         for (int i = 0; i < fileNames.length; ++i) {
