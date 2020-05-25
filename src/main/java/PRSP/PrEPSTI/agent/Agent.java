@@ -328,13 +328,22 @@ public abstract class Agent {
 
     /**
      * Reloads Agents from a saved simulation to continue it.
+     * Default folder = FOLDER_PATH
+     * @param simName
+     * @return
+     */
+    static public ArrayList<Agent> REBOOT_AGENTS(String simName) {
+        return REBOOT_AGENTS(FOLDER_PATH, simName);
+    }
+
+    /**
+     * Reloads Agents from a saved simulation to continue it.
      * @param simName 
      * @return  
      */
-    static public ArrayList<Agent> REBOOT_AGENTS(String simName)
+    static public ArrayList<Agent> REBOOT_AGENTS(String folderPath, String simName)
     {
         ArrayList<Agent> agents = new ArrayList<Agent>() ;
-        String folderPath = FOLDER_PATH ;
         String SITE = "Site:" ;
         
         // Needed if rebootFile == false

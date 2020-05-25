@@ -3505,52 +3505,66 @@ public class Reporter {
         return toReturn;
     }
 
-    /**
-     * TODO: Assumes: DUMP_CYCLE = 250
-     * @param simName
-     * @param cycle
-     */
-    public static void GENERATE_REBOOT_UPTO(String simName, int uptoCycle) {
-        
 
-
-        // String FOLDER_PATH = "output/test/";
-        // HashMap<String, Long> metadata = Reporter.parseInformationFromMetadata(simName, FOLDER_PATH);
-        // int maxCycles = Integer.parseInt(String.valueOf(metadata.get("Community.MAX_CYCLES")));
-        // int maxCyclesLength = String.valueOf(metadata.get("Community.MAX_CYCLES")).length();
-        // // TODO: parse dump cycles
-        // int dumpCycles = 250;
-        // for (int cycle = 0; cycle < dumpCycles; ++cycle) {
-        //     if (cycle % dumpCycles == 0) {
-        //         // read new file
-        //         String fileNumber = String.valueOf(cycle);
-
-        //         // pad with zeros
-        //         while (fileNumber.length() < maxCyclesLength) fileNumber = '0' + fileNumber;
-
-                
-        //         // Handle Agents
-        //         try {
-        //             // read each reboot file
-        //             String fileToRead = FOLDER_PATH + simName + "-populationReport" + fileNumber + ".txt";
-        //             BufferedReader fileReader = new BufferedReader(new FileReader(fileToRead));
-        //             for (String record = "" ;  record != null ; record = fileReader.readLine() )
-        //             {   
-        //                 String BIRTH = "!birth:"
-        //             }
-        //             fileReader.close() ;
-        //         } catch (Exception e) {
-        //             LOGGER.severe(e.toString());
-        //         }
-
-        //         // Handle 
-                
-        //     }
-        // }
-
-
+    public static void DUPLICATE_METADATA_WITH_MODIFIED_PROPERTIES
+        (String originalPath, String originalFileName, String newPath,
+        String newFileName, HashMap<String, String> modifications)
+    {
+        originalFileName = originalPath + originalFileName;
+        newFileName = newPath + newFileName;
+        DUPLICATE_METADATA_WITH_MODIFIED_PROPERTIES(originalFileName, newFileName, modifications);
     }
-    
+
+    public static void DUPLICATE_METADATA_WITH_MODIFIED_PROPERTIES
+        (String originalFileName, String newFileName, HashMap<String, String> modifications)
+    {
+        originalFileName += "-METADATA.txt";
+        newFileName += "-METADATA.txt";
+        DUPLICATE_FILE_WITH_MODIFIED_PROPERTIES(originalFileName, newFileName, modifications);
+    }
+
+    public static void DUPLICATE_FILE_WITH_MODIFIED_PROPERTIES
+        (String originalFile, String newFile, HashMap<String, String> modifications)
+    {   
+
+        // read the old file and add data to newFileText
+        BufferedReader reader;
+        String newFileText = "";
+        try {
+            reader = new BufferedReader(new FileReader(originalFile));
+            String line = reader.readLine();
+            while (line != null) {
+                boolean colonExists = line.contains(":");
+                if (colonExists) {
+                    int colonIndex = line.indexOf(":");
+                    String extractedType = line.substring(0, colonIndex);
+                    if (modifications.containsKey(extractedType)) {
+                        newFileText += extractedType + ':' + String.valueOf(modifications.get(extractedType)) + '\n';
+                    } else {
+                        newFileText += line + '\n';
+                    }
+                }
+                line = reader.readLine();
+            }
+
+        } catch (IOException e) {
+            LOGGER.severe(e.toString());
+        }
+
+        // write new data in newFileText to newFile
+        BufferedWriter fileWriter;
+        try
+        {                 
+            fileWriter = new BufferedWriter(new FileWriter(newFile, false)) ;
+            fileWriter.write(newFileText);
+            fileWriter.close();
+        }
+        catch ( Exception e )
+        {
+            LOGGER.log(Level.SEVERE, e.toString()) ;
+        }
+    }
+
     /**
      * 
      * @param args 

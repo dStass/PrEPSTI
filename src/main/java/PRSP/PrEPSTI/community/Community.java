@@ -531,9 +531,9 @@ public class Community {
      * and initialises them.
      * @param simName 
      */
-    private void rebootRandomSeeds(String simName)
+    private void rebootRandomSeeds(String folderPath, String simName)
     {
-        HashMap<String, Long> seeds = Reporter.parseSeedsFromMetadata(simName, ConfigLoader.REBOOT_PATH);
+        HashMap<String, Long> seeds = Reporter.parseSeedsFromMetadata(simName, folderPath);
         long seed = Long.valueOf(seeds.get("Community.REBOOT_SEED")) ;
         RANDOM_SEED = seed ;
         RAND = new Random(seed) ;
@@ -546,6 +546,10 @@ public class Community {
 
         seed = Long.valueOf(seeds.get("Relationship.REBOOT_SEED")) ;
         Relationship.SET_RAND(seed) ;
+    }
+
+    private void rebootRandomSeeds(String simName) {
+        rebootRandomSeeds(ConfigLoader.REBOOT_PATH, simName);
     }
     
     /**
@@ -572,8 +576,9 @@ public class Community {
         if (simName.isEmpty())
             initialiseCommunity();
         else
-        {
+        {   
             String rebootedSimName = simName;
+            String rebootedFolderPath = ConfigLoader.REBOOT_PATH;
             if (fromCycle >= 0) {
                 PopulationReporter populationReporter = new PopulationReporter(simName, ConfigLoader.REBOOT_PATH);
                 RelationshipReporter relationshipReporter = new RelationshipReporter(simName, ConfigLoader.REBOOT_PATH);
@@ -623,19 +628,26 @@ public class Community {
                 metaData.add(relationshipsReboot) ;
                 
                 // dump new metadata
-                rebootedSimName = simName + "-GENERATED";
+                rebootedSimName = simName + "$" + String.valueOf(fromCycle);
+                rebootedFolderPath = Community.FILE_PATH;
 
                 // TODO: extract "test/" from CONFIG
-                dumpRebootData("test/" + rebootedSimName, metaLabels, metaData);
+                dumpRebootData(rebootedFolderPath, rebootedSimName, metaLabels, metaData);
+
+                HashMap<String, String> modifiedProperties = new HashMap<String, String>();
+                modifiedProperties.put("Community.MAX_CYCLES", String.valueOf(fromCycle));
+                Reporter.DUPLICATE_METADATA_WITH_MODIFIED_PROPERTIES
+                    (ConfigLoader.REBOOT_PATH, simName, rebootedFolderPath, rebootedSimName, modifiedProperties);
             }
-            rebootRandomSeeds(simName) ;
-            this.agents = Agent.REBOOT_AGENTS(rebootedSimName) ;
+
+            rebootRandomSeeds(rebootedFolderPath, rebootedSimName) ;
+            this.agents = Agent.REBOOT_AGENTS(rebootedFolderPath, rebootedSimName) ;
             this.initialRecord = "" ; 
             for (Agent agent : agents)
                 initialRecord += agent.getCensusReport() ;
             initialRecord.concat("!") ;
             
-            Relationship.REBOOT_RELATIONSHIPS(rebootedSimName, agents) ;
+            Relationship.REBOOT_RELATIONSHIPS(rebootedFolderPath, rebootedSimName, agents) ;
             scribe = new Scribe(SIM_NAME, new String[] {"relationship","encounter","screening", "population"}) ;
         }
     }
@@ -1379,10 +1391,9 @@ public class Community {
         scribe.dumpRebootData(metaLabels, metaData);
     }
 
-    public void dumpRebootData(String simName, ArrayList<String> metaLabels, ArrayList<Object> metaData) {
-        Scribe scribe = new Scribe();
-        scribe.dumpRebootData(simName, metaLabels, metaData);      
-        
+    public void dumpRebootData(String folderPath, String simName, ArrayList<String> metaLabels, ArrayList<Object> metaData) {
+        Scribe scribe = new Scribe(folderPath);
+        scribe.dumpRebootData(simName, metaLabels, metaData);
     }
     
     /**
@@ -1487,6 +1498,10 @@ public class Community {
         private Scribe() 
         {
             
+        }
+
+        private Scribe(String folderPath) {
+            globalFolder = folderPath;
         }
         
         private Scribe(String simName, String[] propertyNames) 
