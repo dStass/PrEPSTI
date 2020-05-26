@@ -1163,8 +1163,34 @@ public class Reporter {
         return outputHashMap ;
     }
 
+     /**
+     * converts a space separated string with colon separated key:value pairs into a hashmap
+     * Handles Site:Rectum, Site:Urethra, Site:Pharynx
+     * by extracting symptomatic, etc
+     * @param string
+     * @return
+     */
+    public HashMap<String, String> STRING_TO_HASHMAP_HANDLE_SITE(String string) {
+        String[] sitesArray = new String[]{
+            "Site:Rectum",
+            "Site:Urethra",
+            "Site:Pharynx"};
+
+        int siteRectumPosition = string.indexOf(sitesArray[0]);
+        HashMap<String, String> toReturn = STRING_TO_HASHMAP(string.substring(0, siteRectumPosition));
+
+        for (int i = 0; i < sitesArray.length; ++i) {
+            int startIndex = string.indexOf(sitesArray[i]) + sitesArray[i].length() + 1;
+            int endIndex = string.length();
+            if (i + 1< sitesArray.length) endIndex = string.indexOf(sitesArray[i+1]);
+            toReturn.put(sitesArray[i], string.substring(startIndex, endIndex));
+        }
+
+        return toReturn;
+    }   
+
     /**
-     * converts a space separated string with colon separated key:value pairs into a hashmap 
+     * converts a space separated string with colon separated key:value pairs into a hashmap
      * @param string
      * @return
      */
