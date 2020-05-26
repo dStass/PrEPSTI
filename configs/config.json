@@ -1,10 +1,10 @@
 {   
     "community" : {
         "POPULATION" : "5000",
-        "NAME_ROOT" : "MIDONEHUNDRED",
-        "MAX_CYCLES" : "4",
-        "RELOAD_SIMULATION" : "TIMETEST",
-        "REBOOT_FROM_CYCLE" : "255"
+        "NAME_ROOT" : "TEST",
+        "MAX_CYCLES" : "3",
+        "RELOAD_SIMULATION" : "ORIGINAL",
+        "REBOOT_FROM_CYCLE" : "1095"
     },
 
     "msm" : {
@@ -14,5 +14,9 @@
 
     "reporter" : {
         "WRITE_REPORT" : "true"
+    },
+
+    "config_loader" : {
+        "DEBUG" : "true"
     }
 }

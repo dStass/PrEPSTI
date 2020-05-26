@@ -379,8 +379,8 @@ public class Community {
         String[] relationshipClassNames = new String[] {"Casual","Regular","Monogomous"} ; // "Casual","Regular","Monogomous"
         
         
-        encounterReporter = new EncounterReporter(SIM_NAME,FILE_PATH) ;
-        screeningReporter = new ScreeningReporter(SIM_NAME,FILE_PATH) ;
+        encounterReporter = new EncounterReporter(SIM_NAME, FILE_PATH) ;
+        screeningReporter = new ScreeningReporter(SIM_NAME, FILE_PATH) ;
         
         //screeningReporter = new ScreeningReporter(SIM_NAME,FILE_PATH) ;
                 //new ScreeningReporter("prevalence",community.screeningReport) ;
@@ -595,18 +595,20 @@ public class Community {
 
                 // generate our reboot census
                 // TODO: handle age
-                HashMap<String, String> populationCensusUpToCycle = populationReporter.prepareCensusReport(cycleToGenerateReportUpTo);
+                HashMap<Integer, String> populationCensusUpToCycle = populationReporter.prepareCensusReport(cycleToGenerateReportUpTo);
                 
                 // extract agent census data and write to internal metadata
                 // sort agents by id
-                TreeSet<String> sortedAgentKeySet = new TreeSet<String>();
+                TreeSet<Integer> sortedAgentKeySet = new TreeSet<Integer>();
                 sortedAgentKeySet.addAll(populationCensusUpToCycle.keySet());
                 
                 // add rebooted agent data to metadata
                 metaLabels.add("Agents") ;
                 String agentsReboot = "" ;
-                for (String agentId : sortedAgentKeySet)
-                    agentsReboot += "agentId:" + agentId + ' ' + populationCensusUpToCycle.get(agentId) + ' ' ;
+                for (Integer agentId : sortedAgentKeySet) {
+                    String newAgentRecord = "agentId:" + String.valueOf(agentId) + ' ' + populationCensusUpToCycle.get(agentId) + ' ' ;
+                    agentsReboot += newAgentRecord;
+                }
                 metaData.add(agentsReboot) ;
 
 
@@ -615,15 +617,15 @@ public class Community {
                  * * * * * * * * * */
 
                 // extract relationship data and write to internal metadata
-                HashMap<String, String> relationshipRecordHashMap = relationshipReporter.prepareRelationshipRecordHashMap(cycleToGenerateReportUpTo);
+                HashMap<Integer, String> relationshipRecordHashMap = relationshipReporter.prepareRelationshipRecordHashMap(cycleToGenerateReportUpTo);
                 
-                TreeSet<String> sortedRelationshipKeySet = new TreeSet<String>();
+                TreeSet<Integer> sortedRelationshipKeySet = new TreeSet<Integer>();
                 sortedRelationshipKeySet.addAll(relationshipRecordHashMap.keySet());
                 
                 // add rebooted relationship data to metadata
                 metaLabels.add("Relationships") ;
                 String relationshipsReboot = "" ;
-                for (String relationshipId : sortedRelationshipKeySet)
+                for (Integer relationshipId : sortedRelationshipKeySet)
                     relationshipsReboot += relationshipRecordHashMap.get(relationshipId) + ' ' ;
                 metaData.add(relationshipsReboot) ;
                 
@@ -641,7 +643,7 @@ public class Community {
             }
 
             rebootRandomSeeds(rebootedFolderPath, rebootedSimName) ;
-            this.agents = Agent.REBOOT_AGENTS(rebootedFolderPath, rebootedSimName) ;
+            this.agents = Agent.REBOOT_AGENTS(ConfigLoader.REBOOT_PATH, simName) ;
             this.initialRecord = "" ; 
             for (Agent agent : agents)
                 initialRecord += agent.getCensusReport() ;
@@ -1375,16 +1377,35 @@ public class Community {
         
         metaLabels.add("Agents") ;
         String agentsReboot = "" ;
+
+        if (ConfigLoader.DEBUG) {
+            // sort agents by id
+            Collections.sort(agents, (a1, a2) -> { return a1.getAgentId() > a2.getAgentId() ? 1 : -1;});
+        }
         for (Agent agent : agents)
             agentsReboot += agent.getRebootData() ;
         metaData.add(agentsReboot) ; 
         
         metaLabels.add("Relationships") ;
         String relationshipReboot = "" ;
-        for (Agent agent : agents)
+
+        // sort relationships by id
+        ArrayList<Relationship> relationships = new ArrayList<Relationship>();
+        for (Agent agent : agents) {
             for (Relationship relationship : agent.getCurrentRelationships())
-                if (relationship.getLowerIdAgent() == agent)
-                    relationshipReboot +=relationship.getRecord() ;
+                if (relationship.getLowerIdAgent() == agent) {
+                    if (ConfigLoader.DEBUG) relationships.add(relationship);
+                    else relationshipReboot += relationship.getRecord();
+                }
+        }
+        
+        if (ConfigLoader.DEBUG) {
+            Collections.sort(relationships, (r1, r2) -> { return r1.getRelationshipId() > r2.getRelationshipId() ? 1 : -1;});
+            for (Relationship relationship : relationships) {
+                relationshipReboot += relationship.getRecord();
+            }
+        }
+
         metaData.add(relationshipReboot) ; 
      
         // LOGGER.info("scribe.dumpRebootData()");

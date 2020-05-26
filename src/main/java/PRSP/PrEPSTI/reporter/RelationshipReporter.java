@@ -129,8 +129,8 @@ public class RelationshipReporter extends Reporter {
      * @param endCycle
      * @return HashMap with key = relationship ID, value = relationship record
      */
-    public HashMap<String, String> prepareRelationshipRecordHashMap(int endCycle) {
-        HashMap<String, String> relationshipReport = new HashMap<String, String>();
+    public HashMap<Integer, String> prepareRelationshipRecordHashMap(int endCycle) {
+        HashMap<Integer, String> relationshipReport = new HashMap<Integer, String>();
 
         // add commenced relationships to our relationshipReport
         ArrayList<String> commenceReport = (ArrayList<String>) getReport("commence", this) ;
@@ -142,15 +142,15 @@ public class RelationshipReporter extends Reporter {
             String commenceRecord = commenceReport.get(numReport) ;            
             HashMap<String, String> extractedCommenceReport = SPLIT_RECORD_BY_PROPERTY(RELATIONSHIPID, commenceRecord);
             for (String commenceId : extractedCommenceReport.keySet()) {
-                relationshipReport.put(commenceId, extractedCommenceReport.get(commenceId));
+                relationshipReport.put(Integer.valueOf(commenceId), extractedCommenceReport.get(commenceId));
             }
             
             // remove breakups 
             String breakupRecord = breakupReport.get(numReport) ;
             HashMap<String, String> extractedBreakupReport = SPLIT_RECORD_BY_PROPERTY(RELATIONSHIPID, breakupRecord);
             for (String breakupId : extractedBreakupReport.keySet()){
-                if (relationshipReport.containsKey(breakupId)) {
-                    relationshipReport.remove(breakupId);
+                if (relationshipReport.containsKey(Integer.valueOf(breakupId))) {
+                    relationshipReport.remove(Integer.valueOf(breakupId));
                 }
             }
         }

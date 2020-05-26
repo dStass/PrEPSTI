@@ -29,6 +29,9 @@ import PRSP.PrEPSTI.reporter.presenter.Presenter;
  */
 public class ConfigLoader {
 
+    // debug
+    public static boolean DEBUG;
+
     // final definitions 
     private static final String CONFIG_PATH = "configs/";
     private static final String DEFAULT_JSON_FILE = ConfigLoader.CONFIG_PATH + "default_config.json";
@@ -134,6 +137,9 @@ public class ConfigLoader {
             }
             ConfigLoader.colours.add(rgbArrayList);
         }
+
+        String DEBUG = (String) configLoaderJSON.get("DEBUG");
+        if (DEBUG != null) ConfigLoader.DEBUG = Boolean.parseBoolean(DEBUG);
     }
 
 

@@ -3705,7 +3705,7 @@ public class Reporter {
                 if (file.isFile()) 
                 {
                     String fileName = file.getName() ;
-                    if (fileName.contains("METADATA") || fileName.contains("REBOOT"))
+                    if (fileName.endsWith("-METADATA.txt") || fileName.endsWith("-REBOOT.txt"))
                         continue ;
                     if (fileName.startsWith(simName) && fileName.endsWith("txt"))
                         nameArray.add(fileName) ;

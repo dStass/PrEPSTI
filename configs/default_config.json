@@ -13,6 +13,7 @@
         "COMMENT" : "",
         "DYNAMIC" : "true",
         "RELOAD_SIMULATION" : "",
+        "REBOOT_FROM_CYCLE" : "-1",
         "endYear" : "2025",
         "methods" : {
             "interveneCommunity" : {
@@ -57,6 +58,7 @@
     },
 
     "config_loader" : {
+        "DEBUG" : "false",
         "colours" : [
             [0,0,0],
             [5,164,11],

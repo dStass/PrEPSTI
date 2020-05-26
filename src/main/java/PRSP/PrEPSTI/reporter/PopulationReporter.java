@@ -13,6 +13,8 @@ import java.util.Collections ;
 import java.util.HashMap ;
 import java.util.logging.Level ;
 
+import PRSP.PrEPSTI.configloader.ConfigLoader;
+
 
 /**
  *
@@ -787,7 +789,7 @@ public class PopulationReporter extends Reporter {
         return censusPropertyReport ;
     }
 
-    public HashMap<String, String> prepareCensusReport(int endCycle)     {
+    public HashMap<Integer, String> prepareCensusReport(int endCycle)     {
         HashMap<String, HashMap<String, String>> rawReport = new HashMap<String, HashMap<String, String>>();
         
         // Census at birth
@@ -797,9 +799,16 @@ public class PopulationReporter extends Reporter {
         HashSet<String> agentIdSet = new HashSet<String>() ;
         Collections.addAll(agentIdSet, birthReport.keySet().toArray(new String[0])) ;
 
-        // 
+        // for each id, prepare hashmap of all properties relating to corresponding agent
         for (String agentId : agentIdSet) {
             HashMap<String, String> birthReportHashMap = STRING_TO_HASHMAP(birthReport.get(agentId));
+            String extractedAge = birthReportHashMap.get("age");
+           
+            // handle age
+            String newAge = String.valueOf(Integer.valueOf(extractedAge) + endCycle/ConfigLoader.DAYS_PER_YEAR);
+            birthReportHashMap.put("age", newAge);
+
+            // 
             rawReport.put(agentId, birthReportHashMap);     
         }
 
@@ -851,8 +860,7 @@ public class PopulationReporter extends Reporter {
                     int colonIndex = changeRecord.indexOf(":",agentIndex) ;
                     int nextColonIndex = changeRecord.indexOf(":",colonIndex + 1) ;
                     int spaceIndex = changeRecord.lastIndexOf(SPACE, nextColonIndex) ;
-                    if (spaceIndex < 0)
-                    spaceIndex = changeRecord.length() ;
+                    if (spaceIndex < 0) spaceIndex = changeRecord.length() ;
                     String value = changeRecord.substring(colonIndex + 1, spaceIndex) ;
                     
                     // map changes
@@ -861,6 +869,7 @@ public class PopulationReporter extends Reporter {
                         value = value.replace("=", ":") ;
                         value = value.substring(0, value.length() - 1) ;
                     }
+                    
                     rawReport.get(agentId).put(property, value) ;
                     agentIdSet.remove(agentId) ;
                 }
@@ -870,11 +879,11 @@ public class PopulationReporter extends Reporter {
         }
 
         // convert raw report to <String, String> report
-        HashMap<String,String> censusPropertyReport = new HashMap<String,String>() ;
+        HashMap<Integer,String> censusPropertyReport = new HashMap<Integer,String>() ;
         for (String agentId : agentIdSet) {
             String value = HASHMAP_TO_STRING(rawReport.get(agentId), properties);
             value += " Site:Rectum Site:Urethra Site:Pharynx";
-            censusPropertyReport.put(agentId, value);
+            censusPropertyReport.put(Integer.valueOf(agentId), value);
         }
         
         return censusPropertyReport ;
