@@ -1,9 +1,9 @@
 {   
     "community" : {
         "POPULATION" : "5000",
-        "NAME_ROOT" : "TEST",
+        "NAME_ROOT" : "TEST_REBOOT",
         "MAX_CYCLES" : "3",
-        "RELOAD_SIMULATION" : "ORIGINAL",
+        "RELOAD_SIMULATION" : "TEST",
         "REBOOT_FROM_CYCLE" : "1095"
     },
 

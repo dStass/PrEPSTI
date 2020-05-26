@@ -582,6 +582,8 @@ public class Community {
             if (fromCycle >= 0) {
                 PopulationReporter populationReporter = new PopulationReporter(simName, ConfigLoader.REBOOT_PATH);
                 RelationshipReporter relationshipReporter = new RelationshipReporter(simName, ConfigLoader.REBOOT_PATH);
+                ScreeningReporter screeningReporter = new ScreeningReporter(simName, ConfigLoader.REBOOT_PATH);
+
                 int cycleToGenerateReportUpTo = fromCycle;
 
                 // generate rebooted metalabels and metadata
@@ -594,9 +596,9 @@ public class Community {
                  * * * * * * * * * */
 
                 // generate our reboot census
-                // TODO: handle age
-                HashMap<Integer, String> populationCensusUpToCycle = populationReporter.prepareCensusReport(cycleToGenerateReportUpTo);
+                HashMap<Integer, String> populationCensusUpToCycle = populationReporter.prepareCensusReport(cycleToGenerateReportUpTo, screeningReporter);
                 
+
                 // extract agent census data and write to internal metadata
                 // sort agents by id
                 TreeSet<Integer> sortedAgentKeySet = new TreeSet<Integer>();
@@ -643,7 +645,8 @@ public class Community {
             }
 
             rebootRandomSeeds(rebootedFolderPath, rebootedSimName) ;
-            this.agents = Agent.REBOOT_AGENTS(ConfigLoader.REBOOT_PATH, simName) ;
+            // this.agents = Agent.REBOOT_AGENTS(ConfigLoader.REBOOT_PATH, simName) ;
+            this.agents = Agent.REBOOT_AGENTS(rebootedFolderPath, rebootedSimName);
             this.initialRecord = "" ; 
             for (Agent agent : agents)
                 initialRecord += agent.getCensusReport() ;

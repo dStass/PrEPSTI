@@ -789,7 +789,7 @@ public class PopulationReporter extends Reporter {
         return censusPropertyReport ;
     }
 
-    public HashMap<Integer, String> prepareCensusReport(int endCycle)     {
+    public HashMap<Integer, String> prepareCensusReport(int endCycle, ScreeningReporter screeningReporter)     {
         HashMap<String, HashMap<String, String>> rawReport = new HashMap<String, HashMap<String, String>>();
         
         // Census at birth
@@ -798,7 +798,7 @@ public class PopulationReporter extends Reporter {
         // Agent death report
         ArrayList<Comparable> deathReport = prepareAgentsDeadRecord(endCycle);
 
-        // key set
+        // Add all agents and remove dead agents
         HashSet<String> agentIdSet = new HashSet<String>() ;
         Collections.addAll(agentIdSet, birthReport.keySet().toArray(new String[0])) ;
         for (Comparable agentIdComparable : deathReport) {
@@ -807,14 +807,48 @@ public class PopulationReporter extends Reporter {
                 agentIdSet.remove(agentIdString);
         }
 
+        // screening reporter:
+        HashMap<Comparable, ArrayList<Comparable>> testingReport
+            = screeningReporter.prepareAgentTestingReport(0, 0, endCycle, endCycle);
+        
+        // // handle screenTime
+        // for (Comparable agentIdComparable : testingReport.keySet()) {
+        //     String agentIdString = (String) agentIdComparable;
+        //     if (populationCensusUpToCycle.containsKey(Integer.parseInt(agentIdString))) {
+        //         ArrayList<Comparable> testHistoryComparables = testingReport.get(agentIdComparable);
+        //         if (testHistoryComparables.size() > 0) {
+        //             String lastTestString = (String) testHistoryComparables.get(testHistoryComparables.size() - 1);
+        //             int lastTest = Integer.parseInt(lastTestString);
+
+
+        //         }
+
+        //     }
+        // }
+
         // for each id, prepare hashmap of all properties relating to corresponding agent
         for (String agentId : agentIdSet) {
             HashMap<String, String> birthReportHashMap = STRING_TO_HASHMAP(birthReport.get(agentId));
-            String extractedAge = birthReportHashMap.get("age");
-           
+            
             // handle age
+            String extractedAge = birthReportHashMap.get("age");
             String newAge = String.valueOf(Integer.valueOf(extractedAge) + endCycle/ConfigLoader.DAYS_PER_YEAR);
             birthReportHashMap.put("age", newAge);
+
+            // handle screenTime
+            // prepareAgentTestingReport(0, 0, endCycle, endCycle) ;
+            Comparable agentIdComparable = (Comparable) agentId;
+            if (testingReport.containsKey(agentIdComparable)) {
+                ArrayList<Comparable> testHistoryComparables = testingReport.get(agentIdComparable);
+                if (testHistoryComparables.size() > 0) {
+                    String lastTestString = String.valueOf(testHistoryComparables.get(testHistoryComparables.size() - 1));
+                    int lastTest = Integer.parseInt(lastTestString);
+                    int daysFromLastTest = endCycle - lastTest;
+                    int screenCycle = Integer.parseInt(birthReportHashMap.get("screenCycle"));
+                    int screenTime = screenCycle - daysFromLastTest + 1;
+                    birthReportHashMap.put("screenTime", String.valueOf(screenTime));
+                }
+            }
 
             // 
             rawReport.put(agentId, birthReportHashMap);     
