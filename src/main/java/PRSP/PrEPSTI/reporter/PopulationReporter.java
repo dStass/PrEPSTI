@@ -795,9 +795,17 @@ public class PopulationReporter extends Reporter {
         // Census at birth
         HashMap<Object,String>  birthReport = prepareCensusPropertyReport() ;
 
+        // Agent death report
+        ArrayList<Comparable> deathReport = prepareAgentsDeadRecord(endCycle);
+
         // key set
         HashSet<String> agentIdSet = new HashSet<String>() ;
         Collections.addAll(agentIdSet, birthReport.keySet().toArray(new String[0])) ;
+        for (Comparable agentIdComparable : deathReport) {
+            String agentIdString = (String) agentIdComparable;
+            if (agentIdSet.contains(agentIdString))
+                agentIdSet.remove(agentIdString);
+        }
 
         // for each id, prepare hashmap of all properties relating to corresponding agent
         for (String agentId : agentIdSet) {
