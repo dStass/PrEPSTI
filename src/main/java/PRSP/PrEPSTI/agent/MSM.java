@@ -120,6 +120,12 @@ public class MSM extends Agent {
             report += Reporter.ADD_REPORT_PROPERTY(change, methodName) ;
             report += REINIT_TRUST_PREP(agentList, year) ;
             
+            // Needs to be called after MSM.REINIT() specifically MSM.REINIT_RISK_ODDS()
+            // due to its updating prepStatus.
+            methodName = "screen" ;
+            report += Reporter.ADD_REPORT_PROPERTY(change, methodName) ;
+            report += REINIT_SCREEN_CYCLE(agentList, year) ;
+            //                                                             
             //REINIT_USE_GSN(agentList, year) ;
         }
         catch ( Exception e )
@@ -130,6 +136,34 @@ public class MSM extends Agent {
         return report ;
     }
     
+    /**
+     *      
+     * Adjusts per year the screening period. TODO: Implement reporting of changes.
+     * 
+     * @param (ArrayList) List of Agents to be changed.
+     * @param (int)       year
+     * @throws Exception
+     *                               
+     */
+    static protected String REINIT_SCREEN_CYCLE(final ArrayList<Agent> agentList, int year) throws Exception
+   {
+       String report = "";
+
+       ArrayList<Agent> newAgentList = new ArrayList<Agent>() ;
+
+       for (Agent agent : agentList)
+       {
+            MSM msm = (MSM) agent ;
+            if (!msm.prepStatus)
+                newAgentList.add(msm) ;
+        }
+
+        report += Agent.REINIT_SCREEN_CYCLE(newAgentList, year) ;
+
+        return report ;
+    }
+
+
     /**
      * Alters the probability of being on antiViral medication with undetectable
      * virus blood concentration from year to year. If the probability increases 
@@ -217,22 +251,36 @@ public class MSM extends Agent {
         double lastUndetectable = PROPORTION_UNDETECTABLE[undetectableYear - 1] ; 
         double undetectableProportion = PROPORTION_UNDETECTABLE[undetectableYear] ;
         
+        int discloseYear = year ;
+        if (discloseYear >= NEGATIVE_DISCLOSE_PROBABILITY.length)
+                discloseYear = NEGATIVE_DISCLOSE_PROBABILITY.length - 1 ;
+        double negativeDiscloseProportion = NEGATIVE_DISCLOSE_PROBABILITY[discloseYear] ;
+        double lastDiscloseProportion = NEGATIVE_DISCLOSE_PROBABILITY[discloseYear - 1] ;
+
+
         year -= 5 ;
         // Start from year 2012
         double[] positiveTrustUndetectable = new double[] {0.0,0.483,0.772,
-            0.695, 0.720, 0.757, 0.830, 0.727} ;
-	    //0.830, 0.865, 0.900, 0.935, 0.970, 1.0} ;
+            0.695, 0.720, 0.757, 0.830, 0.727
+	    //,0.830, 0.865, 0.900, 0.935, 0.970, 1.0
+	    } ;
         double[] negativeTrustUndetectable = new double[] {0.0,0.106,0.094,
-            0.129, 0.154, 0.203, 0.231, 0.194} ;
-            //0.231, 0.265, 0.300, 0.335, 0.370, 0.405, 0.440} ;
+            0.129, 0.154, 0.203, 0.231, 0.194
+            //,0.231, 0.265, 0.300, 0.335, 0.370, 0.405, 0.440
+            } ;
         
-        if (year >= positiveTrustUndetectable.length)
-            year = positiveTrustUndetectable.length - 1 ;
+        int positiveYear = year ;
+        int negativeYear = year ;
+        if (positiveYear >= positiveTrustUndetectable.length)
+            positiveYear = positiveTrustUndetectable.length - 1 ;
+        if (negativeYear >= negativeTrustUndetectable.length)
+            negativeYear = negativeTrustUndetectable.length - 1 ;
+
+        double positiveLastProbability = positiveTrustUndetectable[positiveYear - 1] ;
+        double positiveTrustProbability = positiveTrustUndetectable[positiveYear] ;
+        double negativeLastProbability = negativeTrustUndetectable[negativeYear - 1] ;
+        double negativeTrustProbability = negativeTrustUndetectable[negativeYear] ;
         
-        double positiveLastProbability = positiveTrustUndetectable[year - 1] ;
-        double positiveTrustProbability = positiveTrustUndetectable[year] ;
-        double negativeLastProbability = negativeTrustUndetectable[year - 1] ;
-        double negativeTrustProbability = negativeTrustUndetectable[year] ;
         double changeProbability ; 
         
         for (Agent agent : agentList)
@@ -254,8 +302,10 @@ public class MSM extends Agent {
             }
             else    // msm HIV negative
             {
-                lastProbability = negativeLastProbability ;
-                trustProbability = negativeTrustProbability ;
+                if (!msm.discloseStatusHIV)  // Only those who disclose can know their partner's undetectableStatus
+                    continue ;
+                lastProbability = negativeLastProbability/lastDiscloseProportion  ;
+                trustProbability = negativeTrustProbability/negativeDiscloseProportion  ;
             }
             
             if (trustProbability > lastProbability)
@@ -354,6 +404,10 @@ public class MSM extends Agent {
         return report ;
     }
     
+    static double[] POSITIVE_DISCLOSE_PROBABILITY = new double[] {0.201,0.296,0.327,0.286,0.312,0.384,0.349,0.398,
+            0.430,0.395,0.461,0.461,0.461} ;
+    static double[] NEGATIVE_DISCLOSE_PROBABILITY = new double[] {0.175,0.205,0.218,0.239,0.229,0.249,0.236,0.295,
+            0.286,0.352,0.391,0.391,0.391} ;
     /**
      * Resets the probability of discloseStatusHIV according to changing 
      * disclose probabilities each year.
@@ -371,11 +425,20 @@ public class MSM extends Agent {
         double oldDiscloseProbability ;
         double changeProbability ;
         //if (statusHIV)
-        double[] positiveDiscloseProbability = new double[] {0.201,0.296,0.327,0.286,0.312,0.384,0.349,0.398,
-            0.430,0.395,0.461,0.461,0.461} ;
-        //else
-        double[] negativeDiscloseProbability = new double[] {0.175,0.205,0.218,0.239,0.229,0.249,0.236,0.295,
-            0.286,0.352,0.391,0.391,0.391} ;
+        //double[] positiveDiscloseProbability = new double[] {0.201,0.296,0.327,0.286,0.312,0.384,0.349,0.398,
+        //0.430,0.395,0.461,0.461,0.461} ;
+        //double[] negativeDiscloseProbability = new double[] {0.175,0.205,0.218,0.239,0.229,0.249,0.236,0.295,
+        //  0.286,0.352,0.391,0.391,0.391} ;
+       
+        if (year >= NEGATIVE_DISCLOSE_PROBABILITY.length)
+        year = NEGATIVE_DISCLOSE_PROBABILITY.length - 1 ;
+        //
+        double positiveNewDiscloseProbability = POSITIVE_DISCLOSE_PROBABILITY[year] ;
+        double positiveOldDiscloseProbability = POSITIVE_DISCLOSE_PROBABILITY[year-1] ;
+        //                                                                          
+        double negativeNewDiscloseProbability = NEGATIVE_DISCLOSE_PROBABILITY[year] ;
+        double negativeOldDiscloseProbability = NEGATIVE_DISCLOSE_PROBABILITY[year-1] ;
+
         // 2007 - 2009
         if (year >= positiveDiscloseProbability.length)
             year = positiveDiscloseProbability.length - 1 ;
@@ -1988,7 +2051,7 @@ public class MSM extends Agent {
             
         }
         // Randomly set timer for first STI screen 
-        setScreenTime(getScreenCycle()) ;
+        setScreenTime(RAND.nextInt(getScreenCycle()) + 1) ;
     }
     
     /**
@@ -2229,14 +2292,7 @@ public class MSM extends Agent {
             if (prepStatus)
                 return false ;
             
-            if (statusHIV && trustUndetectable)    // trustUndetectable => undetectableStatus for HIV positive
-                return false ;
-            
-            if (trustUndetectable && !statusHIV)
-                if (partner.undetectableStatus)
-                    return false ;
-
-            if (partner.prepStatus && statusHIV)
+            if (undetectableStatus && trustUndetectable)
                 return false ;
             
             if (partner.discloseStatusHIV || discloseStatusHIV)
@@ -2244,6 +2300,13 @@ public class MSM extends Agent {
                 if (statusHIV == partner.statusHIV)
                     return false ;
                 
+                if (partner.prepStatus)
+                    return false ;
+                
+                if (partner.statusHIV)
+                    if (partner.undetectableStatus && trustUndetectable)
+                        return false ;
+
                 if (seroPosition && partner.seroPosition)
                     return false; // (RAND.nextDouble() < probabilityUseCondom ) ;
             }
@@ -2256,19 +2319,18 @@ public class MSM extends Agent {
             if (prepStatus)
                 return (RAND.nextDouble() < localProbabilityUseCondom ) ;
             
-            if (statusHIV && trustUndetectable)    
-                    return (RAND.nextDouble() < localProbabilityUseCondom ) ;
-            
-            if (trustUndetectable && !statusHIV)
-                if (partner.undetectableStatus)
-                    return (RAND.nextDouble() < localProbabilityUseCondom ) ;
-                
-            if (statusHIV && partner.prepStatus)
-                return (RAND.nextDouble() < localProbabilityUseCondom ) ;
-            
             if (partner.discloseStatusHIV || discloseStatusHIV)
             {
                 if (statusHIV == partner.statusHIV) 
+                    return (RAND.nextDouble() < localProbabilityUseCondom ) ;
+                else if (partner.statusHIV)
+                {
+                    if ((partner.undetectableStatus) && (trustUndetectable))
+                        return (RAND.nextDouble() < localProbabilityUseCondom ) ;
+                }
+                else if (undetectableStatus && trustUndetectable)
+                    return (RAND.nextDouble() < localProbabilityUseCondom ) ;  
+                else if (partner.prepStatus)    // partner HIV negative
                     return (RAND.nextDouble() < localProbabilityUseCondom ) ;
             }
             

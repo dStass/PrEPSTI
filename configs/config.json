@@ -1,14 +1,18 @@
 {   
+    "paths": {
+        "REBOOT_PATH" : "output/whole1000/"
+    },
+
     "community" : {
-        "POPULATION" : "1500",
-        "NAME_ROOT" : "REPORT_J",
-        "MAX_CYCLES" : "4",
-        "RELOAD_SIMULATION" : ""
+        "FILE_PATH" : "/srv/scratch/z3524276/prepsti/output/to2025/",
+        "NAME_ROOT" : "test",
+        "COMMENT" : "Running 1000 simulations with constant parameters.",
+        "MAX_CYCLES" : "6",
+        "RELOAD_SIMULATION" : "Pop40000Cycles6570"
     },
 
     "msm" : {
-        "GROUP_SEX_EVENT_SIZE" : "25",
-        "HIV_RISKY_CORRELATION" : "10.5"
+        "HIV_RISKY_CORRELATION" : "1.5"
     },
 
     "reporter" : {

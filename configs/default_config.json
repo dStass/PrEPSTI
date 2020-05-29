@@ -1,26 +1,26 @@
 {   
     "paths": {
-        "REBOOT_PATH" : "output/test/",
+        "REBOOT_PATH" : "output/whole1000/",
         "REPORT_PATH" : "reports/",
         "DATA_PATH" : "data_files/"
     },
 
     "community" : {
-        "FILE_PATH" : "output/",
+        "FILE_PATH" : "/srv/scratch/z3524276/prepsti/output/test/",
         "NAME_ROOT" : "test",
         "MAX_CYCLES" : "6",
         "POPULATION" : "40000",
         "COMMENT" : "",
         "DYNAMIC" : "true",
-        "RELOAD_SIMULATION" : "",
+        "RELOAD_SIMULATION" : "Pop40000Cycles6570",
         "endYear" : "2025",
         "methods" : {
             "interveneCommunity" : {
-                "startCycle" : "4",
-                "startYear" : "2007"
+                "startCycle" : "5",
+                "startYear" : "2020"
             },
             "main" : {
-                "endYear" : "2019"
+                "endYear" : "2025"
             }
         }
     },

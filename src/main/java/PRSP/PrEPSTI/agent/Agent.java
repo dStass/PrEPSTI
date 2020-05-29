@@ -148,7 +148,7 @@ public abstract class Agent {
             // due to its updating prepStatus.
             methodName = "screen" ;
             report += Reporter.ADD_REPORT_PROPERTY(change, methodName) ;
-            REINIT_SCREEN_CYCLE(agentList, year) ;
+            //REINIT_SCREEN_CYCLE(agentList, year) ;
             //REINIT_NB_RELATIONSHIPS(agentList, year) ;
             
             //MSM.REINIT_USE_GSN(agentList, year) ;
@@ -194,8 +194,9 @@ public abstract class Agent {
         double ratio = testBase/TEST_RATES[year] ;
         for (Agent agent : agentList)
         {
-            newScreenCycle = (int) Math.ceil(ratio * agent.getScreenCycle()) ;
-            agent.setScreenCycle(newScreenCycle) ;
+            ((MSM) agent).reInitScreenCycle(ratio) ;
+            //newScreenCycle = (int) Math.ceil(ratio * agent.getScreenCycle()) ;
+            //agent.setScreenCycle(newScreenCycle) ;
         
             // Do not reinitialise MSM on Prep
         }
@@ -793,8 +794,12 @@ public abstract class Agent {
      */
     abstract void initScreenCycle(double rescale) ;
     
-    abstract void reInitScreenCycle(double rescale) ;
-    
+    protected void reInitScreenCycle(double rescale)
+    {
+        int newScreenCycle = (int) Math.ceil(rescale * getScreenCycle()) ;
+        setScreenCycle(RAND.nextInt(getScreenCycle()) + 1) ;
+    }
+
     protected int sampleGamma(double shape, double scale, double rescale)
     {
         return (int) new GammaDistribution(shape,scale * rescale).sample() ;

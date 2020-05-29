@@ -530,7 +530,7 @@ public class Community {
      */
     private void rebootRandomSeeds(String simName)
     {
-        HashMap<String, Long> seeds = Reporter.parseSeedsFromMetadata(simName, "output/test/");
+        HashMap<String, Long> seeds = Reporter.parseSeedsFromMetadata(simName, "output/whole1000/") ;
         long seed = Long.valueOf(seeds.get("Community.REBOOT_SEED")) ;
         RANDOM_SEED = seed ;
         RAND = new Random(seed) ;

@@ -147,7 +147,7 @@ public class ConfigLoader {
         if (POPULATION != null) Community.POPULATION = Integer.parseInt(POPULATION);
 
         String COMMENT = (String) communityJSON.get("COMMENT");
-        if (COMMENT != null) Community.COMMENT = COMMENT;
+        if (COMMENT != null) Community.COMMENT = COMMENT + System.lineSeparator() ;
 
         String DYNAMIC = (String) communityJSON.get("DYNAMIC");
         if (DYNAMIC != null) Community.DYNAMIC = Boolean.parseBoolean(DYNAMIC);
