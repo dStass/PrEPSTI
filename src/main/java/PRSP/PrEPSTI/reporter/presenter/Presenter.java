@@ -570,7 +570,11 @@ public class Presenter {
         //LOGGER.log(Level.INFO, "{0}", hashMapNumber );
     }
     
-    public Presenter() {}
+    public Presenter() 
+    {
+    	// Needed to work around HPC access issues.
+    	chart_awt = new BarChart_AWT() ;
+    }
 
     public Presenter(String simName, String chartTitle)
     {
@@ -1787,7 +1791,7 @@ public class Presenter {
     }
     
     /**
-     * Extracts plottable values from report and puts in XYSeriesCollection format.
+     * Extracts plotable values from report and puts in XYSeriesCollection format.
      * @param report
      * @param legend
      * @return 
@@ -2029,6 +2033,12 @@ public class Presenter {
     private class BarChart_AWT {
    
         String chartTitle ;
+        
+        private BarChart_AWT()
+        {
+        	
+        }
+        
         private BarChart_AWT( String applicationTitle , String chartTitle ) 
         {
             this.chartTitle = chartTitle ;
