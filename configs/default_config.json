@@ -6,21 +6,21 @@
     },
 
     "community" : {
-        "FILE_PATH" : "/srv/scratch/z3524276/prepsti/output/test/",
+        "FILE_PATH" : "/scratch/is14/mw7704/prepsti/output/prep/",
         "NAME_ROOT" : "test",
-        "MAX_CYCLES" : "6",
+        "MAX_CYCLES" : "18",
         "POPULATION" : "40000",
         "COMMENT" : "",
         "DYNAMIC" : "true",
-        "RELOAD_SIMULATION" : "Pop40000Cycles6570",
-        "endYear" : "2025",
+        "RELOAD_SIMULATION" : "",
+        "endYear" : "2019",
         "methods" : {
             "interveneCommunity" : {
                 "startCycle" : "5",
-                "startYear" : "2020"
+                "startYear" : "2007"
             },
             "main" : {
-                "endYear" : "2025"
+                "endYear" : "2019"
             }
         }
     },

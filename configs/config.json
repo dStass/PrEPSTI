@@ -1,18 +1,27 @@
 {   
     "paths": {
-        "REBOOT_PATH" : "output/whole1000/"
+        "REBOOT_PATH" : "output/test/"
     },
 
     "community" : {
-        "FILE_PATH" : "/srv/scratch/z3524276/prepsti/output/to2025/",
-        "NAME_ROOT" : "test",
-        "COMMENT" : "Running 1000 simulations with constant parameters.",
-        "MAX_CYCLES" : "6",
-        "RELOAD_SIMULATION" : "Pop40000Cycles6570"
+        "FILE_PATH" : "/scratch/is14/mw7704/prepsti/output/prep/",
+        "NAME_ROOT" : "to2019",
+        "COMMENT" : "Disclosure-dependent trustUndetectable with HRC=2.0 .",
+        "MAX_CYCLES" : "18",
+        "endYear" : "2019",
+        "RELOAD_SIMULATION" : "",
+        "methods" : {
+            "main" : {
+                "endYear" : "2019"
+            },
+    	    "interveneCommunity" : {
+                "startCycle" : "5",
+                "startYear" : "2007"
+            }
     },
 
     "msm" : {
-        "HIV_RISKY_CORRELATION" : "1.5"
+        "HIV_RISKY_CORRELATION" : "2.0"
     },
 
     "reporter" : {

@@ -212,6 +212,11 @@ public class Community {
         EncounterReporter encounterReporter = new EncounterReporter() ;
         ScreeningReporter screeningReporter = new ScreeningReporter() ;
         
+        PopulationPresenter populationPresenter = new PopulationPresenter() ;
+        RelationshipPresenter relationshipPresenter = new RelationshipPresenter() ;
+        EncounterPresenter encounterPresenter = new EncounterPresenter() ;
+        ScreeningPresenter screeningPresenter = new ScreeningPresenter() ;
+
         // Record starting time to measure running time
         long startTime = System.nanoTime() ;
         // LOGGER.log(Level.INFO, "Seed:{0}", System.currentTimeMillis());

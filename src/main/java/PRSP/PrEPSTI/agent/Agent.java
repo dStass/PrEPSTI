@@ -175,7 +175,7 @@ public abstract class Agent {
      * @param (int) year
      * @throws Exception 
      */
-    static private String REINIT_SCREEN_CYCLE(ArrayList<Agent> agentList, int year) throws Exception
+    static protected String REINIT_SCREEN_CYCLE(ArrayList<Agent> agentList, int year) throws Exception
     {
         String report = "" ;
         //double[] testRates = new double[] {333,340,398,382,383,382,391,419,445,499,488,488,488} ;
