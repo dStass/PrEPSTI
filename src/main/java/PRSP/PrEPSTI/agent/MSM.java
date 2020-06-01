@@ -2027,14 +2027,31 @@ public class MSM extends Agent {
      * @param rescale
      */
     @Override
-    protected void reInitScreenCycle(double rescale)
+    protected int reInitScreenCycle(double rescale)
+    {
+    	return reInitScreenCycle(rescale, true) ;
+    }
+    
+    /**
+     * Initialises screenCycle from a Gamma distribution to determine how often 
+     * an MSM is screened, and then starts the cycle in a random place so that 
+     * not every MSM gets screened at the same time.
+     * @param rescale - The factor to rescale screenCycle by
+     * @param ignorePrep - Whether to reInit PrEP users
+     */
+    protected int reInitScreenCycle(double rescale, boolean ignorePrep)
     {
         // For easily testing the effects of the PrEP screening regime
         boolean checkPrepStatus = ConfigLoader.getMethodVariableBoolean("msm", "reInitScreenCycle", "checkPrepStatus");
         
 
-        if (checkPrepStatus && getPrepStatus())
-            setScreenCycle((sampleGamma(31,1,1)) + 61) ;
+        if (getPrepStatus())
+        {
+        	if (ignorePrep)    // for ordinary simulations where PrEP users are rescaled separately
+        		return -1 ;
+            if (checkPrepStatus)
+                setScreenCycle((sampleGamma(31,1,1)) + 61) ;
+        }
         else
         {
             //int firstScreenCycle = (int) new GammaDistribution(7,55).sample() ; 
@@ -2047,6 +2064,8 @@ public class MSM extends Agent {
         }
         // Randomly set timer for first STI screen 
         setScreenTime(RAND.nextInt(getScreenCycle()) + 1) ;
+        
+        return getScreenCycle() ;
     }
     
     /**

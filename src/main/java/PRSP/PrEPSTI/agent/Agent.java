@@ -170,7 +170,7 @@ public abstract class Agent {
     
     /**
      * Adjusts per year the screening period.
-     * TODO: Implement reporting of changes.
+     * TODO: Change implementation of changes to retun Strings from reInit
      * @param (ArrayList) List of Agents to be changed.
      * @param (int) year
      * @throws Exception 
@@ -183,6 +183,7 @@ public abstract class Agent {
         // 333,340,398,
         
         int newScreenCycle ;
+        String record ;
         
         if (year >= TEST_RATES.length)
             year = TEST_RATES.length - 1 ;
@@ -194,11 +195,10 @@ public abstract class Agent {
         double ratio = testBase/TEST_RATES[year] ;
         for (Agent agent : agentList)
         {
-            ((MSM) agent).reInitScreenCycle(ratio) ;
-            //newScreenCycle = (int) Math.ceil(ratio * agent.getScreenCycle()) ;
-            //agent.setScreenCycle(newScreenCycle) ;
-        
-            // Do not reinitialise MSM on Prep
+            newScreenCycle = ((MSM) agent).reInitScreenCycle(ratio) ;
+            if (newScreenCycle < 0)
+            	continue ;
+            report += Reporter.ADD_REPORT_PROPERTY(String.valueOf(agent.agentId), agent.screenCycle) ;
         }
         return report ;
     }
@@ -794,10 +794,11 @@ public abstract class Agent {
      */
     abstract void initScreenCycle(double rescale) ;
     
-    protected void reInitScreenCycle(double rescale)
+    protected int reInitScreenCycle(double rescale)
     {
         int newScreenCycle = (int) Math.ceil(rescale * getScreenCycle()) ;
         setScreenCycle(RAND.nextInt(getScreenCycle()) + 1) ;
+        return screenCycle ;
     }
 
     protected int sampleGamma(double shape, double scale, double rescale)
