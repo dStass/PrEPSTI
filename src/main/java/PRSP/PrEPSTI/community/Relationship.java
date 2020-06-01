@@ -469,7 +469,7 @@ public class Relationship {
         
         // return if neither Agent is infected
         //if ((!agent0.getInfectedStatus()) && (!agent1.getInfectedStatus()))
-    	if ((agent0.getInfectedStatus() + agent1.getInfectedStatus()) == 0)
+    	if ((agent0.getInfectedStatus() | agent1.getInfectedStatus()) == 0)
             return report ;
         
         // Loop through sexual contacts
