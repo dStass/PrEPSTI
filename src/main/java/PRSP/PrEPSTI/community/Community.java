@@ -1043,8 +1043,8 @@ public class Community {
     private String progressInfection(Object[] args)
     {
         String record = "" ;
-        boolean infected ;
-        boolean anyInfected = false ;
+        int infected ;
+        int anyInfected = 0 ;
         //long startTime = System.nanoTime() ;
 
         for (Agent agent : agents)
@@ -1053,7 +1053,7 @@ public class Community {
             //LOGGER.log(Level.INFO,"infected:{0}",agent.getAgentId());
             //record += Reporter.ADD_REPORT_PROPERTY("agentId",agent.getAgentId()) ;
             infected = agent.getInfectedStatus();
-            anyInfected = anyInfected || infected ;
+            anyInfected = anyInfected + infected ;
             //record += Reporter.ADD_REPORT_PROPERTY("infected", infected) ;
             
             // Due for an STI screen?
@@ -1061,12 +1061,12 @@ public class Community {
             {
                 record += Reporter.ADD_REPORT_PROPERTY("agentId",agent.getAgentId()) ;
                 record += Reporter.ADD_REPORT_LABEL("tested") ;
-                if (infected)
+                if ((infected) > 0)
                 {
                     //LOGGER.info("screening agentId:"+String.valueOf(agent.getAgentId())) ;
                     for (Site site : agent.getSites())
                     {
-                        if (agent.getInfectedStatus(site))
+                        if (agent.getInfectedStatus(site) > 0)
                             record += Reporter.ADD_REPORT_PROPERTY(site.toString(), agent.getSymptomatic(site)) ;
                     }
                 // boolean tested = ((record.contains("Rectum") || record.contains("Urethra")) || !(RAND.nextDouble() < 0.5)) ;
@@ -1081,12 +1081,12 @@ public class Community {
                     record += "clear" ;
                 record += " " ;
             }
-            else if (infected)
+            else if ((infected) > 0)
             {
                 record += Reporter.ADD_REPORT_PROPERTY("agentId",agent.getAgentId()) ;
                 for (Site site : agent.getSites())
                 {
-                    if (agent.getInfectedStatus(site))
+                    if (agent.getInfectedStatus(site) > 0)
                         record += Reporter.ADD_REPORT_PROPERTY(site.toString(), agent.getSymptomatic(site)) ;
                     //LOGGER.info(site.toString()) ;
                 }
@@ -1124,7 +1124,7 @@ public class Community {
     {
         String agentRecord ;
         String record = "" ;
-        boolean siteInfected ;
+        int siteInfected ;
         boolean treat ;
         //boolean allSites ;
         //ArrayList<Site> untestedSites ;
@@ -1150,7 +1150,7 @@ public class Community {
                 // Due for an STI screen?
                 if (RAND.nextDouble() < site.getScreenProbability(new String[] {Integer.toString(cycle)})) 
                 {
-                    if (siteInfected)
+                    if (siteInfected > 0)
                     {        
                         //LOGGER.info("infected") ;
                         agentRecord += Reporter.ADD_REPORT_PROPERTY(site.toString(), site.getSymptomatic()) ;
@@ -1162,7 +1162,7 @@ public class Community {
                     agentRecord += Reporter.ADD_REPORT_PROPERTY("tested") ;
                     //untestedSites.remove(site) ;
                 }
-                else if (siteInfected)
+                else if (siteInfected > 0)
                 {
                     agentRecord += Reporter.ADD_REPORT_PROPERTY(site.toString(), site.getSymptomatic()) ;
 
