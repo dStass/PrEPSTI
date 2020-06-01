@@ -1417,7 +1417,7 @@ public abstract class Agent {
         infectedStatus = 0 ;
         Site[] sites = getSites() ;
         for (Site site : sites)
-            infectedStatus += site.getInfectedStatus() ;
+            infectedStatus = infectedStatus | site.getInfectedStatus() ;
         symptomatic = false ;
         if ((infectedStatus) > 0)
         {

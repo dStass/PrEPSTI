@@ -1483,7 +1483,7 @@ public class Community {
                 }
             }
             dumpsSoFar++ ;
-            // LOGGER.log(Level.INFO, "dumpsSoFar:{0} nb_Files:{1} properties:{2}", new Object[] {dumpsSoFar,(new File(globalFolder)).listFiles().length,properties.length});
+            LOGGER.log(Level.INFO, "dumpsSoFar:{0} ", new Object[] {dumpsSoFar}) ; //,(new File(globalFolder)).listFiles().length,properties.length});
         }
         
         /**
