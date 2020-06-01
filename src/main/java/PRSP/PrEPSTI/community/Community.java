@@ -139,10 +139,28 @@ public class Community {
                               + "Cycles" + String.valueOf(Community.MAX_CYCLES);
 
         // handle arguments 
-        switch (args.length) {
+        switch (args.length) 
+        {
             default:
+            case 4:
+                switch (args[3]) 
+                {
+                case "gadi":
+                    //Community.FILE_PATH = "/scratch/is14/mw7704/prepsti/" + Community.FILE_PATH; 
+                    Community.DUMP_CYCLE = 500 ;
+                    break ;
+                case "katana":
+                    //Community.FILE_PATH = "/srv/scratch/z3524276/prepsti/" + Community.FILE_PATH ;
+                    Community.DUMP_CYCLE = 500 ;
+                    break ;
+                default:
+                	if (!args[3].isEmpty())
+                		RELOAD_SIMULATION = args[3] ;
+                    break ;
+                } ;
             case 3:
-                switch (args[2]) {
+                switch (args[2]) 
+                {
                     case "gadi":
                         //Community.FILE_PATH = "/scratch/is14/mw7704/prepsti/" + Community.FILE_PATH; 
                         Community.DUMP_CYCLE = 500 ;
@@ -152,10 +170,12 @@ public class Community {
                         Community.DUMP_CYCLE = 500 ;
                         break ;
                     default:
+                    	if (!args[2].isEmpty())
+                    		RELOAD_SIMULATION = args[2] ;
                         break ;
-                    }
-            case 2:
-                RELOAD_SIMULATION = args[1] + RELOAD_SIMULATION ;
+                } ;
+            case 2: 
+            	Community.FILE_PATH = args[1] ;
             case 1:
                 Community.NAME_ROOT = args[0] ;
             case 0:
