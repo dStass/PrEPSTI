@@ -148,10 +148,8 @@ public abstract class Agent {
             // due to its updating prepStatus.
             methodName = "screen" ;
             report += Reporter.ADD_REPORT_PROPERTY(change, methodName) ;
-            //REINIT_SCREEN_CYCLE(agentList, year) ;
-            //REINIT_NB_RELATIONSHIPS(agentList, year) ;
-            
-            //MSM.REINIT_USE_GSN(agentList, year) ;
+            report += REINIT_SCREEN_CYCLE(agentList, year) ;
+
         }
         catch ( Exception e )
         {
@@ -163,6 +161,20 @@ public abstract class Agent {
     }
     
     /**
+     * Allows safe querying of parameter Arrays without explicit checking of the index.
+     * Assumes the parameters will remain constant in years after they are no longer specified.
+     * @param parameterArray
+     * @param year
+     * @return (double) - parameterArray[year] if if exists, otherwise last entry in parameterArray.
+     */
+    static protected double GET_YEAR(double[] parameterArray, int year)
+    {
+    	if (year >= parameterArray.length)
+    		year = parameterArray.length - 1 ;
+    	return parameterArray[year] ;
+    }
+    
+    /**
      * Tests, given by per 1000 per year, from 2007-2018
      * Table 14 ARTB 2018
      */
@@ -170,7 +182,6 @@ public abstract class Agent {
     
     /**
      * Adjusts per year the screening period.
-     * TODO: Change implementation of changes to retun Strings from reInit
      * @param (ArrayList) List of Agents to be changed.
      * @param (int) year
      * @throws Exception 
@@ -185,14 +196,14 @@ public abstract class Agent {
         int newScreenCycle ;
         String record ;
         
-        if (year >= TEST_RATES.length)
-            year = TEST_RATES.length - 1 ;
+        //if (year >= TEST_RATES.length)
+          //  year = TEST_RATES.length - 1 ;
         
         double testBase ;
         //testBase = testRates[0] ;
-        testBase = TEST_RATES[year-1] ;
+        testBase = GET_YEAR(TEST_RATES,year-1) ;
         
-        double ratio = testBase/TEST_RATES[year] ;
+        double ratio = testBase/GET_YEAR(TEST_RATES,year) ;
         for (Agent agent : agentList)
         {
             newScreenCycle = ((MSM) agent).reInitScreenCycle(ratio) ;
