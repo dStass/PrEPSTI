@@ -2194,10 +2194,9 @@ public class MSM extends Agent {
     protected double getProbabilityDiscloseHIV()
     {
         if (getStatusHIV())
-            return PROBABILITY_DISCLOSE_POSITIVE_HIV ;
-        return PROBABILITY_DISCLOSE_NEGATIVE_HIV ;
+            return POSITIVE_DISCLOSE_PROBABILITY[0] ;
+        return NEGATIVE_DISCLOSE_PROBABILITY[0] ;
     }
-    
     
     public double getProbabilityPrep() 
     {
