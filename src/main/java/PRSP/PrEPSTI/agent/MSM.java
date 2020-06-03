@@ -264,13 +264,11 @@ public class MSM extends Agent {
             
             if (msm.statusHIV)
             {
-                if (msm.undetectableStatus)    // Only the undetectable trust being undetectable
-                {
-                    lastProbability = positiveLastProbability/lastUndetectable ;
-                    trustProbability = positiveTrustProbability/undetectableProportion ;
-                }
-                else
-                    continue ;
+                if (!msm.undetectableStatus)    // Only the undetectable trust being undetectable
+                	continue ;
+
+                lastProbability = positiveLastProbability/lastUndetectable ;
+                trustProbability = positiveTrustProbability/undetectableProportion ;
             }
             else    // msm HIV negative
             {
