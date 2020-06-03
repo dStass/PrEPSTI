@@ -2033,7 +2033,7 @@ public class MSM extends Agent {
             
         }
         // Randomly set timer for next STI screen 
-        //setScreenTime(RAND.nextInt(getScreenCycle()) + 1) ;   //Timing begins at next screening
+        setScreenTime(RAND.nextInt(getScreenCycle()) + 1) ;   //Timing begins at next screening
         
         return getScreenCycle() ;
     }
