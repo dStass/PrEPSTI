@@ -6,8 +6,8 @@
     },
 
     "community" : {
-        "FILE_PATH" : "/scratch/is14/mw7704/prepsti/output/prep/",
-        "NAME_ROOT" : "test",
+        "FILE_PATH" : "output/prep/",
+        "NAME_ROOT" : "to20192p04C",
         "MAX_CYCLES" : "18",
         "POPULATION" : "40000",
         "COMMENT" : "",

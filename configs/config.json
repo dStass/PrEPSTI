@@ -4,8 +4,8 @@
     },
 
     "community" : {
-        "FILE_PATH" : "/scratch/is14/mw7704/prepsti/output/prep/",
-        "NAME_ROOT" : "to2019",
+        "FILE_PATH" : "output/prep/",
+        "NAME_ROOT" : "to20192p04C",
         "COMMENT" : "Disclosure-dependent trustUndetectable with HRC=2.0 .",
         "MAX_CYCLES" : "18",
         "endYear" : "2019",
