@@ -743,7 +743,7 @@ public class PopulationReporter extends Reporter {
         HashMap<Object,String> censusPropertyReport = new HashMap<Object,String>() ;
         
         ArrayList<String>  birthReport = prepareBirthReport() ;
-        
+
         for (String birthRecord : birthReport)
         {
             ArrayList<String> birthArray = EXTRACT_ARRAYLIST(birthRecord,AGENTID) ;
@@ -789,7 +789,7 @@ public class PopulationReporter extends Reporter {
         return censusPropertyReport ;
     }
 
-    public HashMap<Integer, String> prepareCensusReport(int endCycle, ScreeningReporter screeningReporter)     {
+    public HashMap<Integer, String> prepareCensusReport(int endCycle, ScreeningReporter screeningReporter, EncounterReporter encounterReporter)     {
         HashMap<String, HashMap<String, String>> rawReport = new HashMap<String, HashMap<String, String>>();
         
         // Census at birth
@@ -810,6 +810,30 @@ public class PopulationReporter extends Reporter {
         // screening reporter:
         HashMap<Comparable, ArrayList<Comparable>> testingReport
             = screeningReporter.prepareAgentTestingReport(0, 0, endCycle, endCycle);
+        
+        // String[] siteNames = new String[] {"Rectum", "Urethra", "Pharynx"};
+        // ArrayList<String> screeningBackCycles = screeningReporter.getBackCyclesReport(0, 0, endCycle, endCycle);
+        
+        // // extract site data
+        // String lastCycle = screeningBackCycles.get(screeningBackCycles.size() - 1);
+        // HashMap<String, String> lastCycleHashMap = SPLIT_RECORD_BY_PROPERTY("agentId", lastCycle);        
+        // HashMap<String, String> infectiousAgentsHashMap = new HashMap<String, String>();
+        // for (String agentId : lastCycleHashMap.keySet()) {
+        //     if (lastCycleHashMap.get(agentId).contains("tested:clear")) continue;
+        //     infectiousAgentsHashMap.put(agentId, lastCycleHashMap.get(agentId));
+        // }
+
+
+
+
+
+        // for (int i = screeningBackCycles.size() - 2; i >= 0; --i) {
+        //     String screenCycle = screeningBackCycles.get(i);
+        //     HashMap<String, String> ids = SPLIT_RECORD_BY_PROPERTY("agentId", screenCycle);
+        //     String a = "a";   
+        // }
+            
+        HashMap<String, String> siteReport = screeningReporter.prepareAgentSiteReport(endCycle, agentIdSet);
 
         // for each id, prepare hashmap of all properties relating to corresponding agent
         for (String agentId : agentIdSet) {
@@ -838,10 +862,8 @@ public class PopulationReporter extends Reporter {
                 }
             }
 
-            // 
             rawReport.put(agentId, birthReportHashMap);     
         }
-        ArrayList<String> props = IDENTIFY_PROPERTIES(birthReport.get("0"));
 
         // TODO: Site Rectum, Urethra, Pharynx
         String properties[] = {
@@ -912,9 +934,10 @@ public class PopulationReporter extends Reporter {
         HashMap<Integer,String> censusPropertyReport = new HashMap<Integer,String>() ;
         for (String agentId : agentIdSet) {
             String value = HASHMAP_TO_STRING(rawReport.get(agentId), properties);
+            value += " " + siteReport.get(agentId);
             censusPropertyReport.put(Integer.valueOf(agentId), value);
         }
-        
+
         return censusPropertyReport ;
     }
     

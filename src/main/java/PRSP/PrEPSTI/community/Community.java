@@ -583,6 +583,7 @@ public class Community {
                 PopulationReporter populationReporter = new PopulationReporter(simName, ConfigLoader.REBOOT_PATH);
                 RelationshipReporter relationshipReporter = new RelationshipReporter(simName, ConfigLoader.REBOOT_PATH);
                 ScreeningReporter screeningReporter = new ScreeningReporter(simName, ConfigLoader.REBOOT_PATH);
+                EncounterReporter encounterReporter = new EncounterReporter(simName, ConfigLoader.REBOOT_PATH);
 
                 int cycleToGenerateReportUpTo = fromCycle;
 
@@ -596,7 +597,7 @@ public class Community {
                  * * * * * * * * * */
 
                 // generate our reboot census
-                HashMap<Integer, String> populationCensusUpToCycle = populationReporter.prepareCensusReport(cycleToGenerateReportUpTo, screeningReporter);
+                HashMap<Integer, String> populationCensusUpToCycle = populationReporter.prepareCensusReport(cycleToGenerateReportUpTo, screeningReporter, encounterReporter);
                 
 
                 // extract agent census data and write to internal metadata

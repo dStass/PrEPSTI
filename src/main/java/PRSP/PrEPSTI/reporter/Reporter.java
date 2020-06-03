@@ -518,6 +518,20 @@ public class Reporter {
      * @return
      */
     public static HashMap<String, String> SPLIT_RECORD_BY_PROPERTY(String property, String record) {
+        return SPLIT_RECORD_BY_PROPERTY(property, record, new HashSet<String>());
+    }
+
+
+
+    /**
+     * Split a record string by a specific property and save to a hashmap
+     * where the key is the property extracted from each sub-record
+     * @param property
+     * @param record
+     * @param keys: only add keys that exist in this set, if it is empty, add all keys
+     * @return
+     */
+    public static HashMap<String, String> SPLIT_RECORD_BY_PROPERTY(String property, String record, HashSet<String> keys) {
         HashMap<String, String> splitRecord = new HashMap<>();
 
         int previousIndex = 0;
@@ -527,7 +541,8 @@ public class Reporter {
         for (int i = -1; (i = record.indexOf(property, i + 1)) != -1; ++i) {
             if (count > 0) {
                 String recordString = record.substring(previousIndex, i).trim();
-                splitRecord.put(EXTRACT_VALUE(property, recordString), recordString);
+                String key = EXTRACT_VALUE(property, recordString);
+                if (keys.size() == 0 || keys.contains(key)) splitRecord.put(key, recordString);
             }
             previousIndex = i;
             count++;

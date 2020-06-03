@@ -56,6 +56,8 @@ abstract public class Site {
     // Array of available infection status'
     static String[] STATES = new String[] {"clear","gonorrhoea"} ;
 
+    static private String[] SITE_NAMES = new String[] {"Rectum", "Urethra", "Pharynx"};
+
     /** Infection indices given by log_2 of pure infectStatus. */
     static int GONORRHOEA = 0 ;
     //static int SYPHILIS = 1 ;
@@ -442,5 +444,9 @@ abstract public class Site {
         }
         
         return censusReport ;
+    }
+
+    public static String[] getAvailableSites() {
+        return Site.SITE_NAMES;
     }
 }
