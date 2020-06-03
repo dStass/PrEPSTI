@@ -2303,6 +2303,9 @@ public class MSM extends Agent {
             if (prepStatus)
                 return (RAND.nextDouble() < localProbabilityUseCondom ) ;
             
+            if (undetectableStatus && trustUndetectable)
+                return (RAND.nextDouble() < localProbabilityUseCondom ) ;  
+            
             if (partner.discloseStatusHIV || discloseStatusHIV)
             {
                 if (statusHIV == partner.statusHIV) 
@@ -2312,8 +2315,6 @@ public class MSM extends Agent {
                     if ((partner.undetectableStatus) && (trustUndetectable))
                         return (RAND.nextDouble() < localProbabilityUseCondom ) ;
                 }
-                else if (undetectableStatus && trustUndetectable)
-                    return (RAND.nextDouble() < localProbabilityUseCondom ) ;  
                 else if (partner.prepStatus)    // partner HIV negative
                     return (RAND.nextDouble() < localProbabilityUseCondom ) ;
             }
