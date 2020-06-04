@@ -791,58 +791,61 @@ public class PopulationReporter extends Reporter {
 
     public HashMap<Integer, String> prepareCensusReport(int endCycle, ScreeningReporter screeningReporter, EncounterReporter encounterReporter)     {
         HashMap<String, HashMap<String, String>> rawReport = new HashMap<String, HashMap<String, String>>();
-        
-        // Census at birth
-        HashMap<Object,String> birthReport = prepareCensusPropertyReport() ;
-
-        // Agent death report
-        ArrayList<Comparable> deathReport = prepareAgentsDeadRecord(endCycle);
-
-        // Add all agents and remove dead agents
-        HashSet<String> agentIdSet = new HashSet<String>() ;
-        Collections.addAll(agentIdSet, birthReport.keySet().toArray(new String[0])) ;
-        for (Comparable agentIdComparable : deathReport) {
-            String agentIdString = (String) agentIdComparable;
-            if (agentIdSet.contains(agentIdString))
-                agentIdSet.remove(agentIdString);
-        }
-
         // screening reporter:
         HashMap<Comparable, ArrayList<Comparable>> testingReport
             = screeningReporter.prepareAgentTestingReport(0, 0, endCycle, endCycle);
-        
 
-        HashMap<String, String> siteReport = screeningReporter.prepareAgentSiteReport(endCycle, agentIdSet);
-
-        // for each id, prepare hashmap of all properties relating to corresponding agent
-        for (String agentId : agentIdSet) {
-            // TODO: FIX
-            // HashMap<String, String> birthReportHashMap = STRING_TO_HASHMAP_HANDLE_SITE(birthReport.get(agentId));
             
-            HashMap<String, String> birthReportHashMap = STRING_TO_HASHMAP(birthReport.get(agentId));
+        // Census at birth
+        HashMap<Object,String> birthReport = prepareCensusPropertyReport() ;
+        ArrayList<String> birthReportByCycle = prepareBirthReport(0,0,endCycle,endCycle);
+        for (int currentCycle = 0; currentCycle < birthReportByCycle.size(); ++currentCycle) {
+            String birthRecord = birthReportByCycle.get(currentCycle);
+            birthRecord = birthRecord.substring(6, birthRecord.length()); // removing "birth:" label
 
-            // handle age
-            String extractedAge = birthReportHashMap.get("age");
-            String newAge = String.valueOf(Integer.valueOf(extractedAge) + endCycle/ConfigLoader.DAYS_PER_YEAR);
-            birthReportHashMap.put("age", newAge);
-
-            // handle screenTime
-            // prepareAgentTestingReport(0, 0, endCycle, endCycle) ;
-            Comparable agentIdComparable = (Comparable) agentId;
-            if (testingReport.containsKey(agentIdComparable)) {
-                ArrayList<Comparable> testHistoryComparables = testingReport.get(agentIdComparable);
-                if (testHistoryComparables.size() > 0) {
-                    String lastTestString = String.valueOf(testHistoryComparables.get(testHistoryComparables.size() - 1));
-                    int lastTest = Integer.parseInt(lastTestString);
-                    int daysFromLastTest = endCycle - lastTest;
-                    int screenCycle = Integer.parseInt(birthReportHashMap.get("screenCycle"));
-                    int screenTime = screenCycle - daysFromLastTest + 1;
-                    birthReportHashMap.put("screenTime", String.valueOf(screenTime));
+            HashMap<String, String> agentReport = SPLIT_RECORD_BY_PROPERTY(AGENTID, birthRecord);
+            for (String agentId : agentReport.keySet()) {
+                if (agentId.length() == 0) continue;
+                HashMap<String, String> birthReportHashMap = STRING_TO_HASHMAP(agentReport.get(agentId));
+                
+                // update age
+                String extractedAge = birthReportHashMap.get("age");
+                String newAge = String.valueOf(Integer.valueOf(extractedAge) + (endCycle-currentCycle)/ConfigLoader.DAYS_PER_YEAR);
+                birthReportHashMap.put("age", newAge);
+                
+                Comparable agentIdComparable = (Comparable) agentId;
+                if (testingReport.containsKey(agentIdComparable)) {
+                    ArrayList<Comparable> testHistoryComparables = testingReport.get(agentIdComparable);
+                    if (testHistoryComparables.size() > 0) {
+                        String lastTestString = String.valueOf(testHistoryComparables.get(testHistoryComparables.size() - 1));
+                        int lastTest = Integer.parseInt(lastTestString);
+                        int daysFromLastTest = endCycle - lastTest;
+                        int screenCycle = Integer.parseInt(birthReportHashMap.get("screenCycle"));
+                        int screenTime = screenCycle - daysFromLastTest + 1;
+                        birthReportHashMap.put("screenTime", String.valueOf(screenTime));
+                    }
                 }
+                
+                rawReport.put(agentId, birthReportHashMap);     
             }
-
-            rawReport.put(agentId, birthReportHashMap);     
+            
         }
+        // HashMap<String, String> birthReport = SPLIT_RECORD_BY_PROPERTY(property, record);
+        
+        // Agent death report
+        ArrayList<Comparable> deathReport = prepareAgentsDeadRecord(endCycle);
+        
+        // Add all agents and remove dead agents
+        HashSet<String> agentIdSet = new HashSet<String>() ;
+        Collections.addAll(agentIdSet, birthReport.keySet().toArray(new String[0])) ;
+        
+        for (Comparable agentIdComparable : deathReport) {
+            String agentIdString = (String) agentIdComparable;
+            if (rawReport.containsKey(agentIdString))
+            rawReport.remove(agentIdString);
+        }
+        HashMap<String, String> siteReport = screeningReporter.prepareAgentSiteReport(endCycle, agentIdSet);
+            
 
         // TODO: Site Rectum, Urethra, Pharynx
         String properties[] = {
@@ -911,7 +914,7 @@ public class PopulationReporter extends Reporter {
         }
 
         HashMap<Integer,String> censusPropertyReport = new HashMap<Integer,String>() ;
-        for (String agentId : agentIdSet) {
+        for (String agentId : rawReport.keySet()) {
             String value = HASHMAP_TO_STRING(rawReport.get(agentId), properties);
             value += " " + siteReport.get(agentId);
             censusPropertyReport.put(Integer.valueOf(agentId), value);

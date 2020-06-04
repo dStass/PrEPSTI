@@ -551,7 +551,7 @@ public class Reporter {
         // ADD the last record
         String recordString = record.substring(previousIndex, record.length()).trim();
         String key = EXTRACT_VALUE(property, recordString);
-        if (keys.size() == 0 || keys.contains(key)) splitRecord.put(key, recordString);
+        if (keys.size() == 0 || keys.contains(key) && key.length() > 0) splitRecord.put(key, recordString);
 
         return splitRecord;
     }
@@ -1222,7 +1222,7 @@ public class Reporter {
         for (String s : stringSplit) {
             s = s.trim();
             String[] sSplit = s.split(":");
-            toReturn.put(sSplit[0], sSplit[1]);
+            if (sSplit.length > 1) toReturn.put(sSplit[0], sSplit[1]);
         }
 
         return toReturn;
