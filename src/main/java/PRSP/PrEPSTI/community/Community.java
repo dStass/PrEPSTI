@@ -33,11 +33,12 @@ import java.util.logging.Level;
 public class Community {
     
     // Default variables
-    static public String FILE_PATH;
-    static public String NAME_ROOT;
-    static public int POPULATION;
-    static public String COMMENT;
-    static public boolean DYNAMIC; // Whether parameters change throughout simulation.
+    static public String FILE_PATH ;
+    static public String NAME_ROOT ;
+    static public int POPULATION ;
+    static public String COMMENT ;
+    static public boolean DYNAMIC ; // Whether parameters change throughout simulation.
+    static public String REBOOT_PATH ;
     static public String RELOAD_SIMULATION; // "to2014fix3Choice23aaPop40000Cycles4745" ; // "debugRebootPop20000Cycles1825" ; 
     
     // hashmap with key = method name, value = hashmap that contains
@@ -232,10 +233,10 @@ public class Community {
         EncounterReporter encounterReporter = new EncounterReporter() ;
         ScreeningReporter screeningReporter = new ScreeningReporter() ;
         
-        PopulationPresenter populationPresenter = new PopulationPresenter() ;
-        RelationshipPresenter relationshipPresenter = new RelationshipPresenter() ;
-        EncounterPresenter encounterPresenter = new EncounterPresenter() ;
-        ScreeningPresenter screeningPresenter = new ScreeningPresenter() ;
+        //PopulationPresenter populationPresenter = new PopulationPresenter() ;
+        //RelationshipPresenter relationshipPresenter = new RelationshipPresenter() ;
+        //EncounterPresenter encounterPresenter = new EncounterPresenter() ;
+        //ScreeningPresenter screeningPresenter = new ScreeningPresenter() ;
 
         // Record starting time to measure running time
         long startTime = System.nanoTime() ;
@@ -555,7 +556,7 @@ public class Community {
      */
     private void rebootRandomSeeds(String simName)
     {
-        HashMap<String, Long> seeds = Reporter.parseSeedsFromMetadata(simName, "output/whole1000/") ;
+        HashMap<String, Long> seeds = Reporter.parseSeedsFromMetadata(simName, REBOOT_PATH) ;
         long seed = Long.valueOf(seeds.get("Community.REBOOT_SEED")) ;
         RANDOM_SEED = seed ;
         RAND = new Random(seed) ;

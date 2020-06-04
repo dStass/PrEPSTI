@@ -307,7 +307,7 @@ public class Relationship {
                 relationshipClazzName = Reporter.EXTRACT_VALUE("relationship", relationshipString) ;
                 Class relationshipClazz = Class.forName("PRSP.PrEPSTI.community.".concat(relationshipClazzName)) ;
 
-                Relationship relationship = (Relationship) relationshipClazz.newInstance();
+                Relationship relationship = (Relationship) relationshipClazz.getDeclaredConstructor().newInstance() ;
                 relationship.addAgents(agents.get(agentIndex0), agents.get(agentIndex1)) ;
                 NB_RELATIONSHIPS++ ;
                 relationship.setRelationshipId(relationshipId) ;

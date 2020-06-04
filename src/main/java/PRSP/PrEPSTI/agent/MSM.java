@@ -217,17 +217,17 @@ public class MSM extends Agent {
         if (year < 6)
             return report ;
         
-        int undetectableYear = year ;
+        //int undetectableYear = year ;
         //if (undetectableYear >= PROPORTION_UNDETECTABLE.length)
           //  undetectableYear = PROPORTION_UNDETECTABLE.length - 1 ;
-        double lastUndetectable = GET_YEAR(PROPORTION_UNDETECTABLE,undetectableYear - 1) ; 
-        double undetectableProportion = GET_YEAR(PROPORTION_UNDETECTABLE,undetectableYear) ;
+        double lastUndetectable = GET_YEAR(PROPORTION_UNDETECTABLE,year - 1) ; 
+        double undetectableProportion = GET_YEAR(PROPORTION_UNDETECTABLE,year) ;
         
-        int discloseYear = year ;
+        //int discloseYear = year ;
         //if (discloseYear >= NEGATIVE_DISCLOSE_PROBABILITY.length)
           //      discloseYear = NEGATIVE_DISCLOSE_PROBABILITY.length - 1 ;
-        double negativeDiscloseProportion = GET_YEAR(NEGATIVE_DISCLOSE_PROBABILITY,discloseYear) ;
-        double lastDiscloseProportion = GET_YEAR(NEGATIVE_DISCLOSE_PROBABILITY,discloseYear - 1) ;
+        double negativeDiscloseProportion = GET_YEAR(NEGATIVE_DISCLOSE_PROBABILITY,year) ;
+        double lastDiscloseProportion = GET_YEAR(NEGATIVE_DISCLOSE_PROBABILITY,year - 1) ;
 
 
         year -= 5 ;
@@ -241,17 +241,17 @@ public class MSM extends Agent {
             //,0.231, 0.265, 0.300, 0.335, 0.370, 0.405, 0.440
             } ;
         
-        int positiveYear = year ;
-        int negativeYear = year ;
+        //int positiveYear = year ;
+        //int negativeYear = year ;
         //if (positiveYear >= positiveTrustUndetectable.length)
           //  positiveYear = positiveTrustUndetectable.length - 1 ;
         //if (negativeYear >= negativeTrustUndetectable.length)
           //  negativeYear = negativeTrustUndetectable.length - 1 ;
 
-        double positiveLastProbability = GET_YEAR(positiveTrustUndetectable,positiveYear - 1) ;
-        double positiveTrustProbability = GET_YEAR(positiveTrustUndetectable,positiveYear) ;
-        double negativeLastProbability = GET_YEAR(negativeTrustUndetectable,negativeYear - 1) ;
-        double negativeTrustProbability = GET_YEAR(negativeTrustUndetectable,negativeYear) ;
+        double positiveLastProbability = GET_YEAR(positiveTrustUndetectable,year - 1) ;
+        double positiveTrustProbability = GET_YEAR(positiveTrustUndetectable,year) ;
+        double negativeLastProbability = GET_YEAR(negativeTrustUndetectable,year - 1) ;
+        double negativeTrustProbability = GET_YEAR(negativeTrustUndetectable,year) ;
         
         double changeProbability ; 
         
@@ -579,13 +579,13 @@ public class MSM extends Agent {
         RISKY_ODDS_REGULAR = GET_YEAR(newRiskyRegular,year) ;
         
         double totalOdds = SAFE_ODDS_REGULAR + RISKY_ODDS_REGULAR ;
-        double lastRisky = newRiskyRegular[year-1] ;
-        double lastSafe = newSafeRegular[year-1] ;
+        double lastRisky = GET_YEAR(newRiskyRegular,year-1) ;
+        double lastSafe = GET_YEAR(newSafeRegular,year-1) ;
         double lastTotal = lastSafe + lastRisky ;
-        double riskyProbability = ((double) RISKY_ODDS_REGULAR)/totalOdds ;
-        double safeProbability = ((double) SAFE_ODDS_REGULAR)/totalOdds ;
-        double lastProbabilityRisk = ((double) lastRisky)/lastTotal ;
-        double lastProbabilitySafe = ((double) lastSafe)/lastTotal ;
+        double riskyProbability = RISKY_ODDS_REGULAR/totalOdds ;
+        double safeProbability = SAFE_ODDS_REGULAR/totalOdds ;
+        double lastProbabilityRisk = lastRisky/lastTotal ;
+        double lastProbabilitySafe = lastSafe/lastTotal ;
         double changeProbability ;
         
         boolean moreRisky = (lastProbabilityRisk < riskyProbability) ;

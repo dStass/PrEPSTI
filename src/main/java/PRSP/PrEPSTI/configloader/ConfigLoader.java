@@ -176,8 +176,9 @@ public class ConfigLoader {
         // reboot path for Relationship and Agent
         String rebootPath = (String) pathsJSON.get("REBOOT_PATH");
         if (rebootPath != null) {
-            Relationship.FOLDER_PATH = rebootPath;
-            Agent.FOLDER_PATH = rebootPath;
+            Relationship.FOLDER_PATH = rebootPath ;
+            Agent.FOLDER_PATH = rebootPath ;
+            Community.REBOOT_PATH = rebootPath ;
         }
 
         // report path for Reporter
