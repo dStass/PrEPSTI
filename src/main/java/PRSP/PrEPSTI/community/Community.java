@@ -609,7 +609,7 @@ public class Community {
                 metaLabels.add("Agents") ;
                 String agentsReboot = "" ;
                 for (Integer agentId : sortedAgentKeySet) {
-                    String newAgentRecord = "agentId:" + String.valueOf(agentId) + ' ' + populationCensusUpToCycle.get(agentId) + ' ' ;
+                    String newAgentRecord = "agentId:" + String.valueOf(agentId) + ' ' + populationCensusUpToCycle.get(agentId);
                     agentsReboot += newAgentRecord;
                 }
                 metaData.add(agentsReboot) ;
@@ -1404,6 +1404,7 @@ public class Community {
         }
         
         if (ConfigLoader.DEBUG) {
+            LOGGER.info("Sorting relationships");
             Collections.sort(relationships, (r1, r2) -> { return r1.getRelationshipId() > r2.getRelationshipId() ? 1 : -1;});
             for (Relationship relationship : relationships) {
                 relationshipReboot += relationship.getRecord();

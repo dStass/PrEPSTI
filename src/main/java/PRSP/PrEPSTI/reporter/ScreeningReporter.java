@@ -6,12 +6,15 @@
 package PRSP.PrEPSTI.reporter;
 
 import PRSP.PrEPSTI.agent.MSM;
-import PRSP.PrEPSTI.community.Community ;
+import PRSP.PrEPSTI.community.Community;
+import PRSP.PrEPSTI.site.Pharynx;
+import PRSP.PrEPSTI.site.Rectum;
 /**
  *
  * @author MichaelWalker
  */
 import PRSP.PrEPSTI.site.Site;
+import PRSP.PrEPSTI.site.Urethra;
 
 import java.io.* ;
 import java.util.ArrayList ;
@@ -22,6 +25,8 @@ import java.util.HashSet ;
 import java.util.Collections ;
 import java.util.HashMap;
 import java.util.logging.Level;
+
+import java.lang.reflect.* ;
 
 
 public class ScreeningReporter extends Reporter {
@@ -2014,7 +2019,7 @@ public class ScreeningReporter extends Reporter {
     public HashMap<String, HashMap<String, String>> prepareRawAgentSiteReport(int endCycle, HashSet<String> agentIdSet) {
         String[] siteNames = Site.getAvailableSites();
 
-        ArrayList<String> screeningBackCycles = this.getBackCyclesReport(0, 0, endCycle, endCycle);
+        ArrayList<String> screeningBackCycles = this.getBackCyclesReport(0, 0, 1, endCycle);
         
         // extract site data
         String lastCycle = screeningBackCycles.get(screeningBackCycles.size() - 1);
@@ -2043,8 +2048,9 @@ public class ScreeningReporter extends Reporter {
 
                     // extract correct values
                     String symptomatic = EXTRACT_VALUE(site, agentInfectiousRecord);
-                    String infectionTime = extractInfectionTimeFromBackCycles(screeningBackCycles, agentId, site, symptomatic);  // TODO backcycles
-                    String incubationTime = "-1"; // TODO work out incubation time
+                    String[] infectionAndIncubation = extractInfectionAndIncubationTimeFromBackCycles(agentId, site, symptomatic, endCycle);  // TODO backcycles
+                    String infectionTime = infectionAndIncubation[0];
+                    String incubationTime = infectionAndIncubation[1]; // TODO work out incubation time
 
                     // build the new record
                     String newSiteRecord = Reporter.ADD_REPORT_PROPERTY("symptomatic", symptomatic) ;
@@ -2061,7 +2067,17 @@ public class ScreeningReporter extends Reporter {
         return returnReport;
     }
 
-    private String extractInfectionTimeFromBackCycles(ArrayList<String> screeningBackCycles, String agentId, String site, String symptomatic) {
+    /**
+     * loop backwards over screen report back cycles to extract infectionTime and incubationTime
+     * @param screeningBackCycles
+     * @param agentId
+     * @param site
+     * @param symptomatic
+     * @return
+     */
+    private String[] extractInfectionAndIncubationTimeFromBackCycles(String agentId, String site, String symptomatic, int endCycle) {
+        ArrayList<String> screeningBackCycles = this.getBackCyclesReport(0, 0, endCycle, endCycle);
+
         int foundCycle = screeningBackCycles.size() - 1;
         for (int i = screeningBackCycles.size() - 1; i >= 0; --i) {
             foundCycle -= 1;
@@ -2072,11 +2088,42 @@ public class ScreeningReporter extends Reporter {
             if (!screenedAgents.containsKey(agentId) || !screenedAgents.get(agentId).contains(site)) break;
         }
         foundCycle += 1;
-        return String.valueOf(screeningBackCycles.size() - foundCycle);
+        int infectionDuration = 0;
+        int incubationDuration = 0;
+
+        switch (site) {
+            case "Pharynx":
+                Pharynx pharynx = new Pharynx();
+                infectionDuration = pharynx.getInfectionDuration();
+                incubationDuration = pharynx.chooseIncubationTime();
+                break;
+            case "Rectum":
+                Rectum rectum = new Rectum();
+                infectionDuration = rectum.getInfectionDuration();
+                incubationDuration = rectum.chooseIncubationTime();
+                break;
+            case "Urethra":
+                Urethra urethra = new Urethra();
+                infectionDuration = urethra.getInfectionDuration();
+                incubationDuration = urethra.chooseIncubationTime();
+                break;
+        }
+
+        // infectionDuration = (new Class.forName("PRSP.PrEPSTI.site"+site).getDeclaredConstructor().newInstance()).getInfectionDuration() ;
+
+        int infectionTime = infectionDuration - ((screeningBackCycles.size() - 1) - foundCycle);
+        int incubationTime = Math.max(0, incubationDuration - ((screeningBackCycles.size() - 1) - foundCycle));
+
+        // return
+        String[] infectionAndIncubation = new String[2];
+        infectionAndIncubation[0] = String.valueOf(infectionTime);
+        infectionAndIncubation[1] = String.valueOf(incubationTime);
+        return infectionAndIncubation;
     }
 
     /**
-     * 
+     * Returns a HashMap report where the key = agentId, value = site record for reboot
+     * ending at a given cycle
      * @param endCycle
      * @param agentIdSet
      * @return

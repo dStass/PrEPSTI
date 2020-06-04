@@ -546,7 +546,12 @@ public class Reporter {
             }
             previousIndex = i;
             count++;
-        } 
+        }
+
+        // ADD the last record
+        String recordString = record.substring(previousIndex, record.length()).trim();
+        String key = EXTRACT_VALUE(property, recordString);
+        if (keys.size() == 0 || keys.contains(key)) splitRecord.put(key, recordString);
 
         return splitRecord;
     }

@@ -67,7 +67,6 @@ public class ConfigLoader {
 
         // load information for this class
         ConfigLoader.readJSON("default");
-        ConfigLoader.loadConfigLoaderSettings();
         
         // load information for other classes
         ConfigLoader.loadInformationIntoClasses();
@@ -113,6 +112,7 @@ public class ConfigLoader {
      * Extract community from JSON and load into Communit class
      */
     private static void loadInformationIntoClasses() {
+        ConfigLoader.loadConfigLoaderSettings();
         ConfigLoader.loadCommunity();
         ConfigLoader.loadPaths();
         ConfigLoader.loadMSM();
@@ -127,15 +127,17 @@ public class ConfigLoader {
 
         JSONArray coloursJSONArray = (JSONArray) configLoaderJSON.get("colours");
 
-        for (int i = 0; i < coloursJSONArray.size(); ++i) {
-            JSONArray rgbJSONArray = (JSONArray) coloursJSONArray.get(i);
-
-            ArrayList<Integer> rgbArrayList = new ArrayList<Integer>();
-            for (int j = 0; j < rgbJSONArray.size(); ++j) {
-                int col = ((Number) rgbJSONArray.get(j)).intValue();
-                rgbArrayList.add(col);
+        if (coloursJSONArray != null) {
+            for (int i = 0; i < coloursJSONArray.size(); ++i) {
+                JSONArray rgbJSONArray = (JSONArray) coloursJSONArray.get(i);
+    
+                ArrayList<Integer> rgbArrayList = new ArrayList<Integer>();
+                for (int j = 0; j < rgbJSONArray.size(); ++j) {
+                    int col = ((Number) rgbJSONArray.get(j)).intValue();
+                    rgbArrayList.add(col);
+                }
+                ConfigLoader.colours.add(rgbArrayList);
             }
-            ConfigLoader.colours.add(rgbArrayList);
         }
 
         String DEBUG = (String) configLoaderJSON.get("DEBUG");

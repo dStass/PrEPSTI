@@ -23,7 +23,7 @@ public class Pharynx extends Site {
     /**
      * Duration of gonorrhoea infection in Pharynx, 12 weeks.
      */
-    static int INFECTION_DURATION = 7 * 12 ; // 12 ;
+    private static int INFECTION_DURATION = 7 * 12 ; // 12 ;
     
     /**
      * Probability of seeking treatment in a given cycle if infected with 
@@ -86,11 +86,11 @@ public class Pharynx extends Site {
     }
 
     @Override
-    protected int getInfectionDuration()
+    public int getInfectionDuration()
     {
         return INFECTION_DURATION ;
     }
-    
+
     @Override
     public void setScreenTime(int time) {
         screenTime = time ;
