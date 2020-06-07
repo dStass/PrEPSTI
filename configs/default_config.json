@@ -1,18 +1,18 @@
 {   
     "paths": {
-        "REBOOT_PATH" : "output/whole1000/",
+        "REBOOT_PATH" : "output/",
         "REPORT_PATH" : "reports/",
         "DATA_PATH" : "data_files/"
     },
 
     "community" : {
         "FILE_PATH" : "output/prep/",
-        "NAME_ROOT" : "to2019hiv2p0corr4D",
+        "NAME_ROOT" : "testhiv2p0corr4D",
         "MAX_CYCLES" : "18",
         "POPULATION" : "40000",
         "COMMENT" : "",
         "DYNAMIC" : "true",
-        "RELOAD_SIMULATION" : "",
+        "RELOAD_SIMULATION" : "oldParams31cPop40000Cycles2920",
         "endYear" : "2019",
         "methods" : {
             "interveneCommunity" : {

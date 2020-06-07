@@ -40,6 +40,7 @@ public class Community {
     static public boolean DYNAMIC ; // Whether parameters change throughout simulation.
     static public String REBOOT_PATH ;
     static public String RELOAD_SIMULATION; // "to2014fix3Choice23aaPop40000Cycles4745" ; // "debugRebootPop20000Cycles1825" ; 
+    static public boolean PLOT_FILE ; // Whether to try and plot figures after a simulation, not on an HPC usually
     
     // hashmap with key = method name, value = hashmap that contains
     // variable names and its literal value as a String
@@ -90,6 +91,11 @@ public class Community {
      * Agents in population who have not yet changed to current yearly parameter settings.
      */
     ArrayList<Agent> unchangedAgents ;
+    /**
+     * Index indicating Agents who have not yet changed to current yearly parameter settings
+     */
+    private int unchangedIndex0 ;
+    private int unchangedIndex1 ;
     
     /** Total number of agents. */
     private int population = POPULATION ;
@@ -421,10 +427,12 @@ public class Community {
 
         // LOGGER.info(MSM.TRANSMISSION_PROBABILITY_REPORT());
 
-        ScreeningPresenter screeningPresenter3 = new ScreeningPresenter(SIM_NAME, "multi prevalence", screeningReporter) ;
-        screeningPresenter3.multiPlotScreening(new Object[] {"prevalence","prevalence", new String[] {"Pharynx","Rectum","Urethra"}}) ;  // ,"coprevalence",new String[] {"Pharynx","Rectum"},new String[] {"Urethra","Rectum"}
-        // screeningPresenter3.plotYearsAtRiskIncidenceReport(new String[] {"Pharynx","Rectum","Urethra"}, 3, 2020, "statusHIV");
-        
+        if (PLOT_FILE)
+        {
+            ScreeningPresenter screeningPresenter3 = new ScreeningPresenter(SIM_NAME, "multi_prevalence", screeningReporter) ;
+            screeningPresenter3.multiPlotScreening(new Object[] {"prevalence","prevalence", new String[] {"Pharynx","Rectum","Urethra"}}) ;  // ,"coprevalence",new String[] {"Pharynx","Rectum"},new String[] {"Urethra","Rectum"}
+            // screeningPresenter3.plotYearsAtRiskIncidenceReport(new String[] {"Pharynx","Rectum","Urethra"}, 3, 2020, "statusHIV");
+        }
         HashMap<Object,Number> finalNotificationsRecord = new HashMap<Object,Number>() ;
         
         for (boolean unique : new boolean[] {})    // false,
@@ -462,10 +470,11 @@ public class Community {
         //HashMap<Comparable,String> incidenceReportPrep = new HashMap<Comparable,String>() ;
         if (DYNAMIC)
         {
-            int startYear = 2020 ; // ConfigLoader.getMethodVariableInteger("community", "interveneCommunity", "startYear");; // = 2015 ; // int startYear = a2015 ;
+            // loading startYear from ConfigLoader
+            int startYear = ConfigLoader.getMethodVariableInteger("community", "interveneCommunity", "startYear") ; // = 2015 ; // int startYear = a2015 ;
 
             // loading endYear from ConfigLoader
-            int endYear = 2025 ; //ConfigLoader.getMethodVariableInteger("community", "main", "endYear");
+            int endYear = ConfigLoader.getMethodVariableInteger("community", "main", "endYear") ;
 
             incidenceReport = screeningReporter.prepareYearsAtRiskIncidenceReport(siteNames, endYear + 1 - startYear, endYear, "statusHIV") ;
             //incidenceReportPrep = screeningReporter.prepareYearsAtRiskIncidenceReport(siteNames, 16, 2022, "prepStatus") ;
@@ -691,19 +700,40 @@ public class Community {
         {
             //report += Agent.REINIT(agents, year) ;
             unchangedAgents = (ArrayList<Agent>) agents.clone() ;
+            unchangedIndex1 = unchangedAgents.size() ;
             //LOGGER.info(String.valueOf(year)) ;
         }
-        else
-            unchangedAgents.retainAll(agents) ;    // Remove dead Agents
+        //else
+          //  unchangedAgents.retainAll(agents) ;    // Remove dead Agents
           
         // Choose Agents to change that day
         ArrayList<Agent> changeAgents = new ArrayList<Agent>() ;
-        if (unchangedAgents.size() >= AGENTS_PER_DAY)
-            changeAgents = new ArrayList<Agent>(unchangedAgents.subList(0, AGENTS_PER_DAY)) ;
-        else    // if (unchangedAgents.size() < AGENTS_PER_DAY)    // Clean the leftovers  
-            changeAgents.addAll(unchangedAgents) ;
-        unchangedAgents.removeAll(changeAgents) ;
+        
+        // How many Agents?
+        int nbChangeAgents = AGENTS_PER_DAY ;
+        
+        if (unchangedIndex1 < AGENTS_PER_DAY)    // Clean the leftovers  
+            nbChangeAgents = unchangedIndex1 ;
+        unchangedIndex0 = unchangedIndex1 - nbChangeAgents ;
+        
+        changeAgents.addAll(unchangedAgents.subList(unchangedIndex0, unchangedIndex1)) ;
 
+        //int changeIndex ;
+        //for (int index = 0 ; index < nbChangeAgents ; index++ )
+        {
+        //	changeIndex = unchangedAgents.size() - 1 - index ; 
+        //    changeAgents.add(unchangedAgents.get(changeIndex)) ;
+        //    unchangedAgents.remove(changeIndex) ;
+        }
+
+//        if (unchangedAgents.size() >= AGENTS_PER_DAY)
+  //          changeAgents = new ArrayList<Agent>(unchangedAgents.subList(0, AGENTS_PER_DAY)) ;
+    //    else    // if (unchangedAgents.size() < AGENTS_PER_DAY)    // Clean the leftovers  
+      //      changeAgents.addAll(unchangedAgents) ;
+        
+        //unchangedAgents.removeAll(changeAgents) ;
+
+        changeAgents.retainAll(agents) ;
         // Make changes
         report += Agent.REINIT(changeAgents, year + 1) ;
         

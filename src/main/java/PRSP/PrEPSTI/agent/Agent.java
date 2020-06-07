@@ -146,9 +146,9 @@ public abstract class Agent {
         {
             // Needs to be called after MSM.REINIT() specifically MSM.REINIT_RISK_ODDS()
             // due to its updating prepStatus.
-            methodName = "screen" ;
-            report += Reporter.ADD_REPORT_PROPERTY(change, methodName) ;
-            report += REINIT_SCREEN_CYCLE(agentList, year) ;
+            //methodName = "screen" ;
+            //report += Reporter.ADD_REPORT_PROPERTY(change, methodName) ;
+            //report += REINIT_SCREEN_CYCLE(agentList, year) ;
 
         }
         catch ( Exception e )
@@ -206,10 +206,11 @@ public abstract class Agent {
         double ratio = testBase/GET_YEAR(TEST_RATES,year) ;
         for (Agent agent : agentList)
         {
-            newScreenCycle = ((MSM) agent).reInitScreenCycle(ratio) ;
-            if (newScreenCycle < 0)
-            	continue ;
-            report += Reporter.ADD_REPORT_PROPERTY(String.valueOf(agent.agentId), agent.screenCycle) ;
+            //newScreenCycle = 
+            ((MSM) agent).reInitScreenCycle(ratio) ;
+            //if (newScreenCycle < 0)
+            //	continue ;
+            //report += Reporter.ADD_REPORT_PROPERTY(String.valueOf(agent.agentId), agent.screenCycle) ;
         }
         return report ;
     }

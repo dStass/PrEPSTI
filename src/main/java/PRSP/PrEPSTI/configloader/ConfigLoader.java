@@ -239,7 +239,11 @@ public class ConfigLoader {
         
         // load variables
         String PLOT_FILE = (String) presenterJSON.get("PLOT_FILE");
-        if (PLOT_FILE != null) Presenter.PLOT_FILE = Boolean.parseBoolean(PLOT_FILE);
+        if (PLOT_FILE != null) 
+        {
+        	Presenter.PLOT_FILE = Boolean.parseBoolean(PLOT_FILE);
+        	Community.PLOT_FILE = Boolean.parseBoolean(PLOT_FILE);
+        }
         
         String FILENAME = (String) presenterJSON.get("FILENAME");
         if (FILENAME != null) Presenter.FILENAME = FILENAME;

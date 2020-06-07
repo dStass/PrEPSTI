@@ -1,15 +1,15 @@
 {   
     "paths": {
-        "REBOOT_PATH" : "output/test/"
+        "REBOOT_PATH" : "output/"
     },
 
     "community" : {
         "FILE_PATH" : "output/prep/",
-        "NAME_ROOT" : "to2019hiv2p0corr4D",
+        "NAME_ROOT" : "testhiv2p0corr4D",
         "COMMENT" : "Disclosure-dependent trustUndetectable with HRC=2.0 .",
         "MAX_CYCLES" : "18",
         "endYear" : "2019",
-        "RELOAD_SIMULATION" : "",
+        "RELOAD_SIMULATION" : "oldParams31cPop40000Cycles2920",
         "methods" : {
             "main" : {
                 "endYear" : "2019"
