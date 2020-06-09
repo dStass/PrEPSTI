@@ -521,6 +521,7 @@ public class Community {
         if (!incidenceReport.isEmpty())
         {
             Reporter.DUMP_OUTPUT("riskyIncidence_HIV",SIM_NAME,FILE_PATH,incidenceReport);
+            LOGGER.info(incidenceReport.toString()) ;
             //Reporter.DUMP_OUTPUT("riskyIncidencePrep",SIM_NAME,FILE_PATH,incidenceReportPrep);
         }
         
