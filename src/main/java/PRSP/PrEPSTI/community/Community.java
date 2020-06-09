@@ -239,10 +239,10 @@ public class Community {
         EncounterReporter encounterReporter = new EncounterReporter() ;
         ScreeningReporter screeningReporter = new ScreeningReporter() ;
         
-        //PopulationPresenter populationPresenter = new PopulationPresenter() ;
-        //RelationshipPresenter relationshipPresenter = new RelationshipPresenter() ;
-        //EncounterPresenter encounterPresenter = new EncounterPresenter() ;
-        //ScreeningPresenter screeningPresenter = new ScreeningPresenter() ;
+        PopulationPresenter populationPresenter = new PopulationPresenter() ;
+        RelationshipPresenter relationshipPresenter = new RelationshipPresenter() ;
+        EncounterPresenter encounterPresenter = new EncounterPresenter() ;
+        ScreeningPresenter screeningPresenter = new ScreeningPresenter() ;
 
         // Record starting time to measure running time
         long startTime = System.nanoTime() ;
@@ -388,7 +388,7 @@ public class Community {
                     community.dump();
                 }
             cycleString = Integer.toString(cycle+1) + "," ;
-            populationRecord = cycleString + community.births(deltaPopulation) ;
+            populationRecord = cycleString + community.births(deltaPopulation, cycle) ;
         }
         // Final dump() or whole dump if no partial dumps
         if (!PARTIAL_DUMP || (((Community.MAX_CYCLES)/DUMP_CYCLE) * DUMP_CYCLE) != Community.MAX_CYCLES )
@@ -493,8 +493,8 @@ public class Community {
         //encounterReporter = new EncounterReporter(Community.SIM_NAME,Community.FILE_PATH) ;
         
         // commented out:
-        // LOGGER.info("by HIV-status " + screeningReporter.prepareFinalAtRiskIncidentsRecord(siteNames, 0, "statusHIV")) ;
-        // LOGGER.info("Incidence " + encounterReporter.prepareFinalIncidenceRecord(new String[] {"Pharynx","Rectum","Urethra"}, 0, 0, 365, MAX_CYCLES).toString());
+        LOGGER.info("by HIV-status " + screeningReporter.prepareFinalAtRiskIncidentsRecord(siteNames, 0, "statusHIV")) ;
+        //LOGGER.info("Incidence " + encounterReporter.prepareFinalIncidenceRecord(new String[] {"Pharynx","Rectum","Urethra"}, 0, 0, 365, MAX_CYCLES).toString());
         // LOGGER.info("Incidence " + encounterReporter.prepareSortedFinalIncidenceRecord(siteNames, 0, 0, 365, MAX_CYCLES, "statusHIV").toString());
 
 
@@ -703,7 +703,8 @@ public class Community {
             unchangedIndex1 = unchangedAgents.size() ;
             //LOGGER.info(String.valueOf(year)) ;
         }
-        //else
+        else
+        	unchangedIndex1 -= AGENTS_PER_DAY ;
           //  unchangedAgents.retainAll(agents) ;    // Remove dead Agents
           
         // Choose Agents to change that day
@@ -899,7 +900,7 @@ public class Community {
         int nbBirths = birthBase ;
         if (RAND.nextDouble() < birthRemainder)
             nbBirths++ ;
-        return births(nbBirths) ;
+        return births(nbBirths,0) ;
     }
 
     /**
@@ -908,13 +909,14 @@ public class Community {
      * @param nbBirths (int) The number of new Agents to be born.
      * @return 
      */
-    private String births(int nbBirths)
+    private String births(int nbBirths, int cycle)
     {
         String record = "birth:" ;
         MSM newAgent ;
         for (int birth = 0 ; birth < nbBirths ; birth++ )
         {
             newAgent = generateAgent(0) ; // MSM.BIRTH_MSM(0) ;
+            newAgent.update(Math.floorDiv(cycle, 365)) ;
             agents.add(newAgent) ;
             record += newAgent.getCensusReport() ;
             //currentPopulation++ ;

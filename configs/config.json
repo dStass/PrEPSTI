@@ -5,7 +5,7 @@
 
     "community" : {
         "FILE_PATH" : "output/prep/",
-        "NAME_ROOT" : "testhiv2p0corr4D",
+        "NAME_ROOT" : "to2019testhiv2p0corr4A",
         "COMMENT" : "Disclosure-dependent trustUndetectable with HRC=2.0 .",
         "MAX_CYCLES" : "18",
         "endYear" : "2019",

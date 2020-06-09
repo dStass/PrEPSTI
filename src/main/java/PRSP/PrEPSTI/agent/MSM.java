@@ -449,6 +449,9 @@ public class MSM extends Agent {
         return report ;
     }
     
+    static double[] NEW_RISKY_CASUAL = new double[] {290,293,369,345,331,340,364,350,362,409,520,566,566} ;
+    static double[] NEW_SAFE_CASUAL = new double[] {468,514,471,501,469,465,444,473,440,424,307,264,264} ;
+    
     /**
      * Resets the probability of Risky vs Safe behaviour within Casual Relationships 
      * according to the year.
@@ -551,6 +554,9 @@ public class MSM extends Agent {
         }
         return report ;
     }
+    
+    static double[] NEW_RISKY_REGULAR = new double[] {568,540,538,604,493,513,503,520,576,557,618,650,685} ;
+    static double[] NEW_SAFE_REGULAR = new double[] {300,300,300,296,279,247,257,248,239,203,157,131,108} ;
     
     /**
      * Resets the probability of Risky vs Safe behaviour within Regular Relationships 
@@ -762,6 +768,100 @@ public class MSM extends Agent {
         return 1.0 - GET_YEAR(proportionAbstain,year) ;
     }
     
+    /**
+     * Brings newly-born Agent parameters up-to-date
+     * @return (boolean) true if successful, false otherwise
+     */
+    @Override
+    public boolean update(int year)
+    {
+    	// DISCLOSE_PROBABILITY
+        if (statusHIV)
+        	setDiscloseStatusHIV(RAND.nextDouble() < GET_YEAR(POSITIVE_DISCLOSE_PROBABILITY,year)) ;
+        else
+        	setDiscloseStatusHIV(RAND.nextDouble() < GET_YEAR(NEGATIVE_DISCLOSE_PROBABILITY,year)) ;
+                
+                
+    	// Undetectable status if HIV positive
+    	double probabilityUndetectable = GET_YEAR(PROPORTION_UNDETECTABLE,year) ;
+    	if (statusHIV)
+                setUndetectableStatus(RAND.nextDouble() < probabilityUndetectable) ;
+    	
+    	// TRUST_UNDETECTABLE
+    	if (year >= 6)
+    	{
+            int trustUndetectableYear = year - 5 ;
+            // Start from year 2012
+            double[] positiveTrustUndetectable = new double[] {0.0,0.483,0.772,
+                0.695, 0.720, 0.757, 0.830, 0.727
+    	    // ,0.830, 0.865, 0.900, 0.935, 0.970, 1.0
+	        } ;
+            double[] negativeTrustUndetectable = new double[] {0.0,0.106,0.094,
+                0.129, 0.154, 0.203, 0.231, 0.194
+                //,0.231, 0.265, 0.300, 0.335, 0.370, 0.405, 0.440
+            } ;
+        
+            double negativeDiscloseProportion = GET_YEAR(NEGATIVE_DISCLOSE_PROBABILITY,year) ;    // year and not trustUndetectableYear
+
+            double trustProbability ; 
+            
+            if (statusHIV)
+            {
+                if (undetectableStatus)    // Only the undetectable trust being undetectable
+                {
+                  trustProbability = GET_YEAR(positiveTrustUndetectable,trustUndetectableYear)/probabilityUndetectable ;
+                  setTrustUndetectable(RAND.nextDouble() < trustProbability);
+                }
+            }
+            else    // msm HIV negative
+            {
+                if (discloseStatusHIV)  // Only those who disclose can know their partner's undetectableStatus
+                {
+                    trustProbability = GET_YEAR(negativeTrustUndetectable,trustUndetectableYear)/negativeDiscloseProportion ;
+                    setTrustUndetectable(RAND.nextDouble() < trustProbability);
+                }
+            }
+            
+            // RISKY_REGULAR
+            double risky = GET_YEAR(NEW_RISKY_REGULAR,year) ;
+            double safe = GET_YEAR(NEW_SAFE_REGULAR,year) ;
+            double total = safe + risky ;
+            double initRisky = GET_YEAR(NEW_RISKY_REGULAR,0) ;
+            double initSafe = GET_YEAR(NEW_SAFE_REGULAR,0) ;
+            double initTotal = initSafe + initRisky ;
+            double riskyProbability = risky/total ;
+            double safeProbability = safe/total ;
+            
+            double hivFactor = GET_HIV_RISKY_CORRELATION(statusHIV) ;
+            if (RAND.nextDouble() < riskyProbability * hivFactor) 
+                riskyStatusRegular = true ;
+            
+            scaleProbabilityUseCondomRegular((safe * initTotal)/(initSafe * total)) ;
+            
+            
+            // RISKY_CASUAL
+            risky = GET_YEAR(NEW_RISKY_CASUAL,year) ;
+            safe = GET_YEAR(NEW_SAFE_CASUAL,year) ;
+            total = safe + risky ;
+            initRisky = GET_YEAR(NEW_RISKY_CASUAL,0) ;
+            initSafe = GET_YEAR(NEW_SAFE_CASUAL,0) ;
+            initTotal = initSafe + initRisky ;
+            riskyProbability = risky/total ;
+            safeProbability = safe/total ;
+            
+            hivFactor = GET_HIV_RISKY_CORRELATION(statusHIV) ;
+            if (RAND.nextDouble() < riskyProbability * hivFactor) 
+                riskyStatusCasual = true ;
+            
+            scaleProbabilityUseCondomCasual((safe * initTotal)/(initSafe * total)) ;
+            
+            if (riskyStatusCasual && (!statusHIV))
+                reinitPrepStatus(year, riskyProbability * hivFactor) ;
+        }
+
+    	return super.update(year) ;
+    }
+
     /**
      * Generate relationships among the availableAgentList. 
      * Serosorting MSM are treated first to ensure that they don't miss out unduly. 
@@ -1253,11 +1353,21 @@ public class MSM extends Agent {
      */
     final void initStatus()
     {
+    	initStatus(0) ;
+    }
+    
+    /**
+     * Initialises status' at construction of MSM. 
+     * Ensures that those MSM who come out during simulation are initially
+     * HIV free (statusHIV == false).
+     */
+    final void initStatus(int year)
+    {
         //requireDiscloseStatusHIV = (rand.nextDouble() < probabilityRequireDiscloseHIV) ;
         statusHIV = (RAND.nextDouble() < getProportionHIV()) ;
 
         // Sets antiViral status, ensuring it is true only if statusHIV is true
-        setUndetectableStatus(RAND.nextDouble() < getProportionUndetectable(0)) ;
+        setUndetectableStatus(RAND.nextDouble() < getProportionUndetectable(year)) ;
 
         // Randomly set PrEP status, ensuring it is true only if statusHIV is false
         // Now called within initRiskiness()
@@ -2184,6 +2294,8 @@ public class MSM extends Agent {
 
     final private double getProportionUndetectable(int index)
     {
+    	if (index >= PROPORTION_UNDETECTABLE.length)
+    		index = PROPORTION_UNDETECTABLE.length - 1 ;
         return PROPORTION_UNDETECTABLE[index] ;
     }
     

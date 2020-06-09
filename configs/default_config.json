@@ -7,7 +7,7 @@
 
     "community" : {
         "FILE_PATH" : "output/prep/",
-        "NAME_ROOT" : "testhiv2p0corr4D",
+        "NAME_ROOT" : "to2019testhiv2p0corr4A",
         "MAX_CYCLES" : "18",
         "POPULATION" : "40000",
         "COMMENT" : "",

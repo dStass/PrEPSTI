@@ -701,6 +701,21 @@ public abstract class Agent {
     {
             age = ageYears * DAYS_PER_YEAR + ageDays ;
     }
+    
+    /**
+     * Brings newly-born Agent parameters up-to-date
+     * @return (boolean) true if successful, false otherwise
+     */
+    public boolean update(int year)
+    {
+    	double testBase = GET_YEAR(TEST_RATES,0) ;
+        
+        double ratio = testBase/GET_YEAR(TEST_RATES,year) ;
+        //newScreenCycle = 
+        initScreenCycle(ratio) ;
+        
+        return true ;
+    }
 
     public ArrayList<Relationship> getCurrentRelationships()
     {
