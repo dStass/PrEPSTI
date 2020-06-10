@@ -160,7 +160,7 @@ public class ConfigLoader {
         if (POPULATION != null) Community.POPULATION = Integer.parseInt(POPULATION);
 
         String COMMENT = (String) communityJSON.get("COMMENT");
-        if (COMMENT != null) Community.COMMENT = COMMENT;
+        if (COMMENT != null) Community.COMMENT = COMMENT + System.lineSeparator() ;
 
         String DYNAMIC = (String) communityJSON.get("DYNAMIC");
         if (DYNAMIC != null) Community.DYNAMIC = Boolean.parseBoolean(DYNAMIC);
@@ -192,9 +192,9 @@ public class ConfigLoader {
         // reboot path for Relationship and Agent
         String rebootPath = (String) pathsJSON.get("REBOOT_PATH");
         if (rebootPath != null) {
-            Relationship.FOLDER_PATH = rebootPath;
-            Agent.FOLDER_PATH = rebootPath;
-            ConfigLoader.REBOOT_PATH = rebootPath;
+            Relationship.FOLDER_PATH = rebootPath ;
+            Agent.FOLDER_PATH = rebootPath ;
+            Community.REBOOT_PATH = rebootPath ;
         }
 
         // report path for Reporter
@@ -255,7 +255,11 @@ public class ConfigLoader {
         
         // load variables
         String PLOT_FILE = (String) presenterJSON.get("PLOT_FILE");
-        if (PLOT_FILE != null) Presenter.PLOT_FILE = Boolean.parseBoolean(PLOT_FILE);
+        if (PLOT_FILE != null) 
+        {
+        	Presenter.PLOT_FILE = Boolean.parseBoolean(PLOT_FILE);
+        	Community.PLOT_FILE = Boolean.parseBoolean(PLOT_FILE);
+        }
         
         String FILENAME = (String) presenterJSON.get("FILENAME");
         if (FILENAME != null) Presenter.FILENAME = FILENAME;

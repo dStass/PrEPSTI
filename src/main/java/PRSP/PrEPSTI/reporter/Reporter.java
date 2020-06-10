@@ -3099,7 +3099,7 @@ public class Reporter {
 
     public Reporter()
     {
-	// Needed to work around HPC access issues.
+	    // Needed to work around HPC access issues.
         reader = new Reader() ;
     }
     

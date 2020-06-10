@@ -1,14 +1,14 @@
 {   
     "paths": {
-        "REBOOT_PATH" : "output/test/",
+        "REBOOT_PATH" : "output/",
         "REPORT_PATH" : "reports/",
         "DATA_PATH" : "data_files/"
     },
 
     "community" : {
-        "FILE_PATH" : "output/",
-        "NAME_ROOT" : "test",
-        "MAX_CYCLES" : "6",
+        "FILE_PATH" : "output/prep/",
+        "NAME_ROOT" : "to2019testhiv2p0corr4A",
+        "MAX_CYCLES" : "18",
         "POPULATION" : "40000",
         "COMMENT" : "",
         "DYNAMIC" : "true",
@@ -17,7 +17,7 @@
         "endYear" : "2025",
         "methods" : {
             "interveneCommunity" : {
-                "startCycle" : "4",
+                "startCycle" : "5",
                 "startYear" : "2007"
             },
             "main" : {
@@ -28,7 +28,7 @@
 
     "msm" : {
         "GROUP_SEX_EVENT_SIZE" : "7",
-        "HIV_RISKY_CORRELATION" : "1.5",
+        "HIV_RISKY_CORRELATION" : "2.0",
         "methods": {
             "reInitScreenCycle" : {
                 "checkPrepStatus" : "true",
@@ -74,3 +74,4 @@
     }
 
 }
+

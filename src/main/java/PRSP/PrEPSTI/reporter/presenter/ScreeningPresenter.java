@@ -71,9 +71,7 @@ public class ScreeningPresenter extends Presenter {
         this.reporter = reporter ;
     }
 
-    // static String[] simNames = new String[] {"REPORT_APop2500Cycles2920", "REPORT_BPop2500Cycles2920", "REPORT_CPop2500Cycles2920", "REPORT_DPop2500Cycles2920", "REPORT_EPop2500Cycles2920", "REPORT_FPop2500Cycles2920"} ; //, "to2017newSort17baPop40000Cycles5110","to2017newSort17caPop40000Cycles5110","to2017newSort17daPop40000Cycles5110","to2017newSort17eaPop40000Cycles5110",
-    static String[] simNames = new String[] {"REPORT_A", "REPORT_B", "REPORT_C", "REPORT_D", "REPORT_E", "REPORT_F", "REPORT_G", "REPORT_H", "REPORT_I", "REPORT_J"};
-    // static String[] simNames = new String[] {"REPORT_A", "REPORT_B", "REPORT_C"};
+    static String[] simNames = new String[] {} ; // "REPORT_APop2500Cycles2920", "REPORT_BPop2500Cycles2920", "REPORT_CPop2500Cycles2920", "REPORT_DPop2500Cycles2920", "REPORT_EPop2500Cycles2920", "REPORT_FPop2500Cycles2920"} ; //, "to2017newSort17baPop40000Cycles5110","to2017newSort17caPop40000Cycles5110","to2017newSort17daPop40000Cycles5110","to2017newSort17eaPop40000Cycles5110",
 
 
     
@@ -89,34 +87,35 @@ public class ScreeningPresenter extends Presenter {
 
         ConfigLoader.load();
         
-        // String prefix = "to2025UeqUto2019oldParams33" ;
-        // String suffix = "Pop40000Cycles2190" ;
+        String prefix = "to2019hiv2p0corrA" ;
+        //String prefix = "to2025UeqUto2019oldParams33" ;
+        String suffix = "Pop40000Cycles6570" ;
         // ArrayList<String> simNameList = new ArrayList<String>() ;
         // String letter0 = "" ;
         // //for (String letter0 : new String[] {"a","b","c","d","e","f","g","h","i","j"})
         //     for (String letter1: new String[] {"Ebi"}) //,"Dbc","Eje","Hji","Jce","Iae","Iad","Cfi","Fjc","Chh","Bci","Dhj","Bhi","Ibe","Keg","Kjc","Kbh","Fag","Jad","Bfd","Idg","Keh","Ggb","Dee","Ghh","Dac","Dgd","Fab","Hdh","Ibg","Fcc","Ghd","Hfa","Fci","Ifd","Gfd","Hje","Eei","Hhb","Aah","Gdh","Bjh","Cbf","Dcg","Ifc","Kej","Ajc","Fii","Hfb","Cdd"} ;
         //         simNameList.add(prefix + letter0 + letter1 + suffix) ;
 
-        // String folderPath = "/scratch/is14/mw7704/prepsti/output/to2025/" ;
+        String folderPath = "/scratch/is14/mw7704/prepsti/output/test/" ;
 
         //         String prefix = "old1p5Params26" ;
         //         //String prefix = "to2019fix23" ;
         //         String suffix = "Pop40000Cycles6570" ;
-        //         ArrayList<String> simNameList = new ArrayList<String>() ;
+        ArrayList<String> simNameList = new ArrayList<String>() ;
         //         simNameList.add("rebootPop20000Cycles1825") ;
-        //         //String letter0 = "" ;
+        String letter0 = "a" ;
         // //        for (String letter0 : new String[] {"a","b","c","d","e","f","g","h","i","j"})
-        // //            for (String letter1 : new String[] {"a","b","c","d","e"})
-        // //                simNameList.add(prefix + letter0 + letter1 + suffix) ;
+        for (String letter1 : new String[] {"f","g","h","i","j"})
+            simNameList.add(prefix + letter0 + letter1 + suffix) ;
         
-        //         simNames = simNameList.toArray(new String[] {}) ;
+        simNames = (String[]) simNameList.toArray(new String[] {}) ;
         
         //String simName = "rebootPop20000Cycles1825" ;
         //String simName = "Qibin1p0aPop40000Cycles1460" ;
         //String simName = "to2017newSort17aaPop40000Cycles5110" ;
         //String simName = "to2012max3sameScreen34cPop40000Cycles4380" ;
         //String simName = "to2014agentAdjust29aPop40000Cycles4920" ;
-        String simName = simNames[0] ;
+        String simName = simNameList.get(0) ;
         
         boolean unique = false ;
         int notifications = 1 ; 
@@ -132,10 +131,10 @@ public class ScreeningPresenter extends Presenter {
         chartTitle += "incidence" ;
         else
         {
-            //chartTitle += "screening rate"
+            chartTitle += "screening rate"
             //chartTitle += "testing rate"
             //chartTitle += "mean_prevalence" 
-            chartTitle += "multi-site prevalence" 
+            //chartTitle += "multi-site prevalence" 
             //chartTitle += "multi-site symptomatic"
             
             + "" ;
@@ -151,10 +150,10 @@ public class ScreeningPresenter extends Presenter {
         //String reportFileName = "output/year2012/" ; // args[2] ;
         //String reportFileName = "output/year2010/" ; // args[2] ;
         //String reportFileName = "output/year2007/" ; // args[2] ;
-        // String reportFileName = folderPath ;  
+        String reportFileName = folderPath ;  
         
         
-        String reportFileName = "output/" ; // args[2] ;
+        //String reportFileName = "output/" ; // args[2] ;
         // reportFileName = "reports/";
         ScreeningPresenter screeningPresenter = new ScreeningPresenter(simName,chartTitle,reportFileName) ;
 
@@ -193,7 +192,7 @@ public class ScreeningPresenter extends Presenter {
         //screeningPresenter.plotIncidencePerCycle(siteNames) ;
         // screeningPresenter.plotFinalAtRiskIncidentsRecord(siteNames,0,"statusHIV") ;
 
-        // screeningPresenter.plotYearsAtRiskIncidenceReport(siteNames, 5, 2019, "statusHIV") ;  // !! line chart here
+        screeningPresenter.plotYearsAtRiskIncidenceReport(siteNames, 13, 2019, "statusHIV") ;  // !! line chart here
 
         // screeningPresenter.plotYearsBeenTestedReport(13, 0, 0, 2019, "statusHIV") ;
         //screeningPresenter.plotNotificationsPerCycle(siteNames) ;
@@ -214,7 +213,7 @@ public class ScreeningPresenter extends Presenter {
         // screeningPresenter.plotSiteProportionSymptomatic(siteNames) ;
 
 
-        screeningPresenter.plotIntervalMeansFromCSVFileNames(testSimNames);
+        //screeningPresenter.plotIntervalMeansFromCSVFileNames(testSimNames);
 
 
         //String methodName = args[3] ;

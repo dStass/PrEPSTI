@@ -66,7 +66,7 @@ abstract public class Site {
     // Initial infection, possibly NoInfection
 	// TODO: Implement Infection class instead of 0,1 infectStatus
     //private Infection infection ;
-    private boolean infectedStatus = false ; 
+    private int infectedStatus = 0 ; 
     
     /** Whether the site has a symptomatic infection. 
      * Cannot be true unless infectedStatus is true.
@@ -125,7 +125,7 @@ abstract public class Site {
     {
         if (RAND.nextDouble() < getInfectedProbability() )
         {
-            infectedStatus = true ;
+            infectedStatus = 1 ;
             infectionTime = RAND.nextInt(getInfectionDuration()) ;
             
             // Initiate infections as asymptomatic
@@ -183,7 +183,7 @@ abstract public class Site {
     {
         if (RAND.nextDouble() < transmitProbability )
         {
-            infectedStatus = true ;
+            infectedStatus = 1 ;
             infectionTime = getInfectionDuration() ;
             
             // Select whether symptomatic an set incubationTime if so.
@@ -271,14 +271,14 @@ abstract public class Site {
 
     public void clearInfection()
     {
-        infectedStatus = false ;
+        infectedStatus = 0 ;
         symptomatic = false ;
         infectionTime = 0 ;
         incubationTime = 0 ;
         //resetScreenTime() ;
     }
 
-    public boolean getInfectedStatus()
+    public int getInfectedStatus()
     {
         return infectedStatus ;
     }
@@ -379,7 +379,7 @@ abstract public class Site {
     public int applyInfectionDuration()
     {
         infectionTime = RAND.nextInt(getInfectionDuration() - 1) + 1 ;
-        infectedStatus = true ;
+        infectedStatus = 1 ;
         return infectionTime ;
     }
     
@@ -435,7 +435,7 @@ abstract public class Site {
         String censusReport = Reporter.ADD_REPORT_PROPERTY("Site",toString()) ;
         //censusReport += Reporter.ADD_REPORT_PROPERTY("screenCycle",getScreenCycle()) ;
         //censusReport += Reporter.ADD_REPORT_PROPERTY("screenTime",getScreenTime()) ;
-        if (infectedStatus)
+        if ((infectedStatus) > 0)
         {
             // Order is important, symptomatic must be before all other infection-related properties.
             censusReport += Reporter.ADD_REPORT_PROPERTY("symptomatic",symptomatic) ;

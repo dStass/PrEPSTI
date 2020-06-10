@@ -154,12 +154,10 @@ public abstract class Agent {
         {
             // Needs to be called after MSM.REINIT() specifically MSM.REINIT_RISK_ODDS()
             // due to its updating prepStatus.
-            methodName = "screen" ;
-            report += Reporter.ADD_REPORT_PROPERTY(change, methodName) ;
-            REINIT_SCREEN_CYCLE(agentList, year) ;
-            //REINIT_NB_RELATIONSHIPS(agentList, year) ;
-            
-            //MSM.REINIT_USE_GSN(agentList, year) ;
+            //methodName = "screen" ;
+            //report += Reporter.ADD_REPORT_PROPERTY(change, methodName) ;
+            //report += REINIT_SCREEN_CYCLE(agentList, year) ;
+
         }
         catch ( Exception e )
         {
@@ -171,6 +169,20 @@ public abstract class Agent {
     }
     
     /**
+     * Allows safe querying of parameter Arrays without explicit checking of the index.
+     * Assumes the parameters will remain constant in years after they are no longer specified.
+     * @param parameterArray
+     * @param year
+     * @return (double) - parameterArray[year] if if exists, otherwise last entry in parameterArray.
+     */
+    static protected double GET_YEAR(double[] parameterArray, int year)
+    {
+    	if (year >= parameterArray.length)
+    		year = parameterArray.length - 1 ;
+    	return parameterArray[year] ;
+    }
+    
+    /**
      * Tests, given by per 1000 per year, from 2007-2018
      * Table 14 ARTB 2018
      */
@@ -178,12 +190,11 @@ public abstract class Agent {
     
     /**
      * Adjusts per year the screening period.
-     * TODO: Implement reporting of changes.
      * @param (ArrayList) List of Agents to be changed.
      * @param (int) year
      * @throws Exception 
      */
-    static private String REINIT_SCREEN_CYCLE(ArrayList<Agent> agentList, int year) throws Exception
+    static protected String REINIT_SCREEN_CYCLE(ArrayList<Agent> agentList, int year) throws Exception
     {
         String report = "" ;
         //double[] testRates = new double[] {333,340,398,382,383,382,391,419,445,499,488,488,488} ;
@@ -191,21 +202,23 @@ public abstract class Agent {
         // 333,340,398,
         
         int newScreenCycle ;
+        String record ;
         
-        if (year >= TEST_RATES.length)
-            year = TEST_RATES.length - 1 ;
+        //if (year >= TEST_RATES.length)
+          //  year = TEST_RATES.length - 1 ;
         
         double testBase ;
         //testBase = testRates[0] ;
-        testBase = TEST_RATES[year-1] ;
+        testBase = GET_YEAR(TEST_RATES,year-1) ;
         
-        double ratio = testBase/TEST_RATES[year] ;
+        double ratio = testBase/GET_YEAR(TEST_RATES,year) ;
         for (Agent agent : agentList)
         {
-            newScreenCycle = (int) Math.ceil(ratio * agent.getScreenCycle()) ;
-            agent.setScreenCycle(newScreenCycle) ;
-        
-            // Do not reinitialise MSM on Prep
+            //newScreenCycle = 
+            ((MSM) agent).reInitScreenCycle(ratio) ;
+            //if (newScreenCycle < 0)
+            //	continue ;
+            //report += Reporter.ADD_REPORT_PROPERTY(String.valueOf(agent.agentId), agent.screenCycle) ;
         }
         return report ;
     }
@@ -248,7 +261,7 @@ public abstract class Agent {
     private boolean available = true ;
 
     /** Whether the Agent is infected with an STI of interest. */
-    private boolean infectedStatus = false ;
+    private int infectedStatus = 0 ;
     /** Whether any Site of the Agent is showing symptoms of the STI.
      * Should be false if infecteStatus is false.
      */
@@ -681,7 +694,10 @@ public abstract class Agent {
             infected = (site.initialiseInfection() || infected)  ;
             setSymptomatic(site) ;
         }
-        setInfectedStatus(infected) ;
+        if (infected)
+            setInfectedStatus(1) ;
+        else
+        	setInfectedStatus(0) ;
     }
     
     /**
@@ -701,6 +717,21 @@ public abstract class Agent {
     public void setAge(int ageYears, int ageDays) 
     {
             age = ageYears * DAYS_PER_YEAR + ageDays ;
+    }
+    
+    /**
+     * Brings newly-born Agent parameters up-to-date
+     * @return (boolean) true if successful, false otherwise
+     */
+    public boolean update(int year)
+    {
+    	double testBase = GET_YEAR(TEST_RATES,0) ;
+        
+        double ratio = testBase/GET_YEAR(TEST_RATES,year) ;
+        //newScreenCycle = 
+        initScreenCycle(ratio) ;
+        
+        return true ;
     }
 
     public ArrayList<Relationship> getCurrentRelationships()
@@ -810,8 +841,13 @@ public abstract class Agent {
      */
     abstract void initScreenCycle(double rescale) ;
     
-    abstract void reInitScreenCycle(double rescale) ;
-    
+    protected int reInitScreenCycle(double rescale)
+    {
+        int newScreenCycle = (int) Math.ceil(rescale * getScreenCycle()) ;
+        setScreenCycle(RAND.nextInt(getScreenCycle()) + 1) ;
+        return screenCycle ;
+    }
+
     protected int sampleGamma(double shape, double scale, double rescale)
     {
         return (int) new GammaDistribution(shape,scale * rescale).sample() ;
@@ -1173,7 +1209,7 @@ public abstract class Agent {
     {
             if (site.receiveInfection(transmitProbability))
             {
-                infectedStatus = true ;
+                infectedStatus = 1 ;
                 setSymptomatic(site) ;
                 return true ;
             }
@@ -1320,12 +1356,12 @@ public abstract class Agent {
             return false ;
         
         for (Site site : sites)
-            if (site.getInfectedStatus())
+            if (site.getInfectedStatus() > 0)
                 site.treat() ;
 //            if ((site.getInfectedStatus()!=0))
 //                successful = (successful && site.treat()) ;
         //if (successful) 
-        infectedStatus = false ;
+        infectedStatus = 0 ;
         clearSymptomatic();
         screenTime = screenCycle ;
         return successful ;
@@ -1340,9 +1376,9 @@ public abstract class Agent {
         Site[] sites = getSites() ;
         boolean successful = true ;
         for (Site site : sites)
-            if (site.getInfectedStatus())
+            if (site.getInfectedStatus() > 0)
                 site.treat() ; //
-        infectedStatus = false ;
+        infectedStatus = 0 ;
         clearSymptomatic();
         screenTime = screenCycle ;
         return successful ;
@@ -1358,7 +1394,7 @@ public abstract class Agent {
         boolean successful = site.treat() ; //
         if (successful)
         {
-            infectedStatus = false ;
+            infectedStatus = 0 ;
             clearSymptomatic();
             screenTime = screenCycle ;
         }
@@ -1379,7 +1415,7 @@ public abstract class Agent {
      */
     public void clearInfection()
     {
-        infectedStatus = false ;
+        infectedStatus = 0 ;
         symptomatic = false ;
         Site[] sites = getSites() ;
         for (Site site : sites)
@@ -1390,7 +1426,7 @@ public abstract class Agent {
      * Getter for infectedStatus
      * @return infectedStatus
      */
-    public boolean getInfectedStatus()
+    public int getInfectedStatus()
     {
         return infectedStatus ;
     }
@@ -1400,7 +1436,7 @@ public abstract class Agent {
      * @param site
      * @return site.infectedStatus
      */
-    public boolean getInfectedStatus(Site site)
+    public int getInfectedStatus(Site site)
     {
         return site.getInfectedStatus() ;
     }
@@ -1410,10 +1446,10 @@ public abstract class Agent {
      * false if infectedStatus is false.
      * @param infected 
      */
-    public void setInfectedStatus(boolean infected)
+    public void setInfectedStatus(int infected)
     {
         infectedStatus = infected ;
-        symptomatic = symptomatic && infectedStatus ;
+        symptomatic = symptomatic && (infectedStatus > 0) ;
     }
     
     /**
@@ -1422,14 +1458,17 @@ public abstract class Agent {
      */
     public void updateInfectedStatus()
     {
-        infectedStatus = false ;
+        infectedStatus = 0 ;
         Site[] sites = getSites() ;
         for (Site site : sites)
-            infectedStatus = (infectedStatus || site.getInfectedStatus()) ;
+            infectedStatus = infectedStatus | site.getInfectedStatus() ;
         symptomatic = false ;
-        if (infectedStatus)
+        if ((infectedStatus) > 0)
+        {
+            infectedStatus = 1 ; 
             for (Site site : sites)
                 symptomatic = (symptomatic || site.getSymptomatic()) ;
+        }
     }
     
     /**
@@ -1442,10 +1481,11 @@ public abstract class Agent {
         Site[] sites = getSites() ;
         boolean stillInfected = false ;
         for (Site site : sites)
-            if (site.getInfectedStatus())
+            if (site.getInfectedStatus() > 0)
                 stillInfected = ((!site.progressInfection()) || stillInfected ) ;
         
-        setInfectedStatus(stillInfected) ;
+        if (!stillInfected)
+            setInfectedStatus(0) ;
         return !stillInfected ;
     }
 

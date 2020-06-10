@@ -34,12 +34,14 @@ import java.util.logging.Level;
 public class Community {
     
     // Default variables
-    static public String FILE_PATH;
-    static public String NAME_ROOT;
-    static public int POPULATION;
-    static public String COMMENT;
-    static public boolean DYNAMIC; // Whether parameters change throughout simulation.
-    static public String RELOAD_SIMULATION; // "to2014fix3Choice23aaPop40000Cycles4745" ; // "debugRebootPop20000Cycles1825" ;
+    static public String FILE_PATH ;
+    static public String NAME_ROOT ;
+    static public int POPULATION ;
+    static public String COMMENT ;
+    static public boolean DYNAMIC ; // Whether parameters change throughout simulation.
+    static public String REBOOT_PATH ;
+    static public String RELOAD_SIMULATION; // "to2014fix3Choice23aaPop40000Cycles4745" ; // "debugRebootPop20000Cycles1825" ; 
+    static public boolean PLOT_FILE ; // Whether to try and plot figures after a simulation, not on an HPC usually
     static public String REBOOT_FROM_CYCLE = "-1";
     
     // hashmap with key = method name, value = hashmap that contains
@@ -91,6 +93,11 @@ public class Community {
      * Agents in population who have not yet changed to current yearly parameter settings.
      */
     ArrayList<Agent> unchangedAgents ;
+    /**
+     * Index indicating Agents who have not yet changed to current yearly parameter settings
+     */
+    private int unchangedIndex0 ;
+    private int unchangedIndex1 ;
     
     /** Total number of agents. */
     private int population = POPULATION ;
@@ -142,10 +149,28 @@ public class Community {
                               + "Cycles" + String.valueOf(Community.MAX_CYCLES);
 
         // handle arguments 
-        switch (args.length) {
+        switch (args.length) 
+        {
             default:
+            case 4:
+                switch (args[3]) 
+                {
+                case "gadi":
+                    //Community.FILE_PATH = "/scratch/is14/mw7704/prepsti/" + Community.FILE_PATH; 
+                    Community.DUMP_CYCLE = 500 ;
+                    break ;
+                case "katana":
+                    //Community.FILE_PATH = "/srv/scratch/z3524276/prepsti/" + Community.FILE_PATH ;
+                    Community.DUMP_CYCLE = 500 ;
+                    break ;
+                default:
+                	if (!args[3].isEmpty())
+                		RELOAD_SIMULATION = args[3] ;
+                    break ;
+                } ;
             case 3:
-                switch (args[2]) {
+                switch (args[2]) 
+                {
                     case "gadi":
                         //Community.FILE_PATH = "/scratch/is14/mw7704/prepsti/" + Community.FILE_PATH; 
                         Community.DUMP_CYCLE = 500 ;
@@ -155,10 +180,12 @@ public class Community {
                         Community.DUMP_CYCLE = 500 ;
                         break ;
                     default:
+                    	if (!args[2].isEmpty())
+                    		RELOAD_SIMULATION = args[2] ;
                         break ;
-                    }
-            case 2:
-                RELOAD_SIMULATION = args[1] + RELOAD_SIMULATION ;
+                } ;
+            case 2: 
+            	Community.FILE_PATH = args[1] ;
             case 1:
                 Community.NAME_ROOT = args[0] ;
             case 0:
@@ -215,6 +242,11 @@ public class Community {
         EncounterReporter encounterReporter = new EncounterReporter() ;
         ScreeningReporter screeningReporter = new ScreeningReporter() ;
         
+        PopulationPresenter populationPresenter = new PopulationPresenter() ;
+        RelationshipPresenter relationshipPresenter = new RelationshipPresenter() ;
+        EncounterPresenter encounterPresenter = new EncounterPresenter() ;
+        ScreeningPresenter screeningPresenter = new ScreeningPresenter() ;
+
         // Record starting time to measure running time
         long startTime = System.nanoTime() ;
         // LOGGER.log(Level.INFO, "Seed:{0}", System.currentTimeMillis());
@@ -359,7 +391,7 @@ public class Community {
                     community.dump();
                 }
             cycleString = Integer.toString(cycle+1) + "," ;
-            populationRecord = cycleString + community.births(deltaPopulation) ;
+            populationRecord = cycleString + community.births(deltaPopulation, cycle) ;
         }
         // Final dump() or whole dump if no partial dumps
         if (!PARTIAL_DUMP || (((Community.MAX_CYCLES)/DUMP_CYCLE) * DUMP_CYCLE) != Community.MAX_CYCLES )
@@ -398,10 +430,12 @@ public class Community {
 
         // LOGGER.info(MSM.TRANSMISSION_PROBABILITY_REPORT());
 
-        ScreeningPresenter screeningPresenter3 = new ScreeningPresenter(SIM_NAME, "multi prevalence", screeningReporter) ;
-        screeningPresenter3.multiPlotScreening(new Object[] {"prevalence","prevalence", new String[] {"Pharynx","Rectum","Urethra"}}) ;  // ,"coprevalence",new String[] {"Pharynx","Rectum"},new String[] {"Urethra","Rectum"}
-        // screeningPresenter3.plotYearsAtRiskIncidenceReport(new String[] {"Pharynx","Rectum","Urethra"}, 3, 2020, "statusHIV");
-        
+        if (PLOT_FILE)
+        {
+            ScreeningPresenter screeningPresenter3 = new ScreeningPresenter(SIM_NAME, "multi_prevalence", screeningReporter) ;
+            screeningPresenter3.multiPlotScreening(new Object[] {"prevalence","prevalence", new String[] {"Pharynx","Rectum","Urethra"}}) ;  // ,"coprevalence",new String[] {"Pharynx","Rectum"},new String[] {"Urethra","Rectum"}
+            // screeningPresenter3.plotYearsAtRiskIncidenceReport(new String[] {"Pharynx","Rectum","Urethra"}, 3, 2020, "statusHIV");
+        }
         HashMap<Object,Number> finalNotificationsRecord = new HashMap<Object,Number>() ;
         
         for (boolean unique : new boolean[] {})    // false,
@@ -439,10 +473,11 @@ public class Community {
         //HashMap<Comparable,String> incidenceReportPrep = new HashMap<Comparable,String>() ;
         if (DYNAMIC)
         {
-            int startYear = 2020 ; // ConfigLoader.getMethodVariableInteger("community", "interveneCommunity", "startYear");; // = 2015 ; // int startYear = a2015 ;
+            // loading startYear from ConfigLoader
+            int startYear = ConfigLoader.getMethodVariableInteger("community", "interveneCommunity", "startYear") ; // = 2015 ; // int startYear = a2015 ;
 
             // loading endYear from ConfigLoader
-            int endYear = 2025 ; //ConfigLoader.getMethodVariableInteger("community", "main", "endYear");
+            int endYear = ConfigLoader.getMethodVariableInteger("community", "main", "endYear") ;
 
             incidenceReport = screeningReporter.prepareYearsAtRiskIncidenceReport(siteNames, endYear + 1 - startYear, endYear, "statusHIV") ;
             //incidenceReportPrep = screeningReporter.prepareYearsAtRiskIncidenceReport(siteNames, 16, 2022, "prepStatus") ;
@@ -461,8 +496,8 @@ public class Community {
         //encounterReporter = new EncounterReporter(Community.SIM_NAME,Community.FILE_PATH) ;
         
         // commented out:
-        // LOGGER.info("by HIV-status " + screeningReporter.prepareFinalAtRiskIncidentsRecord(siteNames, 0, "statusHIV")) ;
-        // LOGGER.info("Incidence " + encounterReporter.prepareFinalIncidenceRecord(new String[] {"Pharynx","Rectum","Urethra"}, 0, 0, 365, MAX_CYCLES).toString());
+        LOGGER.info("by HIV-status " + screeningReporter.prepareFinalAtRiskIncidentsRecord(siteNames, 0, "statusHIV")) ;
+        //LOGGER.info("Incidence " + encounterReporter.prepareFinalIncidenceRecord(new String[] {"Pharynx","Rectum","Urethra"}, 0, 0, 365, MAX_CYCLES).toString());
         // LOGGER.info("Incidence " + encounterReporter.prepareSortedFinalIncidenceRecord(siteNames, 0, 0, 365, MAX_CYCLES, "statusHIV").toString());
 
 
@@ -489,6 +524,7 @@ public class Community {
         if (!incidenceReport.isEmpty())
         {
             Reporter.DUMP_OUTPUT("riskyIncidence_HIV",SIM_NAME,FILE_PATH,incidenceReport);
+            LOGGER.info(incidenceReport.toString()) ;
             //Reporter.DUMP_OUTPUT("riskyIncidencePrep",SIM_NAME,FILE_PATH,incidenceReportPrep);
         }
         
@@ -744,19 +780,41 @@ public class Community {
         {
             //report += Agent.REINIT(agents, year) ;
             unchangedAgents = (ArrayList<Agent>) agents.clone() ;
+            unchangedIndex1 = unchangedAgents.size() ;
             //LOGGER.info(String.valueOf(year)) ;
         }
         else
-            unchangedAgents.retainAll(agents) ;    // Remove dead Agents
+        	unchangedIndex1 -= AGENTS_PER_DAY ;
+          //  unchangedAgents.retainAll(agents) ;    // Remove dead Agents
           
         // Choose Agents to change that day
         ArrayList<Agent> changeAgents = new ArrayList<Agent>() ;
-        if (unchangedAgents.size() >= AGENTS_PER_DAY)
-            changeAgents = new ArrayList<Agent>(unchangedAgents.subList(0, AGENTS_PER_DAY)) ;
-        else    // if (unchangedAgents.size() < AGENTS_PER_DAY)    // Clean the leftovers  
-            changeAgents.addAll(unchangedAgents) ;
-        unchangedAgents.removeAll(changeAgents) ;
+        
+        // How many Agents?
+        int nbChangeAgents = AGENTS_PER_DAY ;
+        
+        if (unchangedIndex1 < AGENTS_PER_DAY)    // Clean the leftovers  
+            nbChangeAgents = unchangedIndex1 ;
+        unchangedIndex0 = unchangedIndex1 - nbChangeAgents ;
+        
+        changeAgents.addAll(unchangedAgents.subList(unchangedIndex0, unchangedIndex1)) ;
 
+        //int changeIndex ;
+        //for (int index = 0 ; index < nbChangeAgents ; index++ )
+        {
+        //	changeIndex = unchangedAgents.size() - 1 - index ; 
+        //    changeAgents.add(unchangedAgents.get(changeIndex)) ;
+        //    unchangedAgents.remove(changeIndex) ;
+        }
+
+//        if (unchangedAgents.size() >= AGENTS_PER_DAY)
+  //          changeAgents = new ArrayList<Agent>(unchangedAgents.subList(0, AGENTS_PER_DAY)) ;
+    //    else    // if (unchangedAgents.size() < AGENTS_PER_DAY)    // Clean the leftovers  
+      //      changeAgents.addAll(unchangedAgents) ;
+        
+        //unchangedAgents.removeAll(changeAgents) ;
+
+        changeAgents.retainAll(agents) ;
         // Make changes
         report += Agent.REINIT(changeAgents, year + 1) ;
         
@@ -922,7 +980,7 @@ public class Community {
         int nbBirths = birthBase ;
         if (RAND.nextDouble() < birthRemainder)
             nbBirths++ ;
-        return births(nbBirths) ;
+        return births(nbBirths,0) ;
     }
 
     /**
@@ -931,13 +989,14 @@ public class Community {
      * @param nbBirths (int) The number of new Agents to be born.
      * @return 
      */
-    private String births(int nbBirths)
+    private String births(int nbBirths, int cycle)
     {
         String record = "birth:" ;
         MSM newAgent ;
         for (int birth = 0 ; birth < nbBirths ; birth++ )
         {
             newAgent = generateAgent(0) ; // MSM.BIRTH_MSM(0) ;
+            newAgent.update(Math.floorDiv(cycle, 365)) ;
             agents.add(newAgent) ;
             record += newAgent.getCensusReport() ;
             //currentPopulation++ ;
@@ -1097,8 +1156,8 @@ public class Community {
     private String progressInfection(Object[] args)
     {
         String record = "" ;
-        boolean infected ;
-        boolean anyInfected = false ;
+        int infected ;
+        int anyInfected = 0 ;
         //long startTime = System.nanoTime() ;
 
         for (Agent agent : agents)
@@ -1107,7 +1166,7 @@ public class Community {
             //LOGGER.log(Level.INFO,"infected:{0}",agent.getAgentId());
             //record += Reporter.ADD_REPORT_PROPERTY("agentId",agent.getAgentId()) ;
             infected = agent.getInfectedStatus();
-            anyInfected = anyInfected || infected ;
+            anyInfected = anyInfected + infected ;
             //record += Reporter.ADD_REPORT_PROPERTY("infected", infected) ;
             
             // Due for an STI screen?
@@ -1115,12 +1174,12 @@ public class Community {
             {
                 record += Reporter.ADD_REPORT_PROPERTY("agentId",agent.getAgentId()) ;
                 record += Reporter.ADD_REPORT_LABEL("tested") ;
-                if (infected)
+                if ((infected) > 0)
                 {
                     //LOGGER.info("screening agentId:"+String.valueOf(agent.getAgentId())) ;
                     for (Site site : agent.getSites())
                     {
-                        if (agent.getInfectedStatus(site))
+                        if (agent.getInfectedStatus(site) > 0)
                             record += Reporter.ADD_REPORT_PROPERTY(site.toString(), agent.getSymptomatic(site)) ;
                     }
                 // boolean tested = ((record.contains("Rectum") || record.contains("Urethra")) || !(RAND.nextDouble() < 0.5)) ;
@@ -1135,12 +1194,12 @@ public class Community {
                     record += "clear" ;
                 record += " " ;
             }
-            else if (infected)
+            else if ((infected) > 0)
             {
                 record += Reporter.ADD_REPORT_PROPERTY("agentId",agent.getAgentId()) ;
                 for (Site site : agent.getSites())
                 {
-                    if (agent.getInfectedStatus(site))
+                    if (agent.getInfectedStatus(site) > 0)
                         record += Reporter.ADD_REPORT_PROPERTY(site.toString(), agent.getSymptomatic(site)) ;
                     //LOGGER.info(site.toString()) ;
                 }
@@ -1178,7 +1237,7 @@ public class Community {
     {
         String agentRecord ;
         String record = "" ;
-        boolean siteInfected ;
+        int siteInfected ;
         boolean treat ;
         //boolean allSites ;
         //ArrayList<Site> untestedSites ;
@@ -1204,7 +1263,7 @@ public class Community {
                 // Due for an STI screen?
                 if (RAND.nextDouble() < site.getScreenProbability(new String[] {Integer.toString(cycle)})) 
                 {
-                    if (siteInfected)
+                    if (siteInfected > 0)
                     {        
                         //LOGGER.info("infected") ;
                         agentRecord += Reporter.ADD_REPORT_PROPERTY(site.toString(), site.getSymptomatic()) ;
@@ -1216,7 +1275,7 @@ public class Community {
                     agentRecord += Reporter.ADD_REPORT_PROPERTY("tested") ;
                     //untestedSites.remove(site) ;
                 }
-                else if (siteInfected)
+                else if (siteInfected > 0)
                 {
                     agentRecord += Reporter.ADD_REPORT_PROPERTY(site.toString(), site.getSymptomatic()) ;
 
@@ -1566,7 +1625,7 @@ public class Community {
                 }
             }
             dumpsSoFar++ ;
-            // LOGGER.log(Level.INFO, "dumpsSoFar:{0} nb_Files:{1} properties:{2}", new Object[] {dumpsSoFar,(new File(globalFolder)).listFiles().length,properties.length});
+            LOGGER.log(Level.INFO, "dumpsSoFar:{0} ", new Object[] {dumpsSoFar}) ; //,(new File(globalFolder)).listFiles().length,properties.length});
         }
         
         /**

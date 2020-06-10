@@ -1,15 +1,27 @@
 {   
+    "paths": {
+        "REBOOT_PATH" : "output/"
+    },
+
     "community" : {
-        "POPULATION" : "5000",
-        "NAME_ROOT" : "RESTART",
-        "MAX_CYCLES" : "3",
-        "RELOAD_SIMULATION" : "SORTED",
-        "REBOOT_FROM_CYCLE" : "1095"
+        "FILE_PATH" : "output/prep/",
+        "NAME_ROOT" : "to2019testhiv2p0corr4A",
+        "COMMENT" : "Disclosure-dependent trustUndetectable with HRC=2.0 .",
+        "MAX_CYCLES" : "18",
+        "endYear" : "2019",
+        "RELOAD_SIMULATION" : "oldParams31cPop40000Cycles2920",
+        "methods" : {
+            "main" : {
+                "endYear" : "2019"
+            },
+    	    "interveneCommunity" : {
+                "startCycle" : "5",
+                "startYear" : "2007"
+            }
     },
 
     "msm" : {
-        "GROUP_SEX_EVENT_SIZE" : "25",
-        "HIV_RISKY_CORRELATION" : "10.5"
+        "HIV_RISKY_CORRELATION" : "2.0"
     },
 
     "reporter" : {
@@ -20,3 +32,4 @@
         "DEBUG" : "true"
     }
 }
+
