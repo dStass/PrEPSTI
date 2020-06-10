@@ -83,6 +83,14 @@ public abstract class Agent {
     {
         return RANDOM_SEED ;
     }
+
+    static public int GET_NEXT_RANDOM_INT(int value) {
+        return RAND.nextInt(value);
+    }
+
+    static public double GET_NEXT_RANDOM_DOUBLE() {
+        return RAND.nextDouble();
+    }
     
     /**
      * Generates seed for random number generator to use upon reboot.

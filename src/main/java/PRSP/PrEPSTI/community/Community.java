@@ -583,6 +583,10 @@ public class Community {
                 PopulationReporter populationReporter = new PopulationReporter(simName, ConfigLoader.REBOOT_PATH);
                 RelationshipReporter relationshipReporter = new RelationshipReporter(simName, ConfigLoader.REBOOT_PATH);
                 ScreeningReporter screeningReporter = new ScreeningReporter(simName, ConfigLoader.REBOOT_PATH);
+                
+                // generate the exact pseudorandom sequence for agent birth days
+                // rebootRandomSeeds(rebootedFolderPath, rebootedSimName) ;
+                // for (int i = 0; i < 4; ++i) Agent.GET_NEXT_RANDOM_DOUBLE();
 
                 int cycleToGenerateReportUpTo = fromCycle;
 

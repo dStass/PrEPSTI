@@ -13,7 +13,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.logging.Level;
 
-
+import PRSP.PrEPSTI.agent.Agent;
 import PRSP.PrEPSTI.configloader.ConfigLoader;
 import PRSP.PrEPSTI.site.Site;
 
@@ -812,6 +812,9 @@ public class PopulationReporter extends Reporter {
         // Census at birth
         HashMap<Object,String> birthReport = prepareCensusPropertyReport() ;
         ArrayList<String> birthReportByCycle = prepareBirthReport(0,0,endCycle,endCycle);
+
+
+
         for (int currentCycle = 0; currentCycle < birthReportByCycle.size(); ++currentCycle) {
             String birthRecord = birthReportByCycle.get(currentCycle);
             birthRecord = birthRecord.substring(6, birthRecord.length()); // removing "birth:" label
@@ -824,7 +827,9 @@ public class PopulationReporter extends Reporter {
                 
                 // update age
                 String extractedAge = birthReportHashMap.get("age");
-                String newAge = String.valueOf(Integer.valueOf(extractedAge) + (endCycle-currentCycle)/ConfigLoader.DAYS_PER_YEAR);
+                // int agentRandBirthDay = Agent.GET_NEXT_RANDOM_INT(ConfigLoader.DAYS_PER_YEAR);
+                int agentRandBirthDay = 0;
+                String newAge = String.valueOf(Integer.valueOf(extractedAge) + (endCycle-currentCycle+agentRandBirthDay)/ConfigLoader.DAYS_PER_YEAR);
                 birthReportHashMap.put("age", newAge);
                 
 
@@ -989,6 +994,8 @@ public class PopulationReporter extends Reporter {
         return String.valueOf(screenTime);
     }
     
+    // public String getAge
+
     /**
      * 
      * @param propertyName
