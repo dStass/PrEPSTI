@@ -33,9 +33,9 @@ public class ConfigLoader {
     public static boolean DEBUG;
 
     // final definitions 
-    private static final String CONFIG_PATH = "configs/";
-    private static final String DEFAULT_JSON_FILE = ConfigLoader.CONFIG_PATH + "default_config.json";
-    private static final String CONFIG_JSON_FILE = ConfigLoader.CONFIG_PATH + "test.json";
+    private static final String PROPERTIES_FILE_PATH = "configs/config.properties";
+    private static String CONFIG_PATH;
+    private static String CONFIG_FILE;
 
     // loaded JSONObjects
     private static JSONObject loadedJSON;
@@ -55,6 +55,8 @@ public class ConfigLoader {
     // some global paths
     public static String REBOOT_PATH;
 
+    // logger
+    static final java.util.logging.Logger LOGGER = java.util.logging.Logger.getLogger("ConfigLoader") ;
 
     /**
      * method to load 
@@ -65,13 +67,62 @@ public class ConfigLoader {
         ConfigLoader.classMethodVariablesHashMap = new HashMap();
         ConfigLoader.colours = new ArrayList<ArrayList<Integer>>();
 
+        ConfigLoader.readProperties();
+
         // load information for this class
-        ConfigLoader.readJSON("default");
+        ConfigLoader.readJSON();
         
         // load information for other classes
         ConfigLoader.loadInformationIntoClasses();
-        ConfigLoader.readJSON("config");
-        ConfigLoader.loadInformationIntoClasses();
+    }
+
+    /*
+     * * * * * * * * * * * * * * * * * * * * *
+     *           PROPERTIES LOADING          *
+     * * * * * * * * * * * * * * * * * * * * *
+     */
+
+    
+    /**
+     * Method used to read config.properties file
+     * @author dstass
+     */
+    private static void readProperties() {
+        String SPLIT_ON = "=";
+        HashMap<String, String> readProperties = new HashMap<String, String>();
+        BufferedReader reader;
+        try {
+            reader = new BufferedReader(new FileReader(ConfigLoader.PROPERTIES_FILE_PATH));
+            String line = reader.readLine();
+            while (line != null) {
+                // extract and split each line about '=' symbol
+                String[] lineSplit = line.split(SPLIT_ON);
+
+                // extract key/value pair and add to our hashmap
+                String lineKey = lineSplit[0];
+                String lineVal = lineSplit[1];
+                readProperties.put(lineKey, lineVal);
+
+                // next line
+                line = reader.readLine();
+            }
+        } catch (IOException e) {
+            LOGGER.severe(e.toString());
+        }
+
+        // save information to CONFIG_PATH and CONFIG_FILE
+        for (String key : readProperties.keySet()) {
+            switch (key) {
+                case "filepath":
+                    ConfigLoader.CONFIG_PATH = readProperties.get(key);
+                    break;
+                case "filename":
+                    ConfigLoader.CONFIG_FILE = readProperties.get(key);
+                    break;
+                default: break;
+            }
+        }
+
     }
 
 
@@ -86,14 +137,9 @@ public class ConfigLoader {
      * 
      * @param configType - takes in "config" or "default" to load file
      */
-    private static void readJSON(String configType) {
+    private static void readJSON() {
         
-        String configString = "";
-        if (configType == "default") {
-            configString = ConfigLoader.DEFAULT_JSON_FILE;
-        } else if (configType == "config") {
-            configString = ConfigLoader.CONFIG_JSON_FILE;
-        }
+        String configString = ConfigLoader.CONFIG_PATH + ConfigLoader.CONFIG_FILE;
 
         try {
             Object obj = new JSONParser().parse(new FileReader(configString));
