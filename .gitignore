@@ -19,6 +19,7 @@
 /reports/*.csv
 /configs/gadi_default_config.json
 .DS_Store
+/configs/*.json
 
 # exceptions
 !output/.gitkeep
