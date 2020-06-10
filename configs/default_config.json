@@ -6,7 +6,7 @@
     },
 
     "community" : {
-        "FILE_PATH" : "output/prep/",
+        "FILE_PATH" : "output/",
         "NAME_ROOT" : "to2019testhiv2p0corr4A",
         "MAX_CYCLES" : "18",
         "POPULATION" : "40000",
@@ -45,7 +45,7 @@
     },
 
     "presenter" : {
-        "PLOT_FILE" : "false",
+        "PLOT_FILE" : "true",
         "FILE_NAME" : "gonoGoneWild",
         "DATA_SCORE" : [
             "overall_gone_wild",

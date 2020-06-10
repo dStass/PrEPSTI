@@ -35,7 +35,7 @@ public class ConfigLoader {
     // final definitions 
     private static final String CONFIG_PATH = "configs/";
     private static final String DEFAULT_JSON_FILE = ConfigLoader.CONFIG_PATH + "default_config.json";
-    private static final String CONFIG_JSON_FILE = ConfigLoader.CONFIG_PATH + "config.json";
+    private static final String CONFIG_JSON_FILE = ConfigLoader.CONFIG_PATH + "test.json";
 
     // loaded JSONObjects
     private static JSONObject loadedJSON;
@@ -195,6 +195,7 @@ public class ConfigLoader {
             Relationship.FOLDER_PATH = rebootPath ;
             Agent.FOLDER_PATH = rebootPath ;
             Community.REBOOT_PATH = rebootPath ;
+            ConfigLoader.REBOOT_PATH = rebootPath;
         }
 
         // report path for Reporter
