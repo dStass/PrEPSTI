@@ -814,12 +814,15 @@ public class PopulationReporter extends Reporter {
         ArrayList<String> birthReportByCycle = prepareBirthReport(0,0,endCycle,endCycle);
 
 
-
+        int originalPopulation = 0;
         for (int currentCycle = 0; currentCycle < birthReportByCycle.size(); ++currentCycle) {
             String birthRecord = birthReportByCycle.get(currentCycle);
             birthRecord = birthRecord.substring(6, birthRecord.length()); // removing "birth:" label
 
             HashMap<String, String> agentReport = SPLIT_RECORD_BY_PROPERTY(AGENTID, birthRecord);
+
+            // extract the size of the original population
+            // if (currentCycle == 0) originalPopulation = agentReport.size();
             for (String agentId : agentReport.keySet()) {
                 if (agentId.length() == 0) continue;
                 HashMap<String, String> birthReportHashMap = STRING_TO_HASHMAP(agentReport.get(agentId));
@@ -827,8 +830,8 @@ public class PopulationReporter extends Reporter {
                 
                 // update age
                 String extractedAge = birthReportHashMap.get("age");
-                // int agentRandBirthDay = Agent.GET_NEXT_RANDOM_INT(ConfigLoader.DAYS_PER_YEAR);
                 int agentRandBirthDay = 0;
+                // if (Integer.valueOf(agentId) > originalPopulation) agentRandBirthDay = Agent.GET_NEXT_RANDOM_INT(ConfigLoader.DAYS_PER_YEAR);
                 String newAge = String.valueOf(Integer.valueOf(extractedAge) + (endCycle-currentCycle+agentRandBirthDay)/ConfigLoader.DAYS_PER_YEAR);
                 birthReportHashMap.put("age", newAge);
                 
