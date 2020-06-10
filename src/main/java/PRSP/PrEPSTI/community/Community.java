@@ -583,7 +583,6 @@ public class Community {
                 PopulationReporter populationReporter = new PopulationReporter(simName, ConfigLoader.REBOOT_PATH);
                 RelationshipReporter relationshipReporter = new RelationshipReporter(simName, ConfigLoader.REBOOT_PATH);
                 ScreeningReporter screeningReporter = new ScreeningReporter(simName, ConfigLoader.REBOOT_PATH);
-                EncounterReporter encounterReporter = new EncounterReporter(simName, ConfigLoader.REBOOT_PATH);
 
                 int cycleToGenerateReportUpTo = fromCycle;
 
@@ -597,7 +596,7 @@ public class Community {
                  * * * * * * * * * */
 
                 // generate our reboot census
-                HashMap<Integer, String> populationCensusUpToCycle = populationReporter.prepareCensusReport(cycleToGenerateReportUpTo, screeningReporter, encounterReporter);
+                HashMap<Integer, String> populationCensusUpToCycle = populationReporter.prepareCensusReport(cycleToGenerateReportUpTo, screeningReporter);
                 
 
                 // extract agent census data and write to internal metadata
@@ -609,7 +608,7 @@ public class Community {
                 metaLabels.add("Agents") ;
                 String agentsReboot = "" ;
                 for (Integer agentId : sortedAgentKeySet) {
-                    String newAgentRecord = "agentId:" + String.valueOf(agentId) + ' ' + populationCensusUpToCycle.get(agentId);
+                    String newAgentRecord = populationCensusUpToCycle.get(agentId);
                     agentsReboot += newAgentRecord;
                 }
                 metaData.add(agentsReboot) ;
