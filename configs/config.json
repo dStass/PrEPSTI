@@ -18,6 +18,7 @@
                 "startCycle" : "5",
                 "startYear" : "2007"
             }
+        }
     },
 
     "msm" : {
@@ -32,4 +33,3 @@
         "DEBUG" : "true"
     }
 }
-
