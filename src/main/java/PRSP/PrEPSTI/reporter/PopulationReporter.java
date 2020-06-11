@@ -5,11 +5,17 @@
  */
 package PRSP.PrEPSTI.reporter;
 
-import java.util.ArrayList ;
-import java.util.HashSet ;
-import java.util.Collections ;
-import java.util.HashMap ;
-import java.util.logging.Level ;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.logging.Level;
+
+import PRSP.PrEPSTI.agent.Agent;
+import PRSP.PrEPSTI.configloader.ConfigLoader;
+import PRSP.PrEPSTI.site.Site;
 
 
 /**
@@ -739,7 +745,7 @@ public class PopulationReporter extends Reporter {
         HashMap<Object,String> censusPropertyReport = new HashMap<Object,String>() ;
         
         ArrayList<String>  birthReport = prepareBirthReport() ;
-        
+
         for (String birthRecord : birthReport)
         {
             ArrayList<String> birthArray = EXTRACT_ARRAYLIST(birthRecord,AGENTID) ;
@@ -784,7 +790,215 @@ public class PopulationReporter extends Reporter {
         }
         return censusPropertyReport ;
     }
+
+
+    /**
+     * Returns a census report based on agent id up to a particular cycle
+     * Receives a screeningReport and encounterReport to 
+     * @param endCycle
+     * @param screeningReporter
+     * @return
+     */
+    public HashMap<Integer, String> prepareCensusReport(int endCycle, ScreeningReporter screeningReporter)     {
+        HashMap<String, HashMap<String, String>> rawReport = new HashMap<String, HashMap<String, String>>();
+        // screening reporter:
+        HashMap<Comparable, ArrayList<Comparable>> testingReport
+            = screeningReporter.prepareAgentTestingReport(0, 0, endCycle, endCycle);
+
+        HashMap<Object,HashMap<Comparable,ArrayList<Comparable>>> agentTreatedReport
+            = screeningReporter.prepareAgentTreatedReport(Site.getAvailableSites(), 0, 0, endCycle, endCycle);
+
+            
+        // Census at birth
+        HashMap<Object,String> birthReport = prepareCensusPropertyReport() ;
+        ArrayList<String> birthReportByCycle = prepareBirthReport(0,0,endCycle,endCycle);
+
+
+        int originalPopulation = 0;
+        for (int currentCycle = 0; currentCycle < birthReportByCycle.size(); ++currentCycle) {
+            String birthRecord = birthReportByCycle.get(currentCycle);
+            birthRecord = birthRecord.substring(6, birthRecord.length()); // removing "birth:" label
+
+            HashMap<String, String> agentReport = SPLIT_RECORD_BY_PROPERTY(AGENTID, birthRecord);
+
+            // extract the size of the original population
+            // if (currentCycle == 0) originalPopulation = agentReport.size();
+            for (String agentId : agentReport.keySet()) {
+                if (agentId.length() == 0) continue;
+                HashMap<String, String> birthReportHashMap = STRING_TO_HASHMAP(agentReport.get(agentId));
+                int screenCycle = Integer.parseInt(birthReportHashMap.get("screenCycle"));
+                
+                // update age
+                String extractedAge = birthReportHashMap.get("age");
+                int agentRandBirthDay = 0;
+                // if (Integer.valueOf(agentId) > originalPopulation) agentRandBirthDay = Agent.GET_NEXT_RANDOM_INT(ConfigLoader.DAYS_PER_YEAR);
+                String newAge = String.valueOf(Integer.valueOf(extractedAge) + (endCycle-currentCycle+agentRandBirthDay)/ConfigLoader.DAYS_PER_YEAR);
+                birthReportHashMap.put("age", newAge);
+                
+
+                // updateScreenTime
+                String screenTime = getScreenTime(agentId, endCycle, screenCycle, testingReport, agentTreatedReport);
+                
+                // if no screenTime exists, screenTime is the number between the agent's birth cycle and end cycle
+                if (screenTime.length() == 0) {
+                    Integer originalScreenTime = Integer.valueOf(birthReportHashMap.get("screenTime"));
+                    screenTime = String.valueOf(originalScreenTime - (endCycle - currentCycle));
+                }
+                birthReportHashMap.put("screenTime", screenTime);
+                rawReport.put(agentId, birthReportHashMap);     
+            }
+            
+        }
+        
+        // Agent death report
+        ArrayList<Comparable> deathReport = prepareAgentsDeadRecord(endCycle);
+        
+        // Add all agents and remove dead agents
+        HashSet<String> agentIdSet = new HashSet<String>() ;
+        Collections.addAll(agentIdSet, birthReport.keySet().toArray(new String[0])) ;
+        
+        for (Comparable agentIdComparable : deathReport) {
+            String agentIdString = (String) agentIdComparable;
+            if (rawReport.containsKey(agentIdString))
+            rawReport.remove(agentIdString);
+        }
+        HashMap<String, String> siteReport = screeningReporter.prepareAgentSiteReport(endCycle, agentIdSet);
+            
+        String properties[] = {
+            "agentId",
+            "agent",
+            "age",
+            "concurrency",
+            "infidelity",
+            "probabilityUseCondom",
+            "probabilityUseCondomCasual",
+            "probabilityUseCondomRegular",
+            "screenCycle",
+            "screenTime",
+            "prepStatus",
+            "statusHIV",
+            "discloseStatusHIV",
+            "seroSortCasual",
+            "seroSortRegular",
+            "seroSortMonogomous",
+            "seroPosition",
+            "riskyStatus",
+            "riskyStatusCasual",
+            "riskyStatusRegular",
+            "probabilityUseCondom",
+            "probabilityUseCondomCasual",
+            "probabilityUseCondomRegular",
+            "undetectableStatus",
+            "trustUndetectable",
+            "trustPrep",
+            "consentCasualProbability"
+        };
+
+        for (String property : properties) {
+            ArrayList<String> changeReport = prepareChangeReport(property, endCycle) ;
+            
+            // changeReport.size() is zero if no changes are made
+            for (int index = changeReport.size() - 1 ; index >= 0 ; index-- )
+            {
+                String changeRecord = changeReport.get(index) ;
+                ArrayList<String> changeAgentIds = IDENTIFY_PROPERTIES(changeRecord) ;
+                changeAgentIds.retainAll(agentIdSet) ;
+                
+                for (String agentId : changeAgentIds)
+                {
+                    int agentIndex = INDEX_OF_PROPERTY(agentId.toString(),changeRecord) ;
+                    int colonIndex = changeRecord.indexOf(":",agentIndex) ;
+                    int nextColonIndex = changeRecord.indexOf(":",colonIndex + 1) ;
+                    int spaceIndex = changeRecord.lastIndexOf(SPACE, nextColonIndex) ;
+                    if (spaceIndex < 0) spaceIndex = changeRecord.length() ;
+                    String value = changeRecord.substring(colonIndex + 1, spaceIndex) ;
+                    
+                    // map changes
+                    if (value.startsWith("{"))
+                    {
+                        value = value.replace("=", ":") ;
+                        value = value.substring(0, value.length() - 1) ;
+                    }
+                    
+                    rawReport.get(agentId).put(property, value) ;
+                    agentIdSet.remove(agentId) ;
+                }
+                if (agentIdSet.isEmpty())
+                break ;
+            }
+        }
+
+        HashMap<Integer,String> censusPropertyReport = new HashMap<Integer,String>() ;
+        for (String agentId : rawReport.keySet()) {
+            String value = HASHMAP_TO_STRING(rawReport.get(agentId), properties);
+            value += " " + siteReport.get(agentId);
+            censusPropertyReport.put(Integer.valueOf(agentId), value);
+        }
+
+        return censusPropertyReport ;
+    }
+
+    /**
+     * Given an agentId, deduce the last cycle they were either screened or treated
+     * calculate and return the screenTime value
+     * 
+     * @param agentId
+     * @param endCycle
+     * @param screenCycle
+     * @param testingReport
+     * @param agentTreatedReport
+     * @return a string with the deduced screenTime, or an empty string if this cannot be done
+     * @author dstass
+     */
+    private String getScreenTime(   String agentId,
+                                    int endCycle,
+                                    int screenCycle,
+                                    HashMap<Comparable, ArrayList<Comparable>> testingReport,
+                                    HashMap<Object,HashMap<Comparable,ArrayList<Comparable>>> agentTreatedReport)
+    {
+        String screenTimeStr = "";
+        ArrayList<String> sites = new ArrayList<String> (Arrays.asList(Site.getAvailableSites()));
+        sites.add("all");
     
+        Comparable agentIdComparable = (Comparable) agentId;
+        ArrayList<Integer> lastTestCandidates = new ArrayList<Integer>();
+        // if agent exists in testingReport
+        if (testingReport.containsKey(agentIdComparable)) {
+            ArrayList<Comparable> testHistoryComparables = testingReport.get(agentIdComparable);
+            if (testHistoryComparables.size() > 0) {
+                String lastTestString = String.valueOf(testHistoryComparables.get(testHistoryComparables.size() - 1));
+                int lastTest = Integer.parseInt(lastTestString);
+                lastTestCandidates.add(lastTest);
+            }
+        }
+
+        // treated report
+        for (String site : sites) {
+            Object siteKeyObject = (Object) site;
+            
+            HashMap<Comparable,ArrayList<Comparable>> siteTreatedReport = agentTreatedReport.get(siteKeyObject);
+            if (siteTreatedReport.containsKey(agentIdComparable)) {
+                ArrayList<Comparable> dayTreatedComparables = siteTreatedReport.get(agentIdComparable);
+                if (dayTreatedComparables.size() > 0) {
+                    String lastTestString = String.valueOf(dayTreatedComparables.get(dayTreatedComparables.size() - 1));
+                    int lastTest = Integer.parseInt(lastTestString);
+                    lastTestCandidates.add(lastTest);
+                }
+            }
+        }
+        
+        // return empty string if agent has not been treated nor screened
+        if (lastTestCandidates.size() == 0) return screenTimeStr;
+
+        // return the last screened or treated cycle (the largest value)
+        Collections.sort(lastTestCandidates);
+        int daysFromLastTest = endCycle - lastTestCandidates.get(lastTestCandidates.size() - 1);
+        int screenTime = screenCycle - daysFromLastTest + 1;
+        return String.valueOf(screenTime);
+    }
+    
+    // public String getAge
+
     /**
      * 
      * @param propertyName
@@ -796,7 +1010,7 @@ public class PopulationReporter extends Reporter {
         HashMap<String,String> censusPropertyReport = new HashMap<String,String>() ;
         
         // Census at birth
-        HashMap<String,String>  birthReport = prepareCensusPropertyReport(propertyName) ;
+        HashMap<String,String> birthReport = prepareCensusPropertyReport(propertyName) ;
         HashSet<String> agentIdSet = new HashSet<String>() ;
         Collections.addAll(agentIdSet, birthReport.keySet().toArray(new String[0])) ;
         //LOGGER.info(agentIdSet.toString());
@@ -804,6 +1018,8 @@ public class PopulationReporter extends Reporter {
         //LOGGER.info(changeReport.toString());
     
         // changeReport.size() is zero if no changes are made
+        // TODO: parallelise: add threads here
+        // generating hashmap - ordering doesn't matter
         for (int index = changeReport.size() - 1 ; index >= 0 ; index-- )
         {
             String changeRecord = changeReport.get(index) ;
@@ -811,6 +1027,7 @@ public class PopulationReporter extends Reporter {
             //LOGGER.info(changeAgentIds.toString()) ;
             changeAgentIds.retainAll(agentIdSet) ;
             
+            // TODO: add threads here too?
             for (String agentId : changeAgentIds)
             {
                 int agentIndex = INDEX_OF_PROPERTY(agentId.toString(),changeRecord) ;

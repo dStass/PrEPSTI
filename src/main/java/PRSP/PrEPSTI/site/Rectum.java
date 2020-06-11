@@ -22,7 +22,7 @@ public class Rectum extends Site {
     /**
      * Duration of gonorrhoea infection in rectum.
      */
-    static int INFECTION_DURATION = 274 ; // 365 ; // 183
+    private static int INFECTION_DURATION = 274 ; // 365 ; // 183
     
     /**
      * Probability of seeking treatment in a given cycle if infected with 
@@ -113,7 +113,7 @@ public class Rectum extends Site {
 
     
     @Override
-    protected int getInfectionDuration()
+    public int getInfectionDuration()
     {
         return INFECTION_DURATION ;
     }

@@ -25,7 +25,7 @@ public class Urethra extends Site {
      * Proper value unknown as almost always treated. 
      * Value for Rectum taken.
      */
-    static int INFECTION_DURATION = 84 ; //  Matched to Pharynx // 183 ;
+    private static int INFECTION_DURATION = 84 ; //  Matched to Pharynx // 183 ;
     
     
     /** Days between asymptomatic STI screens . */
@@ -73,7 +73,7 @@ public class Urethra extends Site {
      * @return Probability of site being infected initially.
      */
     @Override
-    protected double getInfectedProbability()
+    public double getInfectedProbability()
     {
         return INITIAL ;
     }
@@ -90,7 +90,7 @@ public class Urethra extends Site {
 
     
     @Override
-    protected int getInfectionDuration()
+    public int getInfectionDuration()
     {
         return INFECTION_DURATION ;
     }

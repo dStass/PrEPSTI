@@ -234,13 +234,22 @@ public class Relationship {
      * Restores from saved simulation the Relationships among all Agents.
      * @param simName
      * @param agents
+     * @return
+     */
+    static public int REBOOT_RELATIONSHIPS(String simName, ArrayList<Agent> agents) {
+        return REBOOT_RELATIONSHIPS(FOLDER_PATH, simName, agents);
+    }
+
+
+    /**
+     * Restores from saved simulation the Relationships among all Agents.
+     * @param simName
+     * @param agents
      * @return 
      */
-    static public int REBOOT_RELATIONSHIPS(String simName, ArrayList<Agent> agents)
+    static public int REBOOT_RELATIONSHIPS(String folderPath, String simName, ArrayList<Agent> agents)
     {
-        NB_RELATIONSHIPS = 0 ;
-        String folderPath = FOLDER_PATH ;
-        
+        NB_RELATIONSHIPS = 0 ;        
         String relationshipRecord  = "" ;
         Integer relationshipId ;
         ArrayList<Integer> currentRelationshipIds = new ArrayList<Integer>() ;

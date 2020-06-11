@@ -6,11 +6,15 @@
 package PRSP.PrEPSTI.reporter;
 
 import PRSP.PrEPSTI.agent.MSM;
-import PRSP.PrEPSTI.community.Community ;
+import PRSP.PrEPSTI.community.Community;
+import PRSP.PrEPSTI.site.Pharynx;
+import PRSP.PrEPSTI.site.Rectum;
 /**
  *
  * @author MichaelWalker
  */
+import PRSP.PrEPSTI.site.Site;
+import PRSP.PrEPSTI.site.Urethra;
 
 import java.io.* ;
 import java.util.ArrayList ;
@@ -21,6 +25,8 @@ import java.util.HashSet ;
 import java.util.Collections ;
 import java.util.HashMap;
 import java.util.logging.Level;
+
+import java.lang.reflect.* ;
 
 
 public class ScreeningReporter extends Reporter {
@@ -2001,6 +2007,144 @@ public class ScreeningReporter extends Reporter {
                 notificationsReport.add(output) ;
             }
         return notificationsReport ;
+    }
+
+    /**
+     * Prepare a report consisting of all agents id as key
+     * this maps to a HashMap containing the three sites Rectum, Urethra, Pharynx
+     * each site will contain its record status
+     * @param endCycle
+     * @return
+     */
+    public HashMap<String, HashMap<String, String>> prepareRawAgentSiteReport(int endCycle, HashSet<String> agentIdSet) {
+        String[] siteNames = Site.getAvailableSites();
+
+        ArrayList<String> screeningBackCycles = this.getBackCyclesReport(0, 0, 1, endCycle);
+        
+        // extract site data
+        String lastCycle = screeningBackCycles.get(screeningBackCycles.size() - 1);
+        HashMap<String, String> lastCycleHashMap = SPLIT_RECORD_BY_PROPERTY("agentId", lastCycle);        
+        HashMap<String, String> infectiousAgentsHashMap = new HashMap<String, String>();
+        for (String agentId : lastCycleHashMap.keySet()) {
+            if (lastCycleHashMap.get(agentId).contains("tested:clear")) continue;
+            infectiousAgentsHashMap.put(agentId, lastCycleHashMap.get(agentId));
+        }
+        
+        HashMap<String, HashMap<String, String>> returnReport = new HashMap<String, HashMap<String, String>> ();
+        
+        // populate report with empty strings - all sites for all agents clear
+        for (String agentId : agentIdSet) {
+            HashMap<String, String> siteHashMap = new HashMap<String, String>();
+            for (String site : siteNames) siteHashMap.put(site, "");
+            returnReport.put(agentId, siteHashMap);
+        }
+
+        // modify internal hashmap with infectious agents
+        for (String agentId : infectiousAgentsHashMap.keySet()) {
+            String agentInfectiousRecord = infectiousAgentsHashMap.get(agentId);
+            for (String site : siteNames) {
+                // if the site is infectious
+                if (agentInfectiousRecord.contains(site)) {
+
+                    // extract correct values
+                    String symptomatic = EXTRACT_VALUE(site, agentInfectiousRecord);
+                    String[] infectionAndIncubation = extractInfectionAndIncubationTimeFromBackCycles(agentId, site, symptomatic, endCycle);  // TODO backcycles
+                    String infectionTime = infectionAndIncubation[0];
+                    String incubationTime = infectionAndIncubation[1]; // TODO work out incubation time
+
+                    // build the new record
+                    String newSiteRecord = Reporter.ADD_REPORT_PROPERTY("symptomatic", symptomatic) ;
+                    newSiteRecord += Reporter.ADD_REPORT_PROPERTY("infectionTime", infectionTime);
+                    newSiteRecord += Reporter.ADD_REPORT_PROPERTY("incubationTime", incubationTime);
+                    newSiteRecord = newSiteRecord.substring(0, newSiteRecord.length() - 1);
+                    
+                    // replace with the new record
+                    returnReport.get(agentId).put(site, newSiteRecord);
+                }
+            }
+        }
+        
+        return returnReport;
+    }
+
+    /**
+     * loop backwards over screen report back cycles to extract infectionTime and incubationTime
+     * @param screeningBackCycles
+     * @param agentId
+     * @param site
+     * @param symptomatic
+     * @return
+     */
+    private String[] extractInfectionAndIncubationTimeFromBackCycles(String agentId, String site, String symptomatic, int endCycle) {
+        ArrayList<String> screeningBackCycles = this.getBackCyclesReport(0, 0, endCycle, endCycle);
+
+        int foundCycle = screeningBackCycles.size() - 1;
+        for (int i = screeningBackCycles.size() - 1; i >= 0; --i) {
+            foundCycle -= 1;
+            String screenCycleRecord = screeningBackCycles.get(i);
+            HashMap<String, String> screenedAgents = SPLIT_RECORD_BY_PROPERTY(AGENTID, screenCycleRecord);
+
+            // if agent is not screened or when screened, the given site is non-infectious, the agent is cleared
+            if (!screenedAgents.containsKey(agentId) || !screenedAgents.get(agentId).contains(site)) break;
+        }
+        foundCycle += 1;
+        int infectionDuration = 0;
+        int incubationDuration = 0;
+
+        switch (site) {
+            case "Pharynx":
+                Pharynx pharynx = new Pharynx();
+                infectionDuration = pharynx.getInfectionDuration();
+                incubationDuration = pharynx.chooseIncubationTime();
+                break;
+            case "Rectum":
+                Rectum rectum = new Rectum();
+                infectionDuration = rectum.getInfectionDuration();
+                incubationDuration = rectum.chooseIncubationTime();
+                break;
+            case "Urethra":
+                Urethra urethra = new Urethra();
+                infectionDuration = urethra.getInfectionDuration();
+                incubationDuration = urethra.chooseIncubationTime();
+                break;
+        }
+
+        // infectionDuration = (new Class.forName("PRSP.PrEPSTI.site"+site).getDeclaredConstructor().newInstance()).getInfectionDuration() ;
+
+        int infectionTime = infectionDuration - ((screeningBackCycles.size() - 1) - foundCycle);
+        int incubationTime = Math.max(0, incubationDuration - ((screeningBackCycles.size() - 1) - foundCycle));
+
+        // return
+        String[] infectionAndIncubation = new String[2];
+        infectionAndIncubation[0] = String.valueOf(infectionTime);
+        infectionAndIncubation[1] = String.valueOf(incubationTime);
+        return infectionAndIncubation;
+    }
+
+    /**
+     * Returns a HashMap report where the key = agentId, value = site record for reboot
+     * ending at a given cycle
+     * @param endCycle
+     * @param agentIdSet
+     * @return
+     */
+    public HashMap<String, String> prepareAgentSiteReport(int endCycle, HashSet<String> agentIdSet) {
+        String[] siteNames = Site.getAvailableSites();
+
+        HashMap<String, HashMap<String, String>> rawReport = prepareRawAgentSiteReport(endCycle, agentIdSet);
+
+        HashMap<String, String> returnReport = new HashMap<String, String>();
+        for (String agentId : agentIdSet) {
+            String agentRecord = "";
+            for (String site : siteNames) {
+                String siteRecord = rawReport.get(agentId).get(site);
+                agentRecord += Reporter.ADD_REPORT_PROPERTY("Site",site);
+                if (siteRecord.length() > 0) agentRecord += siteRecord + " ";
+            }
+            returnReport.put(agentId, agentRecord);
+        }
+
+        return returnReport;
     }
     
 }

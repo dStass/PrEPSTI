@@ -79,9 +79,11 @@ public class ScreeningPresenter extends Presenter {
             //"from2007seek57fPop40000Cycles5475","from2007seek57gPop40000Cycles5475","from2007seek57hPop40000Cycles5475","from2007seek57iPop40000Cycles5475","from2007seek57jPop40000Cycles5475"} ;
     //static String[] simNames = new String[] {"newSortaPop40000Cycles1825","seek68bPop40000Cycles1825","seek68cPop40000Cycles1825","seek68dPop40000Cycles1825"} ; // ,"seek53ePop40000Cycles1825",
       //      "seek53fPop40000Cycles1825","seek53gPop40000Cycles1825","seek53hPop40000Cycles1825","seek53iPop40000Cycles1825","seek53jPop40000Cycles1825"} ;
-    // static String[] testSimNames = new String[] {"riskyIncidence_all_from2020to2025prep0p5cycleParams33aaPop40000Cycles2190", "riskyIncidence_all_from2020to2025prep1p0cycleParams33aaPop40000Cycles2190", "riskyIncidence_all_from2020to2025prep0p75cycleParams33aaPop40000Cycles2190" };
-    static String[] testSimNames = new String[] {"csv1", "csv2", "csv3"};
+    static String[] testSimNames = new String[] {"riskyIncidence_all_from2020to2025prep0p5cycleParams33aaPop40000Cycles2190", "riskyIncidence_all_from2020to2025prep1p0cycleParams33aaPop40000Cycles2190", "riskyIncidence_all_from2020to2025prep0p75cycleParams33aaPop40000Cycles2190" };
+    // static String[] testSimNames = new String[] {"ALL_OUTLIERS", "NO_OUTLIERS", "MEAN_MODIFIED", "MEDIAN_MODIFIED", "MAD", "PERCENTILE_5"};
     
+    // static String[] testSimNames = new String[] {"PERCENTILE_5", "PERCENTILE_2.5", "MEAN", "MEDIAN", "MEAN_MODIFIED", "MEDIAN_MODIFIED", "MAD"};
+
     public static void main(String[] args)
     {
 
@@ -97,6 +99,7 @@ public class ScreeningPresenter extends Presenter {
         //         simNameList.add(prefix + letter0 + letter1 + suffix) ;
 
         String folderPath = "/scratch/is14/mw7704/prepsti/output/test/" ;
+        // String folderPath = "output/test/";
 
         //         String prefix = "old1p5Params26" ;
         //         //String prefix = "to2019fix23" ;
@@ -115,7 +118,8 @@ public class ScreeningPresenter extends Presenter {
         //String simName = "to2017newSort17aaPop40000Cycles5110" ;
         //String simName = "to2012max3sameScreen34cPop40000Cycles4380" ;
         //String simName = "to2014agentAdjust29aPop40000Cycles4920" ;
-        String simName = simNameList.get(0) ;
+        // String simName = simNameList.get(0) ;
+        String simName = "SORTED";
         
         boolean unique = false ;
         int notifications = 1 ; 
@@ -192,7 +196,7 @@ public class ScreeningPresenter extends Presenter {
         //screeningPresenter.plotIncidencePerCycle(siteNames) ;
         // screeningPresenter.plotFinalAtRiskIncidentsRecord(siteNames,0,"statusHIV") ;
 
-        screeningPresenter.plotYearsAtRiskIncidenceReport(siteNames, 13, 2019, "statusHIV") ;  // !! line chart here
+        // screeningPresenter.plotYearsAtRiskIncidenceReport(siteNames, 13, 2019, "statusHIV") ;  // !! line chart here
 
         // screeningPresenter.plotYearsBeenTestedReport(13, 0, 0, 2019, "statusHIV") ;
         //screeningPresenter.plotNotificationsPerCycle(siteNames) ;
@@ -212,8 +216,15 @@ public class ScreeningPresenter extends Presenter {
         //screeningPresenter.plotNotificationPerCycle() ;    
         // screeningPresenter.plotSiteProportionSymptomatic(siteNames) ;
 
+    
+        // DEBUG: testing purposes:
+        // chartTitle = "Runtime vs Size";
+        // String yLabel = "Runtime (seconds)";
+        // String xLabel = "Data size";
 
-        //screeningPresenter.plotIntervalMeansFromCSVFileNames(testSimNames);
+        // screeningPresenter = new ScreeningPresenter(simName,chartTitle,reportFileName) ;
+
+        // screeningPresenter.plotIntervalMeansFromCSVFileNames(testSimNames, chartTitle, yLabel, xLabel);
 
 
         //String methodName = args[3] ;
@@ -1001,12 +1012,11 @@ public class ScreeningPresenter extends Presenter {
             propertyToYAndRange.put(property, yAndRange);
         }
         
+        // // set drawing information
+        // setDrawError(true);
+        // setErrorType(SHADED_REGION);
 
-        // set drawing information
-        setDrawError(true);
-        setErrorType(SHADED_REGION);
-
-        plotHashMapStringCI(propertyToYAndRange,INCIDENCE,"year", legend) ;
+        plotShadedHashMapStringCI(propertyToYAndRange,INCIDENCE,"year", legend) ;
     }
     
     public void plotNumberAgentTestingReport(int backYears, int backMonths, int backDays) {
@@ -1359,17 +1369,19 @@ public class ScreeningPresenter extends Presenter {
     
     }
 
-
-
-    // Used for testing purposes
-    public void plotIntervalMeansFromCSVFileNames(String[] fileNames) {
-        // String EXTENSION = ".csv" ;
+    /**
+     * Extracts information from a range of .csv files
+     * where each .csv file is a property
+     * used primarily for testing purposes
+     * @param fileNames
+     */
+    public void plotIntervalMeansFromCSVFileNames(String[] fileNames, String title, String yLabel, String xLabel) {
         HashMap<String, HashMap> propertyToYAndRange = new HashMap<String, HashMap>();
 
         for (int i = 0; i < fileNames.length; ++i) {
             String property = fileNames[i];
             String fileName = fileNames[i];
-            HashMap<Comparable, String[]> readCSV = Reporter.READ_CSV_STRING(fileName, reporter.getFolderPath(), 1);
+            HashMap<Comparable, String[]> readCSV = Reporter.READ_CSV_STRING(fileName, reporter.getFolderPath(), 0);
             
             int VALUES_TO_ADD = 3; // y-value, lower, upper
             int yValueIndex = 0;
@@ -1392,8 +1404,8 @@ public class ScreeningPresenter extends Presenter {
             HashMap<String, String[]> yAndRange = Reporter.extractYValueAndRange(readCSV);
             propertyToYAndRange.put(property, yAndRange);
         }
-
-        plotShadedHashMapStringCI(propertyToYAndRange, "Y", "Year", fileNames);
+        
+        plotShadedHashMapStringCI(propertyToYAndRange, yLabel, xLabel, fileNames);
     }
     
 }

@@ -6,14 +6,15 @@
     },
 
     "community" : {
-        "FILE_PATH" : "output/prep/",
+        "FILE_PATH" : "output/",
         "NAME_ROOT" : "to2019testhiv2p0corr4A",
         "MAX_CYCLES" : "18",
         "POPULATION" : "40000",
         "COMMENT" : "",
         "DYNAMIC" : "true",
-        "RELOAD_SIMULATION" : "oldParams31cPop40000Cycles2920",
-        "endYear" : "2019",
+        "RELOAD_SIMULATION" : "",
+        "REBOOT_FROM_CYCLE" : "-1",
+        "endYear" : "2025",
         "methods" : {
             "interveneCommunity" : {
                 "startCycle" : "5",
@@ -44,7 +45,7 @@
     },
 
     "presenter" : {
-        "PLOT_FILE" : "false",
+        "PLOT_FILE" : "true",
         "FILE_NAME" : "gonoGoneWild",
         "DATA_SCORE" : [
             "overall_gone_wild",
@@ -57,6 +58,7 @@
     },
 
     "config_loader" : {
+        "DEBUG" : "false",
         "colours" : [
             [0,0,0],
             [5,164,11],

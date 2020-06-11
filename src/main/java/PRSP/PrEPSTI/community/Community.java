@@ -3,27 +3,28 @@
  */
 package PRSP.PrEPSTI.community;
 
-import PRSP.PrEPSTI.agent.* ;
-import PRSP.PrEPSTI.site.* ;
-import PRSP.PrEPSTI.reporter.* ;
-        
-import java.io.* ;
+import PRSP.PrEPSTI.agent.*;
+import PRSP.PrEPSTI.site.*;
+import PRSP.PrEPSTI.reporter.*;
+
+import java.io.*;
 //import java.io.FileWriter ;
 //import java.io.IOException;
 
 //import reporter.* ; 
 //import reporter.ScreeningReporter ;
-import PRSP.PrEPSTI.reporter.presenter.* ;
+import PRSP.PrEPSTI.reporter.presenter.*;
 
 import PRSP.PrEPSTI.configloader.ConfigLoader;
 
 import java.util.Random;
-
+import java.util.TreeSet;
 import java.lang.reflect.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.logging.Level;
 
 /******************************************************************
@@ -41,6 +42,7 @@ public class Community {
     static public String REBOOT_PATH ;
     static public String RELOAD_SIMULATION; // "to2014fix3Choice23aaPop40000Cycles4745" ; // "debugRebootPop20000Cycles1825" ; 
     static public boolean PLOT_FILE ; // Whether to try and plot figures after a simulation, not on an HPC usually
+    static public String REBOOT_FROM_CYCLE = "-1";  // DEFAULT = -1, reboot from the end using -REBOOT file, otherwise generate $REBOOT_FROM_CYCLE-REBOOT file
     
     // hashmap with key = method name, value = hashmap that contains
     // variable names and its literal value as a String
@@ -132,6 +134,7 @@ public class Community {
         float timeAging = 0f;
         ConfigLoader.load();  // set static variables
 
+        // pause simulation while config data are read in
         try { Thread.sleep(5000); }
         catch (InterruptedException e) { e.printStackTrace(); }
         
@@ -250,7 +253,7 @@ public class Community {
     
         // Establish Community of Agents for simulation
         // LOGGER.info(SIM_NAME);
-        Community community = new Community(RELOAD_SIMULATION, 200) ;
+        Community community = new Community(RELOAD_SIMULATION, Integer.valueOf(REBOOT_FROM_CYCLE)) ;
         
 
         // Establish conditions for specific simulation questions
@@ -408,8 +411,8 @@ public class Community {
         String[] relationshipClassNames = new String[] {"Casual","Regular","Monogomous"} ; // "Casual","Regular","Monogomous"
         
         
-        encounterReporter = new EncounterReporter(SIM_NAME,FILE_PATH) ;
-        screeningReporter = new ScreeningReporter(SIM_NAME,FILE_PATH) ;
+        encounterReporter = new EncounterReporter(SIM_NAME, FILE_PATH) ;
+        screeningReporter = new ScreeningReporter(SIM_NAME, FILE_PATH) ;
         
         //screeningReporter = new ScreeningReporter(SIM_NAME,FILE_PATH) ;
                 //new ScreeningReporter("prevalence",community.screeningReport) ;
@@ -564,9 +567,9 @@ public class Community {
      * and initialises them.
      * @param simName 
      */
-    private void rebootRandomSeeds(String simName)
+    private void rebootRandomSeeds(String folderPath, String simName)
     {
-        HashMap<String, Long> seeds = Reporter.parseSeedsFromMetadata(simName, REBOOT_PATH) ;
+        HashMap<String, Long> seeds = Reporter.parseSeedsFromMetadata(simName, folderPath);
         long seed = Long.valueOf(seeds.get("Community.REBOOT_SEED")) ;
         RANDOM_SEED = seed ;
         RAND = new Random(seed) ;
@@ -579,6 +582,10 @@ public class Community {
 
         seed = Long.valueOf(seeds.get("Relationship.REBOOT_SEED")) ;
         Relationship.SET_RAND(seed) ;
+    }
+
+    private void rebootRandomSeeds(String simName) {
+        rebootRandomSeeds(ConfigLoader.REBOOT_PATH, simName);
     }
     
     /**
@@ -605,15 +612,87 @@ public class Community {
         if (simName.isEmpty())
             initialiseCommunity();
         else
-        {
-            rebootRandomSeeds(simName) ;
-            this.agents = Agent.REBOOT_AGENTS(simName) ;
+        {   
+            String rebootedSimName = simName;
+            String rebootedFolderPath = ConfigLoader.REBOOT_PATH;
+            if (fromCycle >= 0) {
+                PopulationReporter populationReporter = new PopulationReporter(simName, ConfigLoader.REBOOT_PATH);
+                RelationshipReporter relationshipReporter = new RelationshipReporter(simName, ConfigLoader.REBOOT_PATH);
+                ScreeningReporter screeningReporter = new ScreeningReporter(simName, ConfigLoader.REBOOT_PATH);
+                
+                // generate the exact pseudorandom sequence for agent birth days
+                // rebootRandomSeeds(rebootedFolderPath, rebootedSimName) ;
+                // for (int i = 0; i < 4; ++i) Agent.GET_NEXT_RANDOM_DOUBLE();
+
+                int cycleToGenerateReportUpTo = fromCycle;
+
+                // generate rebooted metalabels and metadata
+                ArrayList<String> metaLabels = new ArrayList<String>() ; 
+                ArrayList<Object> metaData = new ArrayList<Object>() ;
+
+
+                /* * * * * * * * * *
+                 *      AGENTS     *
+                 * * * * * * * * * */
+
+                // generate our reboot census
+                HashMap<Integer, String> populationCensusUpToCycle = populationReporter.prepareCensusReport(cycleToGenerateReportUpTo, screeningReporter);
+                
+
+                // extract agent census data and write to internal metadata
+                // sort agents by id
+                TreeSet<Integer> sortedAgentKeySet = new TreeSet<Integer>();
+                sortedAgentKeySet.addAll(populationCensusUpToCycle.keySet());
+                
+                // add rebooted agent data to metadata
+                metaLabels.add("Agents") ;
+                String agentsReboot = "" ;
+                for (Integer agentId : sortedAgentKeySet) {
+                    String newAgentRecord = populationCensusUpToCycle.get(agentId);
+                    agentsReboot += newAgentRecord;
+                }
+                metaData.add(agentsReboot) ;
+
+
+                /* * * * * * * * * *
+                 *  RELATIONSHIPS  *
+                 * * * * * * * * * */
+
+                // extract relationship data and write to internal metadata
+                HashMap<Integer, String> relationshipRecordHashMap = relationshipReporter.prepareRelationshipRecordHashMap(cycleToGenerateReportUpTo);
+                
+                TreeSet<Integer> sortedRelationshipKeySet = new TreeSet<Integer>();
+                sortedRelationshipKeySet.addAll(relationshipRecordHashMap.keySet());
+                
+                // add rebooted relationship data to metadata
+                metaLabels.add("Relationships") ;
+                String relationshipsReboot = "" ;
+                for (Integer relationshipId : sortedRelationshipKeySet)
+                    relationshipsReboot += relationshipRecordHashMap.get(relationshipId) + ' ' ;
+                metaData.add(relationshipsReboot) ;
+                
+                // dump new metadata
+                rebootedSimName = simName + "$" + String.valueOf(fromCycle);
+                rebootedFolderPath = Community.FILE_PATH;
+
+                // TODO: extract "test/" from CONFIG
+                dumpRebootData(rebootedFolderPath, rebootedSimName, metaLabels, metaData);
+
+                HashMap<String, String> modifiedProperties = new HashMap<String, String>();
+                modifiedProperties.put("Community.MAX_CYCLES", String.valueOf(fromCycle));
+                Reporter.DUPLICATE_METADATA_WITH_MODIFIED_PROPERTIES
+                    (ConfigLoader.REBOOT_PATH, simName, rebootedFolderPath, rebootedSimName, modifiedProperties);
+            }
+
+            rebootRandomSeeds(rebootedFolderPath, rebootedSimName) ;
+            // this.agents = Agent.REBOOT_AGENTS(ConfigLoader.REBOOT_PATH, simName) ;
+            this.agents = Agent.REBOOT_AGENTS(rebootedFolderPath, rebootedSimName);
             this.initialRecord = "" ; 
             for (Agent agent : agents)
                 initialRecord += agent.getCensusReport() ;
             initialRecord.concat("!") ;
             
-            Relationship.REBOOT_RELATIONSHIPS(simName, agents) ;
+            Relationship.REBOOT_RELATIONSHIPS(rebootedFolderPath, rebootedSimName, agents) ;
             scribe = new Scribe(SIM_NAME, new String[] {"relationship","encounter","screening", "population"}) ;
         }
     }
@@ -1313,18 +1392,18 @@ public class Community {
         metaLabels.add("Community.MAX_CYCLES") ;
         metaData.add(Community.MAX_CYCLES) ;
         metaLabels.add("Community.REBOOT_SEED") ;
-        metaData.add(RANDOM_SEED) ;
+        metaData.add(Community.GET_REBOOT_SEED()) ;
         
         metaLabels.add("Agent.SITE_NAMES") ;
         metaData.add(Arrays.asList(MSM.SITE_NAMES)) ; //TODO: Use Agent.SITE_NAMES
         metaLabels.add("Agent.REBOOT_SEED") ;
-        metaData.add(Agent.GET_RANDOM_SEED()) ;
+        metaData.add(Agent.GET_REBOOT_SEED()) ;
         
         metaLabels.add("Site.REBOOT_SEED") ;
-        metaData.add(Site.GET_RANDOM_SEED()) ;
+        metaData.add(Site.GET_REBOOT_SEED()) ;
         
         metaLabels.add("Relationship.REBOOT_SEED") ;
-        metaData.add(Relationship.GET_RANDOM_SEED()) ;
+        metaData.add(Relationship.GET_REBOOT_SEED()) ;
         metaLabels.add("Relationship.BURNIN_COMMENCE") ;
         metaData.add(Relationship.BURNIN_COMMENCE) ;
         metaLabels.add("Relationship.BURNIN_BREAKUP") ;
@@ -1353,6 +1432,23 @@ public class Community {
     }
     
     /**
+     * Generates seed for random number generator to use upon reboot.
+     * @return (long) seed for random number generation
+     */
+    static public final long GET_REBOOT_SEED()
+    {
+        return RAND.nextLong() ;
+    }
+
+    /**
+     * Generates seed for random number generator to use upon reboot.
+     * @return (long) seed for random number generation
+     */
+    static public final long GET_RANDOM_SEED()
+    {
+        return RANDOM_SEED ;
+    }
+    /**
      * Saves Agent, infection, and Relationship data to file in order to resume
      * simulation later. 
      */
@@ -1364,20 +1460,45 @@ public class Community {
         
         metaLabels.add("Agents") ;
         String agentsReboot = "" ;
+
+        if (ConfigLoader.DEBUG) {
+            // sort agents by id
+            Collections.sort(agents, (a1, a2) -> { return a1.getAgentId() > a2.getAgentId() ? 1 : -1;});
+        }
         for (Agent agent : agents)
             agentsReboot += agent.getRebootData() ;
         metaData.add(agentsReboot) ; 
         
         metaLabels.add("Relationships") ;
         String relationshipReboot = "" ;
-        for (Agent agent : agents)
+
+        // sort relationships by id
+        ArrayList<Relationship> relationships = new ArrayList<Relationship>();
+        for (Agent agent : agents) {
             for (Relationship relationship : agent.getCurrentRelationships())
-                if (relationship.getLowerIdAgent() == agent)
-                    relationshipReboot +=relationship.getRecord() ;
+                if (relationship.getLowerIdAgent() == agent) {
+                    if (ConfigLoader.DEBUG) relationships.add(relationship);
+                    else relationshipReboot += relationship.getRecord();
+                }
+        }
+        
+        if (ConfigLoader.DEBUG) {
+            LOGGER.info("Sorting relationships");
+            Collections.sort(relationships, (r1, r2) -> { return r1.getRelationshipId() > r2.getRelationshipId() ? 1 : -1;});
+            for (Relationship relationship : relationships) {
+                relationshipReboot += relationship.getRecord();
+            }
+        }
+
         metaData.add(relationshipReboot) ; 
      
         // LOGGER.info("scribe.dumpRebootData()");
         scribe.dumpRebootData(metaLabels, metaData);
+    }
+
+    public void dumpRebootData(String folderPath, String simName, ArrayList<String> metaLabels, ArrayList<Object> metaData) {
+        Scribe scribe = new Scribe(folderPath);
+        scribe.dumpRebootData(simName, metaLabels, metaData);
     }
     
     /**
@@ -1483,6 +1604,10 @@ public class Community {
         {
             
         }
+
+        private Scribe(String folderPath) {
+            globalFolder = folderPath;
+        }
         
         private Scribe(String simName, String[] propertyNames) 
         {
@@ -1560,6 +1685,28 @@ public class Community {
                 LOGGER.severe(e.toString());
             }
         }
+
+        /**
+         * Opens file and writes metadata to it.
+         * @param metaLabels
+         * @param metaData 
+         */
+        protected void dumpRebootData(String simName, ArrayList<String> metaLabels, ArrayList<Object> metaData)
+        {
+            String fileName = simName + "-REBOOT" + extension ;
+            // LOGGER.info(fileName);
+            try
+            {
+                BufferedWriter metadataWriter = new BufferedWriter(new FileWriter(globalFolder + fileName,false)) ;
+                writeMetaData(metadataWriter,metaLabels,metaData) ;
+                metadataWriter.close() ;
+            } 
+            catch ( Exception e )
+            {
+                LOGGER.severe(e.toString());
+            }
+        }
+
         
         /**
          * Filenames are appended according to their first cycle. This cycle 

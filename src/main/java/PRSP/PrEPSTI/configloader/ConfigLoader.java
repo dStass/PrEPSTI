@@ -29,10 +29,13 @@ import PRSP.PrEPSTI.reporter.presenter.Presenter;
  */
 public class ConfigLoader {
 
+    // debug
+    public static boolean DEBUG;
+
     // final definitions 
-    private static final String CONFIG_PATH = "configs/";
-    private static final String DEFAULT_JSON_FILE = ConfigLoader.CONFIG_PATH + "default_config.json";
-    private static final String CONFIG_JSON_FILE = ConfigLoader.CONFIG_PATH + "config.json";
+    private static final String PROPERTIES_FILE_PATH = "configs/config.properties";
+    private static String CONFIG_PATH;
+    private static String CONFIG_FILE;
 
     // loaded JSONObjects
     private static JSONObject loadedJSON;
@@ -45,8 +48,15 @@ public class ConfigLoader {
 
     // final definitions
     public static final int MAX_YEARS = 99;
-    public static final int DAYS_PER_YEAR = 365; 
+    public static final int DAYS_PER_YEAR = 365;
+    public static final int DAYS_PER_MONTH = 30;
+    public static final int DAYS_PER_WEEK = 7;
 
+    // some global paths
+    public static String REBOOT_PATH;
+
+    // logger
+    static final java.util.logging.Logger LOGGER = java.util.logging.Logger.getLogger("ConfigLoader") ;
 
     /**
      * method to load 
@@ -57,14 +67,62 @@ public class ConfigLoader {
         ConfigLoader.classMethodVariablesHashMap = new HashMap();
         ConfigLoader.colours = new ArrayList<ArrayList<Integer>>();
 
+        ConfigLoader.readProperties();
+
         // load information for this class
-        ConfigLoader.readJSON("default");
-        ConfigLoader.loadConfigLoaderSettings();
+        ConfigLoader.readJSON();
         
         // load information for other classes
         ConfigLoader.loadInformationIntoClasses();
-        ConfigLoader.readJSON("config");
-        ConfigLoader.loadInformationIntoClasses();
+    }
+
+    /*
+     * * * * * * * * * * * * * * * * * * * * *
+     *           PROPERTIES LOADING          *
+     * * * * * * * * * * * * * * * * * * * * *
+     */
+
+    
+    /**
+     * Method used to read config.properties file
+     * @author dstass
+     */
+    private static void readProperties() {
+        String SPLIT_ON = "=";
+        HashMap<String, String> readProperties = new HashMap<String, String>();
+        BufferedReader reader;
+        try {
+            reader = new BufferedReader(new FileReader(ConfigLoader.PROPERTIES_FILE_PATH));
+            String line = reader.readLine();
+            while (line != null) {
+                // extract and split each line about '=' symbol
+                String[] lineSplit = line.split(SPLIT_ON);
+
+                // extract key/value pair and add to our hashmap
+                String lineKey = lineSplit[0];
+                String lineVal = lineSplit[1];
+                readProperties.put(lineKey, lineVal);
+
+                // next line
+                line = reader.readLine();
+            }
+        } catch (IOException e) {
+            LOGGER.severe(e.toString());
+        }
+
+        // save information to CONFIG_PATH and CONFIG_FILE
+        for (String key : readProperties.keySet()) {
+            switch (key) {
+                case "filepath":
+                    ConfigLoader.CONFIG_PATH = readProperties.get(key);
+                    break;
+                case "filename":
+                    ConfigLoader.CONFIG_FILE = readProperties.get(key);
+                    break;
+                default: break;
+            }
+        }
+
     }
 
 
@@ -79,14 +137,9 @@ public class ConfigLoader {
      * 
      * @param configType - takes in "config" or "default" to load file
      */
-    private static void readJSON(String configType) {
+    private static void readJSON() {
         
-        String configString = "";
-        if (configType == "default") {
-            configString = ConfigLoader.DEFAULT_JSON_FILE;
-        } else if (configType == "config") {
-            configString = ConfigLoader.CONFIG_JSON_FILE;
-        }
+        String configString = ConfigLoader.CONFIG_PATH + ConfigLoader.CONFIG_FILE;
 
         try {
             Object obj = new JSONParser().parse(new FileReader(configString));
@@ -105,6 +158,7 @@ public class ConfigLoader {
      * Extract community from JSON and load into Communit class
      */
     private static void loadInformationIntoClasses() {
+        ConfigLoader.loadConfigLoaderSettings();
         ConfigLoader.loadCommunity();
         ConfigLoader.loadPaths();
         ConfigLoader.loadMSM();
@@ -119,19 +173,24 @@ public class ConfigLoader {
 
         JSONArray coloursJSONArray = (JSONArray) configLoaderJSON.get("colours");
 
-        for (int i = 0; i < coloursJSONArray.size(); ++i) {
-            JSONArray rgbJSONArray = (JSONArray) coloursJSONArray.get(i);
-
-            ArrayList<Integer> rgbArrayList = new ArrayList<Integer>();
-            for (int j = 0; j < rgbJSONArray.size(); ++j) {
-                int col = ((Number) rgbJSONArray.get(j)).intValue();
-                rgbArrayList.add(col);
+        if (coloursJSONArray != null) {
+            for (int i = 0; i < coloursJSONArray.size(); ++i) {
+                JSONArray rgbJSONArray = (JSONArray) coloursJSONArray.get(i);
+    
+                ArrayList<Integer> rgbArrayList = new ArrayList<Integer>();
+                for (int j = 0; j < rgbJSONArray.size(); ++j) {
+                    int col = ((Number) rgbJSONArray.get(j)).intValue();
+                    rgbArrayList.add(col);
+                }
+                ConfigLoader.colours.add(rgbArrayList);
             }
-            ConfigLoader.colours.add(rgbArrayList);
         }
+
+        String DEBUG = (String) configLoaderJSON.get("DEBUG");
+        if (DEBUG != null) ConfigLoader.DEBUG = Boolean.parseBoolean(DEBUG);
     }
 
-
+    
     private static void loadCommunity() {
         JSONObject communityJSON = (JSONObject) ConfigLoader.loadedJSON.get("community");
         if (communityJSON == null) return;
@@ -158,6 +217,9 @@ public class ConfigLoader {
         String RELOAD_SIMULATION = (String) communityJSON.get("RELOAD_SIMULATION");
         if (RELOAD_SIMULATION != null) Community.RELOAD_SIMULATION = RELOAD_SIMULATION;
 
+        String REBOOT_FROM_CYCLE = (String) communityJSON.get("REBOOT_FROM_CYCLE");
+        if (REBOOT_FROM_CYCLE != null && REBOOT_FROM_CYCLE.length() != 0) Community.REBOOT_FROM_CYCLE = REBOOT_FROM_CYCLE;
+
         // load methods:
         loadMethodVariablesHashMap("community", communityJSON);
     }
@@ -179,6 +241,7 @@ public class ConfigLoader {
             Relationship.FOLDER_PATH = rebootPath ;
             Agent.FOLDER_PATH = rebootPath ;
             Community.REBOOT_PATH = rebootPath ;
+            ConfigLoader.REBOOT_PATH = rebootPath;
         }
 
         // report path for Reporter

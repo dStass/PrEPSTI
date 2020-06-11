@@ -509,6 +509,52 @@ public class Reporter {
         return string.substring(index0, index1) ;
 
     }
+    
+    /**
+     * Split a record string by a specific property and save to a hashmap
+     * where the key is the property extracted from each sub-record
+     * @param property
+     * @param record
+     * @return
+     */
+    public static HashMap<String, String> SPLIT_RECORD_BY_PROPERTY(String property, String record) {
+        return SPLIT_RECORD_BY_PROPERTY(property, record, new HashSet<String>());
+    }
+
+
+
+    /**
+     * Split a record string by a specific property and save to a hashmap
+     * where the key is the property extracted from each sub-record
+     * @param property
+     * @param record
+     * @param keys: only add keys that exist in this set, if it is empty, add all keys
+     * @return
+     */
+    public static HashMap<String, String> SPLIT_RECORD_BY_PROPERTY(String property, String record, HashSet<String> keys) {
+        HashMap<String, String> splitRecord = new HashMap<>();
+
+        int previousIndex = 0;
+        int count  = 0;
+
+        // Identify where property exists in the string one by one
+        for (int i = -1; (i = record.indexOf(property, i + 1)) != -1; ++i) {
+            if (count > 0) {
+                String recordString = record.substring(previousIndex, i).trim();
+                String key = EXTRACT_VALUE(property, recordString);
+                if (keys.size() == 0 || keys.contains(key)) splitRecord.put(key, recordString);
+            }
+            previousIndex = i;
+            count++;
+        }
+
+        // ADD the last record
+        String recordString = record.substring(previousIndex, record.length()).trim();
+        String key = EXTRACT_VALUE(property, recordString);
+        if (keys.size() == 0 || keys.contains(key) && key.length() > 0) splitRecord.put(key, recordString);
+
+        return splitRecord;
+    }
 
     /**
      * When position within string is not known, call EXTRACT_VALUE(startIndex = 0)
@@ -1135,6 +1181,68 @@ public class Reporter {
             outputHashMap.put(value, keyHashMap) ;
         }
         return outputHashMap ;
+    }
+
+     /**
+     * converts a space separated string with colon separated key:value pairs into a hashmap
+     * Handles Site:Rectum, Site:Urethra, Site:Pharynx
+     * by extracting symptomatic, etc
+     * @param string
+     * @return
+     */
+    public HashMap<String, String> STRING_TO_HASHMAP_HANDLE_SITE(String string) {
+        String[] sitesArray = new String[]{
+            "Site:Rectum",
+            "Site:Urethra",
+            "Site:Pharynx"};
+
+        int siteRectumPosition = string.indexOf(sitesArray[0]);
+        HashMap<String, String> toReturn = STRING_TO_HASHMAP(string.substring(0, siteRectumPosition));
+
+        for (int i = 0; i < sitesArray.length; ++i) {
+            int startIndex = string.indexOf(sitesArray[i]) + sitesArray[i].length() + 1;
+            int endIndex = string.length();
+            if (i + 1< sitesArray.length) endIndex = string.indexOf(sitesArray[i+1]);
+            toReturn.put(sitesArray[i], string.substring(startIndex, endIndex));
+        }
+
+        return toReturn;
+    }   
+
+    /**
+     * converts a space separated string with colon separated key:value pairs into a hashmap
+     * @param string
+     * @return
+     */
+    public HashMap<String, String> STRING_TO_HASHMAP(String string) {
+        HashMap<String, String> toReturn = new HashMap<String, String>();
+
+        String[] stringSplit = string.split(" ");
+
+        for (String s : stringSplit) {
+            s = s.trim();
+            String[] sSplit = s.split(":");
+            if (sSplit.length > 1) toReturn.put(sSplit[0], sSplit[1]);
+        }
+
+        return toReturn;
+    }
+
+    /**
+     * converts a hashmap into a string with space-separated key:value pairs
+     * @param report
+     * @param properties
+     * @return
+     */
+    public String HASHMAP_TO_STRING(HashMap<String, String> report, String[] properties) {
+        String toReturn = "";
+        Set<String> keySet = report.keySet();
+        for (String property : properties) {
+            if (keySet.contains(property)) {
+                toReturn += property + ":" + report.get(property) + " ";
+            }
+        }
+        return toReturn.trim();
     }
     
     /**
@@ -2146,7 +2254,7 @@ public class Reporter {
 
         ArrayList<String> valuesArrayList = new ArrayList<String>(Arrays.asList(values));
         String year = valuesArrayList.remove(0); // remove the year and store it in a variable
-        ArrayList<Double> sortedValues = Reporter.convertArrayListStringToSortedArrayDouble(valuesArrayList);
+        ArrayList<Double> sortedValues = Reporter.convertArrayListStringToSortedArrayListDouble(valuesArrayList);
         
         // calculate standard deviation of the interdecile range of values
         // this will hopefully remove some outliers so this standard deviation represents 
@@ -2258,8 +2366,12 @@ public class Reporter {
         for (int i = 0; i < removeFromRight; ++i) values.remove(values.size() - 1);
     }
     
-
-    private static ArrayList<Double> convertArrayListStringToSortedArrayDouble(ArrayList<String> strArrayList) {
+    /**
+     * Converts an ArrayList<String> to a sorted ArrayList<Double>
+     * @param strArrayList
+     * @return
+     */
+    private static ArrayList<Double> convertArrayListStringToSortedArrayListDouble(ArrayList<String> strArrayList) {
         ArrayList<Double> toReturn = new ArrayList<Double>();
         for (String s : strArrayList) toReturn.add(Double.valueOf(s));
         Collections.sort(toReturn);
@@ -2307,18 +2419,22 @@ public class Reporter {
         return toReturn;
     }
 
-
+    /**
+     * Extracts the first three items where items at index:
+     * 1) y-value
+     * 2) lower bound (such as lower range)
+     * 3) upper bound
+     * returns a HashMap with key being the given HashMap's key and 
+     * value being a String array String[] with 3 items described above in that order
+     * @param csvHashMap
+     * @return
+     */
     public static HashMap<String, String[]> extractYValueAndRange(HashMap<Comparable, String[]> csvHashMap) {
         int FIRST_N_ITEMS_TO_EXTRACT = 3; // mean, upper and lower
 
-        int MEAN_INDEX = 0;
-        String MEAN_STRING = "yValue";
-
+        int Y_INDEX = 0;
         int LOWER_INDEX = 1;
-        String LOWER_STRING = "lower";
-
         int HIGHER_INDEX = 2;
-        String HIGHER_STRING = "higher";
 
         HashMap<String, String[]> toReturn = new HashMap<String, String[]>();
 
@@ -2328,13 +2444,11 @@ public class Reporter {
 
             String[] toExtract = new String[FIRST_N_ITEMS_TO_EXTRACT];
 
-            toExtract[MEAN_INDEX] = keyValue[MEAN_INDEX];
+            toExtract[Y_INDEX] = keyValue[Y_INDEX];
             toExtract[LOWER_INDEX] = keyValue[LOWER_INDEX];
             toExtract[HIGHER_INDEX] = keyValue[HIGHER_INDEX];
 
             toReturn.put(key.toString(), toExtract);
-            
-            // LOGGER.info("PAIR: " + key.toString() + ": " + keyValueString);
         }
 
         return toReturn;
@@ -2983,7 +3097,6 @@ public class Reporter {
         return hashMapReport ;
     }
 
-    
     public Reporter()
     {
 	    // Needed to work around HPC access issues.
@@ -3404,7 +3517,100 @@ public class Reporter {
         }
         return toReturn;
     }
-    
+
+    /**
+     * 
+     * TODO: Duplicate of parseSeedsFromMetadata
+     */
+    public static HashMap<String, Long> parseInformationFromMetadata(String fileName, String filePath) {
+        HashMap<String, Long> toReturn = new HashMap<String, Long>();
+        BufferedReader reader;
+        String STOP_READING = "Relationship.BURNIN_COMMENCE:";
+
+        Set<String> information = new HashSet<String>(Arrays.asList("Community.MAX_CYCLES"));
+
+        try {
+            reader = new BufferedReader(new FileReader(filePath+fileName+"-METADATA.txt"));
+            String line = reader.readLine();
+            while (line != null) {
+                if (line.startsWith(STOP_READING)) break;
+                boolean colonExists = line.contains(":");
+                if (colonExists) {
+                    int colonIndex = line.indexOf(":");
+                    String extractedType = line.substring(0, colonIndex);
+                    if (information.contains(extractedType)) {
+                        toReturn.put(extractedType, Long.valueOf(line.substring(colonIndex + 1, line.length()).trim() ));
+                    }
+                }
+                line = reader.readLine();
+            }
+
+        } catch (IOException e) {
+            LOGGER.severe(e.toString());
+        }
+        return toReturn;
+    }
+
+
+    public static void DUPLICATE_METADATA_WITH_MODIFIED_PROPERTIES
+        (String originalPath, String originalFileName, String newPath,
+        String newFileName, HashMap<String, String> modifications)
+    {
+        originalFileName = originalPath + originalFileName;
+        newFileName = newPath + newFileName;
+        DUPLICATE_METADATA_WITH_MODIFIED_PROPERTIES(originalFileName, newFileName, modifications);
+    }
+
+    public static void DUPLICATE_METADATA_WITH_MODIFIED_PROPERTIES
+        (String originalFileName, String newFileName, HashMap<String, String> modifications)
+    {
+        originalFileName += "-METADATA.txt";
+        newFileName += "-METADATA.txt";
+        DUPLICATE_FILE_WITH_MODIFIED_PROPERTIES(originalFileName, newFileName, modifications);
+    }
+
+    public static void DUPLICATE_FILE_WITH_MODIFIED_PROPERTIES
+        (String originalFile, String newFile, HashMap<String, String> modifications)
+    {   
+
+        // read the old file and add data to newFileText
+        BufferedReader reader;
+        String newFileText = "";
+        try {
+            reader = new BufferedReader(new FileReader(originalFile));
+            String line = reader.readLine();
+            while (line != null) {
+                boolean colonExists = line.contains(":");
+                if (colonExists) {
+                    int colonIndex = line.indexOf(":");
+                    String extractedType = line.substring(0, colonIndex);
+                    if (modifications.containsKey(extractedType)) {
+                        newFileText += extractedType + ':' + String.valueOf(modifications.get(extractedType)) + '\n';
+                    } else {
+                        newFileText += line + '\n';
+                    }
+                }
+                line = reader.readLine();
+            }
+
+        } catch (IOException e) {
+            LOGGER.severe(e.toString());
+        }
+
+        // write new data in newFileText to newFile
+        BufferedWriter fileWriter;
+        try
+        {                 
+            fileWriter = new BufferedWriter(new FileWriter(newFile, false)) ;
+            fileWriter.write(newFileText);
+            fileWriter.close();
+        }
+        catch ( Exception e )
+        {
+            LOGGER.log(Level.SEVERE, e.toString()) ;
+        }
+    }
+
     /**
      * 
      * @param args 
@@ -3545,7 +3751,7 @@ public class Reporter {
                 if (file.isFile()) 
                 {
                     String fileName = file.getName() ;
-                    if (fileName.contains("METADATA") || fileName.contains("REBOOT"))
+                    if (fileName.endsWith("-METADATA.txt") || fileName.endsWith("-REBOOT.txt"))
                         continue ;
                     if (fileName.startsWith(simName) && fileName.endsWith("txt"))
                         nameArray.add(fileName) ;

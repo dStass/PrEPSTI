@@ -83,6 +83,14 @@ public abstract class Agent {
     {
         return RANDOM_SEED ;
     }
+
+    static public int GET_NEXT_RANDOM_INT(int value) {
+        return RAND.nextInt(value);
+    }
+
+    static public double GET_NEXT_RANDOM_DOUBLE() {
+        return RAND.nextDouble();
+    }
     
     /**
      * Generates seed for random number generator to use upon reboot.
@@ -341,13 +349,22 @@ public abstract class Agent {
 
     /**
      * Reloads Agents from a saved simulation to continue it.
+     * Default folder = FOLDER_PATH
+     * @param simName
+     * @return
+     */
+    static public ArrayList<Agent> REBOOT_AGENTS(String simName) {
+        return REBOOT_AGENTS(FOLDER_PATH, simName);
+    }
+
+    /**
+     * Reloads Agents from a saved simulation to continue it.
      * @param simName 
      * @return  
      */
-    static public ArrayList<Agent> REBOOT_AGENTS(String simName)
+    static public ArrayList<Agent> REBOOT_AGENTS(String folderPath, String simName)
     {
         ArrayList<Agent> agents = new ArrayList<Agent>() ;
-        String folderPath = FOLDER_PATH ;
         String SITE = "Site:" ;
         
         // Needed if rebootFile == false

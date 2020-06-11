@@ -1317,17 +1317,29 @@ public class Presenter {
         chart_awt.plotLineChart(chartTitle,xySeriesCollection, yLabel, xLabel, newLegend) ;
     }
 
+    /**
+     * - Calls plotLineChart and setting the appropriate fields to draw a shaded graph
+     * @param report: type HashMap<String, HashMap> contains ConfidenceInterval/Range (String) used to draw shaded bounds
+     * @param yLabel
+     * @param xLabel
+     * @param legend
+     */
     protected void plotShadedHashMapStringCI(HashMap<String,HashMap> report, String yLabel, String xLabel, String[] legend) {
         // Extract data from reportArray
         XYIntervalSeriesCollection xyIntervalSeriesCollection = parseReportHashMapError(report, legend) ;
 
         setDrawError(true);
+        setDrawPoints(true);
+
+
+        // setErrorType(ERROR_INTERVALS);
         setErrorType(SHADED_REGION);
             
         // Send data to be processed and presented
         chart_awt.plotLineChart(chartTitle,xyIntervalSeriesCollection, yLabel, xLabel, legend) ;
     }
 
+    
     protected void plotHashMapStringCI(HashMap<String,HashMap> report, String yLabel, String xLabel, String[] legend)
     {
         // Extract data from reportArray
@@ -2402,7 +2414,6 @@ public class Presenter {
          */
         private void plotLineChart(String chartTitle, XYDataset dataset, String yLabel, String xLabel, String[] legend) {
 
-            int DAYS_IN_YEAR = 365;
             boolean showLegend = !(legend[0].isEmpty()) ;
 
             // define lineChart and set error renderer
@@ -2451,24 +2462,29 @@ public class Presenter {
             // lineChart.getXYPlot().setDomainAxis(new LogarithmicAxis(xLabel));
             NumberAxis domainAxis = (NumberAxis) lineChart.getXYPlot().getDomainAxis() ;
             ValueAxis rangeAxis = lineChart.getXYPlot().getRangeAxis();
+            // NumberAxis rangeAxis = (NumberAxis) lineChart.getXYPlot().getRangeAxis();
+
             double upperBound = dataset.getItemCount(0) ;    // domainAxis.getRange().getUpperBound() ;
             
-            // chart settings based on number of elements plotted
-            if ((upperBound % DAYS_IN_YEAR) == 0)    // if upperBound a multiple of 365 (days)
-            {
-                if (upperBound >= DAYS_IN_YEAR * 2)    // more than two years
-                {
-                    domainAxis.setTickUnit(new NumberTickUnit(DAYS_IN_YEAR)) ;
-                    if (upperBound < DAYS_IN_YEAR * 10)    // less than ten years
-                    {
-                        domainAxis.setMinorTickCount(4);
-                        domainAxis.setMinorTickMarksVisible(true);
-                    }
-                }
-            }
-            else {
-                domainAxis.setMinorTickMarksVisible(true);
-            }
+
+
+
+            // // chart settings based on number of elements plotted
+            // if ((upperBound % ConfigLoader.DAYS_PER_YEAR) == 0)    // if upperBound a multiple of 365 (days)
+            // {
+            //     if (upperBound >= ConfigLoader.DAYS_PER_YEAR * 2)    // more than two years
+            //     {
+            //         domainAxis.setTickUnit(new NumberTickUnit(ConfigLoader.DAYS_PER_YEAR)) ;
+            //         if (upperBound < ConfigLoader.DAYS_PER_YEAR * 10)    // less than ten years
+            //         {
+            //             domainAxis.setMinorTickCount(4);
+            //             domainAxis.setMinorTickMarksVisible(true);
+            //         }
+            //     }
+            // }
+            // else {
+            //     domainAxis.setMinorTickMarksVisible(true);
+            // }
             
             //domainAxis.setRange(2.0,upperBound);
             
@@ -2483,11 +2499,22 @@ public class Presenter {
 
             
             // randomly pick domain values to find out if the domain contains only integer values
+            // draw ticks based on certain condititions
+            // undefined for non-integer domains
             if (this.isDomainInteger(dataset)) {
-                domainAxis.setTickUnit(new NumberTickUnit(1)) ;
+                if (upperBound > ConfigLoader.DAYS_PER_YEAR * 2) {
+                    domainAxis.setTickUnit(new NumberTickUnit(ConfigLoader.DAYS_PER_YEAR)) ;
+                }
+                else if (upperBound > ConfigLoader.DAYS_PER_YEAR/2 && upperBound <= ConfigLoader.DAYS_PER_YEAR * 2) {
+                    domainAxis.setTickUnit(new NumberTickUnit(ConfigLoader.DAYS_PER_MONTH));
+                } else {
+                    domainAxis.setTickUnit(new NumberTickUnit(ConfigLoader.DAYS_PER_WEEK));
+                }
                 domainAxis.setMinorTickMarksVisible(false);
             }
 
+            // temporary
+            // domainAxis.setTickUnit(new NumberTickUnit(500));
 
             // draw legend
             if (!legend[0].isEmpty()) {
@@ -2504,13 +2531,15 @@ public class Presenter {
             // set background to white
             lineChart.getPlot().setBackgroundPaint(Color.WHITE);
 
+            // draw points
             if (upperBound > ConfigLoader.MAX_YEARS) {
                 setDrawPoints(false);
                 setDrawError(false);
-            } else {
-                setDrawPoints(true);
-                setDrawError(true);
             }
+            // else {
+            //     setDrawPoints(true);
+            //     setDrawError(true);
+            // }
             
             
 
@@ -2547,8 +2576,8 @@ public class Presenter {
             
             Font titleFont = new Font(UNIFORM_FONT, Font.PLAIN, 30);
             Font labelFont = new Font(UNIFORM_FONT, Font.PLAIN, 15);
-            Font legendFont = new Font(UNIFORM_FONT, Font.PLAIN, 10);
-            Font tickFont = new Font(UNIFORM_FONT, Font.PLAIN, 8);
+            Font legendFont = new Font(UNIFORM_FONT, Font.PLAIN, 15);
+            Font tickFont = new Font(UNIFORM_FONT, Font.PLAIN, 12);
             
             // title:
             lineChart.getTitle().setFont(titleFont);

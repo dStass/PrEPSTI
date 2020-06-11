@@ -5,121 +5,186 @@
  */
 package PRSP.PrEPSTI.reporter;
 
-import PRSP.PrEPSTI.community.Relationship ;
+import PRSP.PrEPSTI.community.Relationship;
 
 import java.util.ArrayList;
-import java.util.Arrays ;
-import java.util.HashMap ;
-import java.util.Collections ;
-import java.util.Collection ;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.Collections;
+import java.util.Collection;
 import java.util.logging.Level;
-
 
 /**
  *
  * @author MichaelWalker
  */
 public class RelationshipReporter extends Reporter {
-    
-    static String DEATH = "death" ;
-    static String BIRTH = "birth" ;
-    static String AGE = "age" ;
-    static String RELATIONSHIP = "relationship" ;
-    //static String RELATIONSHIP_ID = Relationship.RELATIONSHIP_ID ;
-    static String TRANSMISSION = "transmission" ;
-    static String TOTAL = "total" ;
-    
-    
-    public RelationshipReporter()
-    {
-        
+
+    static String DEATH = "death";
+    static String BIRTH = "birth";
+    static String AGE = "age";
+    static String RELATIONSHIP = "relationship";
+    // static String RELATIONSHIP_ID = Relationship.RELATIONSHIP_ID ;
+    static String TRANSMISSION = "transmission";
+    static String TOTAL = "total";
+
+    public RelationshipReporter() {
+
     }
-    
-    public RelationshipReporter(String simName, ArrayList<String> report) 
-    {
+
+    public RelationshipReporter(String simName, ArrayList<String> report) {
         super(simName, report);
     }
 
     /**
-     * @param simName (String) Root of simulation name.
+     * @param simName        (String) Root of simulation name.
      * @param reportFilePath (String) Path to saved files.
      */
-    public RelationshipReporter(String simName, String reportFilePath)
-    {
-        super(simName, reportFilePath) ;
+    public RelationshipReporter(String simName, String reportFilePath) {
+        super(simName, reportFilePath);
     }
-    
+
     /**
      * 
      * @return ArrayList of ArrayLists of (String) RelationshipIds of relationships
-     * commenced in each cycle
+     *         commenced in each cycle
      */
-    public ArrayList<ArrayList<Comparable>> prepareRelationshipCommenceReport()
-    {
-        return prepareRelationshipCommenceReport("") ;
+    public ArrayList<ArrayList<Comparable>> prepareRelationshipCommenceReport() {
+        return prepareRelationshipCommenceReport("");
     }
-    
+
     /**
      * 
      * @param relationshipClassName
      * @return ArrayList of ArrayLists of (String) RelationshipIds of relationships
-     * of type relationshipClassName commenced in each cycle. If relationshipClassName 
-     * is an empty String then include all Relationships.
+     *         of type relationshipClassName commenced in each cycle. If
+     *         relationshipClassName is an empty String then include all
+     *         Relationships.
      */
-    public ArrayList<ArrayList<Comparable>> prepareRelationshipCommenceReport(String relationshipClassName)
-    {
-        ArrayList<ArrayList<Comparable>> relationshipCommenceReport = new ArrayList<ArrayList<Comparable>>() ;
-        
-        ArrayList<String> commenceReport = (ArrayList<String>) getReport("commence",this) ; //  prepareCommenceReport() ;
+    public ArrayList<ArrayList<Comparable>> prepareRelationshipCommenceReport(String relationshipClassName) {
+        ArrayList<ArrayList<Comparable>> relationshipCommenceReport = new ArrayList<ArrayList<Comparable>>();
+
+        ArrayList<String> commenceReport = (ArrayList<String>) getReport("commence", this); // prepareCommenceReport() ;
         // Restrict consideration to specified Relationship.class
         if (!relationshipClassName.isEmpty())
-            commenceReport = FILTER_REPORT(RELATIONSHIP,relationshipClassName,RELATIONSHIPID,commenceReport) ;
-        
-        for (int recordNb = 0 ; recordNb < commenceReport.size() ; recordNb++ )
-        {
-            String record = commenceReport.get(recordNb) ;
-            //LOGGER.info(relationshipId);
-            //int startIndex = INDEX_OF_PROPERTY(RELATIONSHIPID,relationshipId) ;
-            relationshipCommenceReport.add(EXTRACT_ALL_VALUES(RELATIONSHIPID, record,0)) ;
+            commenceReport = FILTER_REPORT(RELATIONSHIP, relationshipClassName, RELATIONSHIPID, commenceReport);
+
+        for (int recordNb = 0; recordNb < commenceReport.size(); recordNb++) {
+            String record = commenceReport.get(recordNb);
+            // LOGGER.info(relationshipId);
+            // int startIndex = INDEX_OF_PROPERTY(RELATIONSHIPID,relationshipId) ;
+            relationshipCommenceReport.add(EXTRACT_ALL_VALUES(RELATIONSHIPID, record, 0));
         }
-        return relationshipCommenceReport ;
+        return relationshipCommenceReport;
     }
-    
+
     /**
      * 
      * @param relationshipClazzes
      * @return ArrayList of ArrayLists of (String) RelationshipIds of relationships
-     * of class relationshipClazz commenced in each cycle
+     *         of class relationshipClazz commenced in each cycle
      */
-    public ArrayList<ArrayList<Comparable>> prepareRelationshipCommenceReport(String[] relationshipClazzes)
-    {
-        ArrayList<ArrayList<Comparable>> relationshipCommenceReport = new ArrayList<ArrayList<Comparable>>() ;
-        
-        ArrayList<String> commenceReport = (ArrayList<String>) getReport("commence",this) ; //  prepareCommenceReport() ;
-        String filteredRecord ;
-        
-        for (int reportNb = 0 ; reportNb < commenceReport.size() ; reportNb++ )
-        {
-            String record = commenceReport.get(reportNb) ;
-            
-            // Include only selected Relationships 
-            filteredRecord = "" ;
+    public ArrayList<ArrayList<Comparable>> prepareRelationshipCommenceReport(String[] relationshipClazzes) {
+        ArrayList<ArrayList<Comparable>> relationshipCommenceReport = new ArrayList<ArrayList<Comparable>>();
+
+        ArrayList<String> commenceReport = (ArrayList<String>) getReport("commence", this); // prepareCommenceReport() ;
+        String filteredRecord;
+
+        for (int reportNb = 0; reportNb < commenceReport.size(); reportNb++) {
+            String record = commenceReport.get(reportNb);
+
+            // Include only selected Relationships
+            filteredRecord = "";
             for (String relationshipClazz : relationshipClazzes)
-                filteredRecord += BOUNDED_STRING_BY_VALUE("relationship",relationshipClazz,RELATIONSHIPID,record) ;
-            if (filteredRecord.isEmpty())
-            {
-                relationshipCommenceReport.add(new ArrayList<Comparable>()) ;
-                continue ;
+                filteredRecord += BOUNDED_STRING_BY_VALUE("relationship", relationshipClazz, RELATIONSHIPID, record);
+            if (filteredRecord.isEmpty()) {
+                relationshipCommenceReport.add(new ArrayList<Comparable>());
+                continue;
             }
-                //filteredRecord = relationshipId ;
-            //LOGGER.info(relationshipId);
-            //int startIndex = INDEX_OF_PROPERTY(RELATIONSHIPID,relationshipId) ;
-            relationshipCommenceReport.add(EXTRACT_ALL_VALUES(RELATIONSHIPID, filteredRecord,0)) ;
-            //relationshipCommenceReport.add(EXTRACT_ALL_VALUES(AGENTID1, relationshipId,0)) ;
+            // filteredRecord = relationshipId ;
+            // LOGGER.info(relationshipId);
+            // int startIndex = INDEX_OF_PROPERTY(RELATIONSHIPID,relationshipId) ;
+            relationshipCommenceReport.add(EXTRACT_ALL_VALUES(RELATIONSHIPID, filteredRecord, 0));
+            // relationshipCommenceReport.add(EXTRACT_ALL_VALUES(AGENTID1,
+            // relationshipId,0)) ;
         }
-        return relationshipCommenceReport ;
+        return relationshipCommenceReport;
     }
-    
+
+    /**
+     * Prepares a HashMap representing relationships up to a specific cycle This is
+     * done by getting a commencement report and breakup report Add new
+     * relationships from the commencement report and remove those that exists in
+     * breakup report
+     * 
+     * @param endCycle
+     * @return HashMap with key = relationship ID, value = relationship record
+     */
+    public HashMap<Integer, String> prepareRelationshipRecordHashMap(int endCycle) {
+        HashMap<Integer, String> relationshipReport = new HashMap<Integer, String>();
+
+        // add commenced relationships to our relationshipReport
+        ArrayList<String> commenceReport = prepareCommenceReport();
+        ArrayList<String> breakupReport = prepareBreakupReport();
+
+        // ArrayList<String> preparedCommenceReport = prepareCommenceReport();
+        HashSet<String> endedRelationshipKeys = new HashSet<String>();
+
+        for (int numReport = 0; numReport < endCycle; numReport++) {
+            // extract all new relationship records
+            String commenceRecord = commenceReport.get(numReport);
+            HashMap<String, String> extractedCommenceReport = SPLIT_RECORD_BY_PROPERTY(RELATIONSHIPID, commenceRecord);
+            // Set<String> extractedCommenceKeySet = extractedCommenceReport.keySet();
+            // ArrayList<String> sortedKeys = new ArrayList<String>();
+            // for (String s : extractedCommenceKeySet) sortedKeys.add(s);
+            // Collections.sort(sortedKeys);
+            
+            // if (commenceRecord.contains("563793")) {
+            //     LOGGER.info("REPORT: " + "563793" + " COMMENCED AT CYCLE:" + String.valueOf(numReport));
+            // }
+            for (String commenceId : extractedCommenceReport.keySet()) {
+                relationshipReport.put(Integer.valueOf(commenceId), extractedCommenceReport.get(commenceId));
+            }
+
+            // remove breakups
+            String breakupRecord = breakupReport.get(numReport);
+            HashMap<String, String> extractedBreakupReport = SPLIT_RECORD_BY_PROPERTY(RELATIONSHIPID, breakupRecord);
+
+            // add key to a set of relationships to remove
+            for (String breakupId : extractedBreakupReport.keySet()) {
+                endedRelationshipKeys.add(breakupId);
+            }
+        }
+
+        Set<Integer> relationshipReportKeySet = new HashSet<Integer>(); 
+        for (Integer key : relationshipReport.keySet()) {
+            relationshipReportKeySet.add(key);
+        }
+        // for (String breakupId : endedRelationshipKeys) {
+        //     Integer breakupIdInteger = Integer.valueOf(breakupId);
+        //     if (relationshipReportKeySet.contains(breakupIdInteger)) {
+        //         relationshipReport.remove(breakupIdInteger);
+        //     }
+        // }
+
+        // remove broken up and casual relationships
+
+        for (Integer relationshipId : relationshipReportKeySet) {
+            String relationshipIdString = String.valueOf(relationshipId);
+            String relationshipRecord = relationshipReport.get(relationshipId);
+
+            if (endedRelationshipKeys.contains(relationshipIdString)) {
+                relationshipReport.remove(relationshipId);
+            } else if (EXTRACT_VALUE("relationship", relationshipRecord).equals("Casual")) {
+                relationshipReport.remove(relationshipId);
+            }
+        }
+        return relationshipReport;
+    }
+
+
     /**
      * 
      * @return (ArrayList) of every Relationship to have ever broken up until backYears, backMonths, backDays
