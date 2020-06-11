@@ -1018,6 +1018,8 @@ public class PopulationReporter extends Reporter {
         //LOGGER.info(changeReport.toString());
     
         // changeReport.size() is zero if no changes are made
+        // TODO: parallelise: add threads here
+        // generating hashmap - ordering doesn't matter
         for (int index = changeReport.size() - 1 ; index >= 0 ; index-- )
         {
             String changeRecord = changeReport.get(index) ;
@@ -1025,6 +1027,7 @@ public class PopulationReporter extends Reporter {
             //LOGGER.info(changeAgentIds.toString()) ;
             changeAgentIds.retainAll(agentIdSet) ;
             
+            // TODO: add threads here too?
             for (String agentId : changeAgentIds)
             {
                 int agentIndex = INDEX_OF_PROPERTY(agentId.toString(),changeRecord) ;

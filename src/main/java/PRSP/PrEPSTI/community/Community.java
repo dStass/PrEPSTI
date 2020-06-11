@@ -42,7 +42,7 @@ public class Community {
     static public String REBOOT_PATH ;
     static public String RELOAD_SIMULATION; // "to2014fix3Choice23aaPop40000Cycles4745" ; // "debugRebootPop20000Cycles1825" ; 
     static public boolean PLOT_FILE ; // Whether to try and plot figures after a simulation, not on an HPC usually
-    static public String REBOOT_FROM_CYCLE = "-1";
+    static public String REBOOT_FROM_CYCLE = "-1";  // DEFAULT = -1, reboot from the end using -REBOOT file, otherwise generate $REBOOT_FROM_CYCLE-REBOOT file
     
     // hashmap with key = method name, value = hashmap that contains
     // variable names and its literal value as a String
@@ -1392,18 +1392,18 @@ public class Community {
         metaLabels.add("Community.MAX_CYCLES") ;
         metaData.add(Community.MAX_CYCLES) ;
         metaLabels.add("Community.REBOOT_SEED") ;
-        metaData.add(RANDOM_SEED) ;
+        metaData.add(Community.GET_REBOOT_SEED()) ;
         
         metaLabels.add("Agent.SITE_NAMES") ;
         metaData.add(Arrays.asList(MSM.SITE_NAMES)) ; //TODO: Use Agent.SITE_NAMES
         metaLabels.add("Agent.REBOOT_SEED") ;
-        metaData.add(Agent.GET_RANDOM_SEED()) ;
+        metaData.add(Agent.GET_REBOOT_SEED()) ;
         
         metaLabels.add("Site.REBOOT_SEED") ;
-        metaData.add(Site.GET_RANDOM_SEED()) ;
+        metaData.add(Site.GET_REBOOT_SEED()) ;
         
         metaLabels.add("Relationship.REBOOT_SEED") ;
-        metaData.add(Relationship.GET_RANDOM_SEED()) ;
+        metaData.add(Relationship.GET_REBOOT_SEED()) ;
         metaLabels.add("Relationship.BURNIN_COMMENCE") ;
         metaData.add(Relationship.BURNIN_COMMENCE) ;
         metaLabels.add("Relationship.BURNIN_BREAKUP") ;
@@ -1431,6 +1431,23 @@ public class Community {
         }
     }
     
+    /**
+     * Generates seed for random number generator to use upon reboot.
+     * @return (long) seed for random number generation
+     */
+    static public final long GET_REBOOT_SEED()
+    {
+        return RAND.nextLong() ;
+    }
+
+    /**
+     * Generates seed for random number generator to use upon reboot.
+     * @return (long) seed for random number generation
+     */
+    static public final long GET_RANDOM_SEED()
+    {
+        return RANDOM_SEED ;
+    }
     /**
      * Saves Agent, infection, and Relationship data to file in order to resume
      * simulation later. 

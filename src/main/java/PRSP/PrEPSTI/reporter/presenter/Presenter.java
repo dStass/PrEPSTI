@@ -1329,6 +1329,10 @@ public class Presenter {
         XYIntervalSeriesCollection xyIntervalSeriesCollection = parseReportHashMapError(report, legend) ;
 
         setDrawError(true);
+        setDrawPoints(true);
+
+
+        // setErrorType(ERROR_INTERVALS);
         setErrorType(SHADED_REGION);
             
         // Send data to be processed and presented
@@ -2458,8 +2462,13 @@ public class Presenter {
             // lineChart.getXYPlot().setDomainAxis(new LogarithmicAxis(xLabel));
             NumberAxis domainAxis = (NumberAxis) lineChart.getXYPlot().getDomainAxis() ;
             ValueAxis rangeAxis = lineChart.getXYPlot().getRangeAxis();
+            // NumberAxis rangeAxis = (NumberAxis) lineChart.getXYPlot().getRangeAxis();
+
             double upperBound = dataset.getItemCount(0) ;    // domainAxis.getRange().getUpperBound() ;
             
+
+
+
             // // chart settings based on number of elements plotted
             // if ((upperBound % ConfigLoader.DAYS_PER_YEAR) == 0)    // if upperBound a multiple of 365 (days)
             // {
@@ -2504,6 +2513,8 @@ public class Presenter {
                 domainAxis.setMinorTickMarksVisible(false);
             }
 
+            // temporary
+            // domainAxis.setTickUnit(new NumberTickUnit(500));
 
             // draw legend
             if (!legend[0].isEmpty()) {
@@ -2565,8 +2576,8 @@ public class Presenter {
             
             Font titleFont = new Font(UNIFORM_FONT, Font.PLAIN, 30);
             Font labelFont = new Font(UNIFORM_FONT, Font.PLAIN, 15);
-            Font legendFont = new Font(UNIFORM_FONT, Font.PLAIN, 10);
-            Font tickFont = new Font(UNIFORM_FONT, Font.PLAIN, 8);
+            Font legendFont = new Font(UNIFORM_FONT, Font.PLAIN, 15);
+            Font tickFont = new Font(UNIFORM_FONT, Font.PLAIN, 12);
             
             // title:
             lineChart.getTitle().setFont(titleFont);
