@@ -375,9 +375,13 @@ public class MSM extends Agent {
     }
     
     static double[] POSITIVE_DISCLOSE_PROBABILITY = new double[] {0.201,0.296,0.327,0.286,0.312,0.384,0.349,0.398,
-            0.430,0.395,0.461,0.461,0.461} ;
+            0.430,0.395,0.461,0.461,0.461    // to 2019 
+            //,0.496,0.531,0.566,0.601,0.636,0.671    // from 2020 to 2025 
+            } ;
     static double[] NEGATIVE_DISCLOSE_PROBABILITY = new double[] {0.175,0.205,0.218,0.239,0.229,0.249,0.236,0.295,
-            0.286,0.352,0.391,0.391,0.391} ;
+            0.286,0.352,0.391,0.391,0.391
+            //,0.426,0.461,0.496,0.531,0.566,0.601    // from 2020 to 2025
+            } ;
     /**
      * Resets the probability of discloseStatusHIV according to changing 
      * disclose probabilities each year.
