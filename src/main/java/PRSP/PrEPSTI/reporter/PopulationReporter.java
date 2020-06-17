@@ -794,7 +794,17 @@ public class PopulationReporter extends Reporter {
 
     /**
      * Returns a census report based on agent id up to a particular cycle
-     * Receives a screeningReport and encounterReport to 
+     * Receives a screeningReport to get agent testing and treating reports
+     * 
+     * return data will be of the form:
+     * HashMap with:
+     *  - key: agentId (integer)
+     *  - value: string to write to REBOOT file
+     * i.e.
+     * {
+     * 0 : "agentId:0 agent:MSM age:16 ... Site:Rectum ... Site:Urethra ... Site:Pharynx ...""
+     * 1 : ...
+     * }
      * @param endCycle
      * @param screeningReporter
      * @return

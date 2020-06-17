@@ -214,8 +214,8 @@ public class ConfigLoader {
         String MAX_CYCLES = (String) communityJSON.get("MAX_CYCLES");
         if (MAX_CYCLES != null) Community.LOADED_MAX_CYCLES = Integer.parseInt(MAX_CYCLES);
 
-        String RELOAD_SIMULATION = (String) communityJSON.get("RELOAD_SIMULATION");
-        if (RELOAD_SIMULATION != null) Community.RELOAD_SIMULATION = RELOAD_SIMULATION;
+        String REBOOT_SIMULATION = (String) communityJSON.get("REBOOT_SIMULATION");
+        if (REBOOT_SIMULATION != null) Community.REBOOT_SIMULATION = REBOOT_SIMULATION;
 
         String REBOOT_FROM_CYCLE = (String) communityJSON.get("REBOOT_FROM_CYCLE");
         if (REBOOT_FROM_CYCLE != null && REBOOT_FROM_CYCLE.length() != 0) Community.REBOOT_FROM_CYCLE = REBOOT_FROM_CYCLE;

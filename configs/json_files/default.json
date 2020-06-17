@@ -12,7 +12,7 @@
         "POPULATION" : "40000",
         "COMMENT" : "",
         "DYNAMIC" : "true",
-        "RELOAD_SIMULATION" : "",
+        "REBOOT_SIMULATION" : "",
         "REBOOT_FROM_CYCLE" : "-1",
         "endYear" : "2025",
         "methods" : {

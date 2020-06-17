@@ -4,6 +4,7 @@
 /build/
 /dist/
 /target/
+/reboot/*
 
 # ide settings
 /.metadata/
