@@ -220,6 +220,9 @@ public class ConfigLoader {
         String REBOOT_FROM_CYCLE = (String) communityJSON.get("REBOOT_FROM_CYCLE");
         if (REBOOT_FROM_CYCLE != null && REBOOT_FROM_CYCLE.length() != 0) Community.REBOOT_FROM_CYCLE = REBOOT_FROM_CYCLE;
 
+        String REBOOT_FROM_CYCLE = (String) communityJSON.get("REBOOT_FROM_CYCLE");
+        if (REBOOT_FROM_CYCLE != null && REBOOT_FROM_CYCLE.length() != 0) Community.REBOOT_FROM_CYCLE = REBOOT_FROM_CYCLE;
+
         // load methods:
         loadMethodVariablesHashMap("community", communityJSON);
     }
