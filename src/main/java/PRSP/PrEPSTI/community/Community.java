@@ -359,6 +359,7 @@ public class Community {
                         commenceMap.remove(breakup) ;
             }
             StringBuilder sbBurninCommence = new StringBuilder();
+
             ArrayList<String> commenceArrayList = new ArrayList<String>();
             commenceArrayList.add(Relationship.BURNIN_COMMENCE);
             for (String commence : commenceMap.values()) {
@@ -1592,12 +1593,12 @@ public class Community {
         ArrayList<String> metaLabels = new ArrayList<String>() ; 
         ArrayList<Object> metaData = new ArrayList<Object>() ; 
         
-        ArrayList<String> agentsRebootArrayList = new ArrayList<String>();
-        ArrayList<String> relationshipsRebootArrayList = new ArrayList<String>();
-
+        StringBuilder sbAgent = new StringBuilder();
+        StringBuilder sbRelationships = new StringBuilder();
+                
         // Agents:
         metaLabels.add("Agents") ;
-        String agentsReboot = "" ;
+        // String agentsReboot = "" ;
 
         if (ConfigLoader.DEBUG) {
             // sort agents by id
@@ -1605,13 +1606,11 @@ public class Community {
         }
         for (Agent agent : agents) {
             // agentsReboot += agent.getRebootData() ;
-            agentsRebootArrayList.add(agent.getRebootData());
+            // agentsRebootArrayList.add(agent.getRebootData());
+            sbAgent.append(agent.getRebootData());
         }
-
-        // use a StringBuilder to build new string
-        StringBuilder sbAgent = new StringBuilder();
         
-        for (String a : agentsRebootArrayList) sbAgent.append(a);
+        // use a StringBuilder to build new string
         metaData.add(sbAgent.toString()) ; 
         
         metaLabels.add("Relationships") ;
@@ -1625,7 +1624,8 @@ public class Community {
                     if (ConfigLoader.DEBUG) relationships.add(relationship);
                     else {
                         // relationshipReboot += relationship.getRecord();
-                        relationshipsRebootArrayList.add(relationship.getRecord());
+                        // relationshipsRebootArrayList.add(relationship.getRecord());
+                        sbRelationships.append(relationship.getRecord());
                     } 
                 }
         }
@@ -1638,8 +1638,6 @@ public class Community {
             }
         }
 
-        StringBuilder sbRelationships = new StringBuilder();
-        for (String r : relationshipsRebootArrayList) sbRelationships.append(r);
         if (ConfigLoader.DEBUG) metaData.add(relationshipReboot);
         else metaData.add(sbRelationships.toString()) ; 
      
