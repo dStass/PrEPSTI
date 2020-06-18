@@ -816,7 +816,7 @@ public class Community {
         }
 
         for (String s : initRecordArrayList) sb.append(s);
-        String initialRecord = sb.toString();
+        initialRecord = sb.toString();
 
         //String relationshipRecord = generateRelationships() ;
         // Clear all initial infections
@@ -1552,6 +1552,8 @@ public class Community {
         ArrayList<String> metaLabels = new ArrayList<String>() ; 
         ArrayList<Object> metaData = new ArrayList<Object>() ; 
         
+
+        // Agents:
         metaLabels.add("Agents") ;
         String agentsReboot = "" ;
 
