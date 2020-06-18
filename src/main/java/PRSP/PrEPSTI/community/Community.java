@@ -300,14 +300,26 @@ public class Community {
         
         if (!REBOOT_SIMULATION.isEmpty())
         {
+            StringBuilder sbRelationshipRecords = new StringBuilder();
+            ArrayList<String> relationshipRecordsArrayList = new ArrayList<String>();
+
+            // add original BURNIN_COMMENCE
+            relationshipRecordsArrayList.add(Relationship.BURNIN_COMMENCE);
+
+
             for (Agent agent : community.agents)
             {
                 for (Relationship relationship : agent.getCurrentRelationships())
                 {
-                    if (relationship.getLowerIdAgent() == agent)
-                        Relationship.BURNIN_COMMENCE = relationship.getRecord() + Relationship.BURNIN_COMMENCE ;
+                    if (relationship.getLowerIdAgent() == agent) {
+                        relationshipRecordsArrayList.add(0, relationship.getRecord());
+                        // Relationship.BURNIN_COMMENCE = relationship.getRecord() + Relationship.BURNIN_COMMENCE ;
+                    }
                 }
             }
+
+            for (String s : relationshipRecordsArrayList) sbRelationshipRecords.append(s);
+            Relationship.BURNIN_COMMENCE = sbRelationshipRecords.toString();
         }
         else if (RELOAD_BURNIN.isEmpty())
         {
@@ -318,11 +330,15 @@ public class Community {
             HashMap<Object,String> commenceMap = new HashMap<Object,String>() ;
             ArrayList<String> commenceList = new ArrayList<String>() ;
             ArrayList<Comparable> breakupList ;
+            float timeGeneratingRel = 0;
             
             // LOGGER.info("burning in Relationships") ;
             for (int burnin = 0 ; burnin < 2500 ; burnin++ ) // 20000
-            {
+            {   
+                t1 = System.nanoTime();
                 commenceString = community.generateRelationships() ;
+                timeGeneratingRel += (System.nanoTime() - t1);
+
                 commenceList = Reporter.EXTRACT_ARRAYLIST(commenceString, Reporter.RELATIONSHIPID) ;
                 for (String commence : commenceList)
                 {
@@ -339,9 +355,18 @@ public class Community {
                     if (commenceMap.containsKey(breakup))
                         commenceMap.remove(breakup) ;
             }
-            
-            for (String commence : commenceMap.values())
-                Relationship.BURNIN_COMMENCE = commence + Relationship.BURNIN_COMMENCE ;
+            StringBuilder sbBurninCommence = new StringBuilder();
+            ArrayList<String> commenceArrayList = new ArrayList<String>();
+            commenceArrayList.add(Relationship.BURNIN_COMMENCE);
+            for (String commence : commenceMap.values()) {
+                // sbBurninCommence.insert(commence)
+                // Relationship.BURNIN_COMMENCE = commence + Relationship.BURNIN_COMMENCE ;
+                commenceArrayList.add(0, commence);
+            }
+
+            for (String s : commenceArrayList) sbBurninCommence.append(s);
+            System.out.print("time generating rel = " + String.valueOf(timeGeneratingRel/1000000000f));
+            Relationship.BURNIN_COMMENCE = sbBurninCommence.toString();
         }
         else
         {
