@@ -871,8 +871,11 @@ public class MSM extends Agent {
      * @return (String) report of Relationships generated
      */
     static public String GENERATE_RELATIONSHIPS(ArrayList<Agent> availableAgentList, String[] relationshipClazzNames)
-    {
+    {   
+        float t1 = System.nanoTime();
         String report = "" ;
+        StringBuilder sbReport = new StringBuilder();
+
         Class<?> relationshipClazz ;
     
         ArrayList<MSM> seroSortList ;
@@ -923,7 +926,8 @@ public class MSM extends Agent {
                     {
                         relationshipClazz = Class.forName("PRSP.PrEPSTI.community." + relationshipClazzName) ;
                         Relationship relationship = (Relationship) relationshipClazz.newInstance() ;
-                        report += relationship.addAgents(msm0, msm1);
+                        // report += relationship.addAgents(msm0, msm1);
+                        sbReport.append(relationship.addAgents(msm0, msm1));
                     }
                     catch( Exception e )
                     {
@@ -963,7 +967,8 @@ public class MSM extends Agent {
                         relationshipClazz = Class.forName("PRSP.PrEPSTI.community." + relationshipClazzName) ;
                         Relationship relationship = (Relationship) relationshipClazz.newInstance() ;
                         //incrementNbRelationships() ;
-                        report += relationship.addAgents(msm0, msm1);
+                        // report += relationship.addAgents(msm0, msm1);
+                        sbReport.append(relationship.addAgents(msm0, msm1));
                     }
                     catch( Exception e )
                     {
@@ -979,6 +984,8 @@ public class MSM extends Agent {
 
             
         }
+        // System.out.println(report.length() + " time=" + String.valueOf((System.nanoTime()-t1) / 1000000000f));
+        report = sbReport.toString();
         return report ;
     }
     

@@ -925,18 +925,21 @@ public abstract class Agent {
      * @return (String) giving values of the agent's important properties.
      */
     public String getCensusReport()
-    {
+    {   
+        StringBuilder sbCensusReport = new StringBuilder();
         String censusReport = "" ;
-        censusReport += Reporter.ADD_REPORT_PROPERTY("agentId",agentId) ;
-        censusReport += Reporter.ADD_REPORT_PROPERTY("agent",agent) ;
-        censusReport += Reporter.ADD_REPORT_PROPERTY("age",getAge()) ;  // Reporter.ADD_REPORT_PROPERTY("startAge", getAge()) ;
-        censusReport += Reporter.ADD_REPORT_PROPERTY("concurrency",concurrency) ;
-        censusReport += Reporter.ADD_REPORT_PROPERTY("infidelity",infidelity) ;
-        censusReport += Reporter.ADD_REPORT_PROPERTY("probabilityUseCondom",probabilityUseCondom) ;
-        censusReport += Reporter.ADD_REPORT_PROPERTY("probabilityUseCondomCasual",probabilityUseCondomCasual) ;
-        censusReport += Reporter.ADD_REPORT_PROPERTY("probabilityUseCondomRegular",probabilityUseCondomRegular) ;
-        censusReport += Reporter.ADD_REPORT_PROPERTY("screenCycle",getScreenCycle()) ;
-        censusReport += Reporter.ADD_REPORT_PROPERTY("screenTime",screenTime) ;
+        sbCensusReport.append(Reporter.ADD_REPORT_PROPERTY("agentId",agentId)) ;
+        sbCensusReport.append(Reporter.ADD_REPORT_PROPERTY("agent",agent)) ;
+        sbCensusReport.append(Reporter.ADD_REPORT_PROPERTY("age",getAge())) ;  // Reporter.ADD_REPORT_PROPERTY("startAge", getAge()) ;
+        sbCensusReport.append(Reporter.ADD_REPORT_PROPERTY("concurrency",concurrency)) ;
+        sbCensusReport.append(Reporter.ADD_REPORT_PROPERTY("infidelity",infidelity)) ;
+        sbCensusReport.append(Reporter.ADD_REPORT_PROPERTY("probabilityUseCondom",probabilityUseCondom)) ;
+        sbCensusReport.append(Reporter.ADD_REPORT_PROPERTY("probabilityUseCondomCasual",probabilityUseCondomCasual)) ;
+        sbCensusReport.append(Reporter.ADD_REPORT_PROPERTY("probabilityUseCondomRegular",probabilityUseCondomRegular)) ;
+        sbCensusReport.append(Reporter.ADD_REPORT_PROPERTY("screenCycle",getScreenCycle())) ;
+        sbCensusReport.append(Reporter.ADD_REPORT_PROPERTY("screenTime",screenTime)) ;
+
+        censusReport = sbCensusReport.toString();
         
         /*Class fieldClazz ;
         Class agentClazz ;
