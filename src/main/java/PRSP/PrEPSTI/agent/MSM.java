@@ -874,18 +874,25 @@ public class MSM extends Agent {
     {   
         float t1 = System.nanoTime();
         String report = "" ;
+        t1 = System.nanoTime();
         StringBuilder sbReport = new StringBuilder();
+        // System.out.println("timeInitSB = " + String.valueOf((System.nanoTime() - t1)/1000000000f));
+
 
         Class<?> relationshipClazz ;
     
         ArrayList<MSM> seroSortList ;
         
         for (String relationshipClazzName : relationshipClazzNames)
-        {
+        {   
+            float t2 = System.nanoTime();
             ArrayList<Agent> relationshipAgentList = MSM.SEEKING_AGENTS(availableAgentList,relationshipClazzName) ;
         
             seroSortList = new ArrayList<MSM>() ;
-            
+            // System.out.println("timeSeeking = " + String.valueOf((System.nanoTime() - t1)/1000000000f));
+
+            // t1 = System.nanoTime();
+
             // Sort seekers according to HIV and serosorting status
             for (Agent agent : relationshipAgentList) 
             {
@@ -893,6 +900,9 @@ public class MSM extends Agent {
                 if (msm.getSeroSort(relationshipClazzName))
                     seroSortList.add(msm) ;
             }
+            // System.out.println("timeFirstLoop = " + String.valueOf((System.nanoTime() - t1)/1000000000f));
+
+            // t1 = System.nanoTime();
 
             for (int index0 = seroSortList.size() - 1 ; index0 >= 0 ; index0-- )
             {
@@ -921,11 +931,13 @@ public class MSM extends Agent {
                         seroSortList.remove(msm1) ;
                         index0-- ;
                     }
+                    
 
+                    
                     try
                     {
                         relationshipClazz = Class.forName("PRSP.PrEPSTI.community." + relationshipClazzName) ;
-                        Relationship relationship = (Relationship) relationshipClazz.newInstance() ;
+                        Relationship relationship = (Relationship) relationshipClazz.getConstructor().newInstance() ;
                         // report += relationship.addAgents(msm0, msm1);
                         sbReport.append(relationship.addAgents(msm0, msm1));
                     }
@@ -941,6 +953,10 @@ public class MSM extends Agent {
                 }
             }
 
+            // System.out.println("time2ndLoop = " + String.valueOf((System.nanoTime() - t1)/1000000000f));
+
+            float t3 = System.nanoTime();
+
             for (int index0 = relationshipAgentList.size() - 1 ; index0 > 0 ; index0--)
             {
                 MSM msm0 = (MSM) relationshipAgentList.get(index0) ;
@@ -954,18 +970,21 @@ public class MSM extends Agent {
                     // Have only one Relationship between two given MSM 
                     if (msm1.getCurrentPartnerIds().contains(msm0.getAgentId()))
                         continue ;
-
+                        
+                    float t4 = System.nanoTime();
                     relationshipAgentList.remove(index0) ;
                     relationshipAgentList.remove(msm1) ;
 
                     availableAgentList.remove(msm0) ;
                     availableAgentList.remove(msm1) ;
+                    // System.out.println("timet4 = " + String.valueOf((System.nanoTime() - t4)/1000000000f));
+
                     index0-- ;
 
                     try
                     {
                         relationshipClazz = Class.forName("PRSP.PrEPSTI.community." + relationshipClazzName) ;
-                        Relationship relationship = (Relationship) relationshipClazz.newInstance() ;
+                        Relationship relationship = (Relationship) relationshipClazz.getConstructor().newInstance() ;
                         //incrementNbRelationships() ;
                         // report += relationship.addAgents(msm0, msm1);
                         sbReport.append(relationship.addAgents(msm0, msm1));
@@ -981,6 +1000,9 @@ public class MSM extends Agent {
                     //availableAgents.remove(agent1) ;
                 }
             }
+
+            // System.out.println("lastLoop = " + String.valueOf((System.nanoTime() - t3)/1000000000f));
+
 
             
         }

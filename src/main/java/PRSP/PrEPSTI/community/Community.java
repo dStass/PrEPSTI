@@ -968,13 +968,18 @@ public class Community {
     private String generateRelationships()    // 
     {
         //String report = "" ;
+        float t1 = System.nanoTime();
         ArrayList<Agent> availableAgents = (ArrayList<Agent>) agents.clone() ;
         Collections.shuffle(availableAgents, RAND) ;
+        // System.out.println("timeClone + timeShuffle = " + String.valueOf((System.nanoTime() - t1)/1000000000f));
         String[] relationshipClazzNames ;
         // relationshipClazzNames = new String[] {"Casual","Regular","Monogomous"} ;
         relationshipClazzNames = Community.RELATIONSHIP_CLAZZ_NAMES;
-        
-        return MSM.GENERATE_RELATIONSHIPS(availableAgents,relationshipClazzNames) ;
+        t1 = System.nanoTime();
+        String toReturn = MSM.GENERATE_RELATIONSHIPS(availableAgents,relationshipClazzNames) ;
+        // System.out.println("generateTime = " + String.valueOf((System.nanoTime() - t1)/1000000000f));
+        return toReturn;
+
     }
     
     /**

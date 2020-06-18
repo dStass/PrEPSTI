@@ -385,12 +385,11 @@ public class Relationship {
      */
     final public String addAgents(Agent agent0, Agent agent1)
     {
-        String report = "" ;
         this.agent0 = agent0 ;
     	this.agent1 = agent1 ;
     	
         this.agent1.enterRelationship(this) ;
-        report += this.agent0.enterRelationship(this) ;
+        String report = this.agent0.enterRelationship(this) ;
         //this.agent0.augmentLowerAgentId() ;
         
         return report ;
