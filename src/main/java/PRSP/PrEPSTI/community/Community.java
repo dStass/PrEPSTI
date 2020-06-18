@@ -1552,6 +1552,8 @@ public class Community {
         ArrayList<String> metaLabels = new ArrayList<String>() ; 
         ArrayList<Object> metaData = new ArrayList<Object>() ; 
         
+        ArrayList<String> agentsRebootArrayList = new ArrayList<String>();
+        ArrayList<String> relationshipsRebootArrayList = new ArrayList<String>();
 
         // Agents:
         metaLabels.add("Agents") ;
@@ -1561,9 +1563,16 @@ public class Community {
             // sort agents by id
             Collections.sort(agents, (a1, a2) -> { return a1.getAgentId() > a2.getAgentId() ? 1 : -1;});
         }
-        for (Agent agent : agents)
-            agentsReboot += agent.getRebootData() ;
-        metaData.add(agentsReboot) ; 
+        for (Agent agent : agents) {
+            // agentsReboot += agent.getRebootData() ;
+            agentsRebootArrayList.add(agent.getRebootData());
+        }
+
+        // use a StringBuilder to build new string
+        StringBuilder sbAgent = new StringBuilder();
+        
+        for (String a : agentsRebootArrayList) sbAgent.append(a);
+        metaData.add(sbAgent.toString()) ; 
         
         metaLabels.add("Relationships") ;
         String relationshipReboot = "" ;
@@ -1574,7 +1583,10 @@ public class Community {
             for (Relationship relationship : agent.getCurrentRelationships())
                 if (relationship.getLowerIdAgent() == agent) {
                     if (ConfigLoader.DEBUG) relationships.add(relationship);
-                    else relationshipReboot += relationship.getRecord();
+                    else {
+                        // relationshipReboot += relationship.getRecord();
+                        relationshipsRebootArrayList.add(relationship.getRecord());
+                    } 
                 }
         }
         
@@ -1586,7 +1598,10 @@ public class Community {
             }
         }
 
-        metaData.add(relationshipReboot) ; 
+        StringBuilder sbRelationships = new StringBuilder();
+        for (String r : relationshipsRebootArrayList) sbRelationships.append(r);
+        if (ConfigLoader.DEBUG) metaData.add(relationshipReboot);
+        else metaData.add(sbRelationships.toString()) ; 
      
         // LOGGER.info("scribe.dumpRebootData()");
         scribe.dumpRebootData(metaLabels, metaData);
