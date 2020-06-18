@@ -304,10 +304,8 @@ public class Community {
         if (!REBOOT_SIMULATION.isEmpty())
         {
             StringBuilder sbRelationshipRecords = new StringBuilder();
-            ArrayList<String> relationshipRecordsArrayList = new ArrayList<String>();
-
             // add original BURNIN_COMMENCE
-            relationshipRecordsArrayList.add(Relationship.BURNIN_COMMENCE);
+            // relationshipRecordsArrayList.add(Relationship.BURNIN_COMMENCE);
 
 
             for (Agent agent : community.agents)
@@ -315,13 +313,13 @@ public class Community {
                 for (Relationship relationship : agent.getCurrentRelationships())
                 {
                     if (relationship.getLowerIdAgent() == agent) {
-                        relationshipRecordsArrayList.add(0, relationship.getRecord());
+                        // relationshipRecordsArrayList.add(0, relationship.getRecord());
+                        sbRelationshipRecords.append(relationship.getRecord());
                         // Relationship.BURNIN_COMMENCE = relationship.getRecord() + Relationship.BURNIN_COMMENCE ;
                     }
                 }
             }
-
-            for (String s : relationshipRecordsArrayList) sbRelationshipRecords.append(s);
+            sbRelationshipRecords.append(Relationship.BURNIN_COMMENCE);
             Relationship.BURNIN_COMMENCE = sbRelationshipRecords.toString();
         }
         else if (RELOAD_BURNIN.isEmpty())
@@ -360,16 +358,12 @@ public class Community {
             }
             StringBuilder sbBurninCommence = new StringBuilder();
 
-            ArrayList<String> commenceArrayList = new ArrayList<String>();
-            commenceArrayList.add(Relationship.BURNIN_COMMENCE);
             for (String commence : commenceMap.values()) {
                 // sbBurninCommence.insert(commence)
                 // Relationship.BURNIN_COMMENCE = commence + Relationship.BURNIN_COMMENCE ;
-                commenceArrayList.add(0, commence);
+                sbBurninCommence.append(commence);
             }
-
-            for (String s : commenceArrayList) sbBurninCommence.append(s);
-            System.out.print("time generating rel = " + String.valueOf(timeGeneratingRel/1000000000f));
+            sbBurninCommence.append(Relationship.BURNIN_COMMENCE);
             Relationship.BURNIN_COMMENCE = sbBurninCommence.toString();
         }
         else
@@ -398,6 +392,8 @@ public class Community {
         {	
             //if ((cycle % 10) == 0) //((cycle/outputInterval) * outputInterval))
               // logger.log(level.info, "Cycle no. {0}", cycleString);
+
+            // StringBuilder sbPopulationRecord = new StringBuilder();
 
             t1 = System.nanoTime();
             if (DYNAMIC)
