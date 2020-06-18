@@ -3721,7 +3721,7 @@ public class Reporter {
         {
             ArrayList<String> nameArray = new ArrayList<String>() ;
             File folder = new File(folderPath) ;
-            for (File file : folder.listFiles()) 
+            for (File file : folder.listFiles()) {
                 if (file.isFile()) 
                 {
                     String fileName = file.getName() ;
@@ -3730,6 +3730,7 @@ public class Reporter {
                     if (fileName.startsWith(simName) && fileName.endsWith("txt"))
                         nameArray.add(fileName) ;
                 }
+            }
             //LOGGER.log(Level.INFO, "{0}", nameArray) ;
             //Collections.sort(nameArray, String.CASE_INSENSITIVE_ORDER) ;
             nameArray.sort(String.CASE_INSENSITIVE_ORDER);

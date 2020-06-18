@@ -361,15 +361,19 @@ public class Community {
         float timeGenRel = 0;
         float timeRunEnc = 0;
         float timeProInf = 0;
+        float timeClearRel = 0;
+        float timeIntCom = 0;
+        float timeGrimReaper = 0;
 
         for (int cycle = 0; cycle < Community.MAX_CYCLES; cycle++)
         {	
             //if ((cycle % 10) == 0) //((cycle/outputInterval) * outputInterval))
               // logger.log(level.info, "Cycle no. {0}", cycleString);
 
+            t1 = System.nanoTime();
             if (DYNAMIC)
                 populationRecord += community.interveneCommunity(cycle) ;
-            
+            timeIntCom += (System.nanoTime() - t1);
             //LOGGER.log(Level.INFO,"{0} {1}", new Object[] {Relationship.NB_RELATIONSHIPS,Relationship.NB_RELATIONSHIPS_CREATED});
             // update relationships and perform sexual encounters, report them
             //LOGGER.info("generate") ;
@@ -383,7 +387,9 @@ public class Community {
             timeRunEnc += (System.nanoTime() - t1);
             
             //LOGGER.info("clear");
+            t1 = System.nanoTime();
             relationshipRecord += community.clearRelationships();
+            timeClearRel = (System.nanoTime() - t1);
             
             // treat symptomatic agents
             
@@ -396,7 +402,9 @@ public class Community {
             int deltaPopulation = community.agents.size() ;  // Current population
             
             //LOGGER.info("death");
+            t1 = System.nanoTime();
             populationRecord += community.grimReaper() ;
+            timeGrimReaper += (System.nanoTime() - t1);
             // Record Relationships ended due to death
             
             relationshipRecord += Relationship.READ_DEATH_RECORD() ;
@@ -441,7 +449,10 @@ public class Community {
             + ", \ntimeSubmit = " + String.valueOf(timeSubmit/1000000000f)
             + ", \ntimeDumping = " + String.valueOf(timeDumping/1000000000f)
             + ", \ntimeGenRel = " + String.valueOf(timeGenRel/1000000000f)
+            + ", \ntimeGrimReaper = " + String.valueOf(timeGrimReaper/1000000000f)
             + ", \ntimeProInf = " + String.valueOf(timeProInf/1000000000f)
+            + ", \ntimeIntCom = " + String.valueOf(timeIntCom/1000000000f)
+            + ", \ntimeClearRel = " + String.valueOf(timeClearRel/1000000000f)
             + ", \ntimeRunEnc = " + String.valueOf(timeRunEnc/1000000000f));
         
 
@@ -598,7 +609,7 @@ public class Community {
             prev = curr;
             // System.out.println(s[0] + " -> stamp: " + s[1] + ", time taken: "
             //     + String.valueOf(difference) + "s, " + String.valueOf(percentage) + "% of sim");
-            System.out.println(String.valueOf(percentage) + "% : " + s[0]);
+            System.out.println(String.valueOf(percentage) + "% : " + s[0] + ", "+ String.valueOf(difference)+"s");
         }
         
         long timeFinal = System.nanoTime();
@@ -778,9 +789,12 @@ public class Community {
      */
     private String initialiseCommunity()
     {
+        StringBuilder sb = new StringBuilder();
+        ArrayList<String> initRecordArrayList = new ArrayList<String>();
+        initRecordArrayList.add("!");
         String report = "" ;
-        initialRecord = "!" ;
         scribe = new Scribe(SIM_NAME, new String[] {"relationship","encounter","screening", "population"}) ;
+
         for (int id = 0 ; id <  population ; id++ ) 
         {
             //Class<?> AgentClazz = Class.forName("MSM") ; 
@@ -789,16 +803,21 @@ public class Community {
 
             // Call generateAgent to get randomly chosen combination of Agent subclasses
             //and to impose initial conditions, such as prepStatus=false
+
             MSM newAgent = generateAgent(-1) ;  //new MSM(-1) ;
             //newAgent.setPrepStatus(false) ;
             
             agents.add(newAgent) ;
 
             // Record newAgent for later reporting
-            initialRecord = newAgent.getCensusReport() + initialRecord ;
+            // initialRecord = newAgent.getCensusReport() + initialRecord ;
+            initRecordArrayList.add(0, newAgent.getCensusReport());
             //LOGGER.info(initialRecord);
         }
-        
+
+        for (String s : initRecordArrayList) sb.append(s);
+        String initialRecord = sb.toString();
+
         //String relationshipRecord = generateRelationships() ;
         // Clear all initial infections
         
