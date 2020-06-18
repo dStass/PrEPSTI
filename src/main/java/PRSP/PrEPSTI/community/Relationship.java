@@ -467,7 +467,8 @@ public class Relationship {
     final protected String encounter() throws NoSuchMethodException, InvocationTargetException,
     IllegalAccessException
     {
-    	String report = "" ;
+        String report = "" ;
+        StringBuilder sbReport = new StringBuilder();
         double infectProbability ;
             
     	int contacts = chooseNbContacts() ;
@@ -501,9 +502,15 @@ public class Relationship {
 
             
             // Update report
-            report += Reporter.ADD_REPORT_PROPERTY("contact", contact) ;
-            report += Reporter.ADD_REPORT_PROPERTY(site0.toString(),infectStatus0) ;
-            report += Reporter.ADD_REPORT_PROPERTY(site1.toString(),infectStatus1) ;
+            sbReport.append(Reporter.ADD_REPORT_PROPERTY("contact", contact));
+            sbReport.append(Reporter.ADD_REPORT_PROPERTY(site0.toString(),infectStatus0));
+            sbReport.append(Reporter.ADD_REPORT_PROPERTY(site1.toString(),infectStatus1));
+
+            // report += Reporter.ADD_REPORT_PROPERTY("contact", contact) ;
+            // report += Reporter.ADD_REPORT_PROPERTY(site0.toString(),infectStatus0) ;
+            // report += Reporter.ADD_REPORT_PROPERTY(site1.toString(),infectStatus1) ;
+
+
             // compare Infection status of both sites
             /*
             Infection infection0 = site0.getInfection();
@@ -517,18 +524,21 @@ public class Relationship {
             infectProbability = 1.0;
             if ((URETHRA.equals(site0.toString()) && (RECTUM.equals(site1.toString()))) 
                     || (URETHRA.equals(site1.toString())&& RECTUM.equals(site0.toString())))
-            {
-                report += "condom:" ;
+            {   
+                sbReport.append("condom: ");
+                // report += "condom:" ;
                 
                 if (Agent.USE_CONDOM(agent0, agent1, relationship))
                 {
                     infectProbability *= (1.0 - CONDOM_EFFECT) ;
-                    report += "true " ;
+                    sbReport.append("true");
+                    // report += "true " ;
                     //LOGGER.severe("condoms used");
                 }
                 else 
                 {
-                    report += "false " ;
+                    sbReport.append("false");
+                    // report += "false " ;
                 }
             }
 
@@ -545,7 +555,9 @@ public class Relationship {
 
                 // Probabilistically transmit infection to site1
                 //site1.receive(infectName0,transmit0) ;
-                report += Reporter.ADD_REPORT_PROPERTY("transmission", Boolean.toString(agent1.receiveInfection(infectProbability,site1))) ;  
+
+                sbReport.append(Reporter.ADD_REPORT_PROPERTY("transmission", Boolean.toString(agent1.receiveInfection(infectProbability,site1))));
+                // report += Reporter.ADD_REPORT_PROPERTY("transmission", Boolean.toString(agent1.receiveInfection(infectProbability,site1))) ;  
             }
             else if (infectStatus1 > 0) // && (infectStatus0 == 0))    // agent1 must be infected
             {
@@ -555,9 +567,13 @@ public class Relationship {
 
                 // Probabilistically transmit infection to site0
                 //site0.receive(infectName0,transmit0) ;
-                report += Reporter.ADD_REPORT_PROPERTY("transmission", Boolean.toString(agent0.receiveInfection(infectProbability,site0))) ; 
+
+                sbReport.append(Reporter.ADD_REPORT_PROPERTY("transmission", Boolean.toString(agent0.receiveInfection(infectProbability,site0)))); 
+                // report += Reporter.ADD_REPORT_PROPERTY("transmission", Boolean.toString(agent0.receiveInfection(infectProbability,site0))) ; 
             }
-    	}
+        }
+        
+        report = sbReport.toString();
         return report ;   	
     
     }
@@ -600,12 +616,13 @@ public class Relationship {
     }
     
     public String getRecord()
-    {
-    	String record = Reporter.ADD_REPORT_PROPERTY(RELATIONSHIP_ID,relationshipId) ; 
-        record += Reporter.ADD_REPORT_PROPERTY("relationship",getRelationship()) ;
-    	record += Reporter.ADD_REPORT_PROPERTY(Reporter.AGENTID0,agent0.getAgentId());
-    	record += Reporter.ADD_REPORT_PROPERTY(Reporter.AGENTID1,agent1.getAgentId()) ;
-        return record ;
+    {   
+        StringBuilder sbRecord = new StringBuilder();
+    	sbRecord.append(Reporter.ADD_REPORT_PROPERTY(RELATIONSHIP_ID,relationshipId)) ; 
+        sbRecord.append(Reporter.ADD_REPORT_PROPERTY("relationship",getRelationship())) ;
+        sbRecord.append(Reporter.ADD_REPORT_PROPERTY(Reporter.AGENTID0,agent0.getAgentId()));
+        sbRecord.append(Reporter.ADD_REPORT_PROPERTY(Reporter.AGENTID1,agent1.getAgentId()));
+        return sbRecord.toString() ;
     }
     
     public String endRelationship()

@@ -128,6 +128,7 @@ public class Community {
 
     // Logger
     static final java.util.logging.Logger LOGGER = java.util.logging.Logger.getLogger("reporter") ;
+	private static final String[] RELATIONSHIP_CLAZZ_NAMES = new String[] {"Casual","Regular","Monogomous"};
     static ArrayList<String[]> timeStamps = null;
     static Long timeInitial = null;
 
@@ -298,6 +299,8 @@ public class Community {
             outputInterval = 100 ;
         */
         
+        
+
         if (!REBOOT_SIMULATION.isEmpty())
         {
             StringBuilder sbRelationshipRecords = new StringBuilder();
@@ -472,6 +475,7 @@ public class Community {
         
         Community.ADD_TIME_STAMP("after all dumps, time_aging = " + String.valueOf(timeAging/1000000000f)
             + ", \ntimeSubmit = " + String.valueOf(timeSubmit/1000000000f)
+            + ", \ntimeAging = " + String.valueOf(timeAging/1000000000f)
             + ", \ntimeDumping = " + String.valueOf(timeDumping/1000000000f)
             + ", \ntimeGenRel = " + String.valueOf(timeGenRel/1000000000f)
             + ", \ntimeGrimReaper = " + String.valueOf(timeGrimReaper/1000000000f)
@@ -970,7 +974,8 @@ public class Community {
         ArrayList<Agent> availableAgents = (ArrayList<Agent>) agents.clone() ;
         Collections.shuffle(availableAgents, RAND) ;
         String[] relationshipClazzNames ;
-        relationshipClazzNames = new String[] {"Casual","Regular","Monogomous"} ;
+        // relationshipClazzNames = new String[] {"Casual","Regular","Monogomous"} ;
+        relationshipClazzNames = Community.RELATIONSHIP_CLAZZ_NAMES;
         
         return MSM.GENERATE_RELATIONSHIPS(availableAgents,relationshipClazzNames) ;
     }
@@ -1166,6 +1171,7 @@ public class Community {
     private String runEncounters()
     {
         String record = "" ;
+        StringBuilder sbRecord = new StringBuilder();
         //ArrayList<Relationship> currentRelationships ;
         
         // LOGGER.info("nb relationships: " + relationships.size());
@@ -1185,15 +1191,18 @@ public class Community {
                     continue ;
                 try
                 {
-                    if (RAND.nextDouble() < relationship.getEncounterProbability())
-                        record += Reporter.ADD_REPORT_PROPERTY(Reporter.RELATIONSHIPID, relationship.getRelationshipId()) 
-                                + relationship.encounter() ;
+                    if (RAND.nextDouble() < relationship.getEncounterProbability()) {
+                        String newRecord = Reporter.ADD_REPORT_PROPERTY(Reporter.RELATIONSHIPID, relationship.getRelationshipId()) 
+                                         + relationship.encounter() ;
+                        sbRecord.append(newRecord);
+                    }
                     //System.out.println(record);
                 }
                 catch (NoSuchMethodException nsme)
                 {
                     LOGGER.severe(nsme.getLocalizedMessage());
-                    record += nsme.toString(); //  .getMessage() ;
+                    sbRecord.append(nsme.toString());
+                    // record += nsme.toString(); //  .getMessage() ;
                 }
                 catch (InvocationTargetException ite)
                 {
@@ -1203,10 +1212,12 @@ public class Community {
                 catch (IllegalAccessException iae)
                 {
                     LOGGER.severe(iae.getLocalizedMessage());
-                    record += iae.getMessage() ;
+                    // record += iae.getMessage() ;
+                    sbRecord.append(iae.getMessage());
                 }
             }
         }
+        record = sbRecord.toString();
         return record ;
     }
 
@@ -1217,7 +1228,10 @@ public class Community {
      */
     private String clearRelationships() 
     {
-        String record = Reporter.ADD_REPORT_LABEL("clear") ;
+        StringBuilder sbRecord = new StringBuilder();
+        sbRecord.append(Reporter.ADD_REPORT_LABEL("clear"));
+        // String record = Reporter.ADD_REPORT_LABEL("clear") ;
+        String record = "";
         ArrayList<Relationship> currentRelationships ;
         Relationship relationship ;
 
@@ -1230,12 +1244,13 @@ public class Community {
                 relationship = currentRelationships.get(relationshipIndex) ;
                 // Avoid checking relationship twice
                 //int agentId = agent.getAgentId() ;
-                if (agent == relationship.getLowerIdAgent())
-                    record += endRelationship(relationship) ;
+                if (agent == relationship.getLowerIdAgent()) sbRecord.append(endRelationship(relationship));
+                    // record += endRelationship(relationship) ;
                 //LOGGER.log(Level.INFO, "nbRelationships: {0}", new Object[]{nbRelationships});
 
             }
         }
+        record = sbRecord.toString();
         return record ;
     }
 
