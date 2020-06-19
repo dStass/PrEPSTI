@@ -3,24 +3,24 @@
  */
 package PRSP.PrEPSTI.agent;
 
-import PRSP.PrEPSTI.community.* ;
+import PRSP.PrEPSTI.community.*;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 
-import PRSP.PrEPSTI.reporter.Reporter ;
-import PRSP.PrEPSTI.site.* ;
+import PRSP.PrEPSTI.reporter.Reporter;
+import PRSP.PrEPSTI.site.*;
 
-import java.util.Random ;
+import java.util.Random;
 
 //import com.sun.media.jfxmedia.logging.Logger;
 import java.lang.reflect.*;
 
-
 import java.util.ArrayList;
-import java.util.Set ;
+import java.util.Set;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.logging.Level;
 import org.apache.commons.math3.distribution.GammaDistribution;
 import static PRSP.PrEPSTI.reporter.Reporter.AGENTID ;
@@ -238,6 +238,7 @@ public abstract class Agent {
 
     // current partners
     private ArrayList<Integer> currentPartnerIds = new ArrayList<Integer>() ;
+    private HashSet<Integer> currentPartnerIdSet = new HashSet<Integer>();
 
 
     private ArrayList<Relationship> currentRelationships 
@@ -743,6 +744,12 @@ public abstract class Agent {
     {
             return currentPartnerIds ;
     }
+
+    public HashSet<Integer> getCurrentPartnerIdSet()
+    {
+            return currentPartnerIdSet;
+    }
+    
     
     /**
      * 
@@ -1607,6 +1614,7 @@ public abstract class Agent {
 
         currentRelationships.add(relationship) ;
         currentPartnerIds.add(partnerId) ;
+        currentPartnerIdSet.add(partnerId);
         nbRelationships++ ;
 
         updateAvailable() ;
@@ -1760,6 +1768,7 @@ public abstract class Agent {
         int partnerId = relationship.getPartnerId(agentId) ;
         int partnerIndex = currentPartnerIds.indexOf(partnerId) ;
         currentPartnerIds.remove(partnerIndex) ;
+        currentPartnerIdSet.remove(partnerId);
         int relationshipIndex = currentRelationships.indexOf(relationship) ;
         currentRelationships.remove(relationshipIndex) ;
         Relationship.DIMINISH_NB_RELATIONSHIPS() ;

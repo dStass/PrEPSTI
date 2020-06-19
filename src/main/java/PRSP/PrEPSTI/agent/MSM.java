@@ -946,7 +946,7 @@ public class MSM extends Agent {
 
                     // Have only one Relationship between two given MSM 
                     // if (partnerIdHashMap.get(msm1.getAgentId()).contains(msm0.getAgentId())) continue;
-                    if (msm1.getCurrentPartnerIds().contains(msm0.getAgentId()))
+                    if (msm1.getCurrentPartnerIdSet().contains(msm0.getAgentId()))
                         continue ;
 
                         relationshipForwardIterator.iterateBack();
@@ -999,7 +999,7 @@ public class MSM extends Agent {
 
                     // Have only one Relationship between two given MSM 
                     // if (partnerIdHashMap.get(msm1.getAgentId()).contains(msm0.getAgentId())) continue;
-                    if (msm1.getCurrentPartnerIds().contains(msm0.getAgentId()))
+                    if (msm1.getCurrentPartnerIdSet().contains(msm0.getAgentId()))
                         continue ;
                         
                     outerRelationshipBackwardIterator.getNextAndIterate();
@@ -1145,10 +1145,10 @@ public class MSM extends Agent {
             
         }
         // System.out.println(report.length() + " time=" + String.valueOf((System.nanoTime()-t1) / 1000000000f));
-        report = sbReport.toString();
+        // report = 
         // timeRun += (System.nanoTime() - t1);
         // System.out.println("MSM=" + String.valueOf((timeRun) / 1000000000f ) + ", " + String.valueOf(timeRun) + " -> " + String.valueOf(System.nanoTime()));
-        return report ;
+        return sbReport.toString();
     }
     
     /**
