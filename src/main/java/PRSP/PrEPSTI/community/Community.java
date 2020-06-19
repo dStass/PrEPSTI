@@ -974,7 +974,10 @@ public class Community {
         // relationshipClazzNames = new String[] {"Casual","Regular","Monogomous"} ;
         relationshipClazzNames = Community.RELATIONSHIP_CLAZZ_NAMES;
         
-        return MSM.GENERATE_RELATIONSHIPS(availableAgents,relationshipClazzNames) ;
+        float t1 =System.nanoTime();
+        String toReturn = MSM.GENERATE_RELATIONSHIPS(availableAgents,relationshipClazzNames) ;
+        System.out.println("timeGen=" + String.valueOf((System.nanoTime() - t1) / 1000000000f ));
+        return toReturn; 
     }
     
     /**

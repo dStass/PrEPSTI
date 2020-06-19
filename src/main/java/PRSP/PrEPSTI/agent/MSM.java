@@ -876,7 +876,6 @@ public class MSM extends Agent {
      */
     static public String GENERATE_RELATIONSHIPS(ArrayList<Agent> availableAgentList, String[] relationshipClazzNames)
     {   
-        float t1 = System.nanoTime();
         String report = "" ;
         StringBuilder sbReport = new StringBuilder();
 
@@ -915,10 +914,12 @@ public class MSM extends Agent {
                         continue ;
 
                     //seroSortList.remove(msm0) ;
+                    // float t1 = System.nanoTime();
                     relationshipAgentList.remove(agent) ;
 
                     availableAgentList.remove(msm0) ;
                     availableAgentList.remove(agent) ;
+
 
                     if (seroSortList.contains(msm1))  // Same MSM ArrayList
                     {
@@ -947,6 +948,7 @@ public class MSM extends Agent {
 
             for (int index0 = relationshipAgentList.size() - 1 ; index0 > 0 ; index0--)
             {
+                float t1 = System.nanoTime();
                 MSM msm0 = (MSM) relationshipAgentList.get(index0) ;
                 for (int index1 = index0 - 1 ; index1 >= 0 ; index1-- )
                 {
@@ -959,13 +961,13 @@ public class MSM extends Agent {
                     if (msm1.getCurrentPartnerIds().contains(msm0.getAgentId()))
                         continue ;
 
-                    relationshipAgentList.remove(index0) ;
-                    relationshipAgentList.remove(msm1) ;
-
-                    availableAgentList.remove(msm0) ;
-                    availableAgentList.remove(msm1) ;
-                    index0-- ;
-
+                        relationshipAgentList.remove(index0) ;
+                        relationshipAgentList.remove(msm1) ;
+                        
+                        availableAgentList.remove(msm0) ;
+                        availableAgentList.remove(msm1) ;
+                        index0-- ;
+                        
                     try
                     {
                         relationshipClazz = Class.forName("PRSP.PrEPSTI.community." + relationshipClazzName) ;
@@ -979,13 +981,14 @@ public class MSM extends Agent {
                         LOGGER.severe(e.toString()) ;
                     }
                     break ;
-
+                    
                     // No longer available for other Relationships
                     //availableAgents.remove(agent0) ;
                     //availableAgents.remove(agent1) ;
                 }
+                System.out.println("timeLastInnerLoops=" + String.valueOf((System.nanoTime() - t1) / 1000000000f ) + ", " + String.valueOf(t1) + " -> " + String.valueOf(System.nanoTime()));
             }
-
+            
             
         }
         // System.out.println(report.length() + " time=" + String.valueOf((System.nanoTime()-t1) / 1000000000f));
