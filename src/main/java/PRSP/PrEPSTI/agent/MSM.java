@@ -10,15 +10,16 @@ import PRSP.PrEPSTI.community.Relationship;
 import PRSP.PrEPSTI.configloader.ConfigLoader;
 import PRSP.PrEPSTI.mdll.MDLL;
 import PRSP.PrEPSTI.mdll.MDLLBackwardIterator;
-import PRSP.PrEPSTI.reporter.Reporter ;
+import PRSP.PrEPSTI.reporter.Reporter;
 
 import java.util.logging.Level;
-import PRSP.PrEPSTI.site.* ;
-        
+import PRSP.PrEPSTI.site.*;
+
 import java.lang.reflect.*;
-import java.util.ArrayList ;
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap ;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Collection ;
 import java.util.Collections;
 import java.util.stream.IntStream;
@@ -880,6 +881,14 @@ public class MSM extends Agent {
      */
     static public String GENERATE_RELATIONSHIPS(ArrayList<Agent> availableAgentList, MDLL<Agent> availableMDLL, String[] relationshipClazzNames)
     {   
+        // HashMap<Integer, HashSet<Integer>> partnerIdHashMap = new HashMap<Integer, HashSet<Integer>>();
+        // for (Agent a : availableAgentList) {
+        //     ArrayList<Integer> aCurrentPartners = a.getCurrentPartnerIds();
+        //     HashSet<Integer> partnerIdSet = new HashSet<Integer>();
+        //     for (Integer i : aCurrentPartners) partnerIdSet.add(i);
+        //     partnerIdHashMap.put(a.getAgentId(), partnerIdSet);
+        // }
+
 
         float timeRun = 0;
         float t1 = System.nanoTime();
@@ -936,6 +945,7 @@ public class MSM extends Agent {
                         continue ;
 
                     // Have only one Relationship between two given MSM 
+                    // if (partnerIdHashMap.get(msm1.getAgentId()).contains(msm0.getAgentId())) continue;
                     if (msm1.getCurrentPartnerIds().contains(msm0.getAgentId()))
                         continue ;
 
@@ -988,6 +998,7 @@ public class MSM extends Agent {
                         continue ;
 
                     // Have only one Relationship between two given MSM 
+                    // if (partnerIdHashMap.get(msm1.getAgentId()).contains(msm0.getAgentId())) continue;
                     if (msm1.getCurrentPartnerIds().contains(msm0.getAgentId()))
                         continue ;
                         
