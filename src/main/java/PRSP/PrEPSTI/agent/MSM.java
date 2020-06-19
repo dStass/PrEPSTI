@@ -933,13 +933,14 @@ public class MSM extends Agent {
                     if (msm1.getCurrentPartnerIds().contains(msm0.getAgentId()))
                         continue ;
 
+                        relationshipForwardIterator.iterateBack();
                         relationshipAgentMDLL.removeNode(agent.getAgentId());
                         
                         availableMDLL.removeNode(msm0.getAgentId());
                         availableMDLL.removeNode(agent.getAgentId());
 
                         if (seroSortMDLL.hasNode(msm1.getAgentId())) {
-                            seroBackwardIterator.iterateBack();
+                            seroBackwardIterator.getNextAndIterate();
                             seroSortMDLL.removeNode(msm1.getAgentId());
                         }
                         
@@ -962,6 +963,7 @@ public class MSM extends Agent {
             MDLLBackwardIterator<Agent> outerRelationshipBackwardIterator = relationshipAgentMDLL.getBackwardIterator();
             while (outerRelationshipBackwardIterator.hasNext()) {
                 MSM msm0 = (MSM) outerRelationshipBackwardIterator.getNextAndIterate();
+                if (msm0 == null) break;
                 if (outerRelationshipBackwardIterator.hasNext() == false) break;  // takes care of > 0
 
                 // get the next one and iterate one back
@@ -969,6 +971,7 @@ public class MSM extends Agent {
                 outerRelationshipBackwardIterator.iterateBack();
 
                 MDLLBackwardIterator<Agent> innerRelationshipBackwardIterator = relationshipAgentMDLL.getBackwardIterator(nextMsm.getAgentId());
+                if (innerRelationshipBackwardIterator == null) break;
                 while (innerRelationshipBackwardIterator.hasNext()) {
                     MSM msm1 = (MSM) innerRelationshipBackwardIterator.getNextAndIterate();
 
@@ -979,13 +982,16 @@ public class MSM extends Agent {
                     if (msm1.getCurrentPartnerIds().contains(msm0.getAgentId()))
                         continue ;
                         
-                    outerRelationshipBackwardIterator.iterateBack();
+                    outerRelationshipBackwardIterator.getNextAndIterate();
+                    // innerRelationshipBackwardIterator.iterateBack();
+    
     
                     relationshipAgentMDLL.removeNode(msm0.getAgentId());
                     relationshipAgentMDLL.removeNode(msm1.getAgentId());
 
                     availableMDLL.removeNode(msm0.getAgentId()) ;
-                    availableAgentList.remove(msm1.getAgentId()) ;
+                    availableMDLL.removeNode(msm1.getAgentId()) ;
+
                     
                     try
                     {
