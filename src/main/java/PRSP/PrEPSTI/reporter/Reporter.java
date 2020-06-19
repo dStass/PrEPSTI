@@ -121,8 +121,12 @@ public class Reporter {
     
     public static final String ADD_REPORT_PROPERTY(String label, String value)
     {
-        String report = ADD_REPORT_LABEL(label) ;
-        return report + value + " " ;
+        StringBuilder sb = new StringBuilder();
+        sb.append(ADD_REPORT_LABEL(label));
+        sb.append(value);
+        sb.append(" ");
+        // String report = ADD_REPORT_LABEL(label) ;
+        return sb.toString() ;
     }
         
     public static final String ADD_REPORT_PROPERTY(String label)
@@ -132,8 +136,7 @@ public class Reporter {
         
     public static final String ADD_REPORT_PROPERTY(String label, Object value)
     {
-        String report = ADD_REPORT_LABEL(label) ;
-        return report + String.valueOf(value) + " " ;
+        return ADD_REPORT_PROPERTY(label, String.valueOf(value));
     }
      
     /**

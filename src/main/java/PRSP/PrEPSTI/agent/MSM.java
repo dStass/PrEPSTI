@@ -889,7 +889,6 @@ public class MSM extends Agent {
         for (String relationshipClazzName : relationshipClazzNames)
         {   
             ArrayList<Agent> relationshipAgentList = MSM.SEEKING_AGENTS(availableAgentList,relationshipClazzName) ;
-            t1 = System.nanoTime();
         
             seroSortList = new ArrayList<MSM>() ;
             
@@ -901,7 +900,8 @@ public class MSM extends Agent {
                     seroSortList.add(msm) ;
             }
 
-            timeRun += (System.nanoTime() - t1);
+            t1 = System.nanoTime();
+
 
             for (int index0 = seroSortList.size() - 1 ; index0 >= 0 ; index0-- )
             {
@@ -920,11 +920,12 @@ public class MSM extends Agent {
                         continue ;
 
                     //seroSortList.remove(msm0) ;
-                    // float t1 = System.nanoTime();
+                    t1 = System.nanoTime();
                     relationshipAgentList.remove(agent) ;
 
                     availableAgentList.remove(msm0) ;
                     availableAgentList.remove(agent) ;
+                    timeRun += (System.nanoTime() - t1);
 
 
                     if (seroSortList.contains(msm1))  // Same MSM ArrayList
@@ -959,6 +960,8 @@ public class MSM extends Agent {
                 }
             }
 
+            // timeRun += (System.nanoTime() - t1);
+
             for (int index0 = relationshipAgentList.size() - 1 ; index0 > 0 ; index0--)
             {
                 MSM msm0 = (MSM) relationshipAgentList.get(index0) ;
@@ -973,12 +976,14 @@ public class MSM extends Agent {
                     if (msm1.getCurrentPartnerIds().contains(msm0.getAgentId()))
                         continue ;
                     
+                    t1 = System.nanoTime();
                     relationshipAgentList.remove(index0) ;
                     relationshipAgentList.remove(msm1) ;
                     
                     availableAgentList.remove(msm0) ;
                     availableAgentList.remove(msm1) ;
                     index0-- ;
+                    timeRun += (System.nanoTime() - t1);
                     
                     // float t1 = System.nanoTime();
                     Relationship relationship = null;
@@ -1011,7 +1016,7 @@ public class MSM extends Agent {
         // System.out.println(report.length() + " time=" + String.valueOf((System.nanoTime()-t1) / 1000000000f));
         report = sbReport.toString();
         // timeRun += (System.nanoTime() - t1);
-        // System.out.println("timRun=" + String.valueOf((timeRun) / 1000000000f ) + ", " + String.valueOf(timeRun) + " -> " + String.valueOf(System.nanoTime()));
+        System.out.println("MSM=" + String.valueOf((timeRun) / 1000000000f ) + ", " + String.valueOf(timeRun) + " -> " + String.valueOf(System.nanoTime()));
         return report ;
     }
     
