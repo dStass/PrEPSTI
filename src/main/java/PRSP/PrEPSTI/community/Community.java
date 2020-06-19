@@ -300,7 +300,8 @@ public class Community {
         */
         
         
-
+        float timeGeneratingRel = 0;
+        
         if (!REBOOT_SIMULATION.isEmpty())
         {
             StringBuilder sbRelationshipRecords = new StringBuilder();
@@ -331,7 +332,7 @@ public class Community {
             HashMap<Object,String> commenceMap = new HashMap<Object,String>() ;
             ArrayList<String> commenceList = new ArrayList<String>() ;
             ArrayList<Comparable> breakupList ;
-            float timeGeneratingRel = 0;
+
             
             // LOGGER.info("burning in Relationships") ;
             for (int burnin = 0 ; burnin < 2500 ; burnin++ ) // 20000
@@ -373,7 +374,9 @@ public class Community {
             Community.COMMENT += "Burnin reloaded from " + RELOAD_BURNIN ;
         }
 
-        Community.ADD_TIME_STAMP("after burnin");        
+        Community.ADD_TIME_STAMP("after burnin,\n timeGeneratingRel = "
+            + String.valueOf(timeGeneratingRel/1000000000f)
+        );        
         // simulation of maxCycles cycles
         
         cycleString = "0," ;
