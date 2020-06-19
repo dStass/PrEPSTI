@@ -463,8 +463,7 @@ public class Relationship {
      * @throws InvocationTargetException
      * @throws IllegalAccessException 
      */
-    final protected String encounter() throws NoSuchMethodException, InvocationTargetException,
-    IllegalAccessException
+    final protected String encounter()
     {
         String report = "" ;
         StringBuilder sbReport = new StringBuilder();
