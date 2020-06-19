@@ -1150,18 +1150,21 @@ public class Community {
      */
     private String births(int nbBirths, int cycle)
     {
-        String record = "birth:" ;
+        StringBuilder sbRecord = new StringBuilder();
+        sbRecord.append("birth:");
+        // String record = "birth:" ;
         MSM newAgent ;
         for (int birth = 0 ; birth < nbBirths ; birth++ )
         {
             newAgent = generateAgent(0) ; // MSM.BIRTH_MSM(0) ;
             newAgent.update(Math.floorDiv(cycle, 365)) ;
             agents.add(newAgent) ;
-            record += newAgent.getCensusReport() ;
+            // record += newAgent.getCensusReport() ;
+            sbRecord.append(newAgent.getCensusReport());
             //currentPopulation++ ;
         }
-
-        return record.concat("!") ;
+        sbRecord.append("!");
+        return sbRecord.toString();
     }
 
     /**
@@ -1172,8 +1175,10 @@ public class Community {
      * @return String record of agentIds who died and their age-at-death
      */
     private String grimReaper()
-    {
-        String record = "death:" ;
+    {   
+        StringBuilder sbRecord = new StringBuilder();
+        sbRecord.append("death:");
+        // String record = "death:" ;
         Agent agent ;
         /*int deaths = (agents.size() - population) ;
         if (deaths < birthRate)
@@ -1182,19 +1187,26 @@ public class Community {
         {
             int agentInd = RAND.nextInt(agents.size()) ;
             Agent agent = agents.get(agentInd) ; */
-        for (int agentIndex = agents.size() - 1 ; agentIndex >= 0 ; agentIndex-- )
-        {
-            agent = agents.get(agentIndex) ; 
-            if (agent.grimReaper())
-            {
-                agents.remove(agent) ;
-                record += Reporter.ADD_REPORT_PROPERTY("agentId", agent.getAgentId()) ;
-                //record += Reporter.ADD_REPORT_PROPERTY("age", agent.getAge()) ;
-                //currentPopulation-- ;
-            }
+        ArrayList<Agent> newAgentsList = new ArrayList<Agent>();
+        for (Agent a : agents) {
+            if (a.grimReaper()) sbRecord.append(Reporter.ADD_REPORT_PROPERTY("agentId", a.getAgentId()));
+            else newAgentsList.add(a);
         }
+        agents = newAgentsList;
+        // for (int agentIndex = agents.size() - 1 ; agentIndex >= 0 ; agentIndex-- )
+        // {
+        //     agent = agents.get(agentIndex) ; 
+        //     if (agent.grimReaper())
+        //     {
+        //         agents.remove(agent) ;
+        //         sbRecord.append(Reporter.ADD_REPORT_PROPERTY("agentId", agent.getAgentId()));
+        //         // record += Reporter.ADD_REPORT_PROPERTY("agentId", agent.getAgentId()) ;
+        //         //record += Reporter.ADD_REPORT_PROPERTY("age", agent.getAge()) ;
+        //         //currentPopulation-- ;
+        //     }
+        // }
 
-        return record ;
+        return sbRecord.toString() ;
     }
 
     /**
@@ -1324,6 +1336,7 @@ public class Community {
      */
     private String progressInfection(Object[] args)
     {
+        StringBuilder sbRecord = new StringBuilder();
         String record = "" ;
         int infected ;
         int anyInfected = 0 ;
@@ -1341,43 +1354,52 @@ public class Community {
             // Due for an STI screen?
             if (RAND.nextDouble() < agent.getScreenProbability(args)) 
             {
-                record += Reporter.ADD_REPORT_PROPERTY("agentId",agent.getAgentId()) ;
-                record += Reporter.ADD_REPORT_LABEL("tested") ;
+                sbRecord.append(Reporter.ADD_REPORT_PROPERTY("agentId",agent.getAgentId()));
+                sbRecord.append(Reporter.ADD_REPORT_LABEL("tested"));
+                // record += Reporter.ADD_REPORT_PROPERTY("agentId",agent.getAgentId()) ;
+                // record += Reporter.ADD_REPORT_LABEL("tested") ;
                 if ((infected) > 0)
                 {
                     //LOGGER.info("screening agentId:"+String.valueOf(agent.getAgentId())) ;
                     for (Site site : agent.getSites())
                     {
                         if (agent.getInfectedStatus(site) > 0)
-                            record += Reporter.ADD_REPORT_PROPERTY(site.toString(), agent.getSymptomatic(site)) ;
+                            sbRecord.append(Reporter.ADD_REPORT_PROPERTY(site.toString(), agent.getSymptomatic(site))) ;
+                            // record += Reporter.ADD_REPORT_PROPERTY(site.toString(), agent.getSymptomatic(site)) ;
                     }
                 // boolean tested = ((record.contains("Rectum") || record.contains("Urethra")) || !(RAND.nextDouble() < 0.5)) ;
                 //boolean tested = ((record.contains("Urethra")) || !(RAND.nextDouble() < 0.5)) ;
                 //if (tested)
                     {
                         agent.treat() ;
-                        record += Reporter.ADD_REPORT_LABEL("treated") ;
+                        sbRecord.append(Reporter.ADD_REPORT_LABEL("treated")) ;
+                        // record += Reporter.ADD_REPORT_LABEL("treated") ;
                     }
                 }
                 else
-                    record += "clear" ;
-                record += " " ;
+                    sbRecord.append("clear");
+                    // record += "clear" ;
+                sbRecord.append(" ");
+                    // record += " " ;
             }
             else if ((infected) > 0)
-            {
-                record += Reporter.ADD_REPORT_PROPERTY("agentId",agent.getAgentId()) ;
+            {   
+                sbRecord.append(Reporter.ADD_REPORT_PROPERTY("agentId",agent.getAgentId())) ;
+                // record += Reporter.ADD_REPORT_PROPERTY("agentId",agent.getAgentId()) ;
                 for (Site site : agent.getSites())
                 {
                     if (agent.getInfectedStatus(site) > 0)
-                        record += Reporter.ADD_REPORT_PROPERTY(site.toString(), agent.getSymptomatic(site)) ;
+                        sbRecord.append(Reporter.ADD_REPORT_PROPERTY(site.toString(), agent.getSymptomatic(site))) ;
+                        // record += Reporter.ADD_REPORT_PROPERTY(site.toString(), agent.getSymptomatic(site)) ;
                     //LOGGER.info(site.toString()) ;
                 }
                 
                 // agent.progressSitesInfection() allow infection to run one cycle of its course
                 // and returns boolean whether agent is cleared (!stillInfected)
                 if (agent.progressSitesInfection())
-                {
-                    record += Reporter.ADD_REPORT_PROPERTY("cleared") ;
+                {   
+                    sbRecord.append(Reporter.ADD_REPORT_PROPERTY("cleared"));
+                    // record += Reporter.ADD_REPORT_PROPERTY("cleared") ;
                     //LOGGER.info("cleared");
                 }
                 else if (agent.getSymptomatic())
@@ -1385,14 +1407,15 @@ public class Community {
                     if (agent.treatSymptomatic())  
                     {
                         //record += Reporter.ADD_REPORT_LABEL("tested") ;
-                        record += Reporter.ADD_REPORT_PROPERTY("tested","treated") ;
+                        sbRecord.append(Reporter.ADD_REPORT_PROPERTY("tested","treated")) ;
+                        // record += Reporter.ADD_REPORT_PROPERTY("tested","treated") ;
                         //LOGGER.info("treated");
                     }
                 }
             }
         }
         //LOGGER.info(record) ;
-        return record ;
+        return sbRecord.toString() ;
     }
 
     /**

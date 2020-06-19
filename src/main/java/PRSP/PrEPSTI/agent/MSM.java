@@ -1746,33 +1746,36 @@ public class MSM extends Agent {
      */
     @Override
     public String getCensusReport()
-    {
-        String censusReport = super.getCensusReport() ;
-        censusReport += Reporter.ADD_REPORT_PROPERTY("prepStatus", prepStatus) ;
-        censusReport += Reporter.ADD_REPORT_PROPERTY("statusHIV", statusHIV) ;
-        censusReport += Reporter.ADD_REPORT_PROPERTY("discloseStatusHIV", discloseStatusHIV) ;
-        censusReport += Reporter.ADD_REPORT_PROPERTY("seroSortCasual", seroSortCasual) ;
-        censusReport += Reporter.ADD_REPORT_PROPERTY("seroSortRegular", seroSortRegular) ;
-        censusReport += Reporter.ADD_REPORT_PROPERTY("seroSortMonogomous", seroSortMonogomous) ;
-        censusReport += Reporter.ADD_REPORT_PROPERTY("seroPosition", seroPosition) ;
-        censusReport += Reporter.ADD_REPORT_PROPERTY("riskyStatus", riskyStatus) ;
-        censusReport += Reporter.ADD_REPORT_PROPERTY("riskyStatusCasual", riskyStatusCasual) ;
-        censusReport += Reporter.ADD_REPORT_PROPERTY("riskyStatusRegular", riskyStatusRegular) ;
-        censusReport += Reporter.ADD_REPORT_PROPERTY("probabilityUseCondom", probabilityUseCondom) ;
-        censusReport += Reporter.ADD_REPORT_PROPERTY("probabilityUseCondomCasual", probabilityUseCondomCasual) ;
-        censusReport += Reporter.ADD_REPORT_PROPERTY("probabilityUseCondomRegular", probabilityUseCondomRegular) ;
-        censusReport += Reporter.ADD_REPORT_PROPERTY("undetectableStatus", undetectableStatus) ;
-        censusReport += Reporter.ADD_REPORT_PROPERTY("trustUndetectable", trustUndetectable) ;
-        censusReport += Reporter.ADD_REPORT_PROPERTY("trustPrep", trustPrep) ;
-        censusReport += Reporter.ADD_REPORT_PROPERTY("consentCasualProbability", consentCasualProbability) ;
+    {   
+        StringBuilder sbCensusReport = new StringBuilder();
+        sbCensusReport.append(super.getCensusReport());
+        // String censusReport = super.getCensusReport() ;
+        sbCensusReport.append(Reporter.ADD_REPORT_PROPERTY("statusHIV", statusHIV)) ;
+        sbCensusReport.append(Reporter.ADD_REPORT_PROPERTY("prepStatus", prepStatus)) ;
+        sbCensusReport.append(Reporter.ADD_REPORT_PROPERTY("discloseStatusHIV", discloseStatusHIV)) ;
+        sbCensusReport.append(Reporter.ADD_REPORT_PROPERTY("seroSortCasual", seroSortCasual)) ;
+        sbCensusReport.append(Reporter.ADD_REPORT_PROPERTY("seroSortRegular", seroSortRegular)) ;
+        sbCensusReport.append(Reporter.ADD_REPORT_PROPERTY("seroSortMonogomous", seroSortMonogomous)) ;
+        sbCensusReport.append(Reporter.ADD_REPORT_PROPERTY("seroPosition", seroPosition)) ;
+        sbCensusReport.append(Reporter.ADD_REPORT_PROPERTY("riskyStatus", riskyStatus)) ;
+        sbCensusReport.append(Reporter.ADD_REPORT_PROPERTY("riskyStatusCasual", riskyStatusCasual)) ;
+        sbCensusReport.append(Reporter.ADD_REPORT_PROPERTY("riskyStatusRegular", riskyStatusRegular)) ;
+        sbCensusReport.append(Reporter.ADD_REPORT_PROPERTY("probabilityUseCondom", probabilityUseCondom)) ;
+        sbCensusReport.append(Reporter.ADD_REPORT_PROPERTY("probabilityUseCondomCasual", probabilityUseCondomCasual)) ;
+        sbCensusReport.append(Reporter.ADD_REPORT_PROPERTY("probabilityUseCondomRegular", probabilityUseCondomRegular)) ;
+        sbCensusReport.append(Reporter.ADD_REPORT_PROPERTY("undetectableStatus", undetectableStatus)) ;
+        sbCensusReport.append(Reporter.ADD_REPORT_PROPERTY("trustUndetectable", trustUndetectable)) ;
+        sbCensusReport.append(Reporter.ADD_REPORT_PROPERTY("trustPrep", trustPrep)) ;
+        sbCensusReport.append(Reporter.ADD_REPORT_PROPERTY("consentCasualProbability", consentCasualProbability)) ;
         
 //        censusReport += Reporter.ADD_REPORT_PROPERTY("",) ;
 //        censusReport += Reporter.ADD_REPORT_PROPERTY("",) ;
 //        censusReport += Reporter.ADD_REPORT_PROPERTY("",) ;
         
         for (Site site : sites)
-            censusReport += site.getCensusReport() ;
-        return censusReport ;
+            sbCensusReport.append(site.getCensusReport());
+            // censusReport += site.getCensusReport() ;
+        return sbCensusReport.toString() ;
     }
     /**
      * Should generate Site[] and not call Site[] MSM.sites to avoid error/complications
