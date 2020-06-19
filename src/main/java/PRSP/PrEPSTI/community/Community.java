@@ -1238,11 +1238,11 @@ public class Community {
                     continue ;
                 // try
                 // {
-                    if (RAND.nextDouble() < relationship.getEncounterProbability()) {
-                        String newRecord = Reporter.ADD_REPORT_PROPERTY(Reporter.RELATIONSHIPID, relationship.getRelationshipId()) 
-                                         + relationship.encounter() ;
-                        sbRecord.append(newRecord);
-                    }
+                if (RAND.nextDouble() < relationship.getEncounterProbability()) {
+                    String newRecord = Reporter.ADD_REPORT_PROPERTY(Reporter.RELATIONSHIPID, relationship.getRelationshipId()) 
+                                        + relationship.encounter() ;
+                    sbRecord.append(newRecord);
+                }
                 //     //System.out.println(record);
                 // }
                 // catch (NoSuchMethodException nsme)
