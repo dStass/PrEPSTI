@@ -1189,32 +1189,32 @@ public class Community {
                 
                 if (agent != relationship.getLowerIdAgent())
                     continue ;
-                try
-                {
+                // try
+                // {
                     if (RAND.nextDouble() < relationship.getEncounterProbability()) {
                         String newRecord = Reporter.ADD_REPORT_PROPERTY(Reporter.RELATIONSHIPID, relationship.getRelationshipId()) 
                                          + relationship.encounter() ;
                         sbRecord.append(newRecord);
                     }
-                    //System.out.println(record);
-                }
-                catch (NoSuchMethodException nsme)
-                {
-                    LOGGER.severe(nsme.getLocalizedMessage());
-                    sbRecord.append(nsme.toString());
-                    // record += nsme.toString(); //  .getMessage() ;
-                }
-                catch (InvocationTargetException ite)
-                {
-                    LOGGER.severe(ite.getLocalizedMessage());
-                    //record += ite.getMessage() ;
-                }
-                catch (IllegalAccessException iae)
-                {
-                    LOGGER.severe(iae.getLocalizedMessage());
-                    // record += iae.getMessage() ;
-                    sbRecord.append(iae.getMessage());
-                }
+                //     //System.out.println(record);
+                // }
+                // catch (NoSuchMethodException nsme)
+                // {
+                //     LOGGER.severe(nsme.getLocalizedMessage());
+                //     sbRecord.append(nsme.toString());
+                //     // record += nsme.toString(); //  .getMessage() ;
+                // }
+                // catch (InvocationTargetException ite)
+                // {
+                //     LOGGER.severe(ite.getLocalizedMessage());
+                //     //record += ite.getMessage() ;
+                // }
+                // catch (IllegalAccessException iae)
+                // {
+                //     LOGGER.severe(iae.getLocalizedMessage());
+                //     // record += iae.getMessage() ;
+                //     sbRecord.append(iae.getMessage());
+                // }
             }
         }
         record = sbRecord.toString();
