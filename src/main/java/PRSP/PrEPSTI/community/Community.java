@@ -625,18 +625,18 @@ public class Community {
         }
         
         
-        // LOGGER.info("Time Stamps:");
-        // double total = Double.valueOf(timeStamps.get(timeStamps.size() - 2)[1]);
-        // double prev = 0;
-        // for (String[] s : timeStamps) {
-        //     double curr = Double.valueOf(s[1]);
-        //     double difference = curr - prev;
-        //     double percentage = 100 * (difference / total);
-        //     prev = curr;
-        //     // System.out.println(s[0] + " -> stamp: " + s[1] + ", time taken: "
-        //     //     + String.valueOf(difference) + "s, " + String.valueOf(percentage) + "% of sim");
-        //     System.out.println(String.valueOf(percentage) + "% : " + s[0] + ", "+ String.valueOf(difference)+"s");
-        // }
+        LOGGER.info("Time Stamps:");
+        double total = Double.valueOf(timeStamps.get(timeStamps.size() - 2)[1]);
+        double prev = 0;
+        for (String[] s : timeStamps) {
+            double curr = Double.valueOf(s[1]);
+            double difference = curr - prev;
+            double percentage = 100 * (difference / total);
+            prev = curr;
+            // System.out.println(s[0] + " -> stamp: " + s[1] + ", time taken: "
+            //     + String.valueOf(difference) + "s, " + String.valueOf(percentage) + "% of sim");
+            System.out.println(String.valueOf(percentage) + "% : " + s[0] + ", "+ String.valueOf(difference)+"s");
+        }
         
         long timeFinal = System.nanoTime();
         float timeRan = (timeFinal - timeInitial)/  1000000000f;
