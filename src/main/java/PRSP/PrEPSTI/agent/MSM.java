@@ -963,15 +963,18 @@ public class MSM extends Agent {
             MDLLBackwardIterator<Agent> outerRelationshipBackwardIterator = relationshipAgentMDLL.getBackwardIterator();
             while (outerRelationshipBackwardIterator.hasNext()) {
                 MSM msm0 = (MSM) outerRelationshipBackwardIterator.getNextAndIterate();
-                if (msm0 == null) break;
+                // if (msm0 == null) break;
                 if (outerRelationshipBackwardIterator.hasNext() == false) break;  // takes care of > 0
 
                 // get the next one and iterate one back
-                MSM nextMsm = (MSM) outerRelationshipBackwardIterator.getNextAndIterate();
-                outerRelationshipBackwardIterator.iterateBack();
+                // MSM nextMsm = (MSM) outerRelationshipBackwardIterator.getNextAndIterate();
+                // outerRelationshipBackwardIterator.iterateBack();
 
-                MDLLBackwardIterator<Agent> innerRelationshipBackwardIterator = relationshipAgentMDLL.getBackwardIterator(nextMsm.getAgentId());
-                if (innerRelationshipBackwardIterator == null) break;
+                MDLLBackwardIterator<Agent> innerRelationshipBackwardIterator = relationshipAgentMDLL.getBackwardIterator(msm0.getAgentId());
+                if (innerRelationshipBackwardIterator == null) {
+                    boolean hasNe = outerRelationshipBackwardIterator.hasNext();
+                    break;
+                }
                 while (innerRelationshipBackwardIterator.hasNext()) {
                     MSM msm1 = (MSM) innerRelationshipBackwardIterator.getNextAndIterate();
 

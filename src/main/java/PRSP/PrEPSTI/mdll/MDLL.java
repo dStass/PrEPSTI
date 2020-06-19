@@ -82,8 +82,11 @@ public class MDLL<T> {
         //     this.last.setNext(null);
         // } else {
         MDLLNode<T> temp = toRemove.getPrev();
-        toRemove.setPrev(toRemove.getNext());
+        toRemove.getPrev().setNext(toRemove.getNext());
         toRemove.getNext().setPrev(temp);
+
+        // toRemove.setPrev(toRemove.getNext());
+        // toRemove.getNext().setPrev(temp);
         // }
 
         // if (this.curr.getId().equals(toRemove.getId())) this.curr = nextNode;
