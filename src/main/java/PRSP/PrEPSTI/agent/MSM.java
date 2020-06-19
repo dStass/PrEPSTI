@@ -869,13 +869,16 @@ public class MSM extends Agent {
     /**
      * Generate relationships among the availableAgentList. 
      * Serosorting MSM are treated first to ensure that they don't miss out unduly. 
-     * Those entering Relationships are removed.
      * FIXME: Not robust against reordering of relationshipClazzNames
+     * Those entering Relationships are removed.
      * 
      * @return (String) report of Relationships generated
      */
     static public String GENERATE_RELATIONSHIPS(ArrayList<Agent> availableAgentList, String[] relationshipClazzNames)
     {   
+
+        float timeRun = 0;
+        float t1 = System.nanoTime();
         String report = "" ;
         StringBuilder sbReport = new StringBuilder();
 
@@ -884,8 +887,9 @@ public class MSM extends Agent {
         ArrayList<MSM> seroSortList ;
         
         for (String relationshipClazzName : relationshipClazzNames)
-        {
+        {   
             ArrayList<Agent> relationshipAgentList = MSM.SEEKING_AGENTS(availableAgentList,relationshipClazzName) ;
+            t1 = System.nanoTime();
         
             seroSortList = new ArrayList<MSM>() ;
             
@@ -896,6 +900,8 @@ public class MSM extends Agent {
                 if (msm.getSeroSort(relationshipClazzName))
                     seroSortList.add(msm) ;
             }
+
+            timeRun += (System.nanoTime() - t1);
 
             for (int index0 = seroSortList.size() - 1 ; index0 >= 0 ; index0-- )
             {
@@ -927,17 +933,24 @@ public class MSM extends Agent {
                         index0-- ;
                     }
 
-                    try
-                    {
-                        relationshipClazz = Class.forName("PRSP.PrEPSTI.community." + relationshipClazzName) ;
-                        Relationship relationship = (Relationship) relationshipClazz.newInstance() ;
-                        // report += relationship.addAgents(msm0, msm1);
-                        sbReport.append(relationship.addAgents(msm0, msm1));
+                    Relationship relationship = null;
+                    switch(relationshipClazzName) {
+                        case "Casual":
+                            relationship = new PRSP.PrEPSTI.community.Casual();
+                            break;
+                        case "Regular":
+                            relationship = new PRSP.PrEPSTI.community.Regular();
+                            break;
+                        case "Monogomous":
+                            relationship = new PRSP.PrEPSTI.community.Monogomous();
+                            break;
+                        default:
+                            LOGGER.severe(relationshipClazzName);
+                            break;
                     }
-                    catch( Exception e )
-                    {
-                        LOGGER.severe(e.toString()) ;
-                    }
+                    sbReport.append(relationship.addAgents(msm0, msm1));
+
+
                     break ;
 
                     // No longer available for other Relationships
@@ -948,51 +961,57 @@ public class MSM extends Agent {
 
             for (int index0 = relationshipAgentList.size() - 1 ; index0 > 0 ; index0--)
             {
-                float t1 = System.nanoTime();
                 MSM msm0 = (MSM) relationshipAgentList.get(index0) ;
                 for (int index1 = index0 - 1 ; index1 >= 0 ; index1-- )
                 {
                     MSM msm1 = (MSM) relationshipAgentList.get(index1) ;
-
+                    
                     if (msm1.statusHIV != msm0.statusHIV) // First two ArrayList are serosorters
                         continue ;
 
                     // Have only one Relationship between two given MSM 
                     if (msm1.getCurrentPartnerIds().contains(msm0.getAgentId()))
                         continue ;
-
-                        relationshipAgentList.remove(index0) ;
-                        relationshipAgentList.remove(msm1) ;
-                        
-                        availableAgentList.remove(msm0) ;
-                        availableAgentList.remove(msm1) ;
-                        index0-- ;
-                        
-                    try
-                    {
-                        relationshipClazz = Class.forName("PRSP.PrEPSTI.community." + relationshipClazzName) ;
-                        Relationship relationship = (Relationship) relationshipClazz.newInstance() ;
-                        //incrementNbRelationships() ;
-                        // report += relationship.addAgents(msm0, msm1);
-                        sbReport.append(relationship.addAgents(msm0, msm1));
+                    
+                    relationshipAgentList.remove(index0) ;
+                    relationshipAgentList.remove(msm1) ;
+                    
+                    availableAgentList.remove(msm0) ;
+                    availableAgentList.remove(msm1) ;
+                    index0-- ;
+                    
+                    // float t1 = System.nanoTime();
+                    Relationship relationship = null;
+                    switch(relationshipClazzName) {
+                        case "Casual":
+                            relationship = new PRSP.PrEPSTI.community.Casual();
+                            break;
+                        case "Regular":
+                            relationship = new PRSP.PrEPSTI.community.Regular();
+                            break;
+                        case "Monogomous":
+                            relationship = new PRSP.PrEPSTI.community.Monogomous();
+                            break;
+                        default:
+                            LOGGER.severe(relationshipClazzName);
+                            break;
                     }
-                    catch( Exception e )
-                    {
-                        LOGGER.severe(e.toString()) ;
-                    }
+                    sbReport.append(relationship.addAgents(msm0, msm1));
+                    // timeRun += (System.nanoTime() - t1);
                     break ;
                     
                     // No longer available for other Relationships
                     //availableAgents.remove(agent0) ;
                     //availableAgents.remove(agent1) ;
                 }
-                System.out.println("timeLastInnerLoops=" + String.valueOf((System.nanoTime() - t1) / 1000000000f ) + ", " + String.valueOf(t1) + " -> " + String.valueOf(System.nanoTime()));
             }
             
             
         }
         // System.out.println(report.length() + " time=" + String.valueOf((System.nanoTime()-t1) / 1000000000f));
         report = sbReport.toString();
+        // timeRun += (System.nanoTime() - t1);
+        // System.out.println("timRun=" + String.valueOf((timeRun) / 1000000000f ) + ", " + String.valueOf(timeRun) + " -> " + String.valueOf(System.nanoTime()));
         return report ;
     }
     
@@ -1838,15 +1857,30 @@ public class MSM extends Agent {
     public boolean getSeroSort(String relationshipClazzName)    //, Boolean status)
     {
         Boolean serosort = false ;
-        String returnString = "seroSort" + relationshipClazzName ;
-        try
-        {
-            serosort = MSM.class.getDeclaredField(returnString).getBoolean(this) ;
+        // String returnString = "seroSort" + relationshipClazzName ;
+        switch(relationshipClazzName) {
+            case "Casual":
+                seroSort = getSeroSortCasual();
+                break;
+            case "Regular":
+                seroSort = getSeroSortRegular();
+                break;
+            case "Monogomous":
+                seroSort = getSeroSortMonogomous();
+                break;
+            default:
+                // LOGGER.severe(relationshipClazzName);
+                break;
         }
-        catch ( Exception e )
-        {
-            LOGGER.log(Level.SEVERE, "{0} {1}", new Object[] {returnString, e.getClass().getSimpleName()});
-        }
+
+        // try
+        // {
+        //     serosort = MSM.class.getDeclaredField(returnString).getBoolean(this) ;
+        // }
+        // catch ( Exception e )
+        // {
+        //     LOGGER.log(Level.SEVERE, "{0} {1}", new Object[] {returnString, e.getClass().getSimpleName()});
+        // }
         return serosort ;
     }
     
