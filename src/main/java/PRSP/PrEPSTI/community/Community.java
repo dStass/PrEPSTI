@@ -534,9 +534,11 @@ public class Community {
         
         String[] relationshipClassNames = new String[] {"Casual","Regular","Monogomous"} ; // "Casual","Regular","Monogomous"
         
-        
+        Community.ADD_TIME_STAMP("after print statements");
         encounterReporter = new EncounterReporter(SIM_NAME, FILE_PATH) ;
+        Community.ADD_TIME_STAMP("new encounterReporter");
         screeningReporter = new ScreeningReporter(SIM_NAME, FILE_PATH) ;
+        Community.ADD_TIME_STAMP("new screeningReporter");
         
         //screeningReporter = new ScreeningReporter(SIM_NAME,FILE_PATH) ;
                 //new ScreeningReporter("prevalence",community.screeningReport) ;
@@ -578,6 +580,8 @@ public class Community {
             OUTPUT_RETURN += Reporter.EXTRACT_VALUE("all",notificationsRecord) ; //.("all")[0] + " " ;
             //community.dumpOutputReturn() ;
         }
+
+        Community.ADD_TIME_STAMP("after boolean for loop");
         
         //LOGGER.log(Level.INFO, "Notification rate {0}", new Object[] {finalNotificationsRecord});
         String[] siteNames = new String[] {"Pharynx","Rectum","Urethra"} ;
@@ -591,6 +595,7 @@ public class Community {
             // LOGGER.log(Level.INFO,"{0} {1}", new Object[] {siteName, prevalenceReport.get(prevalenceReport.size() - 1)}) ;
         }
         prevalenceReport = screeningReporter.preparePrevalenceReport() ;
+        Community.ADD_TIME_STAMP("after prevalence report");
         // LOGGER.log(Level.INFO,"{0} {1}", new Object[] {"all", prevalenceReport.get(prevalenceReport.size() - 1)}) ;
 
         HashMap<Comparable,String> incidenceReport = new HashMap<Comparable,String>() ;
@@ -645,6 +650,7 @@ public class Community {
         //populationPresenter.plotAgeAtDeath();
         //PopulationPresenter populationPresenter = new PopulationPresenter("deaths per cycle","deaths per cycle",populationReporter) ;
         //populationPresenter.plotDeathsPerCycle();
+        Community.ADD_TIME_STAMP("before dump");
         if (!incidenceReport.isEmpty())
         {
             Reporter.DUMP_OUTPUT("riskyIncidence_HIV",SIM_NAME,FILE_PATH,incidenceReport);
@@ -652,7 +658,8 @@ public class Community {
             //Reporter.DUMP_OUTPUT("riskyIncidencePrep",SIM_NAME,FILE_PATH,incidenceReportPrep);
         }
         
-        
+        Community.ADD_TIME_STAMP("finalStamp\n\n");
+
         LOGGER.info("Time Stamps:");
         double total = Double.valueOf(timeStamps.get(timeStamps.size() - 2)[1]);
         double prev = 0;

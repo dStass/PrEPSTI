@@ -1594,7 +1594,8 @@ public class ScreeningReporter extends Reporter {
      */
     public String prepareAtRiskIncidenceReport(String[] siteNames, int backYears, int backMonths, int backDays, int endCycle, String sortingProperty)
     {
-        String incidentRateReport = "" ;
+        // String incidentRateReport = "" ;
+        StringBuilder sbIncidentRateReport = new StringBuilder();
         
         HashSet<Object> sortingProperties = new HashSet<Object>() ; //(Arrays.asList(new Object[] {""})) ;
         HashMap<Object,ArrayList<String>> sortedAgentsReport = new HashMap<Object,ArrayList<String>>() ;
@@ -1668,10 +1669,11 @@ public class ScreeningReporter extends Reporter {
                 String propertyName = siteName.toString() ;
                 if (!"".equals(sortingValue))
                     propertyName += "_" + sortingValue ;
-                incidentRateReport += Reporter.ADD_REPORT_PROPERTY(propertyName, incidentRate) ;
+                // incidentRateReport += Reporter.ADD_REPORT_PROPERTY(propertyName, incidentRate) ;
+                sbIncidentRateReport.append(Reporter.ADD_REPORT_PROPERTY(propertyName, incidentRate));
             }
         }
-        return incidentRateReport ;
+        return sbIncidentRateReport.toString() ;
     }
     
     /**
