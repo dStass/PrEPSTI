@@ -33,6 +33,15 @@ public class MDLL<T> {
 
     }
 
+    /**
+     * Returns the amount of nodes 
+     * This is the size of mapping hashmap minus 2 nodes
+     * (reserved head and reserved last)
+     */
+    public int size() {
+        return this.mapping.size() - 2;
+    }
+
     public void addNextNode(int nodeId, T object) {
         this.addNextNode(String.valueOf(nodeId), object);
     }

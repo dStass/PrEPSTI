@@ -757,7 +757,7 @@ public abstract class Agent {
      */
     public int getNumberCurrentRelationships()
     {
-        return currentPartnerIds.size() ;
+        return currentPartnerIdSet.size() ;
     }
 
     /**
