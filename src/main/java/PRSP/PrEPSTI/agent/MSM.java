@@ -923,6 +923,12 @@ public class MSM extends Agent {
                 if (msm.getSeroSort(relationshipClazzName)) seroSortMDLL.addNextNode(msm.getAgentId(), msm) ;    
             }
 
+            // relo and sero 
+            // HashMap<Boolean, HashMap<Integer, Integer>> relationshipSeroMap = new HashMap<Boolean, HashMap<Integer, Integer>>();
+
+
+
+
             // for (Agent agent : relationshipAgentList) 
             // {
             //     MSM msm = (MSM) agent ;
