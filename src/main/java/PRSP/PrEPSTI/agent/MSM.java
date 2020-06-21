@@ -982,6 +982,7 @@ public class MSM extends Agent {
                             break;
                     }
                     sbReport.append(relationship.addAgents(msm0, msm1));
+                    break;
                     
                 }
             }
