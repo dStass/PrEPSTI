@@ -1100,7 +1100,7 @@ public class MSM extends Agent {
     private boolean riskyStatusRegular ;
     
     /** Transmission probabilities per sexual contact from Urethra to Rectum */
-    static double URETHRA_TO_RECTUM = 0.70 ; //  0.85 ; 
+    static double URETHRA_TO_RECTUM = 0.80 ; //  0.85 ; 
     /** Transmission probabilities sexual contact from Urethra to Pharynx. */
     static double URETHRA_TO_PHARYNX = 0.20 ; // 0.25 ; // 0.50 ; 
     /** Transmission probabilities sexual contact from Rectum to Urethra. */

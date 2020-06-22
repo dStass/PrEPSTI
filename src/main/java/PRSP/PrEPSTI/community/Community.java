@@ -51,8 +51,8 @@ public class Community {
     // input variables
     static public int LOADED_MAX_CYCLES ;
     static private int MAX_CYCLES ;
-    static int START_YEAR ;
-    static int END_YEAR ;
+    static public int START_YEAR ;
+    static public int END_YEAR ;
     
     // derived variables
     static public String SIM_NAME;
@@ -64,7 +64,7 @@ public class Community {
     
     
     /** Dump reports to disk after this many cycles. */
-    static int DUMP_CYCLE = 3000 ; // ((int) Math.pow(10, 7))/POPULATION ;
+    static int DUMP_CYCLE = 2000 ; // ((int) Math.pow(10, 7))/POPULATION ;
     /** Whether to dump partial reports during simulation. */
     static final boolean PARTIAL_DUMP = (DUMP_CYCLE > 0) ;
     
@@ -158,6 +158,7 @@ public class Community {
         Community.AGENTS_PER_DAY = Community.POPULATION / 365 ;
 
         // MAX_CYCLES
+        LOGGER.info(String.valueOf(LOADED_MAX_CYCLES));
         Community.MAX_CYCLES = Community.generateTrueCycles(Community.LOADED_MAX_CYCLES) ;
         
         // Pop[POPULATION]Cycles[MAX_CYCLES]
@@ -250,7 +251,6 @@ public class Community {
         // }
         
         COMMENT += MSM.TRANSMISSION_PROBABILITY_REPORT() ;
-        String comment = COMMENT;
         
         Community.ADD_TIME_STAMP("before reports/presenters created");
 
@@ -272,6 +272,7 @@ public class Community {
     
         // Establish Community of Agents for simulation
         LOGGER.info(SIM_NAME);
+        LOGGER.info(String.valueOf(MAX_CYCLES)) ;
         Community community = new Community(REBOOT_SIMULATION, Integer.valueOf(REBOOT_FROM_CYCLE)) ;
         Community.ADD_TIME_STAMP("new community created");
 
