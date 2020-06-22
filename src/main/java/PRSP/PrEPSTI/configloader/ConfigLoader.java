@@ -212,7 +212,13 @@ public class ConfigLoader {
         if (DYNAMIC != null) Community.DYNAMIC = Boolean.parseBoolean(DYNAMIC);
 
         String MAX_CYCLES = (String) communityJSON.get("MAX_CYCLES");
-        if (MAX_CYCLES != null) Community.LOADED_MAX_CYCLES = Integer.parseInt(MAX_CYCLES);
+        if (MAX_CYCLES != null) Community.LOADED_MAX_CYCLES = Integer.parseInt(MAX_CYCLES) ;
+
+        String START_YEAR = (String) communityJSON.get("START_YEAR");
+        if (START_YEAR != null) Community.LOADED_MAX_CYCLES = Integer.parseInt(START_YEAR) ;
+
+        String END_YEAR = (String) communityJSON.get("END_YEAR");
+        if (END_YEAR != null) Community.LOADED_MAX_CYCLES = Integer.parseInt(END_YEAR) ;
 
         String REBOOT_SIMULATION = (String) communityJSON.get("REBOOT_SIMULATION");
         if (REBOOT_SIMULATION != null) Community.REBOOT_SIMULATION = REBOOT_SIMULATION;

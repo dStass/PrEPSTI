@@ -345,7 +345,7 @@ public class Reporter {
      */
     public static String BOUNDED_STRING_BY_VALUE(String propertyName, String value, String bound, String string)
     {
-        String boundedOutput = "" ;
+    	StringBuilder sbBoundedOutput = new StringBuilder() ;    // "" ;
         String boundedString ;
         for (int indexStart = Reporter.INDEX_OF_PROPERTY(bound,string) ; indexStart >= 0 ; indexStart = INDEX_OF_PROPERTY(bound,indexStart+1,string))
         {
@@ -355,9 +355,9 @@ public class Reporter {
             
             // TODO: Label Sites site0, site1 in generation of encounterString so that boolean || is not necessary
             if (COMPARE_VALUE(propertyName,value,boundedString) || Reporter.COMPARE_VALUE(propertyName,value,boundedString,boundedString.lastIndexOf(propertyName))) 
-                boundedOutput += boundedString ;
+                sbBoundedOutput.append(boundedString) ;
         }
-        return boundedOutput ;
+        return sbBoundedOutput.toString() ;
     }
     
     /**
@@ -419,15 +419,15 @@ public class Reporter {
      */
     protected static String BOUNDED_STRING_BY_CONTENTS(String propertyName, String bound, String string)
     {
-        String boundedOutput = "" ;
+    	StringBuilder sbBoundedOutput = new StringBuilder() ; // = "" ;
         String boundedString ;
         for (int indexStart = Reporter.INDEX_OF_PROPERTY(bound,string) ; indexStart >= 0 ; indexStart = INDEX_OF_PROPERTY(bound,indexStart+1,string) )
         {
             boundedString = EXTRACT_BOUNDED_STRING(bound, string, indexStart) ;
             if (boundedString.contains(propertyName))   //(COMPARE_VALUE(propertyName,value,boundedString)) 
-                boundedOutput += boundedString ;
+                sbBoundedOutput.append(boundedString) ;
         }
-        return boundedOutput ;
+        return sbBoundedOutput.toString() ;
     }
 
     /**
@@ -441,7 +441,7 @@ public class Reporter {
      */
     protected static String BOUNDED_STRING_FROM_ARRAY(String propertyName, ArrayList<?> values, String bound, String string)
     {
-        String boundedOutput = "" ;
+        StringBuilder sbBoundedOutput = new StringBuilder() ;    // "" ;
         String boundedString ;
         String value ;
         for (int indexStart = Reporter.INDEX_OF_PROPERTY(bound,string) ; indexStart >= 0 ; indexStart = INDEX_OF_PROPERTY(bound,indexStart+1,string) )
@@ -449,9 +449,9 @@ public class Reporter {
             boundedString = EXTRACT_BOUNDED_STRING(bound, string, indexStart) ;
             value = EXTRACT_VALUE(propertyName, boundedString) ;
             if (values.contains(value))   //(COMPARE_VALUE(propertyName,value,boundedString)) 
-                boundedOutput += boundedString ;
+                sbBoundedOutput.append(boundedString) ;
         }
-        return boundedOutput ;
+        return sbBoundedOutput.toString() ;
     }
 
     /**
