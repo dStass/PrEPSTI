@@ -158,7 +158,6 @@ public class Community {
         Community.AGENTS_PER_DAY = Community.POPULATION / 365 ;
 
         // MAX_CYCLES
-        LOGGER.info(String.valueOf(LOADED_MAX_CYCLES));
         Community.MAX_CYCLES = Community.generateTrueCycles(Community.LOADED_MAX_CYCLES) ;
         
         // Pop[POPULATION]Cycles[MAX_CYCLES]
@@ -272,7 +271,6 @@ public class Community {
     
         // Establish Community of Agents for simulation
         LOGGER.info(SIM_NAME);
-        LOGGER.info(String.valueOf(MAX_CYCLES)) ;
         Community community = new Community(REBOOT_SIMULATION, Integer.valueOf(REBOOT_FROM_CYCLE)) ;
         Community.ADD_TIME_STAMP("new community created");
 
