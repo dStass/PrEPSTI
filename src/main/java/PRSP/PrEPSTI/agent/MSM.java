@@ -940,7 +940,9 @@ public class MSM extends Agent {
             // t1 = System.nanoTime();
             
             MDLLIterator<MSM> seroBackwardIterator = seroSortMDLL.getBackwardIterator();
+            // System.out.println(String.valueOf(relationshipAgentMDLL.size()) + ", " + String.valueOf(seroSortMDLL.size()));
             while (seroBackwardIterator.hasNext()) {
+                if (relationshipAgentMDLL.size() == 0) break;
                 MSM msm0 = seroBackwardIterator.getNextAndIterate();
                 relationshipAgentMDLL.removeNode(msm0.getAgentId());
                 MDLLForwardIterator<Agent> relationshipForwardIterator = relationshipAgentMDLL.getForwardIterator();
@@ -989,6 +991,7 @@ public class MSM extends Agent {
 
             MDLLBackwardIterator<Agent> outerRelationshipBackwardIterator = relationshipAgentMDLL.getBackwardIterator();
             while (outerRelationshipBackwardIterator.hasNext()) {
+                if (relationshipAgentMDLL.size() == 0) break;
                 MSM msm0 = (MSM) outerRelationshipBackwardIterator.getNextAndIterate();
                 // if (msm0 == null) break;
                 if (outerRelationshipBackwardIterator.hasNext() == false) break;  // takes care of > 0
