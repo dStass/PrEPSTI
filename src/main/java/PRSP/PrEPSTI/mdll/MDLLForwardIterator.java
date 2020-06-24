@@ -12,13 +12,15 @@ public class MDLLForwardIterator<T> implements MDLLIterator<T>{
 
     public boolean hasNext() {
         if (this.curr.getId().equals(this.last.getId())
-        || this.curr.getNext().getId().equals(this.last.getId())) return false;
+        || this.curr.getNext().getId().equals(this.last.getId()))
+            return false;
         return true;
     }
 
     public T getNextAndIterate() {
         this.curr = this.curr.getNext();
-        return (T) this.curr.getObject();
+        if (this.curr.getId().equals(MDLL.LAST_ID)) return null;
+        return this.curr.getObject();
     }
 
     public void iterateBack() {

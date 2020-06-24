@@ -34,5 +34,4 @@ public class MDLLNode<T> {
     public T getObject() {
         return this.object;
     }
-
 }

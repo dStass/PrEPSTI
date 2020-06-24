@@ -173,5 +173,4 @@ public class MDLL<T> {
         if (!this.mapping.containsKey(nodeId)) return null;
         else return new MDLLBackwardIterator<T>(this.head, this.mapping.get(nodeId));
     }
-
 }
