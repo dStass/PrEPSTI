@@ -520,8 +520,8 @@ public class Community {
         t2 = System.nanoTime();
         float timeDumpReboot = (t2-t1);
 
-        Community.ADD_TIME_STAMP("after dumping meta: "+ String.valueOf(timeDumpMeta/1000000000f) 
-            + " and reboot: " + String.valueOf(timeDumpReboot/1000000000f));
+        Community.ADD_TIME_STAMP("after dumping\nmeta: "+ String.valueOf(timeDumpMeta/1000000000f) 
+            + "\nreboot: " + String.valueOf(timeDumpReboot/1000000000f));
 
         long elapsedTime = System.nanoTime() - startTime ;
         long milliTime = elapsedTime/1000000 ;
@@ -612,9 +612,10 @@ public class Community {
             //incidenceReportPrep = screeningReporter.prepareYearsAtRiskIncidenceReport(siteNames, 16, 2022, "prepStatus") ;
         }
 
-        screeningReporter.prepareFinalAtRiskIncidentsRecord(siteNames, 0, "statusHIV");
-        encounterReporter.prepareFinalIncidenceRecord(new String[] {"Pharynx","Rectum","Urethra"}, 0, 0, 365, MAX_CYCLES).toString();
-        encounterReporter.prepareSortedFinalIncidenceRecord(siteNames, 0, 0, 365, MAX_CYCLES, "statusHIV").toString();
+        // commented out execution if not required 
+        // screeningReporter.prepareFinalAtRiskIncidentsRecord(siteNames, 0, "statusHIV");
+        // encounterReporter.prepareFinalIncidenceRecord(new String[] {"Pharynx","Rectum","Urethra"}, 0, 0, 365, MAX_CYCLES).toString();
+        // encounterReporter.prepareSortedFinalIncidenceRecord(siteNames, 0, 0, 365, MAX_CYCLES, "statusHIV").toString();
 
         
         
@@ -1179,6 +1180,7 @@ public class Community {
         //ArrayList<Relationship> currentRelationships ;
         
         // LOGGER.info("nb relationships: " + relationships.size());
+        // TODO: if no order is required, we can pararelise this:
         for (Agent agent : agents)
         {
             for (Relationship relationship : agent.getCurrentRelationships())
@@ -1221,8 +1223,8 @@ public class Community {
                 // }
             }
         }
-        record = sbRecord.toString();
-        return record ;
+        // record = sbRecord.toString();
+        return sbRecord.toString() ;
     }
 
     /**

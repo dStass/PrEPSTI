@@ -940,22 +940,18 @@ public class MSM extends Agent {
             // t1 = System.nanoTime();
             
             MDLLIterator<MSM> seroBackwardIterator = seroSortMDLL.getBackwardIterator();
-            // System.out.println(String.valueOf(relationshipAgentMDLL.size()) + ", " + String.valueOf(seroSortMDLL.size()));
             while (seroBackwardIterator.hasNext()) {
-                if (relationshipAgentMDLL.size() == 0) break;
                 MSM msm0 = seroBackwardIterator.getNextAndIterate();
                 relationshipAgentMDLL.removeNode(msm0.getAgentId());
                 MDLLForwardIterator<Agent> relationshipForwardIterator = relationshipAgentMDLL.getForwardIterator();
                 while (relationshipForwardIterator.hasNext()) {
                     Agent agent = relationshipForwardIterator.getNextAndIterate();
                     MSM msm1 = (MSM) agent;
-                    if (msm1.statusHIV != msm0.statusHIV)
-                        continue ;
+                    if (msm1.statusHIV != msm0.statusHIV) continue ;
 
                     // Have only one Relationship between two given MSM 
                     // if (partnerIdHashMap.get(msm1.getAgentId()).contains(msm0.getAgentId())) continue;
-                    if (msm1.getCurrentPartnerIdSet().contains(msm0.getAgentId()))
-                        continue ;
+                    if (msm1.getCurrentPartnerIdSet().contains(msm0.getAgentId())) continue ;
 
                         relationshipForwardIterator.iterateBack();
                         relationshipAgentMDLL.removeNode(agent.getAgentId());
@@ -985,13 +981,11 @@ public class MSM extends Agent {
                     }
                     sbReport.append(relationship.addAgents(msm0, msm1));
                     break;
-                    
                 }
             }
 
             MDLLBackwardIterator<Agent> outerRelationshipBackwardIterator = relationshipAgentMDLL.getBackwardIterator();
             while (outerRelationshipBackwardIterator.hasNext()) {
-                if (relationshipAgentMDLL.size() == 0) break;
                 MSM msm0 = (MSM) outerRelationshipBackwardIterator.getNextAndIterate();
                 // if (msm0 == null) break;
                 if (outerRelationshipBackwardIterator.hasNext() == false) break;  // takes care of > 0

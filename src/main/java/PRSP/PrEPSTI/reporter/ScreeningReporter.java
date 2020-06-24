@@ -345,7 +345,9 @@ public class ScreeningReporter extends Reporter {
     public String prepareFinalNotificationsRecord(String[] siteNames, boolean unique, int backYears, int backMonths, int backDays, int endCycle, ArrayList<String> sortedAgents)
     {
         HashMap<Comparable,Number[]> finalNotifications = new HashMap<Comparable,Number[]>() ;
-        String finalNotificationsString = ADD_REPORT_LABEL(NOTIFICATION) ;
+        StringBuilder sbFinalNotifications = new StringBuilder();
+        sbFinalNotifications.append(ADD_REPORT_LABEL(NOTIFICATION));
+        // String finalNotificationsString = ADD_REPORT_LABEL(NOTIFICATION) ;
         
         endCycle -= backYears * DAYS_PER_YEAR ;
         //double daysBetweenTests = 505 ;    // PROPORTION_HIV * 6 * 71 + (1-PROPORTION_HIV) * 6 * 85.5
@@ -400,7 +402,8 @@ public class ScreeningReporter extends Reporter {
             }
             Number[] entry = new Number[] {notifications/denominator,positiveAgents.size()} ;
             finalNotifications.put(siteName,entry) ;
-            finalNotificationsString += ADD_REPORT_PROPERTY(siteName, entry[0].doubleValue()) ;
+            sbFinalNotifications.append(ADD_REPORT_PROPERTY(siteName, entry[0].doubleValue())) ;
+            // finalNotificationsString += ADD_REPORT_PROPERTY(siteName, entry[0].doubleValue()) ;
         }
         notifications = 0 ;
         //nbTests = 0 ;
@@ -437,9 +440,15 @@ public class ScreeningReporter extends Reporter {
         double nbTreated = (double) positiveAgents.size() ;
         Number[] entry = new Number[] {notifications/denominator,nbTreated/nbTested} ;
         finalNotifications.put("all",entry) ;
-        finalNotificationsString += ADD_REPORT_PROPERTY("all",entry[0].doubleValue()) ;
-        finalNotificationsString += ADD_REPORT_LABEL(POSITIVITY) ;
-        finalNotificationsString += ADD_REPORT_PROPERTY("all",entry[1].doubleValue()) ;
+
+        sbFinalNotifications.append(ADD_REPORT_PROPERTY("all",entry[0].doubleValue())) ;
+        sbFinalNotifications.append(ADD_REPORT_LABEL(POSITIVITY)) ;
+        sbFinalNotifications.append(ADD_REPORT_PROPERTY("all",entry[1].doubleValue())) ;
+
+        
+        // finalNotificationsString += ADD_REPORT_PROPERTY("all",entry[0].doubleValue()) ;
+        // finalNotificationsString += ADD_REPORT_LABEL(POSITIVITY) ;
+        // finalNotificationsString += ADD_REPORT_PROPERTY("all",entry[1].doubleValue()) ;
         
         // Correct siteName entries by nbTests
         for (String siteName : siteNames)
@@ -448,12 +457,15 @@ public class ScreeningReporter extends Reporter {
             notifications = entry[1].intValue() ;
             entry[1] = (Integer) notifications/nbTested ;
             finalNotifications.put(siteName,entry) ;
-            finalNotificationsString += ADD_REPORT_PROPERTY(siteName,entry[1].doubleValue()) ;
+            sbFinalNotifications.append(ADD_REPORT_PROPERTY(siteName,entry[1].doubleValue()));
+            // finalNotificationsString += ADD_REPORT_PROPERTY(siteName,entry[1].doubleValue()) ;
         }
         
         if (WRITE_REPORT)
             WRITE_CSV(finalNotifications, "Site", new String[] {"incidence",POSITIVITY}, "finalNotifications", simName, getFolderPath()) ;
-        return finalNotificationsString ;
+        
+        return sbFinalNotifications.toString();
+        // return finalNotificationsString ;
     }
     
     /**
