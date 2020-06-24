@@ -8,20 +8,17 @@
     "community" : {
         "FILE_PATH" : "output/",
         "NAME_ROOT" : "to2019testhiv2p0corr4A",
-        "MAX_CYCLES" : "18",
+        "MAX_CYCLES" : "14",
         "POPULATION" : "40000",
         "COMMENT" : "",
         "DYNAMIC" : "true",
         "REBOOT_SIMULATION" : "",
         "REBOOT_FROM_CYCLE" : "-1",
-        "endYear" : "2025",
+        "START_YEAR" : "2007",
+        "END_YEAR" : "2019",
         "methods" : {
             "interveneCommunity" : {
-                "startCycle" : "5",
-                "startYear" : "2007"
-            },
-            "main" : {
-                "endYear" : "2019"
+                "startCycle" : "1"
             }
         }
     },

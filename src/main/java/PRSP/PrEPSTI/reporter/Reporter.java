@@ -349,7 +349,7 @@ public class Reporter {
      */
     public static String BOUNDED_STRING_BY_VALUE(String propertyName, String value, String bound, String string)
     {
-        String boundedOutput = "" ;
+    	StringBuilder sbBoundedOutput = new StringBuilder() ;    // "" ;
         String boundedString ;
         for (int indexStart = Reporter.INDEX_OF_PROPERTY(bound,string) ; indexStart >= 0 ; indexStart = INDEX_OF_PROPERTY(bound,indexStart+1,string))
         {
@@ -359,9 +359,9 @@ public class Reporter {
             
             // TODO: Label Sites site0, site1 in generation of encounterString so that boolean || is not necessary
             if (COMPARE_VALUE(propertyName,value,boundedString) || Reporter.COMPARE_VALUE(propertyName,value,boundedString,boundedString.lastIndexOf(propertyName))) 
-                boundedOutput += boundedString ;
+                sbBoundedOutput.append(boundedString) ;
         }
-        return boundedOutput ;
+        return sbBoundedOutput.toString() ;
     }
     
     /**
@@ -423,15 +423,15 @@ public class Reporter {
      */
     protected static String BOUNDED_STRING_BY_CONTENTS(String propertyName, String bound, String string)
     {
-        String boundedOutput = "" ;
+    	StringBuilder sbBoundedOutput = new StringBuilder() ; // = "" ;
         String boundedString ;
         for (int indexStart = Reporter.INDEX_OF_PROPERTY(bound,string) ; indexStart >= 0 ; indexStart = INDEX_OF_PROPERTY(bound,indexStart+1,string) )
         {
             boundedString = EXTRACT_BOUNDED_STRING(bound, string, indexStart) ;
             if (boundedString.contains(propertyName))   //(COMPARE_VALUE(propertyName,value,boundedString)) 
-                boundedOutput += boundedString ;
+                sbBoundedOutput.append(boundedString) ;
         }
-        return boundedOutput ;
+        return sbBoundedOutput.toString() ;
     }
 
     /**
@@ -445,7 +445,7 @@ public class Reporter {
      */
     protected static String BOUNDED_STRING_FROM_ARRAY(String propertyName, ArrayList<?> values, String bound, String string)
     {
-        String boundedOutput = "" ;
+        StringBuilder sbBoundedOutput = new StringBuilder() ;    // "" ;
         String boundedString ;
         String value ;
         for (int indexStart = Reporter.INDEX_OF_PROPERTY(bound,string) ; indexStart >= 0 ; indexStart = INDEX_OF_PROPERTY(bound,indexStart+1,string) )
@@ -453,9 +453,9 @@ public class Reporter {
             boundedString = EXTRACT_BOUNDED_STRING(bound, string, indexStart) ;
             value = EXTRACT_VALUE(propertyName, boundedString) ;
             if (values.contains(value))   //(COMPARE_VALUE(propertyName,value,boundedString)) 
-                boundedOutput += boundedString ;
+                sbBoundedOutput.append(boundedString) ;
         }
-        return boundedOutput ;
+        return sbBoundedOutput.toString() ;
     }
 
     /**
@@ -2021,7 +2021,8 @@ public class Reporter {
                                             String categoryName,
                                             String scoreName,
                                             String reportName,
-                                            String folderPath) {
+                                            String folderPath) 
+    {
         
         // LOGGER.info("@@TEST: here multi write csv");                           
                                                 
@@ -3607,8 +3608,6 @@ public class Reporter {
         String folderPath = "/scratch/is14/mw7704/prepsti/output/to2025/" ;
         //String folderPath = "output/prep/" ;
         //String folderPath = "output/prePrEP/" ;
-        //String[] simNames = new String[] {"to2017newSort17aaPop40000Cycles5110", "to2017newSort17baPop40000Cycles5110","to2017newSort17caPop40000Cycles5110","to2017newSort17daPop40000Cycles5110","to2017newSort17eaPop40000Cycles5110",
-          //  "to2017newSort17faPop40000Cycles5110", "to2017newSort17gaPop40000Cycles5110","to2017newSort17haPop40000Cycles5110","to2017newSort17iaPop40000Cycles5110","to2017newSort17jaPop40000Cycles5110"} ;
         //String[] simNames = new String[] {"from2007seek27aPop40000Cycles5475","from2007seek27bPop40000Cycles5475","from2007seek27cPop40000Cycles5475","from2007seek27dPop40000Cycles5475","from2007seek27ePop40000Cycles5475",
         //"from2007seek27fPop40000Cycles5475","from2007seek27gPop40000Cycles5475","from2007seek27hPop40000Cycles5475","from2007seek27iPop40000Cycles5475","from2007seek27jPop40000Cycles5475"} ;
     
@@ -3633,7 +3632,7 @@ public class Reporter {
         int cutoff = 50 ;
         if (simNameList.size() < cutoff)
             cutoff = simNameList.size() ;
-        MULTI_WRITE_CSV(simNameList.subList(0, cutoff), "year", "Pharynx_false", "riskyIncidence_HIV", folderPath) ; // "C:\\Users\\MichaelWalker\\OneDrive - UNSW\\gonorrhoeaPrEP\\simulator\\PrEPSTI\\output\\prep\\") ; // 
+        MULTI_WRITE_CSV(simNameList.subList(0, cutoff), "year", "all_false", "riskyIncidence_HIV", folderPath) ; // "C:\\Users\\MichaelWalker\\OneDrive - UNSW\\gonorrhoeaPrEP\\simulator\\PrEPSTI\\output\\prep\\") ; // 
         // LOGGER.info(String.valueOf(cutoff) + " simulations included.") ;
         //PREPARE_GRAY_REPORT(simNames,folderPath,2007,2017) ;
     }

@@ -83,9 +83,8 @@ public class MSM extends Agent {
     static double PROBABILITY_POSITIVE_SERO_POSITION = 0.25 ;
     /** Probability of sero-positioning if HIV negative */
     static double PROBABILITY_NEGATIVE_SERO_POSITION = 0.154 ;
-    /** The proportion of HIV-positives whose viral load is undetectable, given positive HIV status */
-    static double[] PROPORTION_UNDETECTABLE = {0.566, 0.647, 0.701, 0.723, 0.747, 0.816, 0.734, 0.808, 
-            0.856, 0.847, 0.918} ;
+    // The proportion of HIV-positives whose viral load is undetectable, given positive HIV status, see REINIT_PROPORTION_UNDETECTABLE
+    //static double[] PROPORTION_UNDETECTABLE = {0.566, 0.647, 0.701, 0.723, 0.747, 0.816, 0.734, 0.808,0.856, 0.847, 0.918} ;
     
     /**
      * Coordinates the reinitialisation of Agent parameters when they change 
@@ -96,34 +95,34 @@ public class MSM extends Agent {
      */
     static public String REINIT(ArrayList<Agent> agentList, int year) 
     {
-        String report = "" ;
+    	StringBuilder sbReport = new StringBuilder() ; // "" ;
         //boolean successful = true ;
         String change = "change" ;
         String methodName = "" ;
         try
         {
             methodName = "undetectable" ;
-            report += Reporter.ADD_REPORT_PROPERTY(change, methodName) ;
-            report += REINIT_PROPORTION_UNDETECTABLE(agentList, year) ;
+            sbReport.append(Reporter.ADD_REPORT_PROPERTY(change, methodName)) ;
+            sbReport.append(REINIT_PROPORTION_UNDETECTABLE(agentList, year)) ;
             
             methodName = "disclosure" ;
             REINIT_PROBABILITY_DISCLOSURE_HIV(agentList, year) ;
             
             methodName = "riskinessCasual" ;
-            report += Reporter.ADD_REPORT_PROPERTY(change, methodName) ;
-            report += REINIT_RISK_CASUAL(agentList, year) ;
+            sbReport.append(Reporter.ADD_REPORT_PROPERTY(change, methodName)) ;
+            sbReport.append(REINIT_RISK_CASUAL(agentList, year)) ;
             
             methodName = "riskinessRegular" ;
-            report += Reporter.ADD_REPORT_PROPERTY(change, methodName) ;
-            report += REINIT_RISK_REGULAR(agentList, year) ;
+            sbReport.append(Reporter.ADD_REPORT_PROPERTY(change, methodName)) ;
+            sbReport.append(REINIT_RISK_REGULAR(agentList, year)) ;
             
             methodName = "trust_undetectable" ;
-            report += Reporter.ADD_REPORT_PROPERTY(change, methodName) ;
-            report += REINIT_TRUST_UNDETECTABLE(agentList, year) ;
+            sbReport.append(Reporter.ADD_REPORT_PROPERTY(change, methodName)) ;
+            sbReport.append(REINIT_TRUST_UNDETECTABLE(agentList, year)) ;
             
             methodName = "trust_prep" ;
-            report += Reporter.ADD_REPORT_PROPERTY(change, methodName) ;
-            report += REINIT_TRUST_PREP(agentList, year) ;
+            sbReport.append(Reporter.ADD_REPORT_PROPERTY(change, methodName)) ;
+            sbReport.append(REINIT_TRUST_PREP(agentList, year)) ;
             
             // Needs to be called after MSM.REINIT() specifically MSM.REINIT_RISK_ODDS()
             // due to its updating prepStatus.
@@ -138,8 +137,12 @@ public class MSM extends Agent {
             LOGGER.severe(e.toString() + " in method " + methodName) ;
             //return false ;
         }
-        return report ;
+        return sbReport.toString() ;
     }
+    
+    /** The proportion of HIV-positives whose viral load is undetectable, given positive HIV status */
+    static double[] PROPORTION_UNDETECTABLE = {0.566, 0.647, 0.701, 0.723, 0.747, 0.816, 0.734, 0.808,    // 2007-2014 
+            0.856, 0.847, 0.918} ;    // 2015-2018
     
     /**
      * Alters the probability of being on antiViral medication with undetectable
@@ -153,9 +156,9 @@ public class MSM extends Agent {
      */
     static protected String REINIT_PROPORTION_UNDETECTABLE(ArrayList<Agent> agentList, int year) throws Exception
     {
-        String report = "" ;
+    	StringBuilder sbReport = new StringBuilder() ; // "" ;
         if (year == 0)
-            return report ;
+            return sbReport.toString() ;
         
         // years 2007 onwards
         //double[] probabilityUndetectable = new double[] {0.566, 0.647, 0.701, 0.723, 0.747, 0.816, 0.734, 0.808, 
@@ -184,7 +187,7 @@ public class MSM extends Agent {
                     changeProbability = (newProbability - oldProbability)/(1 - oldProbability) ;
                     newStatus = RAND.nextDouble() < changeProbability ;
                     msm.setUndetectableStatus(newStatus) ;
-                    report += Reporter.ADD_REPORT_PROPERTY(String.valueOf(msm.getAgentId()), newStatus) ;
+                    sbReport.append(Reporter.ADD_REPORT_PROPERTY(String.valueOf(msm.getAgentId()), newStatus)) ;
                     continue ;
                 }
             }
@@ -196,15 +199,26 @@ public class MSM extends Agent {
                     // equivalent to correct calculation: RAND > (1 - changeProbability)
                     newStatus = RAND.nextDouble() < changeProbability ;
                     msm.setUndetectableStatus(newStatus) ;
-                    report += Reporter.ADD_REPORT_PROPERTY(String.valueOf(msm.getAgentId()), newStatus) ;
+                    sbReport.append(Reporter.ADD_REPORT_PROPERTY(String.valueOf(msm.getAgentId()), newStatus)) ;
                     continue ;
                 }
             }
             //newProbability *= changeProbability ;
         }
 
-        return report ;
+        return sbReport.toString() ;
     }
+    
+ // Start from year 2012
+    static double[] POSITIVE_TRUST_UNDETECTABLE= new double[] {0.0,0.483,0.772,    // 2012 to 2014
+        0.695, 0.720, 0.757, 0.830, 0.727                                   // 2015 to 2019
+    //,0.830, 0.865, 0.900, 0.935, 0.970, 1.0                               // 2020 to 2025
+    } ;
+    static double[] NEGATIVE_TRUST_UNDETECTABLE = new double[] {0.0,0.106,0.094,   // 2012 to 2014
+        0.129, 0.154, 0.203, 0.231, 0.194                                   // 2015 to 2019
+        //,0.231, 0.265, 0.300, 0.335, 0.370, 0.405, 0.440                  // 2020 to 2025
+        } ;
+    
     
     /**
      * Alters the willingness to trust U=U as protection against HIV on a year-by-year
@@ -216,11 +230,11 @@ public class MSM extends Agent {
      */
     static protected String REINIT_TRUST_UNDETECTABLE(ArrayList<Agent> agentList, int year) 
     {
-        String report = "" ;
+    	StringBuilder sbReport = new StringBuilder() ; // "" ;
         
         // Trust is zero until 2013, which is year 6.
         if (year < 6)
-            return report ;
+            return sbReport.toString() ;
         
         //int undetectableYear = year ;
         //if (undetectableYear >= PROPORTION_UNDETECTABLE.length)
@@ -235,16 +249,7 @@ public class MSM extends Agent {
         double lastDiscloseProportion = GET_YEAR(NEGATIVE_DISCLOSE_PROBABILITY,year - 1) ;
 
 
-        year -= 5 ;
-        // Start from year 2012
-        double[] positiveTrustUndetectable = new double[] {0.0,0.483,0.772,
-            0.695, 0.720, 0.757, 0.830, 0.727
-	    //,0.830, 0.865, 0.900, 0.935, 0.970, 1.0
-	    } ;
-        double[] negativeTrustUndetectable = new double[] {0.0,0.106,0.094,
-            0.129, 0.154, 0.203, 0.231, 0.194
-            //,0.231, 0.265, 0.300, 0.335, 0.370, 0.405, 0.440
-            } ;
+        year -= 5 ;    // Start from year 2012
         
         //int positiveYear = year ;
         //int negativeYear = year ;
@@ -253,10 +258,10 @@ public class MSM extends Agent {
         //if (negativeYear >= negativeTrustUndetectable.length)
           //  negativeYear = negativeTrustUndetectable.length - 1 ;
 
-        double positiveLastProbability = GET_YEAR(positiveTrustUndetectable,year - 1) ;
-        double positiveTrustProbability = GET_YEAR(positiveTrustUndetectable,year) ;
-        double negativeLastProbability = GET_YEAR(negativeTrustUndetectable,year - 1) ;
-        double negativeTrustProbability = GET_YEAR(negativeTrustUndetectable,year) ;
+        double positiveLastProbability = GET_YEAR(POSITIVE_TRUST_UNDETECTABLE,year - 1) ;
+        double positiveTrustProbability = GET_YEAR(POSITIVE_TRUST_UNDETECTABLE,year) ;
+        double negativeLastProbability = GET_YEAR(NEGATIVE_TRUST_UNDETECTABLE,year - 1) ;
+        double negativeTrustProbability = GET_YEAR(NEGATIVE_TRUST_UNDETECTABLE,year) ;
         
         double changeProbability ; 
         
@@ -290,7 +295,7 @@ public class MSM extends Agent {
                 changeProbability = (trustProbability - lastProbability)/(1 - lastProbability) ;
                 msm.setTrustUndetectable(RAND.nextDouble() < changeProbability);
                 if (msm.trustUndetectable)    // if trustPrep has changed
-                    report += Reporter.ADD_REPORT_PROPERTY(String.valueOf(msm.getAgentId()), TRUE) ;
+                    sbReport.append(Reporter.ADD_REPORT_PROPERTY(String.valueOf(msm.getAgentId()), TRUE)) ;
             }
             else
             {
@@ -300,11 +305,18 @@ public class MSM extends Agent {
                 // equivalent to correct calculation: RAND > (1 - changeProbability)
                 msm.setTrustUndetectable(RAND.nextDouble() < changeProbability) ; 
                 if (!msm.trustUndetectable)    // if trustPrep has changed
-                    report += Reporter.ADD_REPORT_PROPERTY(String.valueOf(msm.getAgentId()), FALSE) ;
+                    sbReport.append(Reporter.ADD_REPORT_PROPERTY(String.valueOf(msm.getAgentId()), FALSE)) ;
             }
         }
-        return report ;
+        return sbReport.toString() ;
     }
+    
+    /** Proportion of HIV-positives willing to trust that PrEP will protect their HIV-negative partner */
+    static double[] POSITIVE_TRUST_PREP = new double[] {0.0, 0.336, 0.467, 0.360} ;    // 2016 to 2019
+    
+    // Currently redundant as currently not modelling HIV status unknown or distrust
+    /** Proportion of HIV-negatives willing to trust that PrEP ensures that their partner is HIV-negative */
+    static double[] NEGATIVE_TRUST_PREP = new double[] {0.0, 0.346, 0.491, 0.532} ;    // 2016 to 2019
     
     /**
      * Alters the willingness to trust partner's PrEP to protect them from HIV on a year-by-year
@@ -315,27 +327,21 @@ public class MSM extends Agent {
      */
     static protected String REINIT_TRUST_PREP(ArrayList<Agent> agentList, int year) 
     {
-        String report = "" ;
+    	StringBuilder sbReport = new StringBuilder() ; //  "" ;
         
         // Trust is zero until 2016 inclusive, which is year 9.
         if (year < 10)
-            return report ;
+            return sbReport.toString() ;
         year -= 9 ;
         
-        // Proportion of HIV-positives willing to trust that PrEP will protect their HIV-negative partner
-        double[] positiveTrustPrep = new double[] {0.0, 0.336, 0.467, 0.360} ;
-        
-        // Proportion of HIV-negatives willing to trust that PrEP ensures that their partner is HIV-negative
-        // Currently redundant as currently not modelling HIV status unknown or distrust
-        double[] negativeTrustPrep = new double[] {0.0, 0.346, 0.491, 0.532} ;
         
         //if (year >= positiveTrustPrep.length)
           //  year = positiveTrustPrep.length - 1 ;
         
-        double positiveLastProbability = GET_YEAR(positiveTrustPrep,year - 1) ;
-        double positiveTrustProbability = GET_YEAR(positiveTrustPrep,year) ;
-        double negativeLastProbability = GET_YEAR(negativeTrustPrep,year - 1) ;
-        double negativeTrustProbability = GET_YEAR(negativeTrustPrep,year) ;
+        double positiveLastProbability = GET_YEAR(POSITIVE_TRUST_PREP,year - 1) ;
+        double positiveTrustProbability = GET_YEAR(POSITIVE_TRUST_PREP,year) ;
+        double negativeLastProbability = GET_YEAR(NEGATIVE_TRUST_PREP,year - 1) ;
+        double negativeTrustProbability = GET_YEAR(NEGATIVE_TRUST_PREP ,year) ;
         double changeProbability ; 
         
         for (Agent agent : agentList)
@@ -363,7 +369,7 @@ public class MSM extends Agent {
                 changeProbability = (trustProbability - lastProbability)/(1 - lastProbability) ;
                 msm.setTrustPrep(RAND.nextDouble() < changeProbability);
                 if (msm.trustPrep)    // if trustPrep has changed
-                    report += Reporter.ADD_REPORT_PROPERTY(String.valueOf(msm.getAgentId()), TRUE) ;
+                    sbReport.append(Reporter.ADD_REPORT_PROPERTY(String.valueOf(msm.getAgentId()), TRUE)) ;
             }
             else
             {
@@ -373,10 +379,10 @@ public class MSM extends Agent {
                 // equivalent to correct calculation: RAND > (1 - changeProbability)
                 msm.setTrustPrep(RAND.nextDouble() < changeProbability) ; 
                 if (!msm.trustPrep)    // if trustPrep has changed
-                    report += Reporter.ADD_REPORT_PROPERTY(String.valueOf(msm.getAgentId()), FALSE) ;
+                    sbReport.append(Reporter.ADD_REPORT_PROPERTY(String.valueOf(msm.getAgentId()), FALSE)) ;
             }
         }
-        return report ;
+        return sbReport.toString() ;
     }
     
     static double[] POSITIVE_DISCLOSE_PROBABILITY = new double[] {0.201,0.296,0.327,0.286,0.312,0.384,0.349,0.398,
@@ -398,26 +404,15 @@ public class MSM extends Agent {
      */
     static protected String REINIT_PROBABILITY_DISCLOSURE_HIV(ArrayList<Agent> agentList, int year) //throws Exception
     {
-        String report = "" ;
+    	StringBuilder sbReport = new StringBuilder() ; // "" ;
         // Go from 2007
         double newDiscloseProbability ;
         double oldDiscloseProbability ;
         double changeProbability ;
-        //if (statusHIV)
-        //double[] positiveDiscloseProbability = new double[] {0.201,0.296,0.327,0.286,0.312,0.384,0.349,0.398,
-        //0.430,0.395,0.461,0.461,0.461} ;
-        //double[] negativeDiscloseProbability = new double[] {0.175,0.205,0.218,0.239,0.229,0.249,0.236,0.295,
-        //  0.286,0.352,0.391,0.391,0.391} ;
-       
-        //if (year >= NEGATIVE_DISCLOSE_PROBABILITY.length)
-        //year = NEGATIVE_DISCLOSE_PROBABILITY.length - 1 ;
-        //
+        
         double negativeNewDiscloseProbability = GET_YEAR(NEGATIVE_DISCLOSE_PROBABILITY,year) ;
         double negativeOldDiscloseProbability = GET_YEAR(NEGATIVE_DISCLOSE_PROBABILITY,year-1) ;
 
-        //if (year >= POSITIVE_DISCLOSE_PROBABILITY.length)
-          //  year = POSITIVE_DISCLOSE_PROBABILITY.length - 1 ;
-        // positive 0.201,0.296,0.327,    negative 0.175,0.205,0.218,
         double positiveNewDiscloseProbability = GET_YEAR(POSITIVE_DISCLOSE_PROBABILITY,year) ;
         double positiveOldDiscloseProbability = GET_YEAR(POSITIVE_DISCLOSE_PROBABILITY,year-1) ;
         
@@ -455,11 +450,14 @@ public class MSM extends Agent {
             }
             
         }
-        return report ;
+        return sbReport.toString() ;
     }
     
     static double[] NEW_RISKY_CASUAL = new double[] {290,293,369,345,331,340,364,350,362,409,520,566,566} ;
-    static double[] NEW_SAFE_CASUAL = new double[] {468,514,471,501,469,465,444,473,440,424,307,264,264} ;
+    static double[] NEW_SAFE_CASUAL = new double[] {468,514,471,501,469,465,444,473,440,424,307,264,264        
+    		//    ,259,254,249,244,239,234    // decreasing Safe 2020 to 2025
+            //,269,274,279,284,289,294    // increasing Safe 2020 to 2025
+        } ;
     
     /**
      * Resets the probability of Risky vs Safe behaviour within Casual Relationships 
@@ -472,13 +470,17 @@ public class MSM extends Agent {
      */
     static protected String REINIT_RISK_CASUAL(ArrayList<Agent> agentList, int year) throws Exception
     {
-        String report = "" ;
+    	StringBuilder sbReport = new StringBuilder() ; // "" ;
         if (year == 0)
-            return report ;
+            return sbReport.toString() ;
         // GCPS (Table 15, 2011) (Table 14, 2013) (Table 16, 2017-18)
         // Year-by-year rates of UAIC 
         double[] newRiskyCasual = new double[] {290,293,369,345,331,340,364,350,362,409,520,566,566} ;
-        double[] newSafeCasual = new double[] {468,514,471,501,469,465,444,473,440,424,307,264,264} ;
+        double[] newSafeCasual = new double[] {468,514,471,501,469,465,444,473,440,424,307,264,264        
+        		//    ,259,254,249,244,239,234    // decreasing Safe 2020 to 2025
+                //,269,274,279,284,289,294    // increasing Safe 2020 to 2025
+            } ;
+
         
         //if (year >= newRiskyCasual.length)
           //  year = newRiskyCasual.length - 1 ;
@@ -558,14 +560,18 @@ public class MSM extends Agent {
                     msm.reInitScreenCycle(screeningRatio,false) ;
                 }
             }
-            report += Reporter.ADD_REPORT_PROPERTY(String.valueOf(msm.getAgentId()), record.toString()) ;
+            sbReport.append(Reporter.ADD_REPORT_PROPERTY(String.valueOf(msm.getAgentId()), record.toString())) ;
             record.clear() ;
         }
-        return report ;
+        return sbReport.toString() ;
     }
     
     static double[] NEW_RISKY_REGULAR = new double[] {568,540,538,604,493,513,503,520,576,557,618,650,685} ;
-    static double[] NEW_SAFE_REGULAR = new double[] {300,300,300,296,279,247,257,248,239,203,157,131,108} ;
+    static double[] NEW_SAFE_REGULAR = new double[] {300,300,300,296,279,247,257,248,239,203,157,131,108
+            // ,103,98,93,88,83,78    // decreasing Safe 2020 to 2025
+            //,113,118,123,128,133,138    // increasing Safe 2020 to 2025
+        } ;
+
     
     /**
      * Resets the probability of Risky vs Safe behaviour within Regular Relationships 
@@ -578,13 +584,17 @@ public class MSM extends Agent {
      */
     static protected String REINIT_RISK_REGULAR(ArrayList<Agent> agentList, int year) throws Exception
     {
-        String report = "" ;
+        StringBuilder sbReport = new StringBuilder() ; // "" ;
         if (year == 0)
-            return report ;
+            return sbReport.toString() ;
         // GCPS (Table 15, 2011) (Table 14, 2013) (Table 16, 2017-18)
         // Year-by-year rates of UAIC     // 538?
         double[] newRiskyRegular = new double[] {568,540,538,604,493,513,503,520,576,557,618,650,685} ;
-        double[] newSafeRegular = new double[] {300,300,300,296,279,247,257,248,239,203,157,131,108} ;
+        double[] newSafeRegular = new double[] {300,300,300,296,279,247,257,248,239,203,157,131,108
+                // ,103,98,93,88,83,78    // decreasing Safe 2020 to 2025
+                //,113,118,123,128,133,138    // increasing Safe 2020 to 2025
+            } ;
+
         
         //if (year >= newRiskyRegular.length)
           //  year = newRiskyRegular.length - 1 ;
@@ -663,10 +673,10 @@ public class MSM extends Agent {
 //                    msm.reInitScreenCycle(screeningRatio) ;
 //                }
             }
-            report += Reporter.ADD_REPORT_PROPERTY(String.valueOf(msm.getAgentId()), record.toString()) ;
+            sbReport.append(Reporter.ADD_REPORT_PROPERTY(String.valueOf(msm.getAgentId()), record.toString())) ;
             record.clear() ;
         }
-        return report ;
+        return sbReport.toString() ;
     }
     
     /**
@@ -732,7 +742,7 @@ public class MSM extends Agent {
      */
     static protected String REINIT_CONSENT_CASUAL_PROBABILITY(ArrayList<Agent> agentList, int year)
     {
-        String report = "" ;
+        StringBuilder sbReport = new StringBuilder() ; // "" ;
         double[] positiveProbabilities = new double[] {1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0} ;
         double[] negativeProbabilities = new double[] {1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0} ;
         
@@ -747,7 +757,7 @@ public class MSM extends Agent {
             msm.setConsentCasualProbability(consentProbability);
             // May change to msm.rescaleConsentCasualProbability(consentStatus[year]/consentStatus[year-1]) ;
         }
-        return report ;
+        return sbReport.toString() ;
     }
     
     /**
@@ -800,16 +810,7 @@ public class MSM extends Agent {
     	if (year >= 6)
     	{
             int trustUndetectableYear = year - 5 ;
-            // Start from year 2012
-            double[] positiveTrustUndetectable = new double[] {0.0,0.483,0.772,
-                0.695, 0.720, 0.757, 0.830, 0.727
-    	    // ,0.830, 0.865, 0.900, 0.935, 0.970, 1.0
-	        } ;
-            double[] negativeTrustUndetectable = new double[] {0.0,0.106,0.094,
-                0.129, 0.154, 0.203, 0.231, 0.194
-                //,0.231, 0.265, 0.300, 0.335, 0.370, 0.405, 0.440
-            } ;
-        
+            
             double negativeDiscloseProportion = GET_YEAR(NEGATIVE_DISCLOSE_PROBABILITY,year) ;    // year and not trustUndetectableYear
 
             double trustProbability ; 
@@ -818,7 +819,7 @@ public class MSM extends Agent {
             {
                 if (undetectableStatus)    // Only the undetectable trust being undetectable
                 {
-                  trustProbability = GET_YEAR(positiveTrustUndetectable,trustUndetectableYear)/probabilityUndetectable ;
+                  trustProbability = GET_YEAR(POSITIVE_TRUST_UNDETECTABLE,trustUndetectableYear)/probabilityUndetectable ;
                   setTrustUndetectable(RAND.nextDouble() < trustProbability);
                 }
             }
@@ -826,7 +827,7 @@ public class MSM extends Agent {
             {
                 if (discloseStatusHIV)  // Only those who disclose can know their partner's undetectableStatus
                 {
-                    trustProbability = GET_YEAR(negativeTrustUndetectable,trustUndetectableYear)/negativeDiscloseProportion ;
+                    trustProbability = GET_YEAR(NEGATIVE_TRUST_UNDETECTABLE,trustUndetectableYear)/negativeDiscloseProportion ;
                     setTrustUndetectable(RAND.nextDouble() < trustProbability);
                 }
             }
@@ -994,7 +995,7 @@ public class MSM extends Agent {
                     if (msm1.getCurrentPartnerIdSet().contains(msm0.getAgentId()))
                         continue ;
 
-                    System.out.println(relationshipAgentMDLL.size());
+                    // System.out.println(relationshipAgentMDLL.size());
                         
                     outerRelationshipBackwardIterator.getNextAndIterate();    
     
@@ -1246,19 +1247,19 @@ public class MSM extends Agent {
     private boolean riskyStatusRegular ;
     
     /** Transmission probabilities per sexual contact from Urethra to Rectum */
-    static double URETHRA_TO_RECTUM = 0.95 ; //  0.85 ; 
+    static double URETHRA_TO_RECTUM = 0.80 ; //  0.85 ; 
     /** Transmission probabilities sexual contact from Urethra to Pharynx. */
-    static double URETHRA_TO_PHARYNX = 0.35 ; // 0.25 ; // 0.50 ; 
+    static double URETHRA_TO_PHARYNX = 0.20 ; // 0.25 ; // 0.50 ; 
     /** Transmission probabilities sexual contact from Rectum to Urethra. */
-    static double RECTUM_TO_URETHRA = 0.010 ; // 0.009 ; // 0.015 ; // 0.010 ;
+    static double RECTUM_TO_URETHRA = 0.015 ; // 0.009 ; // 0.015 ; // 0.010 ;
     /** Transmission probabilities sexual contact from Rectum to Pharynx. */
     static double RECTUM_TO_PHARYNX = 0.025 ; // 0.023 ; 
     /** Transmission probabilities sexual contact in Pharynx to Urethra intercourse. */
-    static double PHARYNX_TO_URETHRA = 0.004 ; // 0.005 ; // .005 ; // 0.010 ; 
+    static double PHARYNX_TO_URETHRA = 0.005 ; // 0.005 ; // .005 ; // 0.010 ; 
     /** Transmission probabilities sexual contact in Pharynx to Rectum intercourse. */
     static double PHARYNX_TO_RECTUM = 0.025 ; // 0.020 ; 0.020 ; // 0.020 ; 
     /** Transmission probabilities sexual contact in Pharynx to Pharynx intercourse (kissing). */
-    static double PHARYNX_TO_PHARYNX = 0.065 ; // 0.075 // 0.040 ;
+    static double PHARYNX_TO_PHARYNX = 0.070 ; // 0.075 // 0.040 ;
     /** Transmission probabilities sexual contact in Urethra to Urethra intercourse (docking). */
     static double URETHRA_TO_URETHRA = 0.001 ; // 0.001 ; // 0.001 ; // 0.020 ; 
     /** Transmission probabilities sexual contact in Rectum to Rectum intercourse. */

@@ -50,8 +50,10 @@ public class Community {
     // static public HashMap<String, HashMap> METHOD_CONFIG;
 
     // input variables
-    static public int LOADED_MAX_CYCLES;
-    static private int MAX_CYCLES;
+    static public int LOADED_MAX_CYCLES ;
+    static private int MAX_CYCLES ;
+    static public int START_YEAR ;
+    static public int END_YEAR ;
     
     // derived variables
     static public String SIM_NAME;
@@ -63,7 +65,7 @@ public class Community {
     
     
     /** Dump reports to disk after this many cycles. */
-    static int DUMP_CYCLE = 250 ; // ((int) Math.pow(10, 7))/POPULATION ;
+    static int DUMP_CYCLE = 2000 ; // ((int) Math.pow(10, 7))/POPULATION ;
     /** Whether to dump partial reports during simulation. */
     static final boolean PARTIAL_DUMP = (DUMP_CYCLE > 0) ;
     
@@ -249,7 +251,6 @@ public class Community {
         // }
         
         COMMENT += MSM.TRANSMISSION_PROBABILITY_REPORT() ;
-        String comment = COMMENT;
         
         Community.ADD_TIME_STAMP("before reports/presenters created");
 
@@ -270,7 +271,7 @@ public class Community {
         // LOGGER.log(Level.INFO, "Seed:{0}", System.currentTimeMillis());
     
         // Establish Community of Agents for simulation
-        // LOGGER.info(SIM_NAME);
+        LOGGER.info(SIM_NAME);
         Community community = new Community(REBOOT_SIMULATION, Integer.valueOf(REBOOT_FROM_CYCLE)) ;
         Community.ADD_TIME_STAMP("new community created");
 
@@ -334,9 +335,8 @@ public class Community {
             HashMap<Object,String> commenceMap = new HashMap<Object,String>() ;
             ArrayList<String> commenceList = new ArrayList<String>() ;
             ArrayList<Comparable> breakupList ;
-
             
-            // LOGGER.info("burning in Relationships") ;
+            LOGGER.info("burning in Relationships") ;
             for (int burnin = 0 ; burnin < 2500 ; burnin++ ) // 20000
             {   
                 t1 = System.nanoTime();
@@ -602,13 +602,7 @@ public class Community {
         //HashMap<Comparable,String> incidenceReportPrep = new HashMap<Comparable,String>() ;
         if (DYNAMIC)
         {
-            // loading startYear from ConfigLoader
-            int startYear = ConfigLoader.getMethodVariableInteger("community", "interveneCommunity", "startYear") ; // = 2015 ; // int startYear = a2015 ;
-
-            // loading endYear from ConfigLoader
-            int endYear = ConfigLoader.getMethodVariableInteger("community", "main", "endYear") ;
-
-            incidenceReport = screeningReporter.prepareYearsAtRiskIncidenceReport(siteNames, endYear + 1 - startYear, endYear, "statusHIV") ;
+            incidenceReport = screeningReporter.prepareYearsAtRiskIncidenceReport(siteNames, END_YEAR + 1 - START_YEAR, END_YEAR, "statusHIV") ;
             //incidenceReportPrep = screeningReporter.prepareYearsAtRiskIncidenceReport(siteNames, 16, 2022, "prepStatus") ;
         }
 
@@ -863,11 +857,10 @@ public class Community {
     {
         // loading in from json
         int startCycle = ConfigLoader.getMethodVariableInteger("community", "interveneCommunity", "startCycle");
-        int startYear = ConfigLoader.getMethodVariableInteger("community", "interveneCommunity", "startYear");
-
+        
         // When to end burn-in
         startCycle = Community.generateTrueCycles(startCycle);
-        startYear -= 2007 ;
+        int startYear = START_YEAR - 2007 ;
 
         // No more burn-in if starting at a later date than 2007
         if (startYear > 0)

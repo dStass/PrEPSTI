@@ -154,9 +154,9 @@ public abstract class Agent {
         {
             // Needs to be called after MSM.REINIT() specifically MSM.REINIT_RISK_ODDS()
             // due to its updating prepStatus.
-            //methodName = "screen" ;
-            //report += Reporter.ADD_REPORT_PROPERTY(change, methodName) ;
-            //report += REINIT_SCREEN_CYCLE(agentList, year) ;
+            methodName = "screen" ;
+            report += Reporter.ADD_REPORT_PROPERTY(change, methodName) ;
+            report += REINIT_SCREEN_CYCLE(agentList, year) ;
 
         }
         catch ( Exception e )
@@ -196,13 +196,12 @@ public abstract class Agent {
      */
     static protected String REINIT_SCREEN_CYCLE(ArrayList<Agent> agentList, int year) throws Exception
     {
-        String report = "" ;
+        StringBuilder report = new StringBuilder() ; // "" ;
         //double[] testRates = new double[] {333,340,398,382,383,382,391,419,445,499,488,488,488} ;
         // 2007 - 2009
         // 333,340,398,
         
         int newScreenCycle ;
-        String record ;
         
         //if (year >= TEST_RATES.length)
           //  year = TEST_RATES.length - 1 ;
@@ -214,13 +213,12 @@ public abstract class Agent {
         double ratio = testBase/GET_YEAR(TEST_RATES,year) ;
         for (Agent agent : agentList)
         {
-            //newScreenCycle = 
-            ((MSM) agent).reInitScreenCycle(ratio) ;
-            //if (newScreenCycle < 0)
-            //	continue ;
-            //report += Reporter.ADD_REPORT_PROPERTY(String.valueOf(agent.agentId), agent.screenCycle) ;
+            newScreenCycle = ((MSM) agent).reInitScreenCycle(ratio) ;
+            if (newScreenCycle < 0)
+            	continue ;
+            report.append(Reporter.ADD_REPORT_PROPERTY(String.valueOf(agent.agentId), agent.screenCycle)) ;
         }
-        return report ;
+        return report.toString() ;
     }
     
     // number of relationships willing to maintain at once
@@ -946,7 +944,7 @@ public abstract class Agent {
         sbCensusReport.append(Reporter.ADD_REPORT_PROPERTY("screenCycle",getScreenCycle())) ;
         sbCensusReport.append(Reporter.ADD_REPORT_PROPERTY("screenTime",screenTime)) ;
 
-        censusReport = sbCensusReport.toString();
+        censusReport = sbCensusReport.toString() ;
         
         /*Class fieldClazz ;
         Class agentClazz ;
