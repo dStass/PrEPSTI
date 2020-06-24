@@ -751,10 +751,10 @@ public class Community {
     /**
      * Initialises community based on previously saved simulation, if given.
      * @param simName - Name of simulation to be reloaded.
-     * @param fromCycle - the cycle of reloaded simulation from which to 
+     * @param rebootCycle - the cycle of reloaded simulation from which to 
      * recommence simulation.
      */
-    public Community(String simName, int fromCycle)
+    public Community(String simName, int rebootCycle)
     {
         if (simName.isEmpty())
             initialiseCommunity();
@@ -762,71 +762,21 @@ public class Community {
         {   
             String rebootedSimName = simName;
             String rebootedFolderPath = ConfigLoader.REBOOT_PATH;
-            if (fromCycle >= 0) {
-                PopulationReporter populationReporter = new PopulationReporter(simName, ConfigLoader.REBOOT_PATH);
-                RelationshipReporter relationshipReporter = new RelationshipReporter(simName, ConfigLoader.REBOOT_PATH);
-                ScreeningReporter screeningReporter = new ScreeningReporter(simName, ConfigLoader.REBOOT_PATH);
+            if (rebootCycle >= 0) {
+                HashMap<String, ArrayList<String>> rebootLabels = Reporter.GENERATE_REBOOT_DATA_UPTO_CYCLE(simName, rebootCycle);
+                ArrayList<String> metaLabels = rebootLabels.get("metaLabels");
+                ArrayList<String> metaData = rebootLabels.get("metaData");
+                ArrayList<Object> metaDataObjects = new ArrayList<Object>();
+                for (String data : metaData) metaDataObjects.add((Object) data);
                 
-                // generate the exact pseudorandom sequence for agent birth days
-                // rebootRandomSeeds(rebootedFolderPath, rebootedSimName) ;
-                // for (int i = 0; i < 4; ++i) Agent.GET_NEXT_RANDOM_DOUBLE();
-
-                int cycleToGenerateReportUpTo = fromCycle;
-
-                // generate rebooted metalabels and metadata
-                ArrayList<String> metaLabels = new ArrayList<String>() ; 
-                ArrayList<Object> metaData = new ArrayList<Object>() ;
-
-
-                /* * * * * * * * * *
-                 *      AGENTS     *
-                 * * * * * * * * * */
-
-                // generate our reboot census
-                HashMap<Integer, String> populationCensusUpToCycle = populationReporter.prepareCensusReport(cycleToGenerateReportUpTo, screeningReporter);
-                
-
-                // extract agent census data and write to internal metadata
-                // sort agents by id
-                TreeSet<Integer> sortedAgentKeySet = new TreeSet<Integer>();
-                sortedAgentKeySet.addAll(populationCensusUpToCycle.keySet());
-                
-                // add rebooted agent data to metadata
-                metaLabels.add("Agents") ;
-                String agentsReboot = "" ;
-                for (Integer agentId : sortedAgentKeySet) {
-                    String newAgentRecord = populationCensusUpToCycle.get(agentId);
-                    agentsReboot += newAgentRecord;
-                }
-                metaData.add(agentsReboot) ;
-
-
-                /* * * * * * * * * *
-                 *  RELATIONSHIPS  *
-                 * * * * * * * * * */
-
-                // extract relationship data and write to internal metadata
-                HashMap<Integer, String> relationshipRecordHashMap = relationshipReporter.prepareRelationshipRecordHashMap(cycleToGenerateReportUpTo);
-                
-                TreeSet<Integer> sortedRelationshipKeySet = new TreeSet<Integer>();
-                sortedRelationshipKeySet.addAll(relationshipRecordHashMap.keySet());
-                
-                // add rebooted relationship data to metadata
-                metaLabels.add("Relationships") ;
-                String relationshipsReboot = "" ;
-                for (Integer relationshipId : sortedRelationshipKeySet)
-                    relationshipsReboot += relationshipRecordHashMap.get(relationshipId) + ' ' ;
-                metaData.add(relationshipsReboot) ;
-                
-                // dump new metadata
-                rebootedSimName = simName + "$" + String.valueOf(fromCycle);
+                // change location to dump metaData
+                rebootedSimName = simName + "$" + String.valueOf(rebootCycle);
                 rebootedFolderPath = Community.FILE_PATH;
 
-                // TODO: extract "test/" from CONFIG
-                dumpRebootData(rebootedFolderPath, rebootedSimName, metaLabels, metaData);
+                dumpRebootData(rebootedFolderPath, rebootedSimName, metaLabels, metaDataObjects);
 
                 HashMap<String, String> modifiedProperties = new HashMap<String, String>();
-                modifiedProperties.put("Community.MAX_CYCLES", String.valueOf(fromCycle));
+                modifiedProperties.put("Community.MAX_CYCLES", String.valueOf(rebootCycle));
                 Reporter.DUPLICATE_METADATA_WITH_MODIFIED_PROPERTIES
                     (ConfigLoader.REBOOT_PATH, simName, rebootedFolderPath, rebootedSimName, modifiedProperties);
             }
