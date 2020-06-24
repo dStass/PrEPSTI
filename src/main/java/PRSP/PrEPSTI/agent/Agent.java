@@ -925,7 +925,7 @@ public abstract class Agent {
     public String getCensusReport()
     {   
         StringBuilder sbCensusReport = new StringBuilder();
-        String censusReport ;
+        String censusReport = "" ;
         sbCensusReport.append(Reporter.ADD_REPORT_PROPERTY("agentId",agentId)) ;
         sbCensusReport.append(Reporter.ADD_REPORT_PROPERTY("agent",agent)) ;
         sbCensusReport.append(Reporter.ADD_REPORT_PROPERTY("age",getAge())) ;  // Reporter.ADD_REPORT_PROPERTY("startAge", getAge()) ;
