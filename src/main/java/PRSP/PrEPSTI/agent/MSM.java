@@ -953,33 +953,21 @@ public class MSM extends Agent {
                     // if (partnerIdHashMap.get(msm1.getAgentId()).contains(msm0.getAgentId())) continue;
                     if (msm1.getCurrentPartnerIdSet().contains(msm0.getAgentId())) continue ;
 
-                        relationshipForwardIterator.iterateBack();
-                        relationshipAgentMDLL.removeNode(agent.getAgentId());
-                        
-                        availableMDLL.removeNode(msm0.getAgentId());
-                        availableMDLL.removeNode(agent.getAgentId());
+                    relationshipForwardIterator.iterateBack();
+                    relationshipAgentMDLL.removeNode(agent.getAgentId());
+                    
+                    availableMDLL.removeNode(msm0.getAgentId());
+                    availableMDLL.removeNode(agent.getAgentId());
 
-                        if (seroSortMDLL.hasNode(msm1.getAgentId())) {
-                            seroBackwardIterator.getNextAndIterate();
-                            seroSortMDLL.removeNode(msm1.getAgentId());
-                        }
-                        
-                    Relationship relationship = null;
-                    switch(relationshipClazzName) {
-                        case "Casual":
-                            relationship = new PRSP.PrEPSTI.community.Casual();
-                            break;
-                        case "Regular":
-                            relationship = new PRSP.PrEPSTI.community.Regular();
-                            break;
-                        case "Monogomous":
-                            relationship = new PRSP.PrEPSTI.community.Monogomous();
-                            break;
-                        default:
-                            LOGGER.severe(relationshipClazzName);
-                            break;
+                    if (seroSortMDLL.hasNode(msm1.getAgentId())) {
+                        seroBackwardIterator.getNextAndIterate();
+                        seroSortMDLL.removeNode(msm1.getAgentId());
                     }
-                    sbReport.append(relationship.addAgents(msm0, msm1));
+                    
+                    Relationship relationship = Relationship.getRelationshipFromClassName(relationshipClazzName);
+                    if (relationship == null) LOGGER.severe(relationshipClazzName);
+                    else sbReport.append(relationship.addAgents(msm0, msm1));
+
                     break;
                 }
             }
@@ -1017,23 +1005,9 @@ public class MSM extends Agent {
                     availableMDLL.removeNode(msm1.getAgentId()) ;
 
                     
-                    Relationship relationship = null;
-                    switch(relationshipClazzName) {
-                        case "Casual":
-                            relationship = new PRSP.PrEPSTI.community.Casual();
-                            break;
-                        case "Regular":
-                            relationship = new PRSP.PrEPSTI.community.Regular();
-                            break;
-                        case "Monogomous":
-                            relationship = new PRSP.PrEPSTI.community.Monogomous();
-                            break;
-                        default:
-                            LOGGER.severe(relationshipClazzName);
-                            break;
-                    }
-                    sbReport.append(relationship.addAgents(msm0, msm1));
-                    // timeRun += (System.nanoTime() - t1);
+                    Relationship relationship = Relationship.getRelationshipFromClassName(relationshipClazzName);
+                    if (relationship == null) LOGGER.severe(relationshipClazzName);
+                    else sbReport.append(relationship.addAgents(msm0, msm1));
                     break ;
                     
                     // No longer available for other Relationships

@@ -1555,7 +1555,15 @@ public class ScreeningReporter extends Reporter {
         //LOGGER.info(agentTreatedReport.get("all").get("1034").toString());
         return agentTreatedReport ;
     }
- 
+    
+    /**
+     * TODO: parallelisation
+     * @param relationshipClassNames
+     * @param backYears
+     * @param lastYear
+     * @param sortingProperty
+     * @return
+     */
     public HashMap<Comparable,String> prepareYearsAtRiskIncidenceReport(String[] relationshipClassNames, int backYears, int lastYear, String sortingProperty)
     {
         HashMap<Comparable,String> incidentRateReport = new HashMap<Comparable,String>() ;

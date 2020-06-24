@@ -671,11 +671,11 @@ public class Community {
             prev = curr;
             // System.out.println(s[0] + " -> stamp: " + s[1] + ", time taken: "
             //     + String.valueOf(difference) + "s, " + String.valueOf(percentage) + "% of sim");
-            System.out.println(String.valueOf(percentage) + "% : " + s[0] + ", "+ String.valueOf(difference)+"s");
+            System.out.println(String.valueOf(percentage) + "% : " + s[0] + ", (total="+ String.valueOf(difference)+"s)");
         }
         
         long timeFinal = System.nanoTime();
-        float timeRan = (timeFinal - timeInitial)/  1000000000f;
+        float timeRan = (timeFinal - timeInitial)/ 1000000000f;
         LOGGER.info("Task completed in " + String.valueOf(timeRan));
     }
  
@@ -955,7 +955,8 @@ public class Community {
     {
         //String report = "" ;
         float t1 = System.nanoTime();
-        ArrayList<Agent> availableAgents = (ArrayList<Agent>) agents.clone() ;
+        // ArrayList<Agent> availableAgents = (ArrayList<Agent>) agents.clone() ;
+        ArrayList<Agent> availableAgents = agents;
         
         MDLL<Agent> availableMDLL = new MDLL<Agent>();
         
@@ -1307,7 +1308,7 @@ public class Community {
             //LOGGER.log(Level.INFO,"infected:{0}",agent.getAgentId());
             //record += Reporter.ADD_REPORT_PROPERTY("agentId",agent.getAgentId()) ;
             infected = agent.getInfectedStatus();
-            anyInfected = anyInfected + infected ;
+            anyInfected += infected ;
             //record += Reporter.ADD_REPORT_PROPERTY("infected", infected) ;
             
             // Due for an STI screen?
