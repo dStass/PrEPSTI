@@ -993,10 +993,10 @@ public class MSM extends Agent {
                     // if (partnerIdHashMap.get(msm1.getAgentId()).contains(msm0.getAgentId())) continue;
                     if (msm1.getCurrentPartnerIdSet().contains(msm0.getAgentId()))
                         continue ;
+
+                    System.out.println(relationshipAgentMDLL.size());
                         
-                    outerRelationshipBackwardIterator.getNextAndIterate();
-                    // innerRelationshipBackwardIterator.iterateBack();
-    
+                    outerRelationshipBackwardIterator.getNextAndIterate();    
     
                     relationshipAgentMDLL.removeNode(msm0.getAgentId());
                     relationshipAgentMDLL.removeNode(msm1.getAgentId());

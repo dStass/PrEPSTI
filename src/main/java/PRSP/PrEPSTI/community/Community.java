@@ -499,15 +499,15 @@ public class Community {
         }
         
         Community.ADD_TIME_STAMP("after all dumps, time_aging = " + String.valueOf(timeAging/1000000000f)
-            + ", \ntimeSubmit = " + String.valueOf(timeSubmit/1000000000f)
-            + ", \ntimeAging = " + String.valueOf(timeAging/1000000000f)
-            + ", \ntimeDumping = " + String.valueOf(timeDumping/1000000000f)
-            + ", \ntimeGenRel = " + String.valueOf(timeGenRel/1000000000f)
-            + ", \ntimeGrimReaper = " + String.valueOf(timeGrimReaper/1000000000f)
-            + ", \ntimeProInf = " + String.valueOf(timeProInf/1000000000f)
-            + ", \ntimeIntCom = " + String.valueOf(timeIntCom/1000000000f)
-            + ", \ntimeClearRel = " + String.valueOf(timeClearRel/1000000000f)
-            + ", \ntimeRunEnc = " + String.valueOf(timeRunEnc/1000000000f));
+            + ", \n  timeSubmit = " + String.valueOf(timeSubmit/1000000000f)
+            + ", \n  timeAging = " + String.valueOf(timeAging/1000000000f)
+            + ", \n  timeDumping = " + String.valueOf(timeDumping/1000000000f)
+            + ", \n  timeGenRel = " + String.valueOf(timeGenRel/1000000000f)
+            + ", \n  timeGrimReaper = " + String.valueOf(timeGrimReaper/1000000000f)
+            + ", \n  timeProInf = " + String.valueOf(timeProInf/1000000000f)
+            + ", \n  timeIntCom = " + String.valueOf(timeIntCom/1000000000f)
+            + ", \n  timeClearRel = " + String.valueOf(timeClearRel/1000000000f)
+            + ", \n  timeRunEnc = " + String.valueOf(timeRunEnc/1000000000f));
         
 
         t1 = System.nanoTime();
@@ -520,8 +520,8 @@ public class Community {
         t2 = System.nanoTime();
         float timeDumpReboot = (t2-t1);
 
-        Community.ADD_TIME_STAMP("after dumping\nmeta: "+ String.valueOf(timeDumpMeta/1000000000f) 
-            + "\nreboot: " + String.valueOf(timeDumpReboot/1000000000f));
+        Community.ADD_TIME_STAMP("after dumping\n  meta: "+ String.valueOf(timeDumpMeta/1000000000f) 
+            + "\n  reboot: " + String.valueOf(timeDumpReboot/1000000000f));
 
         long elapsedTime = System.nanoTime() - startTime ;
         long milliTime = elapsedTime/1000000 ;
@@ -659,7 +659,7 @@ public class Community {
             //Reporter.DUMP_OUTPUT("riskyIncidencePrep",SIM_NAME,FILE_PATH,incidenceReportPrep);
         }
         
-        Community.ADD_TIME_STAMP("finalStamp\n\n");
+        Community.ADD_TIME_STAMP("finalStamp");
 
         LOGGER.info("Time Stamps:");
         double total = Double.valueOf(timeStamps.get(timeStamps.size() - 2)[1]);
@@ -673,6 +673,7 @@ public class Community {
             //     + String.valueOf(difference) + "s, " + String.valueOf(percentage) + "% of sim");
             System.out.println(String.valueOf(percentage) + "% : " + s[0] + ", (total="+ String.valueOf(difference)+"s)");
         }
+        System.out.println();
         
         long timeFinal = System.nanoTime();
         float timeRan = (timeFinal - timeInitial)/ 1000000000f;
