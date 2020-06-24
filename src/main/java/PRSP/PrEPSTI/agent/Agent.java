@@ -1875,15 +1875,17 @@ public abstract class Agent {
         Relationship relationship ;
         
         int startIndex = (nbRelationships - 1) ;
-        String record = "" ;
+        // String record = "" ;
+        StringBuilder sbRecord = new StringBuilder();
         for (int relationshipIndex = startIndex ; relationshipIndex >= 0 ; 
                 relationshipIndex-- )
         {
             relationship = currentRelationships.get(relationshipIndex) ;
             Agent agentLowerId = relationship.getLowerIdAgent() ;
-            record += agentLowerId.endRelationship(relationship) ;
+            // record += agentLowerId.endRelationship(relationship) ;
+            sbRecord.append(agentLowerId.endRelationship(relationship));
         }
-        Relationship.APPEND_DEATH_RECORD(record);
+        Relationship.APPEND_DEATH_RECORD(sbRecord.toString());
     }
 	
     /**

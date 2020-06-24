@@ -80,6 +80,7 @@ public class Relationship {
     static String PHARYNX = "Pharynx" ;
     
     static public String DEATH_RECORD = "death:" ;
+    static public StringBuilder SB_DEATH_RECORD = new StringBuilder("death:");
     
     static public String BURNIN_COMMENCE = "clear:" ;
     static public String BURNIN_BREAKUP = "" ;
@@ -90,14 +91,15 @@ public class Relationship {
      */
     static public void APPEND_DEATH_RECORD(String record)
     {
-        DEATH_RECORD += record ;
+        // DEATH_RECORD += record ;
+        SB_DEATH_RECORD.append(record);
     }
     
     static public String READ_DEATH_RECORD()
     {
         String output ;
-        output = DEATH_RECORD ;
-        DEATH_RECORD = "death:" ;
+        output = SB_DEATH_RECORD.toString() ;
+        SB_DEATH_RECORD = new StringBuilder("death:") ;
         return output ;
     }
     
