@@ -304,6 +304,7 @@ public class Community {
         
         float timeGeneratingRel = 0;
         float timeExtract = 0;
+        float timeBreakUp = 0;
         
         if (!REBOOT_SIMULATION.isEmpty())
         {
@@ -357,7 +358,9 @@ public class Community {
                     }
                 }
 
+                t1 = System.nanoTime();
                 breakupString = community.clearRelationships(); // .substring(6) ;
+                timeBreakUp += (System.nanoTime() - t1);
                 t1 = System.nanoTime();
                 breakupList = Reporter.EXTRACT_ALL_VALUES(Reporter.RELATIONSHIPID, breakupString) ;
                 timeExtract += (System.nanoTime() - t1);
@@ -385,8 +388,9 @@ public class Community {
         }
 
         Community.ADD_TIME_STAMP("after burnin:" 
-        + "\ntimeGeneratingRel = " + String.valueOf(timeGeneratingRel/1000000000f)
-        + "\ntimeExtract = " + String.valueOf(timeExtract/1000000000f)
+        + "\n  timeGeneratingRel = " + String.valueOf(timeGeneratingRel/1000000000f)
+        + "\n  timeExtract = " + String.valueOf(timeExtract/1000000000f)
+        + "\n  timeBreakUp = " + String.valueOf(timeBreakUp/1000000000f)
         // timeExtractCommence
         );        
         // simulation of maxCycles cycles
@@ -437,7 +441,7 @@ public class Community {
             t1 = System.nanoTime();
             sbRelationshipRecord.append(community.clearRelationships());
             // relationshipRecord += community.clearRelationships();
-            timeClearRel = (System.nanoTime() - t1);
+            timeClearRel += (System.nanoTime() - t1);
             
             // treat symptomatic agents
             
@@ -499,15 +503,17 @@ public class Community {
         }
         
         Community.ADD_TIME_STAMP("after all dumps, time_aging = " + String.valueOf(timeAging/1000000000f)
-            + ", \n  timeSubmit = " + String.valueOf(timeSubmit/1000000000f)
-            + ", \n  timeAging = " + String.valueOf(timeAging/1000000000f)
-            + ", \n  timeDumping = " + String.valueOf(timeDumping/1000000000f)
-            + ", \n  timeGenRel = " + String.valueOf(timeGenRel/1000000000f)
-            + ", \n  timeGrimReaper = " + String.valueOf(timeGrimReaper/1000000000f)
-            + ", \n  timeProInf = " + String.valueOf(timeProInf/1000000000f)
-            + ", \n  timeIntCom = " + String.valueOf(timeIntCom/1000000000f)
-            + ", \n  timeClearRel = " + String.valueOf(timeClearRel/1000000000f)
-            + ", \n  timeRunEnc = " + String.valueOf(timeRunEnc/1000000000f));
+            + "\n  timeSubmit = " + String.valueOf(timeSubmit/1000000000f)
+            + "\n  timeAging = " + String.valueOf(timeAging/1000000000f)
+            + "\n  timeDumping = " + String.valueOf(timeDumping/1000000000f)
+            + "\n  timeGenRel = " + String.valueOf(timeGenRel/1000000000f)
+            + "\n  timeGrimReaper = " + String.valueOf(timeGrimReaper/1000000000f)
+            + "\n  timeProInf = " + String.valueOf(timeProInf/1000000000f)
+            + "\n  timeIntCom = " + String.valueOf(timeIntCom/1000000000f)
+            + "\n  timeClearRel = " + String.valueOf(timeClearRel/1000000000f)
+            + "\n  timeRunEnc = " + String.valueOf(timeRunEnc/1000000000f)
+            
+            );
         
 
         t1 = System.nanoTime();
