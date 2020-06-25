@@ -983,7 +983,7 @@ public class ScreeningPresenter extends Presenter {
         }
         //Reporter.WRITE_CSV_DISTRIBUTION(reports, "at-risk incidence-rate", simNames[0], "output/prep/") ;
 
-        // arRiskIncidenceReport with ONLY mean:
+        // atRiskIncidenceReport with ONLY mean:
         atRiskIncidenceReport = Reporter.PREPARE_MEAN_HASHMAP_REPORT(reports,"year","INCIDENCE",simNames[0]) ;
         // ArrayList<String[]> 
 
@@ -994,7 +994,7 @@ public class ScreeningPresenter extends Presenter {
         // keep all the csv file names without extensions
         ArrayList<String> fileNames = new ArrayList<String>();
 
-        HashMap<String, HashMap> propertyToYAndRange = new HashMap<String, HashMap>();
+        HashMap<String, HashMap<String,String[]>> propertyToYAndRange = new HashMap<String, HashMap<String,String[]>>();
 
         for (int legendIndex = 0 ; legendIndex < legend.length ; legendIndex++ )
         {
@@ -1376,7 +1376,7 @@ public class ScreeningPresenter extends Presenter {
      * @param fileNames
      */
     public void plotIntervalMeansFromCSVFileNames(String[] fileNames, String title, String yLabel, String xLabel) {
-        HashMap<String, HashMap> propertyToYAndRange = new HashMap<String, HashMap>();
+        HashMap<String, HashMap<String,String[]>> propertyToYAndRange = new HashMap<String, HashMap<String,String[]>>();
 
         for (int i = 0; i < fileNames.length; ++i) {
             String property = fileNames[i];

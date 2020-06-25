@@ -2191,7 +2191,7 @@ public class Reporter {
         Collections.sort(categoryValues,String.CASE_INSENSITIVE_ORDER) ;
 
         // write to csv
-        String filePath = folderPath + reportName + "_" + scoreName + "_" + simNames.get(0) + ".csv" ;
+        String filePath = DATA_FOLDER + reportName + "_" + scoreName + "_" + simNames.get(0) + ".csv" ;
         try
         {
             BufferedWriter fileWriter = new BufferedWriter(new FileWriter(filePath,false));
@@ -3593,21 +3593,23 @@ public class Reporter {
     public static void main(String[] args)
     {
         ConfigLoader.load();
-        String folderPath = "/scratch/is14/mw7704/prepsti/output/to2025/" ;
+        //String folderPath = "/scratch/is14/mw7704/prepsti/output/to2025/" ;
+        String folderPath = "output/to2025/" ;
+        //String folderPath = "data_files/" ;
         //String folderPath = "output/prep/" ;
         //String folderPath = "output/prePrEP/" ;
         //String[] simNames = new String[] {"from2007seek27aPop40000Cycles5475","from2007seek27bPop40000Cycles5475","from2007seek27cPop40000Cycles5475","from2007seek27dPop40000Cycles5475","from2007seek27ePop40000Cycles5475",
         //"from2007seek27fPop40000Cycles5475","from2007seek27gPop40000Cycles5475","from2007seek27hPop40000Cycles5475","from2007seek27iPop40000Cycles5475","from2007seek27jPop40000Cycles5475"} ;
     
-        String prefix = "to2025UeqUto2019oldParams33" ;
+        String prefix = "to2025screen0p9prepto2019hiv2p0corr4" ;
         //String prefix = "from2015to2025linearPrep23" ;
         String suffix = "Pop40000Cycles2190" ;
         ArrayList<String> simNameList = new ArrayList<String>() ;
         //String letter0 = "a" ;
-        for (String letter0 : new String[] {"a","b","c","d","e","f","g","h","i","j"})
-            for (String letter1: new String[] {"Ebi","Dbc","Eje","Hji","Jce","Iae","Iad","Cfi","Fjc","Chh","Bci","Dhj","Bhi","Ibe","Keg","Kjc","Kbh","Fag","Jad","Bfd","Idg","Keh","Ggb","Dee","Ghh","Dac","Dgd","Fab","Hdh","Ibg","Fcc","Ghd","Hfa","Fci","Ifd","Gfd","Hje","Eei","Hhb","Aah","Gdh","Bjh","Cbf","Dcg","Ifc","Kej","Ajc","Fii","Hfb","Cdd"}) 
-                for (String letter2 : new String[] {""}) //,"B"})
-                    simNameList.add(prefix + letter2 + letter0 + letter1 + suffix) ;
+        //for (String letter0 : new String[] {"a","b","c","d","e","f","g","h","i","j"})
+            //for (String letter1: new String[] {"Ebi","Dbc","Eje","Hji","Jce","Iae","Iad","Cfi","Fjc","Chh","Bci","Dhj","Bhi","Ibe","Keg","Kjc","Kbh","Fag","Jad","Bfd","Idg","Keh","Ggb","Dee","Ghh","Dac","Dgd","Fab","Hdh","Ibg","Fcc","Ghd","Hfa","Fci","Ifd","Gfd","Hje","Eei","Hhb","Aah","Gdh","Bjh","Cbf","Dcg","Ifc","Kej","Ajc","Fii","Hfb","Cdd"}) 
+            	for (String letter50 : new String[] {"Fgc","Bbc","Idh","Jii","Hcb","Djc","Ecg","Aha","Jgh","Ifi","Jcf","Cgj","Jfh","Dhf","Bce","Egj","Ehi","Aaa","Gfi","Gbf","Hih","Gga","Ccg","Jfc","Fid","Hdb","Iie","Jib","Fhb","Ahh","Eig","Hji","Jia","Dbf","Jic","Ddi","Dji","Aii","Agi","Bdh","Jhf","Ceb","Aac","Beh","Jfj","Baa","Eff","Ffh","Jeb","Bih"})
+                    simNameList.add(prefix + letter50 + suffix) ;
         
         String[] simNames = simNameList.toArray(new String[] {}) ;
         //simNames = new String[] {"regularP6Risk47aaPop40000Cycles1825"} ;

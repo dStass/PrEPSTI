@@ -55,9 +55,6 @@ import org.jfree.chart.util.ShapeUtils;
 
 
 import java.lang.reflect.* ;
-import java.util.Arrays ;
-import java.util.ArrayList ;
-import java.util.Random;
 import java.util.* ;
 
 import java.io.File ;
@@ -95,6 +92,7 @@ public class Presenter {
 
     // Used for controlling if and what is co-plotted from file.
     public static boolean PLOT_FILE;    
+    public static boolean SAVE_PLOT ;
     public static String FOLDER_PATH;
     public static String FILENAME; // "incidence_kirby2018" ; // "meanNotificationRate" ; // "unique_positivity_urethra" ; // "notifications" ; //  
     //static String[] DATA_SCORE = new String[] {"hiv_negative","hiv_positive"} ;
@@ -506,35 +504,30 @@ public class Presenter {
         //String simName = "RelationshipCalibrationPop40000Cycles200" ; // "testPlotCondomUsePop4000Cycles500" ; // args[0] ;
         //String folder = "output/test/" ;
         String folder = "data_files/" ;
-        String fileName = "incidence" ;
-        //String chartTitle = "Pharynx" ;
-        //String chartTitle = "meanNb" ;
-        String chartTitle = "positivity" ;
+        //String fileName = "incidence" ;
+        String property = "all_false" ;
+        String chartTitle = property ;
         // LOGGER.info(chartTitle) ;
-        String[] relationshipClassNames = new String[] {"Casual","Regular","Monogomous"} ; // "Casual","Regular","Monogomous"
-        String[] siteNames  = new String[] {"Urethra"} ; // "Pharynx","Rectum","Urethra"} ;
-        String[] simNames = new String[] {"adjustCondom1Y16bPop40000Cycles4420","adjustCondom1Y16cPop40000Cycles4420","adjustCondom1Y16dPop40000Cycles4420","adjustCondom1Y16ePop40000Cycles4420"} ; // 
+        String[] legend ;
+        // legend = args ;
+        legend = new String[] {"0.6 per year","0.7 per year","0.8 per year","0.9 per year","1.1 per year","1.2 per year"} ;
         
-        ScreeningPresenter screeningPresenter = new ScreeningPresenter("adjustCondom1Y16bPop40000Cycles4420",chartTitle,"output/test/") ;
-        ScreeningReporter screeningReporter ;
-        ArrayList<HashMap<Object,Number[]>> hashMapList = new ArrayList<HashMap<Object,Number[]>>() ;
-        for (String simName : simNames)
+        
+        Presenter presenter = new Presenter(args[0],chartTitle) ;
+        LOGGER.info((Arrays.asList(args)).toString()) ;
+        
+        HashMap<String, HashMap<String,String[]>> propertyToYAndRange = new HashMap<String, HashMap<String,String[]>>();
+        for (String fileName : args)
         {
-            screeningReporter  = new ScreeningReporter(simName,"output/test/") ;
-            //hashMapList.add(screeningReporter.prepareYearsPositivityRecord(siteNames, false, 8, 2014)) ;
+        	LOGGER.info(fileName);
+            HashMap<Comparable, String[]> readCSV = Reporter.READ_CSV_STRING(fileName, FOLDER_PATH, 1);
+            HashMap<String, String[]> yAndRange = Reporter.extractYValueAndRange(readCSV);
+            propertyToYAndRange.put(fileName, yAndRange);
         }
-
-
-
-
-
-
-//        HashMap<Object,Number[]> averagedHashMap = Reporter.AVERAGED_HASHMAP_REPORT(hashMapList) ;
-//        averagedHashMap.remove(2013) ;
-//        averagedHashMap.remove(2014) ;
-//        for (Object key : averagedHashMap.keySet())
-//          // logger.log(level.info, "{0} {1}", new Object[] {key,averagedHashMap.get(key)[0]});
-        //screeningPresenter.plotHashMap("year", siteNames, averagedHashMap) ;
+        LOGGER.info(propertyToYAndRange.toString()) ;
+        
+        presenter.plotShadedHashMapStringCI(propertyToYAndRange,ScreeningPresenter.INCIDENCE,"year", legend) ;
+        
         /*
         ScreeningReporter screeningReporter = 
                 //new ScreeningReporter("prevalence",community.screeningReport) ;
@@ -544,25 +537,6 @@ public class Presenter {
         Reporter.WRITE_CSV(pharynxPrevalenceReport, "Pharynx", simName, folder);
         */
         
-        /*RelationshipReporter relationshipReporter = 
-                new RelationshipReporter(simName,folder) ;
-        // (ArrayList) records of mean number of each Relationship class per Agent
-        LOGGER.info("prepareMeanNumberRelationshipsReport");
-        ArrayList<HashMap<Object,String>> meanNumberRelationshipsReport 
-                = relationshipReporter.prepareMeanNumberRelationshipsReport(relationshipClassNames) ;
-      // logger.log(level.info, "{0}", meanNumberRelationshipsReport);
-        
-        ArrayList<ArrayList<Object>> plotReport = new ArrayList<ArrayList<Object>>() ;
-        for (HashMap<Object,String> report : meanNumberRelationshipsReport)
-        {
-            ArrayList<String> record = new ArrayList<String>() ;
-            for (String relationshipClassName : relationshipClassNames)
-                record.add(report.get(relationshipClassName)) ;
-            plotReport.add((ArrayList<Object>) record.clone()) ;
-        }
-        Reporter.WRITE_CSV(plotReport, relationshipClassNames, chartTitle, simName, folder);
-        Presenter presenter = new Presenter(simName, chartTitle) ;
-        */
         
         //presenter.readCSV(simName, chartTitle, folder);
         //HashMap<Object,Number[]> hashMapNumber = READ_HASHMAP_NUMBER_ARRAY_CSV(fileName);
@@ -1324,7 +1298,7 @@ public class Presenter {
      * @param xLabel
      * @param legend
      */
-    protected void plotShadedHashMapStringCI(HashMap<String,HashMap> report, String yLabel, String xLabel, String[] legend) {
+    protected void plotShadedHashMapStringCI(HashMap<String,HashMap<String,String[]>> report, String yLabel, String xLabel, String[] legend) {
         // Extract data from reportArray
         XYIntervalSeriesCollection xyIntervalSeriesCollection = parseReportHashMapError(report, legend) ;
 
@@ -1340,7 +1314,7 @@ public class Presenter {
     }
 
     
-    protected void plotHashMapStringCI(HashMap<String,HashMap> report, String yLabel, String xLabel, String[] legend)
+    protected void plotHashMapStringCI(HashMap<String,HashMap<String,String[]>> report, String yLabel, String xLabel, String[] legend)
     {
         // Extract data from reportArray
         XYIntervalSeriesCollection xyIntervalSeriesCollection = parseReportHashMapError(report, legend) ;
@@ -1905,7 +1879,7 @@ public class Presenter {
         return xySeriesCollection ;
     }
 
-    private XYIntervalSeriesCollection parseReportHashMapError(HashMap<String, HashMap> report, String[] legend) {
+    private XYIntervalSeriesCollection parseReportHashMapError(HashMap<String, HashMap<String,String[]>> report, String[] legend) {
         XYIntervalSeriesCollection xyIntervalSeriesCollection = new XYIntervalSeriesCollection() ;
 
         // Sorted ArrayList of HashMap keys
@@ -2594,7 +2568,7 @@ public class Presenter {
             
             
             displayChart(lineChart) ;
-            saveChart(lineChart);
+            //saveChart(lineChart);
         }
 
 
@@ -2679,7 +2653,8 @@ public class Presenter {
                 xPos += 5 ;
             }
             areaChart.getPlot().setBackgroundPaint(Color.WHITE) ;
-            //saveChart(areaChart) ;
+            if (SAVE_PLOT)
+                saveChart(areaChart) ;
             displayChart(areaChart) ;
         }   
         /**
