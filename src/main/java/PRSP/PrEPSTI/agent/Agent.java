@@ -1735,6 +1735,23 @@ public abstract class Agent {
         return consentArgs ;
     }
 
+    public void pickLeaveRelationship(Relationship relationship) {
+        String relationshipType = relationship.getRelationship();
+        switch (relationshipType) {
+            case "Casual":
+                this.leaveCasual(relationship);
+                break;
+            case "Regular":
+                this.leaveRegular(relationship);
+                break;
+            case "Monogomous":
+                this.leaveMonogomous(relationship);
+                break;
+            default:
+                break;
+        }
+    }
+
     /**
      * Removes relationship and partner and modifies nbRelationships count by -1
      * TODO: Change to String Method and return report
@@ -1744,24 +1761,27 @@ public abstract class Agent {
     {
         diminishLowerAgentId(relationship) ;
         // Leave specific relationship subclass
-        try
-        {
-            String leaveMethodName = "leave" + relationship.getRelationship() ;
-            Method leaveRelationshipMethod = Agent.class.getMethod(leaveMethodName, Relationship.class) ;
-            leaveRelationshipMethod.invoke(this, relationship) ;
-        }
-        catch ( IllegalAccessException iae)
-        {
-            LOGGER.severe(iae.getLocalizedMessage());
-        }
-        catch ( InvocationTargetException ite )
-        {
-            LOGGER.severe(ite.getLocalizedMessage());
-        }
-        catch ( NoSuchMethodException nsme )
-        {
-            LOGGER.severe(nsme.getLocalizedMessage()) ;
-        }
+        
+        this.pickLeaveRelationship(relationship);
+
+        // try
+        // {
+        //     String leaveMethodName = "leave" + relationship.getRelationship() ;
+        //     Method leaveRelationshipMethod = Agent.class.getMethod(leaveMethodName, Relationship.class) ;
+        //     leaveRelationshipMethod.invoke(this, relationship) ;
+        // }
+        // catch ( IllegalAccessException iae)
+        // {
+        //     LOGGER.severe(iae.getLocalizedMessage());
+        // }
+        // catch ( InvocationTargetException ite )
+        // {
+        //     LOGGER.severe(ite.getLocalizedMessage());
+        // }
+        // catch ( NoSuchMethodException nsme )
+        // {
+        //     LOGGER.severe(nsme.getLocalizedMessage()) ;
+        // }
 
         int partnerId = relationship.getPartnerId(agentId) ;
         int partnerIndex = currentPartnerIds.indexOf(partnerId) ;

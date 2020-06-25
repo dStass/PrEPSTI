@@ -921,7 +921,7 @@ public class MSM extends Agent {
 
             while (iterator.hasNext()) {
                 MSM msm = (MSM) iterator.getNextAndIterate();
-                if (msm.getSeroSort(relationshipClazzName)) seroSortMDLL.addNextNode(msm.getAgentId(), msm) ;    
+                if (msm.getSeroSort(relationshipClazzName)) seroSortMDLL.add(msm.getAgentId(), msm) ;    
             }
 
             // relo and sero 
@@ -943,7 +943,7 @@ public class MSM extends Agent {
             MDLLIterator<MSM> seroBackwardIterator = seroSortMDLL.getBackwardIterator();
             while (seroBackwardIterator.hasNext()) {
                 MSM msm0 = seroBackwardIterator.getNextAndIterate();
-                relationshipAgentMDLL.removeNode(msm0.getAgentId());
+                relationshipAgentMDLL.remove(msm0.getAgentId());
                 MDLLForwardIterator<Agent> relationshipForwardIterator = relationshipAgentMDLL.getForwardIterator();
                 while (relationshipForwardIterator.hasNext()) {
                     Agent agent = relationshipForwardIterator.getNextAndIterate();
@@ -955,14 +955,14 @@ public class MSM extends Agent {
                     if (msm1.getCurrentPartnerIdSet().contains(msm0.getAgentId())) continue ;
 
                     relationshipForwardIterator.iterateBack();
-                    relationshipAgentMDLL.removeNode(agent.getAgentId());
+                    relationshipAgentMDLL.remove(agent.getAgentId());
                     
-                    availableMDLL.removeNode(msm0.getAgentId());
-                    availableMDLL.removeNode(agent.getAgentId());
+                    availableMDLL.remove(msm0.getAgentId());
+                    availableMDLL.remove(agent.getAgentId());
 
-                    if (seroSortMDLL.hasNode(msm1.getAgentId())) {
+                    if (seroSortMDLL.contains(msm1.getAgentId())) {
                         seroBackwardIterator.getNextAndIterate();
-                        seroSortMDLL.removeNode(msm1.getAgentId());
+                        seroSortMDLL.remove(msm1.getAgentId());
                     }
                     
                     Relationship relationship = Relationship.getRelationshipFromClassName(relationshipClazzName);
@@ -999,11 +999,11 @@ public class MSM extends Agent {
                         
                     outerRelationshipBackwardIterator.getNextAndIterate();    
     
-                    relationshipAgentMDLL.removeNode(msm0.getAgentId());
-                    relationshipAgentMDLL.removeNode(msm1.getAgentId());
+                    relationshipAgentMDLL.remove(msm0.getAgentId());
+                    relationshipAgentMDLL.remove(msm1.getAgentId());
 
-                    availableMDLL.removeNode(msm0.getAgentId()) ;
-                    availableMDLL.removeNode(msm1.getAgentId()) ;
+                    availableMDLL.remove(msm0.getAgentId()) ;
+                    availableMDLL.remove(msm1.getAgentId()) ;
 
                     
                     Relationship relationship = Relationship.getRelationshipFromClassName(relationshipClazzName);
@@ -1148,7 +1148,7 @@ public class MSM extends Agent {
         while (agentMDLLIteratable.hasNext()) {
             Agent currAgent = (Agent) agentMDLLIteratable.getNextAndIterate();
             MSM msm = (MSM) currAgent ;
-            if (msm.seekRelationship(relationshipClazzName)) seekingAgentMDLL.addNextNode(String.valueOf(msm.getAgentId()), msm);
+            if (msm.seekRelationship(relationshipClazzName)) seekingAgentMDLL.add(String.valueOf(msm.getAgentId()), msm);
                 // seekingAgentList.add(msm) ;
         }
         

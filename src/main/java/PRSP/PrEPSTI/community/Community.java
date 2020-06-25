@@ -961,7 +961,7 @@ public class Community {
         MDLL<Agent> availableMDLL = new MDLL<Agent>();
         
         Collections.shuffle(availableAgents, RAND) ;
-        for (Agent a : availableAgents) availableMDLL.addNextNode(String.valueOf(a.getAgentId()), a);
+        for (Agent a : availableAgents) availableMDLL.add(String.valueOf(a.getAgentId()), a);
 
         // System.out.println("timeClone + timeShuffle = " + String.valueOf((System.nanoTime() - t1)/1000000000f));
         String[] relationshipClazzNames ;

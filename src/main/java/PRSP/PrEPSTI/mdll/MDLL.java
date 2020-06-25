@@ -52,13 +52,12 @@ public class MDLL<T> {
         return this.mapping.size() - 2;
     }
 
-    /**
-     * add a new node based on an Id
-     * @param nodeId
-     * @param object
-     */
-    public void addNextNode(int nodeId, T object) {
-        this.addNextNode(String.valueOf(nodeId), object);
+    public T get(int nodeId) {
+        return this.get(String.valueOf(nodeId));
+    }
+
+    public T get(String nodeId) {
+        return this.mapping.get(nodeId).getObject();
     }
 
     /**
@@ -66,7 +65,16 @@ public class MDLL<T> {
      * @param nodeId
      * @param object
      */
-    public void addNextNode(String nodeId, T object) {
+    public void add(int nodeId, T object) {
+        this.add(String.valueOf(nodeId), object);
+    }
+
+    /**
+     * add a new node based on an Id
+     * @param nodeId
+     * @param object
+     */
+    public void add(String nodeId, T object) {
         MDLLNode<T> newNode = new MDLLNode<T>(nodeId, object);
         mapping.put(nodeId, newNode);
 
@@ -82,8 +90,8 @@ public class MDLL<T> {
      * @param nodeId
      * @return boolean
      */
-    public boolean hasNode(int nodeId) {
-        return this.hasNode(String.valueOf(nodeId));
+    public boolean contains(int nodeId) {
+        return this.contains(String.valueOf(nodeId));
     }
 
     /**
@@ -91,7 +99,7 @@ public class MDLL<T> {
      * @param nodeId
      * @return boolean
      */
-    public boolean hasNode(String nodeId) {
+    public boolean contains(String nodeId) {
         if (this.mapping.containsKey(nodeId)) return true;
         else return false;
     }
@@ -102,8 +110,8 @@ public class MDLL<T> {
      * @param nodeId
      * @return
      */
-    public boolean removeNode(int nodeId) {
-        return this.removeNode(String.valueOf(nodeId));
+    public boolean remove(int nodeId) {
+        return this.remove(String.valueOf(nodeId));
     }
 
     /**
@@ -112,7 +120,7 @@ public class MDLL<T> {
      * @param nodeId
      * @return
      */
-    public boolean removeNode(String nodeId) {
+    public boolean remove(String nodeId) {
         
         // if node doesn't exist, return false
         if (!this.mapping.containsKey(nodeId)) return false;
@@ -129,6 +137,32 @@ public class MDLL<T> {
         // successful removal
         return true;
     }
+
+    public int indexOf(T object) {
+        MDLLForwardIterator<T> forwardIterator = this.getForwardIterator();
+        int currentPosition = -1;
+        while (forwardIterator.hasNext()) {
+            T nextObject = forwardIterator.getNextAndIterate();
+            currentPosition += 1;
+            if (object.equals(nextObject)) return currentPosition;
+        }
+        return currentPosition;
+    }
+
+    // public int indexOf(int nodeId) {
+    //     return indexOf(String.valueOf(nodeId));
+    // }
+
+    // public int indexOf(String nodeId) {
+    //     MDLLForwardIterator<T> forwardIterator = this.getForwardIterator();
+    //     int currentPosition = -1;
+    //     while (forwardIterator.hasNext()) {
+    //         T nextObject = forwardIterator.getNextAndIterate();
+    //         currentPosition += 1;
+
+    //     }
+    //     return currentPosition;
+    // }
 
     /* * * * * * * * * * * *
      *  FORWARD ITERATOR   *
