@@ -344,7 +344,7 @@ public class Community {
                 commenceString = community.generateRelationships() ;
                 float timeDif = (System.nanoTime() - t1);
                 timeGeneratingRel += timeDif;
-                System.out.println("timeGenRel="+timeDif/1_000_000_000);
+                // System.out.println("timeGenRel="+timeDif/1_000_000_000);
 
                 t1 = System.nanoTime();
                 commenceList = Reporter.EXTRACT_ARRAYLIST(commenceString, Reporter.RELATIONSHIPID) ;
@@ -663,19 +663,19 @@ public class Community {
         
         Community.ADD_TIME_STAMP("finalStamp");
 
-        LOGGER.info("Time Stamps:");
-        double total = Double.valueOf(timeStamps.get(timeStamps.size() - 2)[1]);
-        double prev = 0;
-        for (String[] s : timeStamps) {
-            double curr = Double.valueOf(s[1]);
-            double difference = curr - prev;
-            double percentage = 100 * (difference / total);
-            prev = curr;
-            // System.out.println(s[0] + " -> stamp: " + s[1] + ", time taken: "
-            //     + String.valueOf(difference) + "s, " + String.valueOf(percentage) + "% of sim");
-            System.out.println(String.valueOf(percentage) + "% : " + s[0] + ", (total="+ String.valueOf(difference)+"s)");
-        }
-        System.out.println();
+        // LOGGER.info("Time Stamps:");
+        // double total = Double.valueOf(timeStamps.get(timeStamps.size() - 2)[1]);
+        // double prev = 0;
+        // for (String[] s : timeStamps) {
+        //     double curr = Double.valueOf(s[1]);
+        //     double difference = curr - prev;
+        //     double percentage = 100 * (difference / total);
+        //     prev = curr;
+        //     // System.out.println(s[0] + " -> stamp: " + s[1] + ", time taken: "
+        //     //     + String.valueOf(difference) + "s, " + String.valueOf(percentage) + "% of sim");
+        //     System.out.println(String.valueOf(percentage) + "% : " + s[0] + ", (total="+ String.valueOf(difference)+"s)");
+        // }
+        // System.out.println();
         
         long timeFinal = System.nanoTime();
         float timeRan = (timeFinal - timeInitial)/ 1000000000f;
