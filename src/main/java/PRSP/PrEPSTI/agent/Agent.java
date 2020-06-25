@@ -3,24 +3,24 @@
  */
 package PRSP.PrEPSTI.agent;
 
-import PRSP.PrEPSTI.community.* ;
+import PRSP.PrEPSTI.community.*;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 
-import PRSP.PrEPSTI.reporter.Reporter ;
-import PRSP.PrEPSTI.site.* ;
+import PRSP.PrEPSTI.reporter.Reporter;
+import PRSP.PrEPSTI.site.*;
 
-import java.util.Random ;
+import java.util.Random;
 
 //import com.sun.media.jfxmedia.logging.Logger;
 import java.lang.reflect.*;
 
-
 import java.util.ArrayList;
-import java.util.Set ;
+import java.util.Set;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.logging.Level;
 import org.apache.commons.math3.distribution.GammaDistribution;
 import static PRSP.PrEPSTI.reporter.Reporter.AGENTID ;
@@ -236,6 +236,7 @@ public abstract class Agent {
 
     // current partners
     private ArrayList<Integer> currentPartnerIds = new ArrayList<Integer>() ;
+    private HashSet<Integer> currentPartnerIdSet = new HashSet<Integer>();
 
 
     private ArrayList<Relationship> currentRelationships 
@@ -741,6 +742,12 @@ public abstract class Agent {
     {
             return currentPartnerIds ;
     }
+
+    public HashSet<Integer> getCurrentPartnerIdSet()
+    {
+            return currentPartnerIdSet;
+    }
+    
     
     /**
      * 
@@ -748,7 +755,7 @@ public abstract class Agent {
      */
     public int getNumberCurrentRelationships()
     {
-        return currentPartnerIds.size() ;
+        return currentPartnerIdSet.size() ;
     }
 
     /**
@@ -925,7 +932,7 @@ public abstract class Agent {
     public String getCensusReport()
     {   
         StringBuilder sbCensusReport = new StringBuilder();
-        String censusReport ;
+        String censusReport = "" ;
         sbCensusReport.append(Reporter.ADD_REPORT_PROPERTY("agentId",agentId)) ;
         sbCensusReport.append(Reporter.ADD_REPORT_PROPERTY("agent",agent)) ;
         sbCensusReport.append(Reporter.ADD_REPORT_PROPERTY("age",getAge())) ;  // Reporter.ADD_REPORT_PROPERTY("startAge", getAge()) ;
@@ -1605,6 +1612,7 @@ public abstract class Agent {
 
         currentRelationships.add(relationship) ;
         currentPartnerIds.add(partnerId) ;
+        currentPartnerIdSet.add(partnerId);
         nbRelationships++ ;
 
         updateAvailable() ;
@@ -1728,6 +1736,27 @@ public abstract class Agent {
     }
 
     /**
+     * runs leave+"relationshipType"() without using try-catch
+     * @param relationship
+     */
+    public void pickLeaveRelationship(Relationship relationship) {
+        String relationshipType = relationship.getRelationship();
+        switch (relationshipType) {
+            case "Casual":
+                this.leaveCasual(relationship);
+                break;
+            case "Regular":
+                this.leaveRegular(relationship);
+                break;
+            case "Monogomous":
+                this.leaveMonogomous(relationship);
+                break;
+            default:
+                break;
+        }
+    }
+
+    /**
      * Removes relationship and partner and modifies nbRelationships count by -1
      * TODO: Change to String Method and return report
      * @param relationship
@@ -1736,28 +1765,32 @@ public abstract class Agent {
     {
         diminishLowerAgentId(relationship) ;
         // Leave specific relationship subclass
-        try
-        {
-            String leaveMethodName = "leave" + relationship.getRelationship() ;
-            Method leaveRelationshipMethod = Agent.class.getMethod(leaveMethodName, Relationship.class) ;
-            leaveRelationshipMethod.invoke(this, relationship) ;
-        }
-        catch ( IllegalAccessException iae)
-        {
-            LOGGER.severe(iae.getLocalizedMessage());
-        }
-        catch ( InvocationTargetException ite )
-        {
-            LOGGER.severe(ite.getLocalizedMessage());
-        }
-        catch ( NoSuchMethodException nsme )
-        {
-            LOGGER.severe(nsme.getLocalizedMessage()) ;
-        }
+        
+        this.pickLeaveRelationship(relationship);
+
+        // try
+        // {
+        //     String leaveMethodName = "leave" + relationship.getRelationship() ;
+        //     Method leaveRelationshipMethod = Agent.class.getMethod(leaveMethodName, Relationship.class) ;
+        //     leaveRelationshipMethod.invoke(this, relationship) ;
+        // }
+        // catch ( IllegalAccessException iae)
+        // {
+        //     LOGGER.severe(iae.getLocalizedMessage());
+        // }
+        // catch ( InvocationTargetException ite )
+        // {
+        //     LOGGER.severe(ite.getLocalizedMessage());
+        // }
+        // catch ( NoSuchMethodException nsme )
+        // {
+        //     LOGGER.severe(nsme.getLocalizedMessage()) ;
+        // }
 
         int partnerId = relationship.getPartnerId(agentId) ;
         int partnerIndex = currentPartnerIds.indexOf(partnerId) ;
         currentPartnerIds.remove(partnerIndex) ;
+        currentPartnerIdSet.remove(partnerId);
         int relationshipIndex = currentRelationships.indexOf(relationship) ;
         currentRelationships.remove(relationshipIndex) ;
         Relationship.DIMINISH_NB_RELATIONSHIPS() ;
@@ -1864,15 +1897,17 @@ public abstract class Agent {
         Relationship relationship ;
         
         int startIndex = (nbRelationships - 1) ;
-        String record = "" ;
+        // String record = "" ;
+        StringBuilder sbRecord = new StringBuilder();
         for (int relationshipIndex = startIndex ; relationshipIndex >= 0 ; 
                 relationshipIndex-- )
         {
             relationship = currentRelationships.get(relationshipIndex) ;
             Agent agentLowerId = relationship.getLowerIdAgent() ;
-            record += agentLowerId.endRelationship(relationship) ;
+            // record += agentLowerId.endRelationship(relationship) ;
+            sbRecord.append(agentLowerId.endRelationship(relationship));
         }
-        Relationship.APPEND_DEATH_RECORD(record);
+        Relationship.APPEND_DEATH_RECORD(sbRecord.toString());
     }
 	
     /**
