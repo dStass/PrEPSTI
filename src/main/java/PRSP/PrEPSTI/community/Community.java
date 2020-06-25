@@ -342,7 +342,9 @@ public class Community {
             {   
                 t1 = System.nanoTime();
                 commenceString = community.generateRelationships() ;
-                timeGeneratingRel += (System.nanoTime() - t1);
+                float timeDif = (System.nanoTime() - t1);
+                timeGeneratingRel += timeDif;
+                System.out.println("timeGenRel="+timeDif/1_000_000_000);
 
                 t1 = System.nanoTime();
                 commenceList = Reporter.EXTRACT_ARRAYLIST(commenceString, Reporter.RELATIONSHIPID) ;
