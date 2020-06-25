@@ -880,7 +880,7 @@ public class MSM extends Agent {
      * 
      * @return (String) report of Relationships generated
      */
-    static public String GENERATE_RELATIONSHIPS(ArrayList<Agent> availableAgentList, MDLL<Agent> availableMDLL, String[] relationshipClazzNames)
+    static public String GENERATE_RELATIONSHIPS(MDLL<Agent> availableMDLL, String[] relationshipClazzNames)
     {   
         // HashMap<Integer, HashSet<Integer>> partnerIdHashMap = new HashMap<Integer, HashSet<Integer>>();
         // for (Agent a : availableAgentList) {
@@ -899,47 +899,47 @@ public class MSM extends Agent {
         // System.out.println("timeInitSB = " + String.valueOf((System.nanoTime() - t1)/1000000000f));
 
 
-        Class<?> relationshipClazz ;
+        // Class<?> relationshipClazz ;
     
-        ArrayList<MSM> seroSortList ;
+        // ArrayList<MSM> seroSortList ;
         MDLL<MSM> seroSortMDLL;
         
         for (String relationshipClazzName : relationshipClazzNames)
         {   
             float t2 = System.nanoTime();
-            MDLL<Agent> relationshipAgentMDLL = MSM.SEEKING_AGENTS(availableAgentList, availableMDLL, relationshipClazzName) ;
-            
+            MDLL<Agent> relationshipAgentMDLL = MSM.SEEKING_AGENTS(availableMDLL, relationshipClazzName) ;
+            if (relationshipAgentMDLL.size() == 0) continue;
             seroSortMDLL = new MDLL<MSM>();
             // seroSortList = new ArrayList<MSM>() ;
             // System.out.println("timeSeeking = " + String.valueOf((System.nanoTime() - t1)/1000000000f));
-
+            
             // t1 = System.nanoTime();
-
+            
             // Sort seekers according to HIV and serosorting status
-
+            
             MDLLForwardIterator<Agent> iterator = relationshipAgentMDLL.getForwardIterator();
-
+            
             while (iterator.hasNext()) {
                 MSM msm = (MSM) iterator.getNextAndIterate();
                 if (msm.getSeroSort(relationshipClazzName)) seroSortMDLL.add(msm.getAgentId(), msm) ;    
             }
-
+            
             // relo and sero 
             // HashMap<Boolean, HashMap<Integer, Integer>> relationshipSeroMap = new HashMap<Boolean, HashMap<Integer, Integer>>();
-
-
-
-
+            
+            
+            
+            
             // for (Agent agent : relationshipAgentList) 
             // {
-            //     MSM msm = (MSM) agent ;
-            //     if (msm.getSeroSort(relationshipClazzName))
-            //         seroSortList.add(msm) ;
-            // }
-            // System.out.println("timeFirstLoop = " + String.valueOf((System.nanoTime() - t1)/1000000000f));
-
-            // t1 = System.nanoTime();
-            
+                //     MSM msm = (MSM) agent ;
+                //     if (msm.getSeroSort(relationshipClazzName))
+                //         seroSortList.add(msm) ;
+                // }
+                // System.out.println("timeFirstLoop = " + String.valueOf((System.nanoTime() - t1)/1000000000f));
+                
+                // t1 = System.nanoTime();
+                
             MDLLIterator<MSM> seroBackwardIterator = seroSortMDLL.getBackwardIterator();
             while (seroBackwardIterator.hasNext()) {
                 MSM msm0 = seroBackwardIterator.getNextAndIterate();
@@ -949,17 +949,17 @@ public class MSM extends Agent {
                     Agent agent = relationshipForwardIterator.getNextAndIterate();
                     MSM msm1 = (MSM) agent;
                     if (msm1.statusHIV != msm0.statusHIV) continue ;
-
+                    
                     // Have only one Relationship between two given MSM 
                     // if (partnerIdHashMap.get(msm1.getAgentId()).contains(msm0.getAgentId())) continue;
                     if (msm1.getCurrentPartnerIdSet().contains(msm0.getAgentId())) continue ;
-
+                    
                     relationshipForwardIterator.iterateBack();
                     relationshipAgentMDLL.remove(agent.getAgentId());
                     
                     availableMDLL.remove(msm0.getAgentId());
                     availableMDLL.remove(agent.getAgentId());
-
+                    
                     if (seroSortMDLL.contains(msm1.getAgentId())) {
                         seroBackwardIterator.getNextAndIterate();
                         seroSortMDLL.remove(msm1.getAgentId());
@@ -968,12 +968,14 @@ public class MSM extends Agent {
                     Relationship relationship = Relationship.getRelationshipFromClassName(relationshipClazzName);
                     if (relationship == null) LOGGER.severe(relationshipClazzName);
                     else sbReport.append(relationship.addAgents(msm0, msm1));
-
+                    
                     break;
                 }
             }
-
+                
+            // System.out.print(availableMDLL.size() + "," + relationshipAgentMDLL.size() + " -> ");
             MDLLBackwardIterator<Agent> outerRelationshipBackwardIterator = relationshipAgentMDLL.getBackwardIterator();
+            int totalIts = 0;
             while (outerRelationshipBackwardIterator.hasNext()) {
                 MSM msm0 = (MSM) outerRelationshipBackwardIterator.getNextAndIterate();
                 // if (msm0 == null) break;
@@ -985,6 +987,7 @@ public class MSM extends Agent {
 
                 MDLLBackwardIterator<Agent> innerRelationshipBackwardIterator = relationshipAgentMDLL.getBackwardIterator(msm0.getAgentId());
                 while (innerRelationshipBackwardIterator.hasNext()) {
+                    totalIts += 1;
                     MSM msm1 = (MSM) innerRelationshipBackwardIterator.getNextAndIterate();
 
                     if (msm1.statusHIV != msm0.statusHIV) // First two ArrayList are serosorters
@@ -1016,7 +1019,10 @@ public class MSM extends Agent {
                     //availableAgents.remove(agent1) ;
                 }
             }
-            
+            // System.out.println(availableMDLL.size() + "," + relationshipAgentMDLL.size() + ", totalIts=" + totalIts);
+        }
+        // System.out.println();
+        
 
         
 
@@ -1122,7 +1128,7 @@ public class MSM extends Agent {
 
 
             
-        }
+        
         // System.out.println(report.length() + " time=" + String.valueOf((System.nanoTime()-t1) / 1000000000f));
         // report = 
         // timeRun += (System.nanoTime() - t1);
@@ -1137,9 +1143,9 @@ public class MSM extends Agent {
      * @param relationshipClazzName (String) Name of Relationship sub-Class. 
      * @return 
      */
-    static public MDLL<Agent> SEEKING_AGENTS(ArrayList<Agent> agentList, MDLL<Agent> agentMDLL, String relationshipClazzName)
+    static public MDLL<Agent> SEEKING_AGENTS(MDLL<Agent> agentMDLL, String relationshipClazzName)
     {
-        ArrayList<Agent> seekingAgentList = new ArrayList<Agent>() ;
+        // ArrayList<Agent> seekingAgentList = new ArrayList<Agent>() ;
         MDLL<Agent> seekingAgentMDLL = new MDLL<Agent>();
 
         // Determine which Agents seek out which Relationship Class

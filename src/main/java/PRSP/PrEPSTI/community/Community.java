@@ -957,7 +957,6 @@ public class Community {
         float t1 = System.nanoTime();
         // ArrayList<Agent> availableAgents = (ArrayList<Agent>) agents.clone() ;
         ArrayList<Agent> availableAgents = agents;
-        
         MDLL<Agent> availableMDLL = new MDLL<Agent>();
         
         Collections.shuffle(availableAgents, RAND) ;
@@ -968,7 +967,7 @@ public class Community {
         // relationshipClazzNames = new String[] {"Casual","Regular","Monogomous"} ;
         relationshipClazzNames = Community.RELATIONSHIP_CLAZZ_NAMES;
         t1 = System.nanoTime();
-        String toReturn = MSM.GENERATE_RELATIONSHIPS(availableAgents, availableMDLL, relationshipClazzNames) ;
+        String toReturn = MSM.GENERATE_RELATIONSHIPS(availableMDLL, relationshipClazzNames) ;
         // System.out.println("generateTime = " + String.valueOf((System.nanoTime() - t1)/1000000000f));
         return toReturn;
 

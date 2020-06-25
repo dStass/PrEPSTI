@@ -1735,6 +1735,10 @@ public abstract class Agent {
         return consentArgs ;
     }
 
+    /**
+     * runs leave+"relationshipType"() without using try-catch
+     * @param relationship
+     */
     public void pickLeaveRelationship(Relationship relationship) {
         String relationshipType = relationship.getRelationship();
         switch (relationshipType) {
