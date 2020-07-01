@@ -921,7 +921,8 @@ public class MSM extends Agent {
             
             while (iterator.hasNext()) {
                 MSM msm = (MSM) iterator.getNextAndIterate();
-                if (msm.getSeroSort(relationshipClazzName)) seroSortMDLL.add(msm.getAgentId(), msm) ;    
+                boolean boolSeroSort = msm.getSeroSort(relationshipClazzName);
+                if (boolSeroSort) seroSortMDLL.add(msm.getAgentId(), msm) ;    
             }
             
             // relo and sero 
@@ -952,7 +953,7 @@ public class MSM extends Agent {
                     
                     // Have only one Relationship between two given MSM 
                     // if (partnerIdHashMap.get(msm1.getAgentId()).contains(msm0.getAgentId())) continue;
-                    if (msm1.getCurrentPartnerIdSet().contains(msm0.getAgentId())) continue ;
+                    if (msm1.getCurrentPartnerIds().contains(msm0.getAgentId())) continue ;
                     
                     relationshipForwardIterator.iterateBack();
                     relationshipAgentMDLL.remove(agent.getAgentId());
@@ -995,7 +996,7 @@ public class MSM extends Agent {
 
                     // Have only one Relationship between two given MSM 
                     // if (partnerIdHashMap.get(msm1.getAgentId()).contains(msm0.getAgentId())) continue;
-                    if (msm1.getCurrentPartnerIdSet().contains(msm0.getAgentId()))
+                    if (msm1.getCurrentPartnerIds().contains(msm0.getAgentId()))
                         continue ;
 
                     // System.out.println(relationshipAgentMDLL.size());
@@ -1991,17 +1992,17 @@ public class MSM extends Agent {
      */
     public boolean getSeroSort(String relationshipClazzName)    //, Boolean status)
     {
-        Boolean serosort = false ;
+        Boolean toReturn = false ;
         // String returnString = "seroSort" + relationshipClazzName ;
         switch(relationshipClazzName) {
             case "Casual":
-                seroSort = getSeroSortCasual();
+                toReturn = getSeroSortCasual();
                 break;
             case "Regular":
-                seroSort = getSeroSortRegular();
+                toReturn = getSeroSortRegular();
                 break;
             case "Monogomous":
-                seroSort = getSeroSortMonogomous();
+                toReturn = getSeroSortMonogomous();
                 break;
             default:
                 // LOGGER.severe(relationshipClazzName);
@@ -2016,7 +2017,7 @@ public class MSM extends Agent {
         // {
         //     LOGGER.log(Level.SEVERE, "{0} {1}", new Object[] {returnString, e.getClass().getSimpleName()});
         // }
-        return serosort ;
+        return toReturn ;
     }
     
     /**
