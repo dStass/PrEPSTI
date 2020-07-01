@@ -236,7 +236,7 @@ public abstract class Agent {
 
     // current partners
     private ArrayList<Integer> currentPartnerIds = new ArrayList<Integer>() ;
-    private HashSet<Integer> currentPartnerIdSet = new HashSet<Integer>();
+    // private HashSet<Integer> currentPartnerIdSet = new HashSet<Integer>();
 
 
     private ArrayList<Relationship> currentRelationships 
@@ -743,10 +743,10 @@ public abstract class Agent {
             return currentPartnerIds ;
     }
 
-    public HashSet<Integer> getCurrentPartnerIdSet()
-    {
-            return currentPartnerIdSet;
-    }
+    // public HashSet<Integer> getCurrentPartnerIdSet()
+    // {
+    //         return currentPartnerIdSet;
+    // }
     
     
     /**
@@ -755,7 +755,7 @@ public abstract class Agent {
      */
     public int getNumberCurrentRelationships()
     {
-        return currentPartnerIdSet.size() ;
+        return currentPartnerIds.size() ;
     }
 
     /**
@@ -1612,7 +1612,7 @@ public abstract class Agent {
 
         currentRelationships.add(relationship) ;
         currentPartnerIds.add(partnerId) ;
-        currentPartnerIdSet.add(partnerId);
+        // currentPartnerIdSet.add(partnerId);
         nbRelationships++ ;
 
         updateAvailable() ;
@@ -1790,7 +1790,7 @@ public abstract class Agent {
         int partnerId = relationship.getPartnerId(agentId) ;
         int partnerIndex = currentPartnerIds.indexOf(partnerId) ;
         currentPartnerIds.remove(partnerIndex) ;
-        currentPartnerIdSet.remove(partnerId);
+        // currentPartnerIdSet.remove(partnerId);
         int relationshipIndex = currentRelationships.indexOf(relationship) ;
         currentRelationships.remove(relationshipIndex) ;
         Relationship.DIMINISH_NB_RELATIONSHIPS() ;
