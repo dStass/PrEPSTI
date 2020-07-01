@@ -419,7 +419,7 @@ public class Community {
                 if ((((cycle+1)/DUMP_CYCLE) * DUMP_CYCLE) == (cycle+1) )
                 {   
                     // Community.ADD_TIME_STAMP("before dump");
-                    LOGGER.info("LHS:" + lhs + " RHS: " + (cycle+1));
+                    // LOGGER.info("LHS:" + lhs + " RHS: " + (cycle+1));
                     t1 = System.nanoTime();
                     community.dump();
                     t2 = System.nanoTime();
