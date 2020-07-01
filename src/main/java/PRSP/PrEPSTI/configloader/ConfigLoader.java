@@ -314,6 +314,9 @@ public class ConfigLoader {
         	Community.PLOT_FILE = Boolean.parseBoolean(PLOT_FILE);
         }
         
+        String SAVE_PLOT = (String) presenterJSON.get("SAVE_PLOT") ;
+        if (SAVE_PLOT != null) Presenter.SAVE_PLOT = Boolean.parseBoolean(SAVE_PLOT) ;
+
         String FILENAME = (String) presenterJSON.get("FILENAME");
         if (FILENAME != null) Presenter.FILENAME = FILENAME;
 

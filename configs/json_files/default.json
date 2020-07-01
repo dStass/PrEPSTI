@@ -43,6 +43,7 @@
 
     "presenter" : {
         "PLOT_FILE" : "true",
+        "SAVE_PLOT" : "false",
         "FILE_NAME" : "gonoGoneWild",
         "DATA_SCORE" : [
             "overall_gone_wild",
