@@ -871,43 +871,56 @@ public class PopulationReporter extends Reporter {
         HashMap<String, String> siteReport = screeningReporter.prepareAgentSiteReport(endCycle, agentIdSet);
         
         // identify properties
-        // for (Object birthReportKeyObj : birthReport.keySet()) {
-        //     String birthReportKey = (String) birthReportKeyObj;
-        //     String birthString = birthReport.get(birthReportKeyObj);
+        ArrayList<String> fullProps = new ArrayList<String>();
+        for (Object birthReportKeyObj : birthReport.keySet()) {
+            String birthString = birthReport.get(birthReportKeyObj);
+            fullProps = Reporter.IDENTIFY_PROPERTIES(birthString) ;
+            break;
+        }
 
-        //     break;
-            
-        // }
+        // loop through and stop when we see the first "Site"
+        ArrayList<String> propertiesArrayList = new ArrayList<String>();
+        propertiesArrayList.add("agentId");  // add "agentId" at the start since IDENTIFY_PROPERTIES remove this
+        for (String p : fullProps) {
+            if (p.equals("Site")) break;
+            propertiesArrayList.add(p);
+        }
 
-        String properties[] = {
-            "agentId",
-            "agent",
-            "age",
-            "concurrency",
-            "infidelity",
-            "probabilityUseCondom",
-            "probabilityUseCondomCasual",
-            "probabilityUseCondomRegular",
-            "screenCycle",
-            "screenTime",
-            "prepStatus",
-            "statusHIV",
-            "discloseStatusHIV",
-            "seroSortCasual",
-            "seroSortRegular",
-            "seroSortMonogomous",
-            "seroPosition",
-            "riskyStatus",
-            "riskyStatusCasual",
-            "riskyStatusRegular",
-            "probabilityUseCondom",
-            "probabilityUseCondomCasual",
-            "probabilityUseCondomRegular",
-            "undetectableStatus",
-            "trustUndetectable",
-            "trustPrep",
-            "consentCasualProbability"
-        };
+        // convert from ArrayList -> String[]
+        String[] properties = new String[propertiesArrayList.size()];
+        for (int i = 0; i < propertiesArrayList.size(); ++i) {
+            properties[i] = propertiesArrayList.get(i);
+        }
+
+        // String properties[] = {
+        //     "agentId",
+        //     "agent",
+        //     "age",
+        //     "concurrency",
+        //     "infidelity",
+        //     "probabilityUseCondom",
+        //     "probabilityUseCondomCasual",
+        //     "probabilityUseCondomRegular",
+        //     "screenCycle",
+        //     "screenTime",
+        //     "prepStatus",
+        //     "statusHIV",
+        //     "discloseStatusHIV",
+        //     "seroSortCasual",
+        //     "seroSortRegular",
+        //     "seroSortMonogomous",
+        //     "seroPosition",
+        //     "riskyStatus",
+        //     "riskyStatusCasual",
+        //     "riskyStatusRegular",
+        //     "probabilityUseCondom",
+        //     "probabilityUseCondomCasual",
+        //     "probabilityUseCondomRegular",
+        //     "undetectableStatus",
+        //     "trustUndetectable",
+        //     "trustPrep",
+        //     "consentCasualProbability"
+        // };
 
         for (String property : properties) {
 
