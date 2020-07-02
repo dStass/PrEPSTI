@@ -869,7 +869,16 @@ public class PopulationReporter extends Reporter {
             rawReport.remove(agentIdString);
         }
         HashMap<String, String> siteReport = screeningReporter.prepareAgentSiteReport(endCycle, agentIdSet);
+        
+        // identify properties
+        // for (Object birthReportKeyObj : birthReport.keySet()) {
+        //     String birthReportKey = (String) birthReportKeyObj;
+        //     String birthString = birthReport.get(birthReportKeyObj);
+
+        //     break;
             
+        // }
+
         String properties[] = {
             "agentId",
             "agent",

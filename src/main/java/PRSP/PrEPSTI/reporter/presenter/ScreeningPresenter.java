@@ -1409,7 +1409,7 @@ public class ScreeningPresenter extends Presenter {
             propertyToYAndRange.put(property, yAndRange);
         }
         
-        plotShadedHashMapStringCI(propertyToYAndRange, yLabel, xLabel, fileNames);
+        plotShadedHashMapStringCI(propertyToYAndRange, yLabel, xLabel, legend);
     }
     
 }
