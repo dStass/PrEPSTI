@@ -556,9 +556,7 @@ public class PopulationReporter extends Reporter {
      * during specified time period.
      */
     public ArrayList<String> prepareBirthReport(int backYears, int backMonths, int backDays, int endCycle)
-    {   
-
-
+    {
         ArrayList<String> birthReport = new ArrayList<String>() ;
         
         String record ;
@@ -795,7 +793,7 @@ public class PopulationReporter extends Reporter {
                     censusEntry += Reporter.ADD_REPORT_PROPERTY(propertyName, propertyValue) ;
                 }
                 censusPropertyReport.put(agentId, censusEntry) ;
-            });
+            }) ;
         }
         // HashMap<Object,String> returnReport = new HashMap<Object,String>() ;
         // for (Map.Entry<Object, String> entry : censusPropertyReport.entrySet())

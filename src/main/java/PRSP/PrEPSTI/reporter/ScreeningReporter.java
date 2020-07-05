@@ -1335,7 +1335,8 @@ public class ScreeningReporter extends Reporter {
             
             ArrayList<String> agentReport = EXTRACT_ARRAYLIST(record,AGENTID,TESTED) ;
             HashMap<String, String> agentReportHashMap = new HashMap<String, String>();
-            for (String agentRecord : agentReport) {
+            for (String agentRecord : agentReport) 
+            {
                 String agentId = EXTRACT_VALUE(AGENTID,agentRecord) ;
                 agentReportHashMap.put(agentId, agentRecord);
             }

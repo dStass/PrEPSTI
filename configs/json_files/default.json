@@ -6,15 +6,15 @@
     },
 
     "community" : {
-        "FILE_PATH" : "output/test/",
-        "NAME_ROOT" : "cali2008brate68a",
-        "MAX_CYCLES" : "25",
-        "POPULATION" : "4000",
-        "COMMENT" : "calibrate to ASR 2008",
-        "DYNAMIC" : "false",
-        "REBOOT_SIMULATION" : "",
+        "FILE_PATH" : "output/",
+        "NAME_ROOT" : "to2019testhiv2p0corr4B",
+        "MAX_CYCLES" : "14",
+        "POPULATION" : "40000",
+        "COMMENT" : "",
+        "DYNAMIC" : "true",
+        "REBOOT_SIMULATION" : "oldParams31cPop40000Cycles2920",
         "REBOOT_FROM_CYCLE" : "-1",
-        "START_YEAR" : "2008",
+        "START_YEAR" : "2007",
         "END_YEAR" : "2019",
         "methods" : {
             "interveneCommunity" : {

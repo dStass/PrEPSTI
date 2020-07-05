@@ -1980,7 +1980,6 @@ public class Presenter {
             }
         }
 
-
         return xyIntervalSeriesCollection;
     }
 

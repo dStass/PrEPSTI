@@ -169,7 +169,7 @@ public abstract class Agent {
     }
     
     /**
-     * Men tested per 1000 per year, from 2007-2018
+     * Agents tested per 1000 per year, from 2007-2018
      * Table 14 ARTB 2018
      */
     static double[] TEST_RATES = {333,340,398,382,383,382,391,419,445,499,488,488} ;

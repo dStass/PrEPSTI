@@ -48,7 +48,6 @@ public class Reporter {
      * reportName maps to report.
      */
     static protected HashMap<String,Object> REPORT_LIST = new HashMap<String,Object>() ;
-
     
     /**
      * Clears REPORT_LIST so that fresh ones can be generated for the next simulation.
@@ -57,7 +56,6 @@ public class Reporter {
     {
         REPORT_LIST.clear() ;
     }
-
     
     /** Whether to automatically save reports */
     public static boolean WRITE_REPORT;
@@ -2134,11 +2132,7 @@ public class Reporter {
                     // Select SPACE immediately before "="
                     spaceIndex = fileLine.lastIndexOf(SPACE, keyIndex) ;
                     
-                    if (Integer.valueOf(categoryValue) < 2015)
-                    	continue ;
-                    
                     // Initialise fileLine for Each categoryValue with "categoryValue"
-                    
                     if (!outputReport.containsKey(categoryValue))
                     {
                         String initCategoryValue = categoryValue ;
@@ -3924,7 +3918,9 @@ public class Reporter {
 
         return rebootData;
     }
-/**
+
+
+    /**
      * Object to read saved File output and feed it to Reporter
      */
     private class Reader
@@ -4182,9 +4178,7 @@ public class Reporter {
             
             return outputList;
         }
-
-
-
+                
         /**
          * Reads backwards through the files. Used when only last backCycles are 
          * of interest.

@@ -2773,7 +2773,7 @@ public class MSM extends Agent {
     /**
      * Initialises screenCycle from a Gamma distribution to determine how often 
      * an MSM is screened, and then starts the cycle in a random place so that 
-     * not every MSM gets screened at the same time. the shape parameter remains 
+     * not every MSM gets screened at the same time. The shape parameter remains 
      * unchanged.
      * @param rescale - The factor to rescale screenCycle by
      * @param ignorePrep - Whether to reInit PrEP users
@@ -2822,8 +2822,8 @@ public class MSM extends Agent {
      * Initialises screenCycle from a Gamma distribution to determine how often 
      * an MSM is screened, and then starts the cycle in a random place so that 
      * not every MSM gets screened at the same time.
-     * @param rescale - The factor to reshape screenCycle by
-     * @param rescale - The factor to rescale screenCycle by
+     * @param shape - The factor to reshape screenCycle by
+     * @param scale - The factor to rescale screenCycle by
      * @param ignorePrep - Whether to reInit PrEP users
      */
     protected int reInitScreenCycle(double shape, double scale, boolean ignorePrep)
@@ -2883,9 +2883,9 @@ public class MSM extends Agent {
         // Values up to 2018
         //double[] prepProbabilityArray = new double[] {0.011,0.014,0.014,0.039,0.139,0.204,0.204} ;
         // Most recent
-        double[] prepProbabilityArray = new double[] {0.011,0.014,0.017,0.049,0.167,0.239,0.310} ;  // 2013 to 2019
+        double[] prepProbabilityArray = new double[] {0.011,0.014,0.017,0.049,0.167,0.239,0.310  // 2013 to 2019
             //    ,0.39,0.46,0.53,0.60,0.67,0.74    // 2020 to 2025
-        //} ;
+        } ;
         if (year >= prepProbabilityArray.length)
             year = prepProbabilityArray.length - 1 ;
         
