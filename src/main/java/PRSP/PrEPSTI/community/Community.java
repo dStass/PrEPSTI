@@ -378,7 +378,11 @@ public class Community {
         // simulation of maxCycles cycles
         
         cycleString = "0," ;
-        populationRecord = cycleString + Reporter.ADD_REPORT_LABEL("birth") + community.initialRecord ;
+        StringBuilder sbPopulationRecord = new StringBuilder();
+        sbPopulationRecord.append(cycleString);
+        sbPopulationRecord.append(Reporter.ADD_REPORT_LABEL("birth"));
+        sbPopulationRecord.append(community.initialRecord);
+        // populationRecord = cycleString + Reporter.ADD_REPORT_LABEL("birth") + community.initialRecord ;
         
         //outputInterval = 1 ;
 
@@ -394,18 +398,21 @@ public class Community {
             //if ((cycle % 10) == 0) //((cycle/outputInterval) * outputInterval))
               // logger.log(level.info, "Cycle no. {0}", cycleString);
 
-            // StringBuilder sbPopulationRecord = new StringBuilder();
+        	StringBuilder sbRelationshipRecord = new StringBuilder();
 
             t1 = System.nanoTime();
             if (DYNAMIC)
-                populationRecord += community.interveneCommunity(cycle) ;
+                sbPopulationRecord.append(community.interveneCommunity(cycle));
+            // populationRecord += community.interveneCommunity(cycle) ;
             timeIntCom += (System.nanoTime() - t1);
             //LOGGER.log(Level.INFO,"{0} {1}", new Object[] {Relationship.NB_RELATIONSHIPS,Relationship.NB_RELATIONSHIPS_CREATED});
             // update relationships and perform sexual encounters, report them
             //LOGGER.info("generate") ;
             t1 = System.nanoTime();
-            relationshipRecord = cycleString + community.generateRelationships();
-            timeGenRel += (System.nanoTime() - t1);
+            sbRelationshipRecord.append(cycleString) ;
+            sbRelationshipRecord.append(community.generateRelationships()) ;
+            // relationshipRecord = cycleString + community.generateRelationships();
+            timeGenRel += (System.nanoTime() - t1) ;
             
             //LOGGER.info("encounter");
             t1 = System.nanoTime();
@@ -414,9 +421,10 @@ public class Community {
             
             //LOGGER.info("clear");
             t1 = System.nanoTime();
-            relationshipRecord += community.clearRelationships();
-            timeClearRel = (System.nanoTime() - t1);
-            
+            sbRelationshipRecord.append(community.clearRelationships()) ;
+            // relationshipRecord += community.clearRelationships() ;
+            timeClearRel += (System.nanoTime() - t1) ;
+
             // treat symptomatic agents
             
             //LOGGER.info("progress");
@@ -429,17 +437,19 @@ public class Community {
             
             //LOGGER.info("death");
             t1 = System.nanoTime();
-            populationRecord += community.grimReaper() ;
+            sbPopulationRecord.append(community.grimReaper());
+            // populationRecord += community.grimReaper() ;
             timeGrimReaper += (System.nanoTime() - t1);
             // Record Relationships ended due to death
             
-            relationshipRecord += Relationship.READ_DEATH_RECORD() ;
+            sbRelationshipRecord.append(Relationship.READ_DEATH_RECORD());
+            // relationshipRecord += Relationship.READ_DEATH_RECORD() ;
             
             // How many births to maintain population?
             deltaPopulation = deltaPopulation - community.agents.size() ;
 
             t1 = System.nanoTime();
-            community.submitRecords(relationshipRecord,encounterRecord,screeningRecord,populationRecord) ;  // 
+            community.submitRecords(sbRelationshipRecord.toString(),encounterRecord,screeningRecord,sbPopulationRecord.toString()) ;  // 
             t2 = System.nanoTime();
             timeSubmit += (t2-t1);
             // Deal with effects of aging.
@@ -461,7 +471,10 @@ public class Community {
 
                 }
             cycleString = Integer.toString(cycle+1) + "," ;
-            populationRecord = cycleString + community.births(deltaPopulation, cycle) ;
+            sbPopulationRecord = new StringBuilder();
+            sbPopulationRecord.append(cycleString);
+            sbPopulationRecord.append(community.births(deltaPopulation, cycle));
+            // populationRecord = cycleString + community.births(deltaPopulation, cycle) ;
         }
         // Final dump() or whole dump if no partial dumps
         if (!PARTIAL_DUMP || (((Community.MAX_CYCLES)/DUMP_CYCLE) * DUMP_CYCLE) != Community.MAX_CYCLES ) {
@@ -494,7 +507,7 @@ public class Community {
         float timeDumpReboot = (t2-t1);
 
         Community.ADD_TIME_STAMP("after dumping meta: "+ String.valueOf(timeDumpMeta/1000000000f) 
-            + " and reboot: " + String.valueOf(timeDumpReboot/1000000000f));
+            + " \n reboot: " + String.valueOf(timeDumpReboot/1000000000f));
 
         long elapsedTime = System.nanoTime() - startTime ;
         long milliTime = elapsedTime/1000000 ;
@@ -1101,18 +1114,22 @@ public class Community {
      */
     private String births(int nbBirths, int cycle)
     {
-        String record = "birth:" ;
+    	StringBuilder sbRecord = new StringBuilder();
+        sbRecord.append("birth:");
+        // String record = "birth:" ;
         MSM newAgent ;
         for (int birth = 0 ; birth < nbBirths ; birth++ )
         {
             newAgent = generateAgent(0) ; // MSM.BIRTH_MSM(0) ;
             newAgent.update(Math.floorDiv(cycle, 365)) ;
             agents.add(newAgent) ;
-            record += newAgent.getCensusReport() ;
+            sbRecord.append(newAgent.getCensusReport());
+            // record += newAgent.getCensusReport() ;
             //currentPopulation++ ;
         }
 
-        return record.concat("!") ;
+        sbRecord.append("!") ;
+        return sbRecord.toString() ;
     }
 
     /**
@@ -1124,7 +1141,9 @@ public class Community {
      */
     private String grimReaper()
     {
-        String record = "death:" ;
+    	StringBuilder sbRecord = new StringBuilder();
+        sbRecord.append("death:");
+        // String record = "death:" ;
         Agent agent ;
         /*int deaths = (agents.size() - population) ;
         if (deaths < birthRate)
@@ -1133,19 +1152,22 @@ public class Community {
         {
             int agentInd = RAND.nextInt(agents.size()) ;
             Agent agent = agents.get(agentInd) ; */
+        ArrayList<Agent> newAgentsList = new ArrayList<Agent>();
         for (int agentIndex = agents.size() - 1 ; agentIndex >= 0 ; agentIndex-- )
         {
             agent = agents.get(agentIndex) ; 
             if (agent.grimReaper())
             {
-                agents.remove(agent) ;
-                record += Reporter.ADD_REPORT_PROPERTY("agentId", agent.getAgentId()) ;
+                //agents.remove(agent) ;
+                sbRecord.append(Reporter.ADD_REPORT_PROPERTY("agentId", agent.getAgentId())) ;
                 //record += Reporter.ADD_REPORT_PROPERTY("age", agent.getAge()) ;
                 //currentPopulation-- ;
             }
+            else 
+                newAgentsList.add(agent) ;
         }
 
-        return record ;
+        return sbRecord.toString() ;
     }
 
     /**
@@ -1175,7 +1197,7 @@ public class Community {
                 
                 if (agent != relationship.getLowerIdAgent())
                     continue ;
-                try
+                //try
                 {
                     if (RAND.nextDouble() < relationship.getEncounterProbability()) {
                         String newRecord = Reporter.ADD_REPORT_PROPERTY(Reporter.RELATIONSHIPID, relationship.getRelationshipId()) 
@@ -1184,7 +1206,7 @@ public class Community {
                     }
                     //System.out.println(record);
                 }
-                catch (NoSuchMethodException nsme)
+                /*catch (NoSuchMethodException nsme)
                 {
                     LOGGER.severe(nsme.getLocalizedMessage());
                     sbRecord.append(nsme.toString());
@@ -1200,7 +1222,7 @@ public class Community {
                     LOGGER.severe(iae.getLocalizedMessage());
                     // record += iae.getMessage() ;
                     sbRecord.append(iae.getMessage());
-                }
+                }*/
             }
         }
         record = sbRecord.toString();

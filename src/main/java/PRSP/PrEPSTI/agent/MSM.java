@@ -927,7 +927,13 @@ public class MSM extends Agent {
                         index0-- ;
                     }
 
-                    try
+                    Relationship relationship = Relationship.GET_RELATIONSHIP_FROM_CLASS_NAME(relationshipClazzName);
+                    if (relationship == null) 
+                    	LOGGER.severe(relationshipClazzName);
+                    else 
+                    	sbReport.append(relationship.addAgents(msm0, msm1));
+
+                    /*try
                     {
                         relationshipClazz = Class.forName("PRSP.PrEPSTI.community." + relationshipClazzName) ;
                         Relationship relationship = (Relationship) relationshipClazz.newInstance() ;
@@ -938,7 +944,9 @@ public class MSM extends Agent {
                     {
                         LOGGER.severe(e.toString()) ;
                     }
+                    */
                     break ;
+                    
 
                     // No longer available for other Relationships
                     //availableAgents.remove(agent0) ;
@@ -970,7 +978,7 @@ public class MSM extends Agent {
                     try
                     {
                         relationshipClazz = Class.forName("PRSP.PrEPSTI.community." + relationshipClazzName) ;
-                        Relationship relationship = (Relationship) relationshipClazz.newInstance() ;
+                        Relationship relationship = (Relationship) relationshipClazz.getDeclaredConstructor().newInstance() ;
                         //incrementNbRelationships() ;
                         // report += relationship.addAgents(msm0, msm1);
                         sbReport.append(relationship.addAgents(msm0, msm1));
@@ -1100,19 +1108,19 @@ public class MSM extends Agent {
     private boolean riskyStatusRegular ;
     
     /** Transmission probabilities per sexual contact from Urethra to Rectum */
-    static double URETHRA_TO_RECTUM = 0.80 ; //  0.85 ; 
+    static double URETHRA_TO_RECTUM = 0.95 ; //  0.85 ; 
     /** Transmission probabilities sexual contact from Urethra to Pharynx. */
-    static double URETHRA_TO_PHARYNX = 0.20 ; // 0.25 ; // 0.50 ; 
+    static double URETHRA_TO_PHARYNX = 0.35 ; // 0.25 ; // 0.50 ; 
     /** Transmission probabilities sexual contact from Rectum to Urethra. */
-    static double RECTUM_TO_URETHRA = 0.015 ; // 0.009 ; // 0.015 ; // 0.010 ;
+    static double RECTUM_TO_URETHRA = 0.010 ; // 0.009 ; // 0.015 ; // 0.010 ;
     /** Transmission probabilities sexual contact from Rectum to Pharynx. */
     static double RECTUM_TO_PHARYNX = 0.025 ; // 0.023 ; 
     /** Transmission probabilities sexual contact in Pharynx to Urethra intercourse. */
-    static double PHARYNX_TO_URETHRA = 0.005 ; // 0.005 ; // .005 ; // 0.010 ; 
+    static double PHARYNX_TO_URETHRA = 0.004 ; // 0.005 ; // .005 ; // 0.010 ; 
     /** Transmission probabilities sexual contact in Pharynx to Rectum intercourse. */
     static double PHARYNX_TO_RECTUM = 0.025 ; // 0.020 ; 0.020 ; // 0.020 ; 
     /** Transmission probabilities sexual contact in Pharynx to Pharynx intercourse (kissing). */
-    static double PHARYNX_TO_PHARYNX = 0.070 ; // 0.075 // 0.040 ;
+    static double PHARYNX_TO_PHARYNX = 0.065 ; // 0.075 // 0.040 ;
     /** Transmission probabilities sexual contact in Urethra to Urethra intercourse (docking). */
     static double URETHRA_TO_URETHRA = 0.001 ; // 0.001 ; // 0.001 ; // 0.020 ; 
     /** Transmission probabilities sexual contact in Rectum to Rectum intercourse. */
@@ -1836,15 +1844,30 @@ public class MSM extends Agent {
     public boolean getSeroSort(String relationshipClazzName)    //, Boolean status)
     {
         Boolean serosort = false ;
-        String returnString = "seroSort" + relationshipClazzName ;
-        try
-        {
-            serosort = MSM.class.getDeclaredField(returnString).getBoolean(this) ;
+     // String returnString = "seroSort" + relationshipClazzName ;
+        switch(relationshipClazzName) {
+            case "Casual":
+                serosort = getSeroSortCasual();
+                break;
+            case "Regular":
+                serosort = getSeroSortRegular();
+                break;
+            case "Monogomous":
+                serosort = getSeroSortMonogomous();
+                break;
+            default:
+                LOGGER.severe(relationshipClazzName);
+                break;
         }
-        catch ( Exception e )
-        {
-            LOGGER.log(Level.SEVERE, "{0} {1}", new Object[] {returnString, e.getClass().getSimpleName()});
-        }
+
+        // try
+        // {
+        //     serosort = MSM.class.getDeclaredField(returnString).getBoolean(this) ;
+        // }
+        // catch ( Exception e )
+        // {
+        //     LOGGER.log(Level.SEVERE, "{0} {1}", new Object[] {returnString, e.getClass().getSimpleName()});
+        // }
         return serosort ;
     }
     
