@@ -42,7 +42,8 @@ public class Community {
     static public String REBOOT_PATH ;
     static public String REBOOT_SIMULATION; // "to2014fix3Choice23aaPop40000Cycles4745" ; // "debugRebootPop20000Cycles1825" ; 
     static public boolean PLOT_FILE ; // Whether to try and plot figures after a simulation, not on an HPC usually
-    static public String REBOOT_FROM_CYCLE = "-1";  // DEFAULT = -1, reboot from the end using -REBOOT file, otherwise generate $REBOOT_FROM_CYCLE-REBOOT file
+    static public int REBOOT_FROM_CYCLE = -1 ;  // DEFAULT = -1, reboot from the end using -REBOOT file, otherwise generate $REBOOT_FROM_CYCLE-REBOOT file
+    static public int LOADED_REBOOT_FROM_CYCLE = -1 ;  // DEFAULT = -1, reboot from the end using -REBOOT file, otherwise generate $REBOOT_FROM_CYCLE-REBOOT file
     
     // hashmap with key = method name, value = hashmap that contains
     // variable names and its literal value as a String
@@ -160,6 +161,9 @@ public class Community {
         // MAX_CYCLES
         Community.MAX_CYCLES = Community.generateTrueCycles(Community.LOADED_MAX_CYCLES) ;
         
+        // REBOOT_FROM_CYCLE
+        Community.REBOOT_FROM_CYCLE = Community.generateTrueCycles(Community.LOADED_REBOOT_FROM_CYCLE) ;
+        
         // Pop[POPULATION]Cycles[MAX_CYCLES]
         Community.NAME_SUFFIX = "Pop" + String.valueOf(Community.POPULATION) 
                               + "Cycles" + String.valueOf(Community.MAX_CYCLES);
@@ -271,7 +275,7 @@ public class Community {
     
         // Establish Community of Agents for simulation
         LOGGER.info(SIM_NAME);
-        Community community = new Community(REBOOT_SIMULATION, Integer.valueOf(REBOOT_FROM_CYCLE)) ;
+        Community community = new Community(REBOOT_SIMULATION, REBOOT_FROM_CYCLE) ;
         Community.ADD_TIME_STAMP("new community created");
 
         // Establish conditions for specific simulation questions
