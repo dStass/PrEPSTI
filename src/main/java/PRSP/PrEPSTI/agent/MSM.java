@@ -57,23 +57,19 @@ public class MSM extends Agent {
     /** Probability of serosorting if HIV negative (2017) */
     static double PROBABILITY_NEGATIVE_SERO_SORT = 0.45 ;
     /** Probability of serosorting in Casual Relationship if HIV positive */
-    static double PROBABILITY_POSITIVE_CASUAL_SERO_SORT = 0.630 ; // 0.431 ;
-    // .630, .630, .630, .630, .630, .710, .586, .673, .510, .550, .341
+    //static double PROBABILITY_POSITIVE_CASUAL_SERO_SORT = 0.630 ; // 0.431 ;
     /** Probability of serosorting in Casual Relationship if HIV negative */
-    static double PROBABILITY_NEGATIVE_CASUAL_SERO_SORT = 0.513 ; // 0.485 ;
-    // .513, .513, .513, .513, .513, .579, .480, .474, .547, .520, .485
+    //static double PROBABILITY_NEGATIVE_CASUAL_SERO_SORT = 0.513 ; // 0.485 ;
     /** Probability of serosorting in Regular Relationship if HIV positive */
-    static double PROBABILITY_POSITIVE_REGULAR_SERO_SORT = 0.358 ;
-    // .358, .397, .344, .397, .378, .495, .404, .347, .408, .374, .274
+    //static double PROBABILITY_POSITIVE_REGULAR_SERO_SORT = 0.358 ;
     /** Probability of serosorting in Regular Relationship if HIV negative */
-    static double PROBABILITY_NEGATIVE_REGULAR_SERO_SORT = 0.473 ;
-    // .473, .618, .643, .515, .744, .763, .720, .731, .709, .712, .701
+    //static double PROBABILITY_NEGATIVE_REGULAR_SERO_SORT = 0.473 ;
     /** Probability of serosorting in Regular Relationship if HIV positive */
-    static double PROBABILITY_POSITIVE_MONOGOMOUS_SERO_SORT 
-            = PROBABILITY_POSITIVE_REGULAR_SERO_SORT ;
+    //static double PROBABILITY_POSITIVE_MONOGOMOUS_SERO_SORT 
+      //      = PROBABILITY_POSITIVE_REGULAR_SERO_SORT ;
     /** Probability of serosorting in Regular Relationship if HIV negative */
-    static double PROBABILITY_NEGATIVE_MONOGOMOUS_SERO_SORT 
-            = PROBABILITY_NEGATIVE_REGULAR_SERO_SORT ;
+    //static double PROBABILITY_NEGATIVE_MONOGOMOUS_SERO_SORT 
+      //      = PROBABILITY_NEGATIVE_REGULAR_SERO_SORT ;
     /** Probability of sero-positioning if HIV positive */
     static double PROBABILITY_POSITIVE_SERO_POSITION = 0.25 ;
     /** Probability of sero-positioning if HIV negative */
@@ -119,13 +115,21 @@ public class MSM extends Agent {
             sbReport.append(Reporter.ADD_REPORT_PROPERTY(change, methodName)) ;
             sbReport.append(REINIT_TRUST_PREP(agentList, year)) ;
             
-            // Needs to be called after MSM.REINIT() specifically MSM.REINIT_RISK_ODDS()
-            // due to its updating prepStatus.
-            //methodName = "screen" ;
-            //report += Reporter.ADD_REPORT_PROPERTY(change, methodName) ;
-            //report += REINIT_SCREEN_CYCLE(agentList, year) ;
-            //                                                             
-            //REINIT_USE_GSN(agentList, year) ;
+            /*
+            methodName = "seroSortCasual" ;
+            sbReport.append(Reporter.ADD_REPORT_PROPERTY(change, methodName)) ;
+            sbReport.append(REINIT_CASUAL_SERO_SORT(agentList, year)) ;
+            
+            
+            methodName = "seroSortRegular" ;
+            sbReport.append(Reporter.ADD_REPORT_PROPERTY(change, methodName)) ;
+            sbReport.append(REINIT_REGULAR_SERO_SORT(agentList, year)) ;
+            
+            methodName = "seroSortMonogomous" ;
+            sbReport.append(Reporter.ADD_REPORT_PROPERTY(change, methodName)) ;
+            sbReport.append(REINIT_MONOGOMOUS_SERO_SORT(agentList, year)) ;
+            */
+            //                                 
         }
         catch ( Exception e )
         {
@@ -134,6 +138,234 @@ public class MSM extends Agent {
         }
         return sbReport.toString() ;
     }
+    
+    /** Probability of serosorting in Casual Relationship if HIV positive */
+    static double[] PROBABILITY_POSITIVE_CASUAL_SERO_SORT 
+        = new double[] {.630, .630, .630, .630, .630, .710, .586, .673, .510, .550, .341} ;
+    /** Probability of serosorting in Casual Relationship if HIV negative */
+    static double[] PROBABILITY_NEGATIVE_CASUAL_SERO_SORT 
+        = new double[] {.513, .513, .513, .513, .513, .579, .480, .474, .547, .520, .485} ;
+    
+    /**
+     * Alters whether an MSM sorts according HIV seroconcordance in Casual Relationships from year 
+     * to year. If serosorting status changes to true then only MSM who currently do not serosort will 
+     * change, and vice versa.
+     * Taken from ?????
+     * @param agentList (ArrayList) List of Agents to undergo parameter change.
+     * @param year (int) Year of simulation, starting from 0.
+     * @throws java.lang.Exception 
+     */
+    static protected String REINIT_CASUAL_SERO_SORT(ArrayList<Agent> agentList, int year) 
+    {
+    	StringBuilder sbReport = new StringBuilder() ;
+    	if (year == 0)
+    		return sbReport.toString() ;
+    	
+    	double newPositiveProbability = GET_YEAR(PROBABILITY_POSITIVE_CASUAL_SERO_SORT,year) ;
+    	double newNegativeProbability = GET_YEAR(PROBABILITY_NEGATIVE_CASUAL_SERO_SORT,year) ;
+    	double oldPositiveProbability = GET_YEAR(PROBABILITY_POSITIVE_CASUAL_SERO_SORT,year-1) ;
+    	double oldNegativeProbability = GET_YEAR(PROBABILITY_NEGATIVE_CASUAL_SERO_SORT,year-1) ;
+    	
+    	double newProbability ;
+    	double oldProbability ;
+    	double changeProbability ;
+    	boolean newStatus ;
+    	MSM msm ;
+    	for (Agent agent : agentList)
+        {
+            msm = (MSM) agent ;
+            if (msm.statusHIV)
+            {
+            	newProbability = newPositiveProbability ;
+            	oldProbability = oldNegativeProbability ;
+            }
+            else
+            {
+            	newProbability = newNegativeProbability ;
+            	oldProbability = oldNegativeProbability ;
+            }
+            
+            if (newProbability > oldProbability)
+            {
+                if (!msm.seroSortCasual)
+                {
+                    changeProbability = (newProbability - oldProbability)/(1 - oldProbability) ;
+                    newStatus = RAND.nextDouble() < changeProbability ;
+                    msm.setSeroSortCasual(newStatus) ;
+                    sbReport.append(Reporter.ADD_REPORT_PROPERTY(String.valueOf(msm.getAgentId()), newStatus)) ;
+                    continue ;
+                }
+            }
+            else    // Probability of serosorting in a casual relationship decreases.
+            {
+                if (msm.seroSortCasual)
+                {
+                    changeProbability = newProbability/oldProbability ; // (oldProbability - newProbability)/oldProbability ;
+                    // equivalent to correct calculation: RAND > (1 - changeProbability)
+                    newStatus = RAND.nextDouble() < changeProbability ;
+                    msm.setSeroSortCasual(newStatus) ;
+                    sbReport.append(Reporter.ADD_REPORT_PROPERTY(String.valueOf(msm.getAgentId()), newStatus)) ;
+                    continue ;
+                }
+            }
+            //newProbability *= changeProbability ;
+        }
+
+        return sbReport.toString() ;
+    }
+    
+    /** Probability of serosorting in Regular Relationship if HIV positive */
+    static double[] PROBABILITY_POSITIVE_REGULAR_SERO_SORT 
+        = new double[] {.358, .397, .344, .397, .378, .495, .404, .347, .408, .374, .274} ;
+    /** Probability of serosorting in Regular Relationship if HIV negative */
+    static double[] PROBABILITY_NEGATIVE_REGULAR_SERO_SORT 
+        = new double[] {.473, .618, .643, .515, .744, .763, .720, .731, .709, .712, .701} ;
+    
+    
+    /**
+     * Alters whether an MSM sorts according HIV seroconcordance in Casual Relationships from year 
+     * to year. If serosorting status changes to true then only MSM who currently do not serosort will 
+     * change, and vice versa.
+     * Taken from ?????
+     * @param agentList (ArrayList) List of Agents to undergo parameter change.
+     * @param year (int) Year of simulation, starting from 0.
+     * @throws java.lang.Exception 
+     */
+    static protected String REINIT_REGULAR_SERO_SORT(ArrayList<Agent> agentList, int year) 
+    {
+    	StringBuilder sbReport = new StringBuilder() ;
+    	if (year == 0)
+    		return sbReport.toString() ;
+    	
+    	double newPositiveProbability = GET_YEAR(PROBABILITY_POSITIVE_REGULAR_SERO_SORT,year) ;
+    	double newNegativeProbability = GET_YEAR(PROBABILITY_NEGATIVE_REGULAR_SERO_SORT,year) ;
+    	double oldPositiveProbability = GET_YEAR(PROBABILITY_POSITIVE_REGULAR_SERO_SORT,year-1) ;
+    	double oldNegativeProbability = GET_YEAR(PROBABILITY_NEGATIVE_REGULAR_SERO_SORT,year-1) ;
+    	
+    	double newProbability ;
+    	double oldProbability ;
+    	double changeProbability ;
+    	boolean newStatus ;
+    	MSM msm ;
+    	for (Agent agent : agentList)
+        {
+            msm = (MSM) agent ;
+            if (msm.statusHIV)
+            {
+            	newProbability = newPositiveProbability ;
+            	oldProbability = oldNegativeProbability ;
+            }
+            else
+            {
+            	newProbability = newNegativeProbability ;
+            	oldProbability = oldNegativeProbability ;
+            }
+            
+            if (newProbability > oldProbability)
+            {
+                if (!msm.seroSortRegular)
+                {
+                    changeProbability = (newProbability - oldProbability)/(1 - oldProbability) ;
+                    newStatus = RAND.nextDouble() < changeProbability ;
+                    msm.setSeroSortCasual(newStatus) ;
+                    sbReport.append(Reporter.ADD_REPORT_PROPERTY(String.valueOf(msm.getAgentId()), newStatus)) ;
+                    continue ;
+                }
+            }
+            else    // Probability of serosorting in a casual relationship decreases.
+            {
+                if (msm.seroSortRegular)
+                {
+                    changeProbability = newProbability/oldProbability ; // (oldProbability - newProbability)/oldProbability ;
+                    // equivalent to correct calculation: RAND > (1 - changeProbability)
+                    newStatus = RAND.nextDouble() < changeProbability ;
+                    msm.setSeroSortCasual(newStatus) ;
+                    sbReport.append(Reporter.ADD_REPORT_PROPERTY(String.valueOf(msm.getAgentId()), newStatus)) ;
+                    continue ;
+                }
+            }
+            //newProbability *= changeProbability ;
+        }
+
+        return sbReport.toString() ;
+    }
+    
+    /** Probability of serosorting in Regular Relationship if HIV positive */
+    static double[] PROBABILITY_POSITIVE_MONOGOMOUS_SERO_SORT 
+            = PROBABILITY_POSITIVE_REGULAR_SERO_SORT ;
+    /** Probability of serosorting in Regular Relationship if HIV negative */
+    static double[] PROBABILITY_NEGATIVE_MONOGOMOUS_SERO_SORT 
+            = PROBABILITY_NEGATIVE_REGULAR_SERO_SORT ;
+    
+    
+    /**
+     * Alters whether an MSM sorts according HIV seroconcordance in Casual Relationships from year 
+     * to year. If serosorting status changes to true then only MSM who currently do not serosort will 
+     * change, and vice versa.
+     * Taken from ?????
+     * @param agentList (ArrayList) List of Agents to undergo parameter change.
+     * @param year (int) Year of simulation, starting from 0.
+     * @throws java.lang.Exception 
+     */
+    static protected String REINIT_MONOGOMOUS_SERO_SORT(ArrayList<Agent> agentList, int year) 
+    {
+    	StringBuilder sbReport = new StringBuilder() ;
+    	if (year == 0)
+    		return sbReport.toString() ;
+    	
+    	double newPositiveProbability = GET_YEAR(PROBABILITY_POSITIVE_MONOGOMOUS_SERO_SORT,year) ;
+    	double newNegativeProbability = GET_YEAR(PROBABILITY_NEGATIVE_MONOGOMOUS_SERO_SORT,year) ;
+    	double oldPositiveProbability = GET_YEAR(PROBABILITY_POSITIVE_MONOGOMOUS_SERO_SORT,year-1) ;
+    	double oldNegativeProbability = GET_YEAR(PROBABILITY_NEGATIVE_MONOGOMOUS_SERO_SORT,year-1) ;
+    	
+    	double newProbability ;
+    	double oldProbability ;
+    	double changeProbability ;
+    	boolean newStatus ;
+    	MSM msm ;
+    	for (Agent agent : agentList)
+        {
+            msm = (MSM) agent ;
+            if (msm.statusHIV)
+            {
+            	newProbability = newPositiveProbability ;
+            	oldProbability = oldNegativeProbability ;
+            }
+            else
+            {
+            	newProbability = newNegativeProbability ;
+            	oldProbability = oldNegativeProbability ;
+            }
+            
+            if (newProbability > oldProbability)
+            {
+                if (!msm.seroSortMonogomous)
+                {
+                    changeProbability = (newProbability - oldProbability)/(1 - oldProbability) ;
+                    newStatus = RAND.nextDouble() < changeProbability ;
+                    msm.setSeroSortCasual(newStatus) ;
+                    sbReport.append(Reporter.ADD_REPORT_PROPERTY(String.valueOf(msm.getAgentId()), newStatus)) ;
+                    continue ;
+                }
+            }
+            else    // Probability of serosorting in a casual relationship decreases.
+            {
+                if (msm.seroSortMonogomous)
+                {
+                    changeProbability = newProbability/oldProbability ; // (oldProbability - newProbability)/oldProbability ;
+                    // equivalent to correct calculation: RAND > (1 - changeProbability)
+                    newStatus = RAND.nextDouble() < changeProbability ;
+                    msm.setSeroSortCasual(newStatus) ;
+                    sbReport.append(Reporter.ADD_REPORT_PROPERTY(String.valueOf(msm.getAgentId()), newStatus)) ;
+                    continue ;
+                }
+            }
+            //newProbability *= changeProbability ;
+        }
+
+        return sbReport.toString() ;
+    }
+
     
     /** The proportion of HIV-positives whose viral load is undetectable, given positive HIV status */
     static double[] PROPORTION_UNDETECTABLE = {0.566, 0.647, 0.701, 0.723, 0.747, 0.816, 0.734, 0.808,    // 2007-2014 
@@ -1454,9 +1686,9 @@ public class MSM extends Agent {
         discloseStatusHIV = (RAND.nextDouble() < probabilityDiscloseHIV) ;
         //if (discloseStatusHIV)
         {
-            seroSortCasual = (RAND.nextDouble() < getProbabilitySeroSortCasual(statusHIV)) ;
-            seroSortRegular = (RAND.nextDouble() < getProbabilitySeroSortRegular(statusHIV)) ;
-            seroSortMonogomous = (RAND.nextDouble() < getProbabilitySeroSortMonogomous(statusHIV)) ;
+            seroSortCasual = (RAND.nextDouble() < getProbabilitySeroSortCasual(statusHIV)[0]) ;
+            seroSortRegular = (RAND.nextDouble() < getProbabilitySeroSortRegular(statusHIV)[0]) ;
+            seroSortMonogomous = (RAND.nextDouble() < getProbabilitySeroSortMonogomous(statusHIV)[0]) ;
             seroPosition = (RAND.nextDouble() < getProbabilitySeroPosition(statusHIV)) ;
         }
         
@@ -2357,21 +2589,21 @@ public class MSM extends Agent {
         return PROBABILITY_NEGATIVE_SERO_SORT ;
     }
 
-    public double getProbabilitySeroSortCasual(boolean hivStatus)
+    public double[] getProbabilitySeroSortCasual(boolean hivStatus)
     {
         if (hivStatus)
             return PROBABILITY_POSITIVE_CASUAL_SERO_SORT ;
         return PROBABILITY_NEGATIVE_CASUAL_SERO_SORT ;
     }
 
-    public double getProbabilitySeroSortRegular(boolean hivStatus)
+    public double[] getProbabilitySeroSortRegular(boolean hivStatus)
     {
         if (hivStatus)
             return PROBABILITY_POSITIVE_REGULAR_SERO_SORT ;
         return PROBABILITY_NEGATIVE_REGULAR_SERO_SORT ;
     }
 
-    public double getProbabilitySeroSortMonogomous(boolean hivStatus)
+    public double[] getProbabilitySeroSortMonogomous(boolean hivStatus)
     {
         if (hivStatus)
             return PROBABILITY_POSITIVE_MONOGOMOUS_SERO_SORT ;
