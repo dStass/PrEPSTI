@@ -599,7 +599,13 @@ public class Community {
         //encounterReporter = new EncounterReporter(Community.SIM_NAME,Community.FILE_PATH) ;
         
         // commented out:
-        LOGGER.info("by HIV-status " + screeningReporter.prepareFinalAtRiskIncidentsRecord(siteNames, 0, "statusHIV")) ;
+        String finalAtRiskString = screeningReporter.prepareFinalAtRiskIncidentsRecord(siteNames, 0, "statusHIV");
+        String[] finalAtRiskArray = finalAtRiskString.split(" ");
+        
+
+        LOGGER.info("by HIV-status " + finalAtRiskString) ;
+
+
         //LOGGER.info("Incidence " + encounterReporter.prepareFinalIncidenceRecord(new String[] {"Pharynx","Rectum","Urethra"}, 0, 0, 365, MAX_CYCLES).toString());
         // LOGGER.info("Incidence " + encounterReporter.prepareSortedFinalIncidenceRecord(siteNames, 0, 0, 365, MAX_CYCLES, "statusHIV").toString());
 
@@ -627,7 +633,7 @@ public class Community {
         if (!incidenceReport.isEmpty())
         {
             Reporter.DUMP_OUTPUT("riskyIncidence_HIV",SIM_NAME,FILE_PATH,incidenceReport);
-            LOGGER.info(incidenceReport.toString()) ;
+            // LOGGER.info(incidenceReport.toString()) ;
             //Reporter.DUMP_OUTPUT("riskyIncidencePrep",SIM_NAME,FILE_PATH,incidenceReportPrep);
         }
         
