@@ -6,6 +6,10 @@ package PRSP.PrEPSTI.agent;
 //import static agent.Agent.LOGGER;
 import PRSP.PrEPSTI.community.Relationship;
 import PRSP.PrEPSTI.configloader.ConfigLoader;
+import PRSP.PrEPSTI.mdll.MDLL;
+import PRSP.PrEPSTI.mdll.MDLLBackwardIterator;
+import PRSP.PrEPSTI.mdll.MDLLForwardIterator;
+import PRSP.PrEPSTI.mdll.MDLLIterator;
 import PRSP.PrEPSTI.reporter.Reporter ;
 
 import java.util.logging.Level;
@@ -1107,7 +1111,7 @@ public class MSM extends Agent {
      * 
      * @return (String) report of Relationships generated
      */
-    static public String GENERATE_RELATIONSHIPS(ArrayList<Agent> availableAgentList, String[] relationshipClazzNames)
+    static public String GENERATE_RELATIONSHIPS(MDLL<Agent> availableAgentMDLL, String[] relationshipClazzNames)
     {   
         float t1 = System.nanoTime();
         String report = "" ;
@@ -1115,117 +1119,210 @@ public class MSM extends Agent {
 
         Class<?> relationshipClazz ;
     
-        ArrayList<MSM> seroSortList ;
+        MDLL<MSM> seroSortMDLL ;
+        // ArrayList<MSM> seroSortList ;
         
         for (String relationshipClazzName : relationshipClazzNames)
         {
-            ArrayList<Agent> relationshipAgentList = MSM.SEEKING_AGENTS(availableAgentList,relationshipClazzName) ;
-        
-            seroSortList = new ArrayList<MSM>() ;
+            MDLL<Agent> relationshipAgentMDLL = MSM.SEEKING_AGENTS(availableAgentMDLL, relationshipClazzName) ;
+            // ArrayList<Agent> relationshipAgentList = MSM.SEEKING_AGENTS(availableAgentList,relationshipClazzName) ;
+            
+            seroSortMDLL = new MDLL<MSM>();
+            // seroSortList = new ArrayList<MSM>() ;
             
             // Sort seekers according to HIV and serosorting status
-            for (Agent agent : relationshipAgentList) 
-            {
-                MSM msm = (MSM) agent ;
-                if (msm.getSeroSort(relationshipClazzName))
-                    seroSortList.add(msm) ;
+            MDLLForwardIterator<Agent> iterator = relationshipAgentMDLL.getForwardIterator();
+
+            while (iterator.hasNext()) {
+                MSM msm = (MSM) iterator.getNextAndIterate();
+                boolean boolSeroSort = msm.getSeroSort(relationshipClazzName);
+                if (boolSeroSort) seroSortMDLL.add(msm.getAgentId(), msm) ;    
             }
+            
+            // for (Agent agent : relationshipAgentList) 
+            // {
+            //     MSM msm = (MSM) agent ;
+            //     if (msm.getSeroSort(relationshipClazzName))
+            //         seroSortList.add(msm) ;
+            // }
 
-            for (int index0 = seroSortList.size() - 1 ; index0 >= 0 ; index0-- )
-            {
-                MSM msm0 = seroSortList.get(index0) ;
-                relationshipAgentList.remove(msm0) ;
-                for (Agent agent : relationshipAgentList)
-                {
-                    MSM msm1 = (MSM) agent ;
 
-                    // Check seroconcordance
-                    if (msm1.statusHIV != msm0.statusHIV)
-                        continue ;
-
-                    // Have only one Relationship between two given MSM 
-                    if (msm1.getCurrentPartnerIds().contains(msm0.getAgentId()))
-                        continue ;
-
-                    //seroSortList.remove(msm0) ;
-                    relationshipAgentList.remove(agent) ;
-
-                    availableAgentList.remove(msm0) ;
-                    availableAgentList.remove(agent) ;
-
-                    if (seroSortList.contains(msm1))  // Same MSM ArrayList
-                    {
-                        seroSortList.remove(msm1) ;
-                        index0-- ;
-                    }
-
-                    Relationship relationship = Relationship.GET_RELATIONSHIP_FROM_CLASS_NAME(relationshipClazzName);
-                    if (relationship == null) 
-                    	LOGGER.severe(relationshipClazzName);
-                    else 
-                    	sbReport.append(relationship.addAgents(msm0, msm1));
-
-                    /*try
-                    {
-                        relationshipClazz = Class.forName("PRSP.PrEPSTI.community." + relationshipClazzName) ;
-                        Relationship relationship = (Relationship) relationshipClazz.newInstance() ;
-                        // report += relationship.addAgents(msm0, msm1);
-                        sbReport.append(relationship.addAgents(msm0, msm1));
-                    }
-                    catch( Exception e )
-                    {
-                        LOGGER.severe(e.toString()) ;
-                    }
-                    */
-                    break ;
+            MDLLIterator<MSM> seroBackwardIterator = seroSortMDLL.getBackwardIterator();
+            while (seroBackwardIterator.hasNext()) {
+                MSM msm0 = seroBackwardIterator.getNextAndIterate();
+                relationshipAgentMDLL.remove(msm0.getAgentId());
+                MDLLForwardIterator<Agent> relationshipForwardIterator = relationshipAgentMDLL.getForwardIterator();
+                while (relationshipForwardIterator.hasNext()) {
+                    Agent agent = relationshipForwardIterator.getNextAndIterate();
+                    MSM msm1 = (MSM) agent;
+                    if (msm1.statusHIV != msm0.statusHIV) continue ;
                     
-
-                    // No longer available for other Relationships
-                    //availableAgents.remove(agent0) ;
-                    //availableAgents.remove(agent1) ;
+                    // Have only one Relationship between two given MSM 
+                    // if (partnerIdHashMap.get(msm1.getAgentId()).contains(msm0.getAgentId())) continue;
+                    if (msm1.getCurrentPartnerIds().contains(msm0.getAgentId())) continue ;
+                    
+                    relationshipForwardIterator.iterateBack();
+                    relationshipAgentMDLL.remove(agent.getAgentId());
+                    
+                    availableAgentMDLL.remove(msm0.getAgentId());
+                    availableAgentMDLL.remove(agent.getAgentId());
+                    
+                    if (seroSortMDLL.contains(msm1.getAgentId())) {
+                        seroBackwardIterator.getNextAndIterate();
+                        seroSortMDLL.remove(msm1.getAgentId());
+                    }
+                    
+                    Relationship relationship = Relationship.getRelationshipFromClassName(relationshipClazzName);
+                    if (relationship == null) LOGGER.severe(relationshipClazzName);
+                    else sbReport.append(relationship.addAgents(msm0, msm1));
+                    
+                    break;
                 }
             }
 
-            for (int index0 = relationshipAgentList.size() - 1 ; index0 > 0 ; index0--)
-            {
-                MSM msm0 = (MSM) relationshipAgentList.get(index0) ;
-                for (int index1 = index0 - 1 ; index1 >= 0 ; index1-- )
-                {
-                    MSM msm1 = (MSM) relationshipAgentList.get(index1) ;
+  // for (int index0 = seroSortList.size() - 1 ; index0 >= 0 ; index0-- )
+            // {
+            //     MSM msm0 = seroSortList.get(index0) ;
+            //     relationshipAgentList.remove(msm0) ;
+            //     for (Agent agent : relationshipAgentList)
+            //     {
+            //         MSM msm1 = (MSM) agent ;
+
+            //         // Check seroconcordance
+            //         if (msm1.statusHIV != msm0.statusHIV)
+            //             continue ;
+
+            //         // Have only one Relationship between two given MSM 
+            //         if (msm1.getCurrentPartnerIds().contains(msm0.getAgentId()))
+            //             continue ;
+
+            //         //seroSortList.remove(msm0) ;
+            //         relationshipAgentList.remove(agent) ;
+
+            //         availableAgentList.remove(msm0) ;
+            //         availableAgentList.remove(agent) ;
+
+            //         if (seroSortList.contains(msm1))  // Same MSM ArrayList
+            //         {
+            //             seroSortList.remove(msm1) ;
+            //             index0-- ;
+            //         }
+
+            //         Relationship relationship = Relationship.GET_RELATIONSHIP_FROM_CLASS_NAME(relationshipClazzName);
+            //         if (relationship == null) 
+            //         	LOGGER.severe(relationshipClazzName);
+            //         else 
+            //         	sbReport.append(relationship.addAgents(msm0, msm1));
+
+            //         /*try
+            //         {
+            //             relationshipClazz = Class.forName("PRSP.PrEPSTI.community." + relationshipClazzName) ;
+            //             Relationship relationship = (Relationship) relationshipClazz.newInstance() ;
+            //             // report += relationship.addAgents(msm0, msm1);
+            //             sbReport.append(relationship.addAgents(msm0, msm1));
+            //         }
+            //         catch( Exception e )
+            //         {
+            //             LOGGER.severe(e.toString()) ;
+            //         }
+            //         */
+            //         break ;
+                    
+
+            //         // No longer available for other Relationships
+            //         //availableAgents.remove(agent0) ;
+            //         //availableAgents.remove(agent1) ;
+            //     }
+            // }
+
+            MDLLBackwardIterator<Agent> outerRelationshipBackwardIterator = relationshipAgentMDLL.getBackwardIterator();
+            while (outerRelationshipBackwardIterator.hasNext()) {
+                MSM msm0 = (MSM) outerRelationshipBackwardIterator.getNextAndIterate();
+                // if (msm0 == null) break;
+                if (outerRelationshipBackwardIterator.hasNext() == false) break;  // takes care of > 0
+
+                // get the next one and iterate one back
+                // MSM nextMsm = (MSM) outerRelationshipBackwardIterator.getNextAndIterate();
+                // outerRelationshipBackwardIterator.iterateBack();
+
+                MDLLBackwardIterator<Agent> innerRelationshipBackwardIterator = relationshipAgentMDLL.getBackwardIterator(msm0.getAgentId());
+                while (innerRelationshipBackwardIterator.hasNext()) {
+                    MSM msm1 = (MSM) innerRelationshipBackwardIterator.getNextAndIterate();
 
                     if (msm1.statusHIV != msm0.statusHIV) // First two ArrayList are serosorters
                         continue ;
 
                     // Have only one Relationship between two given MSM 
+                    // if (partnerIdHashMap.get(msm1.getAgentId()).contains(msm0.getAgentId())) continue;
                     if (msm1.getCurrentPartnerIds().contains(msm0.getAgentId()))
                         continue ;
 
-                    relationshipAgentList.remove(index0) ;
-                    relationshipAgentList.remove(msm1) ;
+                    // System.out.println(relationshipAgentMDLL.size());
+                        
+                    outerRelationshipBackwardIterator.getNextAndIterate();    
+    
+                    relationshipAgentMDLL.remove(msm0.getAgentId());
+                    relationshipAgentMDLL.remove(msm1.getAgentId());
 
-                    availableAgentList.remove(msm0) ;
-                    availableAgentList.remove(msm1) ;
-                    index0-- ;
+                    availableAgentMDLL.remove(msm0.getAgentId()) ;
+                    availableAgentMDLL.remove(msm1.getAgentId()) ;
 
-                    try
-                    {
-                        relationshipClazz = Class.forName("PRSP.PrEPSTI.community." + relationshipClazzName) ;
-                        Relationship relationship = (Relationship) relationshipClazz.getDeclaredConstructor().newInstance() ;
-                        //incrementNbRelationships() ;
-                        // report += relationship.addAgents(msm0, msm1);
-                        sbReport.append(relationship.addAgents(msm0, msm1));
-                    }
-                    catch( Exception e )
-                    {
-                        LOGGER.severe(e.toString()) ;
-                    }
+                    
+                    Relationship relationship = Relationship.getRelationshipFromClassName(relationshipClazzName);
+                    if (relationship == null) LOGGER.severe(relationshipClazzName);
+                    else sbReport.append(relationship.addAgents(msm0, msm1));
                     break ;
-
+                    
                     // No longer available for other Relationships
                     //availableAgents.remove(agent0) ;
                     //availableAgents.remove(agent1) ;
                 }
             }
+            // System.out.println(availableMDLL.size() + "," + relationshipAgentMDLL.size() + ", totalIts=" + totalIts);
+
+
+          
+
+            // for (int index0 = relationshipAgentList.size() - 1 ; index0 > 0 ; index0--)
+            // {
+            //     MSM msm0 = (MSM) relationshipAgentList.get(index0) ;
+            //     for (int index1 = index0 - 1 ; index1 >= 0 ; index1-- )
+            //     {
+            //         MSM msm1 = (MSM) relationshipAgentList.get(index1) ;
+
+            //         if (msm1.statusHIV != msm0.statusHIV) // First two ArrayList are serosorters
+            //             continue ;
+
+            //         // Have only one Relationship between two given MSM 
+            //         if (msm1.getCurrentPartnerIds().contains(msm0.getAgentId()))
+            //             continue ;
+
+            //         relationshipAgentList.remove(index0) ;
+            //         relationshipAgentList.remove(msm1) ;
+
+            //         availableAgentList.remove(msm0) ;
+            //         availableAgentList.remove(msm1) ;
+            //         index0-- ;
+
+            //         try
+            //         {
+            //             relationshipClazz = Class.forName("PRSP.PrEPSTI.community." + relationshipClazzName) ;
+            //             Relationship relationship = (Relationship) relationshipClazz.getDeclaredConstructor().newInstance() ;
+            //             //incrementNbRelationships() ;
+            //             // report += relationship.addAgents(msm0, msm1);
+            //             sbReport.append(relationship.addAgents(msm0, msm1));
+            //         }
+            //         catch( Exception e )
+            //         {
+            //             LOGGER.severe(e.toString()) ;
+            //         }
+            //         break ;
+
+            //         // No longer available for other Relationships
+            //         //availableAgents.remove(agent0) ;
+            //         //availableAgents.remove(agent1) ;
+            //     }
+            // }
 
             
         }
@@ -1241,21 +1338,49 @@ public class MSM extends Agent {
      * @param relationshipClazzName (String) Name of Relationship sub-Class. 
      * @return 
      */
-    static public ArrayList<Agent> SEEKING_AGENTS(ArrayList<Agent> agentList, String relationshipClazzName)
+    static public MDLL<Agent> SEEKING_AGENTS(MDLL<Agent> agentMDLL, String relationshipClazzName)
     {
-        ArrayList<Agent> seekingAgentList = new ArrayList<Agent>() ;
-        
+        // ArrayList<Agent> seekingAgentList = new ArrayList<Agent>() ;
+        MDLL<Agent> seekingAgentMDLL = new MDLL<Agent>();
+
         // Determine which Agents seek out which Relationship Class
-        for (Agent agent : agentList)
+        MDLLForwardIterator<Agent> agentMDLLIteratable = agentMDLL.getForwardIterator();
+        
+        while (agentMDLLIteratable.hasNext())
         {
-            MSM msm = (MSM) agent ;
+            Agent currAgent = (Agent) agentMDLLIteratable.getNextAndIterate();
+            MSM msm = (MSM) currAgent ;
             if (msm.seekRelationship(relationshipClazzName))
-                seekingAgentList.add(msm) ;
+                seekingAgentMDLL.add(String.valueOf(msm.getAgentId()), msm);
         }
+        
+
+        // for (Agent agent : agentList)
+        // {
+        //     MSM msm = (MSM) agent ;
+        //     if (msm.seekRelationship(relationshipClazzName))
+        //         seekingAgentList.add(msm) ;
+        // }
         //Collections.shuffle(seekingAgentList,RAND) ;
         
-        return seekingAgentList ;    
+        return seekingAgentMDLL ;    
     }
+
+    // static public ArrayList<Agent> SEEKING_AGENTS(MDLL<Agent> agentMDLL, String relationshipClazzName)
+    // {
+    //     ArrayList<Agent> seekingAgentList = new ArrayList<Agent>() ;
+        
+    //     // Determine which Agents seek out which Relationship Class
+    //     for (Agent agent : agentList)
+    //     {
+    //         MSM msm = (MSM) agent ;
+    //         if (msm.seekRelationship(relationshipClazzName))
+    //             seekingAgentList.add(msm) ;
+    //     }
+    //     //Collections.shuffle(seekingAgentList,RAND) ;
+        
+    //     return seekingAgentList ;    
+    // }
     
     /**
      * 

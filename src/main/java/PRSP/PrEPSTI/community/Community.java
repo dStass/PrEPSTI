@@ -16,6 +16,7 @@ import java.io.*;
 import PRSP.PrEPSTI.reporter.presenter.*;
 
 import PRSP.PrEPSTI.configloader.ConfigLoader;
+import PRSP.PrEPSTI.mdll.MDLL;
 
 import java.util.Random;
 import java.util.TreeSet;
@@ -985,13 +986,23 @@ public class Community {
     private String generateRelationships()    // 
     {
         //String report = "" ;
+        float t1 = System.nanoTime();
         ArrayList<Agent> availableAgents = (ArrayList<Agent>) agents.clone() ;
+        // ArrayList<Agent> availableAgents = agents;
+        MDLL<Agent> availableMDLL = new MDLL<Agent>();
+        
         Collections.shuffle(availableAgents, RAND) ;
+        for (Agent a : availableAgents) availableMDLL.add(String.valueOf(a.getAgentId()), a);
+
+        // System.out.println("timeClone + timeShuffle = " + String.valueOf((System.nanoTime() - t1)/1000000000f));
         String[] relationshipClazzNames ;
         // relationshipClazzNames = new String[] {"Casual","Regular","Monogomous"} ;
         relationshipClazzNames = Community.RELATIONSHIP_CLAZZ_NAMES;
-        
-        return MSM.GENERATE_RELATIONSHIPS(availableAgents,relationshipClazzNames) ;
+        t1 = System.nanoTime();
+        String toReturn = MSM.GENERATE_RELATIONSHIPS(availableMDLL, relationshipClazzNames) ;
+        // System.out.println("generateTime = " + String.valueOf((System.nanoTime() - t1)/1000000000f));
+        return toReturn;
+
     }
     
     /**
