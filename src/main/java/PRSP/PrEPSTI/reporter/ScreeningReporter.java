@@ -440,12 +440,9 @@ public class ScreeningReporter extends Reporter {
         double nbTreated = (double) positiveAgents.size() ;
         Number[] entry = new Number[] {notifications/denominator,nbTreated/nbTested} ;
         finalNotifications.put("all",entry) ;
-
         sbFinalNotifications.append(ADD_REPORT_PROPERTY("all",entry[0].doubleValue())) ;
         sbFinalNotifications.append(ADD_REPORT_LABEL(POSITIVITY)) ;
         sbFinalNotifications.append(ADD_REPORT_PROPERTY("all",entry[1].doubleValue())) ;
-
-        
         // finalNotificationsString += ADD_REPORT_PROPERTY("all",entry[0].doubleValue()) ;
         // finalNotificationsString += ADD_REPORT_LABEL(POSITIVITY) ;
         // finalNotificationsString += ADD_REPORT_PROPERTY("all",entry[1].doubleValue()) ;
@@ -463,9 +460,7 @@ public class ScreeningReporter extends Reporter {
         
         if (WRITE_REPORT)
             WRITE_CSV(finalNotifications, "Site", new String[] {"incidence",POSITIVITY}, "finalNotifications", simName, getFolderPath()) ;
-        
-        return sbFinalNotifications.toString();
-        // return finalNotificationsString ;
+        return sbFinalNotifications.toString() ;
     }
     
     /**
@@ -1555,7 +1550,7 @@ public class ScreeningReporter extends Reporter {
         //LOGGER.info(agentTreatedReport.get("all").get("1034").toString());
         return agentTreatedReport ;
     }
-    
+ 
     /**
      * TODO: parallelisation
      * @param relationshipClassNames
@@ -1614,8 +1609,8 @@ public class ScreeningReporter extends Reporter {
      */
     public String prepareAtRiskIncidenceReport(String[] siteNames, int backYears, int backMonths, int backDays, int endCycle, String sortingProperty)
     {
+    	StringBuilder sbIncidentRateReport = new StringBuilder();
         // String incidentRateReport = "" ;
-        StringBuilder sbIncidentRateReport = new StringBuilder();
         
         HashSet<Object> sortingProperties = new HashSet<Object>() ; //(Arrays.asList(new Object[] {""})) ;
         HashMap<Object,ArrayList<String>> sortedAgentsReport = new HashMap<Object,ArrayList<String>>() ;
@@ -1689,8 +1684,8 @@ public class ScreeningReporter extends Reporter {
                 String propertyName = siteName.toString() ;
                 if (!"".equals(sortingValue))
                     propertyName += "_" + sortingValue ;
+                sbIncidentRateReport.append(Reporter.ADD_REPORT_PROPERTY(propertyName, incidentRate)) ;
                 // incidentRateReport += Reporter.ADD_REPORT_PROPERTY(propertyName, incidentRate) ;
-                sbIncidentRateReport.append(Reporter.ADD_REPORT_PROPERTY(propertyName, incidentRate));
             }
         }
         return sbIncidentRateReport.toString() ;

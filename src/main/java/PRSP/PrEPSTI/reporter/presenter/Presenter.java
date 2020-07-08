@@ -2677,6 +2677,7 @@ public class Presenter {
             catch (InterruptedException e) { e.printStackTrace(); }
 
             String APPLICATION_TITLE = applicationTitle;
+            //String APPLICATION_TITLE = chartTitle;
 
             if (!detectHPC()) {
                 ChartPanel chartPanel = new ChartPanel( chart );

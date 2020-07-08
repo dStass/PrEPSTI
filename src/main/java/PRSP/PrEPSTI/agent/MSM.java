@@ -3,23 +3,18 @@
  */
 package PRSP.PrEPSTI.agent;
 
-import PRSP.PrEPSTI.mdll.MDLLForwardIterator;
-import PRSP.PrEPSTI.mdll.MDLLIterator;
 //import static agent.Agent.LOGGER;
 import PRSP.PrEPSTI.community.Relationship;
 import PRSP.PrEPSTI.configloader.ConfigLoader;
-import PRSP.PrEPSTI.mdll.MDLL;
-import PRSP.PrEPSTI.mdll.MDLLBackwardIterator;
-import PRSP.PrEPSTI.reporter.Reporter;
+import PRSP.PrEPSTI.reporter.Reporter ;
 
 import java.util.logging.Level;
-import PRSP.PrEPSTI.site.*;
-
+import PRSP.PrEPSTI.site.* ;
+        
 import java.lang.reflect.*;
-import java.util.ArrayList;
+import java.util.ArrayList ;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.HashMap ;
 import java.util.Collection ;
 import java.util.Collections;
 import java.util.stream.IntStream;
@@ -62,23 +57,19 @@ public class MSM extends Agent {
     /** Probability of serosorting if HIV negative (2017) */
     static double PROBABILITY_NEGATIVE_SERO_SORT = 0.45 ;
     /** Probability of serosorting in Casual Relationship if HIV positive */
-    static double PROBABILITY_POSITIVE_CASUAL_SERO_SORT = 0.630 ; // 0.431 ;
-    // .630, .630, .630, .630, .630, .710, .586, .673, .510, .550, .341
+    //static double PROBABILITY_POSITIVE_CASUAL_SERO_SORT = 0.630 ; // 0.431 ;
     /** Probability of serosorting in Casual Relationship if HIV negative */
-    static double PROBABILITY_NEGATIVE_CASUAL_SERO_SORT = 0.513 ; // 0.485 ;
-    // .513, .513, .513, .513, .513, .579, .480, .474, .547, .520, .485
+    //static double PROBABILITY_NEGATIVE_CASUAL_SERO_SORT = 0.513 ; // 0.485 ;
     /** Probability of serosorting in Regular Relationship if HIV positive */
-    static double PROBABILITY_POSITIVE_REGULAR_SERO_SORT = 0.358 ;
-    // .358, .397, .344, .397, .378, .495, .404, .347, .408, .374, .274
+    //static double PROBABILITY_POSITIVE_REGULAR_SERO_SORT = 0.358 ;
     /** Probability of serosorting in Regular Relationship if HIV negative */
-    static double PROBABILITY_NEGATIVE_REGULAR_SERO_SORT = 0.473 ;
-    // .473, .618, .643, .515, .744, .763, .720, .731, .709, .712, .701
+    //static double PROBABILITY_NEGATIVE_REGULAR_SERO_SORT = 0.473 ;
     /** Probability of serosorting in Regular Relationship if HIV positive */
-    static double PROBABILITY_POSITIVE_MONOGOMOUS_SERO_SORT 
-            = PROBABILITY_POSITIVE_REGULAR_SERO_SORT ;
+    //static double PROBABILITY_POSITIVE_MONOGOMOUS_SERO_SORT 
+      //      = PROBABILITY_POSITIVE_REGULAR_SERO_SORT ;
     /** Probability of serosorting in Regular Relationship if HIV negative */
-    static double PROBABILITY_NEGATIVE_MONOGOMOUS_SERO_SORT 
-            = PROBABILITY_NEGATIVE_REGULAR_SERO_SORT ;
+    //static double PROBABILITY_NEGATIVE_MONOGOMOUS_SERO_SORT 
+      //      = PROBABILITY_NEGATIVE_REGULAR_SERO_SORT ;
     /** Probability of sero-positioning if HIV positive */
     static double PROBABILITY_POSITIVE_SERO_POSITION = 0.25 ;
     /** Probability of sero-positioning if HIV negative */
@@ -124,13 +115,21 @@ public class MSM extends Agent {
             sbReport.append(Reporter.ADD_REPORT_PROPERTY(change, methodName)) ;
             sbReport.append(REINIT_TRUST_PREP(agentList, year)) ;
             
-            // Needs to be called after MSM.REINIT() specifically MSM.REINIT_RISK_ODDS()
-            // due to its updating prepStatus.
-            //methodName = "screen" ;
-            //report += Reporter.ADD_REPORT_PROPERTY(change, methodName) ;
-            //report += REINIT_SCREEN_CYCLE(agentList, year) ;
-            //                                                             
-            //REINIT_USE_GSN(agentList, year) ;
+            
+            methodName = "seroSortCasual" ;
+            sbReport.append(Reporter.ADD_REPORT_PROPERTY(change, methodName)) ;
+            sbReport.append(REINIT_CASUAL_SERO_SORT(agentList, year)) ;
+            
+            
+            methodName = "seroSortRegular" ;
+            sbReport.append(Reporter.ADD_REPORT_PROPERTY(change, methodName)) ;
+            sbReport.append(REINIT_REGULAR_SERO_SORT(agentList, year)) ;
+            
+            methodName = "seroSortMonogomous" ;
+            sbReport.append(Reporter.ADD_REPORT_PROPERTY(change, methodName)) ;
+            sbReport.append(REINIT_MONOGOMOUS_SERO_SORT(agentList, year)) ;
+            
+            //                                 
         }
         catch ( Exception e )
         {
@@ -139,6 +138,234 @@ public class MSM extends Agent {
         }
         return sbReport.toString() ;
     }
+    
+    /** Probability of serosorting in Casual Relationship if HIV positive */
+    static double[] PROBABILITY_POSITIVE_CASUAL_SERO_SORT 
+        = new double[] {.630, .630, .630, .630, .630, .710, .586, .673, .510, .550, .341} ;
+    /** Probability of serosorting in Casual Relationship if HIV negative */
+    static double[] PROBABILITY_NEGATIVE_CASUAL_SERO_SORT 
+        = new double[] {.513, .513, .513, .513, .513, .579, .480, .474, .547, .520, .485} ;
+    
+    /**
+     * Alters whether an MSM sorts according HIV seroconcordance in Casual Relationships from year 
+     * to year. If serosorting status changes to true then only MSM who currently do not serosort will 
+     * change, and vice versa.
+     * Taken from ?????
+     * @param agentList (ArrayList) List of Agents to undergo parameter change.
+     * @param year (int) Year of simulation, starting from 0.
+     * @throws java.lang.Exception 
+     */
+    static protected String REINIT_CASUAL_SERO_SORT(ArrayList<Agent> agentList, int year) 
+    {
+    	StringBuilder sbReport = new StringBuilder() ;
+    	if (year == 0)
+    		return sbReport.toString() ;
+    	
+    	double newPositiveProbability = GET_YEAR(PROBABILITY_POSITIVE_CASUAL_SERO_SORT,year) ;
+    	double newNegativeProbability = GET_YEAR(PROBABILITY_NEGATIVE_CASUAL_SERO_SORT,year) ;
+    	double oldPositiveProbability = GET_YEAR(PROBABILITY_POSITIVE_CASUAL_SERO_SORT,year-1) ;
+    	double oldNegativeProbability = GET_YEAR(PROBABILITY_NEGATIVE_CASUAL_SERO_SORT,year-1) ;
+    	
+    	double newProbability ;
+    	double oldProbability ;
+    	double changeProbability ;
+    	boolean newStatus ;
+    	MSM msm ;
+    	for (Agent agent : agentList)
+        {
+            msm = (MSM) agent ;
+            if (msm.statusHIV)
+            {
+            	newProbability = newPositiveProbability ;
+            	oldProbability = oldNegativeProbability ;
+            }
+            else
+            {
+            	newProbability = newNegativeProbability ;
+            	oldProbability = oldNegativeProbability ;
+            }
+            
+            if (newProbability > oldProbability)
+            {
+                if (!msm.seroSortCasual)
+                {
+                    changeProbability = (newProbability - oldProbability)/(1 - oldProbability) ;
+                    newStatus = RAND.nextDouble() < changeProbability ;
+                    msm.setSeroSortCasual(newStatus) ;
+                    sbReport.append(Reporter.ADD_REPORT_PROPERTY(String.valueOf(msm.getAgentId()), newStatus)) ;
+                    continue ;
+                }
+            }
+            else    // Probability of serosorting in a casual relationship decreases.
+            {
+                if (msm.seroSortCasual)
+                {
+                    changeProbability = newProbability/oldProbability ; // (oldProbability - newProbability)/oldProbability ;
+                    // equivalent to correct calculation: RAND > (1 - changeProbability)
+                    newStatus = RAND.nextDouble() < changeProbability ;
+                    msm.setSeroSortCasual(newStatus) ;
+                    sbReport.append(Reporter.ADD_REPORT_PROPERTY(String.valueOf(msm.getAgentId()), newStatus)) ;
+                    continue ;
+                }
+            }
+            //newProbability *= changeProbability ;
+        }
+
+        return sbReport.toString() ;
+    }
+    
+    /** Probability of serosorting in Regular Relationship if HIV positive */
+    static double[] PROBABILITY_POSITIVE_REGULAR_SERO_SORT 
+        = new double[] {.358, .397, .344, .397, .378, .495, .404, .347, .408, .374, .274} ;
+    /** Probability of serosorting in Regular Relationship if HIV negative */
+    static double[] PROBABILITY_NEGATIVE_REGULAR_SERO_SORT 
+        = new double[] {.473, .618, .643, .515, .744, .763, .720, .731, .709, .712, .701} ;
+    
+    
+    /**
+     * Alters whether an MSM sorts according HIV seroconcordance in Casual Relationships from year 
+     * to year. If serosorting status changes to true then only MSM who currently do not serosort will 
+     * change, and vice versa.
+     * Taken from ?????
+     * @param agentList (ArrayList) List of Agents to undergo parameter change.
+     * @param year (int) Year of simulation, starting from 0.
+     * @throws java.lang.Exception 
+     */
+    static protected String REINIT_REGULAR_SERO_SORT(ArrayList<Agent> agentList, int year) 
+    {
+    	StringBuilder sbReport = new StringBuilder() ;
+    	if (year == 0)
+    		return sbReport.toString() ;
+    	
+    	double newPositiveProbability = GET_YEAR(PROBABILITY_POSITIVE_REGULAR_SERO_SORT,year) ;
+    	double newNegativeProbability = GET_YEAR(PROBABILITY_NEGATIVE_REGULAR_SERO_SORT,year) ;
+    	double oldPositiveProbability = GET_YEAR(PROBABILITY_POSITIVE_REGULAR_SERO_SORT,year-1) ;
+    	double oldNegativeProbability = GET_YEAR(PROBABILITY_NEGATIVE_REGULAR_SERO_SORT,year-1) ;
+    	
+    	double newProbability ;
+    	double oldProbability ;
+    	double changeProbability ;
+    	boolean newStatus ;
+    	MSM msm ;
+    	for (Agent agent : agentList)
+        {
+            msm = (MSM) agent ;
+            if (msm.statusHIV)
+            {
+            	newProbability = newPositiveProbability ;
+            	oldProbability = oldNegativeProbability ;
+            }
+            else
+            {
+            	newProbability = newNegativeProbability ;
+            	oldProbability = oldNegativeProbability ;
+            }
+            
+            if (newProbability > oldProbability)
+            {
+                if (!msm.seroSortRegular)
+                {
+                    changeProbability = (newProbability - oldProbability)/(1 - oldProbability) ;
+                    newStatus = RAND.nextDouble() < changeProbability ;
+                    msm.setSeroSortCasual(newStatus) ;
+                    sbReport.append(Reporter.ADD_REPORT_PROPERTY(String.valueOf(msm.getAgentId()), newStatus)) ;
+                    continue ;
+                }
+            }
+            else    // Probability of serosorting in a casual relationship decreases.
+            {
+                if (msm.seroSortRegular)
+                {
+                    changeProbability = newProbability/oldProbability ; // (oldProbability - newProbability)/oldProbability ;
+                    // equivalent to correct calculation: RAND > (1 - changeProbability)
+                    newStatus = RAND.nextDouble() < changeProbability ;
+                    msm.setSeroSortCasual(newStatus) ;
+                    sbReport.append(Reporter.ADD_REPORT_PROPERTY(String.valueOf(msm.getAgentId()), newStatus)) ;
+                    continue ;
+                }
+            }
+            //newProbability *= changeProbability ;
+        }
+
+        return sbReport.toString() ;
+    }
+    
+    /** Probability of serosorting in Regular Relationship if HIV positive */
+    static double[] PROBABILITY_POSITIVE_MONOGOMOUS_SERO_SORT 
+            = PROBABILITY_POSITIVE_REGULAR_SERO_SORT ;
+    /** Probability of serosorting in Regular Relationship if HIV negative */
+    static double[] PROBABILITY_NEGATIVE_MONOGOMOUS_SERO_SORT 
+            = PROBABILITY_NEGATIVE_REGULAR_SERO_SORT ;
+    
+    
+    /**
+     * Alters whether an MSM sorts according HIV seroconcordance in Casual Relationships from year 
+     * to year. If serosorting status changes to true then only MSM who currently do not serosort will 
+     * change, and vice versa.
+     * Taken from ?????
+     * @param agentList (ArrayList) List of Agents to undergo parameter change.
+     * @param year (int) Year of simulation, starting from 0.
+     * @throws java.lang.Exception 
+     */
+    static protected String REINIT_MONOGOMOUS_SERO_SORT(ArrayList<Agent> agentList, int year) 
+    {
+    	StringBuilder sbReport = new StringBuilder() ;
+    	if (year == 0)
+    		return sbReport.toString() ;
+    	
+    	double newPositiveProbability = GET_YEAR(PROBABILITY_POSITIVE_MONOGOMOUS_SERO_SORT,year) ;
+    	double newNegativeProbability = GET_YEAR(PROBABILITY_NEGATIVE_MONOGOMOUS_SERO_SORT,year) ;
+    	double oldPositiveProbability = GET_YEAR(PROBABILITY_POSITIVE_MONOGOMOUS_SERO_SORT,year-1) ;
+    	double oldNegativeProbability = GET_YEAR(PROBABILITY_NEGATIVE_MONOGOMOUS_SERO_SORT,year-1) ;
+    	
+    	double newProbability ;
+    	double oldProbability ;
+    	double changeProbability ;
+    	boolean newStatus ;
+    	MSM msm ;
+    	for (Agent agent : agentList)
+        {
+            msm = (MSM) agent ;
+            if (msm.statusHIV)
+            {
+            	newProbability = newPositiveProbability ;
+            	oldProbability = oldNegativeProbability ;
+            }
+            else
+            {
+            	newProbability = newNegativeProbability ;
+            	oldProbability = oldNegativeProbability ;
+            }
+            
+            if (newProbability > oldProbability)
+            {
+                if (!msm.seroSortMonogomous)
+                {
+                    changeProbability = (newProbability - oldProbability)/(1 - oldProbability) ;
+                    newStatus = RAND.nextDouble() < changeProbability ;
+                    msm.setSeroSortCasual(newStatus) ;
+                    sbReport.append(Reporter.ADD_REPORT_PROPERTY(String.valueOf(msm.getAgentId()), newStatus)) ;
+                    continue ;
+                }
+            }
+            else    // Probability of serosorting in a casual relationship decreases.
+            {
+                if (msm.seroSortMonogomous)
+                {
+                    changeProbability = newProbability/oldProbability ; // (oldProbability - newProbability)/oldProbability ;
+                    // equivalent to correct calculation: RAND > (1 - changeProbability)
+                    newStatus = RAND.nextDouble() < changeProbability ;
+                    msm.setSeroSortCasual(newStatus) ;
+                    sbReport.append(Reporter.ADD_REPORT_PROPERTY(String.valueOf(msm.getAgentId()), newStatus)) ;
+                    continue ;
+                }
+            }
+            //newProbability *= changeProbability ;
+        }
+
+        return sbReport.toString() ;
+    }
+
     
     /** The proportion of HIV-positives whose viral load is undetectable, given positive HIV status */
     static double[] PROPORTION_UNDETECTABLE = {0.566, 0.647, 0.701, 0.723, 0.747, 0.816, 0.734, 0.808,    // 2007-2014 
@@ -875,266 +1102,136 @@ public class MSM extends Agent {
     /**
      * Generate relationships among the availableAgentList. 
      * Serosorting MSM are treated first to ensure that they don't miss out unduly. 
-     * FIXME: Not robust against reordering of relationshipClazzNames
      * Those entering Relationships are removed.
+     * FIXME: Not robust against reordering of relationshipClazzNames
      * 
      * @return (String) report of Relationships generated
      */
-    static public String GENERATE_RELATIONSHIPS(MDLL<Agent> availableMDLL, String[] relationshipClazzNames)
+    static public String GENERATE_RELATIONSHIPS(ArrayList<Agent> availableAgentList, String[] relationshipClazzNames)
     {   
-        // HashMap<Integer, HashSet<Integer>> partnerIdHashMap = new HashMap<Integer, HashSet<Integer>>();
-        // for (Agent a : availableAgentList) {
-        //     ArrayList<Integer> aCurrentPartners = a.getCurrentPartnerIds();
-        //     HashSet<Integer> partnerIdSet = new HashSet<Integer>();
-        //     for (Integer i : aCurrentPartners) partnerIdSet.add(i);
-        //     partnerIdHashMap.put(a.getAgentId(), partnerIdSet);
-        // }
-
-
-        float timeRun = 0;
         float t1 = System.nanoTime();
         String report = "" ;
-        t1 = System.nanoTime();
         StringBuilder sbReport = new StringBuilder();
-        // System.out.println("timeInitSB = " + String.valueOf((System.nanoTime() - t1)/1000000000f));
 
-
-        // Class<?> relationshipClazz ;
+        Class<?> relationshipClazz ;
     
-        // ArrayList<MSM> seroSortList ;
-        MDLL<MSM> seroSortMDLL;
+        ArrayList<MSM> seroSortList ;
         
         for (String relationshipClazzName : relationshipClazzNames)
-        {   
-            float t2 = System.nanoTime();
-            MDLL<Agent> relationshipAgentMDLL = MSM.SEEKING_AGENTS(availableMDLL, relationshipClazzName) ;
-            if (relationshipAgentMDLL.size() == 0) continue;
-            seroSortMDLL = new MDLL<MSM>();
-            // seroSortList = new ArrayList<MSM>() ;
-            // System.out.println("timeSeeking = " + String.valueOf((System.nanoTime() - t1)/1000000000f));
-            
-            // t1 = System.nanoTime();
+        {
+            ArrayList<Agent> relationshipAgentList = MSM.SEEKING_AGENTS(availableAgentList,relationshipClazzName) ;
+        
+            seroSortList = new ArrayList<MSM>() ;
             
             // Sort seekers according to HIV and serosorting status
-            
-            MDLLForwardIterator<Agent> iterator = relationshipAgentMDLL.getForwardIterator();
-            
-            while (iterator.hasNext()) {
-                MSM msm = (MSM) iterator.getNextAndIterate();
-                boolean boolSeroSort = msm.getSeroSort(relationshipClazzName);
-                if (boolSeroSort) seroSortMDLL.add(msm.getAgentId(), msm) ;    
+            for (Agent agent : relationshipAgentList) 
+            {
+                MSM msm = (MSM) agent ;
+                if (msm.getSeroSort(relationshipClazzName))
+                    seroSortList.add(msm) ;
             }
-            
-            // relo and sero 
-            // HashMap<Boolean, HashMap<Integer, Integer>> relationshipSeroMap = new HashMap<Boolean, HashMap<Integer, Integer>>();
-            
-            
-            
-            
-            // for (Agent agent : relationshipAgentList) 
-            // {
-                //     MSM msm = (MSM) agent ;
-                //     if (msm.getSeroSort(relationshipClazzName))
-                //         seroSortList.add(msm) ;
-                // }
-                // System.out.println("timeFirstLoop = " + String.valueOf((System.nanoTime() - t1)/1000000000f));
-                
-                // t1 = System.nanoTime();
-                
-            MDLLIterator<MSM> seroBackwardIterator = seroSortMDLL.getBackwardIterator();
-            while (seroBackwardIterator.hasNext()) {
-                MSM msm0 = seroBackwardIterator.getNextAndIterate();
-                relationshipAgentMDLL.remove(msm0.getAgentId());
-                MDLLForwardIterator<Agent> relationshipForwardIterator = relationshipAgentMDLL.getForwardIterator();
-                while (relationshipForwardIterator.hasNext()) {
-                    Agent agent = relationshipForwardIterator.getNextAndIterate();
-                    MSM msm1 = (MSM) agent;
-                    if (msm1.statusHIV != msm0.statusHIV) continue ;
-                    
-                    // Have only one Relationship between two given MSM 
-                    // if (partnerIdHashMap.get(msm1.getAgentId()).contains(msm0.getAgentId())) continue;
-                    if (msm1.getCurrentPartnerIds().contains(msm0.getAgentId())) continue ;
-                    
-                    relationshipForwardIterator.iterateBack();
-                    relationshipAgentMDLL.remove(agent.getAgentId());
-                    
-                    availableMDLL.remove(msm0.getAgentId());
-                    availableMDLL.remove(agent.getAgentId());
-                    
-                    if (seroSortMDLL.contains(msm1.getAgentId())) {
-                        seroBackwardIterator.getNextAndIterate();
-                        seroSortMDLL.remove(msm1.getAgentId());
-                    }
-                    
-                    Relationship relationship = Relationship.getRelationshipFromClassName(relationshipClazzName);
-                    if (relationship == null) LOGGER.severe(relationshipClazzName);
-                    else sbReport.append(relationship.addAgents(msm0, msm1));
-                    
-                    break;
-                }
-            }
-                
-            // System.out.print(availableMDLL.size() + "," + relationshipAgentMDLL.size() + " -> ");
-            MDLLBackwardIterator<Agent> outerRelationshipBackwardIterator = relationshipAgentMDLL.getBackwardIterator();
-            int totalIts = 0;
-            while (outerRelationshipBackwardIterator.hasNext()) {
-                MSM msm0 = (MSM) outerRelationshipBackwardIterator.getNextAndIterate();
-                // if (msm0 == null) break;
-                if (outerRelationshipBackwardIterator.hasNext() == false) break;  // takes care of > 0
 
-                // get the next one and iterate one back
-                // MSM nextMsm = (MSM) outerRelationshipBackwardIterator.getNextAndIterate();
-                // outerRelationshipBackwardIterator.iterateBack();
+            for (int index0 = seroSortList.size() - 1 ; index0 >= 0 ; index0-- )
+            {
+                MSM msm0 = seroSortList.get(index0) ;
+                relationshipAgentList.remove(msm0) ;
+                for (Agent agent : relationshipAgentList)
+                {
+                    MSM msm1 = (MSM) agent ;
 
-                MDLLBackwardIterator<Agent> innerRelationshipBackwardIterator = relationshipAgentMDLL.getBackwardIterator(msm0.getAgentId());
-                while (innerRelationshipBackwardIterator.hasNext()) {
-                    totalIts += 1;
-                    MSM msm1 = (MSM) innerRelationshipBackwardIterator.getNextAndIterate();
-
-                    if (msm1.statusHIV != msm0.statusHIV) // First two ArrayList are serosorters
+                    // Check seroconcordance
+                    if (msm1.statusHIV != msm0.statusHIV)
                         continue ;
 
                     // Have only one Relationship between two given MSM 
-                    // if (partnerIdHashMap.get(msm1.getAgentId()).contains(msm0.getAgentId())) continue;
                     if (msm1.getCurrentPartnerIds().contains(msm0.getAgentId()))
                         continue ;
 
-                    // System.out.println(relationshipAgentMDLL.size());
-                        
-                    outerRelationshipBackwardIterator.getNextAndIterate();    
-    
-                    relationshipAgentMDLL.remove(msm0.getAgentId());
-                    relationshipAgentMDLL.remove(msm1.getAgentId());
+                    //seroSortList.remove(msm0) ;
+                    relationshipAgentList.remove(agent) ;
 
-                    availableMDLL.remove(msm0.getAgentId()) ;
-                    availableMDLL.remove(msm1.getAgentId()) ;
+                    availableAgentList.remove(msm0) ;
+                    availableAgentList.remove(agent) ;
 
-                    
-                    Relationship relationship = Relationship.getRelationshipFromClassName(relationshipClazzName);
-                    if (relationship == null) LOGGER.severe(relationshipClazzName);
-                    else sbReport.append(relationship.addAgents(msm0, msm1));
+                    if (seroSortList.contains(msm1))  // Same MSM ArrayList
+                    {
+                        seroSortList.remove(msm1) ;
+                        index0-- ;
+                    }
+
+                    Relationship relationship = Relationship.GET_RELATIONSHIP_FROM_CLASS_NAME(relationshipClazzName);
+                    if (relationship == null) 
+                    	LOGGER.severe(relationshipClazzName);
+                    else 
+                    	sbReport.append(relationship.addAgents(msm0, msm1));
+
+                    /*try
+                    {
+                        relationshipClazz = Class.forName("PRSP.PrEPSTI.community." + relationshipClazzName) ;
+                        Relationship relationship = (Relationship) relationshipClazz.newInstance() ;
+                        // report += relationship.addAgents(msm0, msm1);
+                        sbReport.append(relationship.addAgents(msm0, msm1));
+                    }
+                    catch( Exception e )
+                    {
+                        LOGGER.severe(e.toString()) ;
+                    }
+                    */
                     break ;
                     
+
                     // No longer available for other Relationships
                     //availableAgents.remove(agent0) ;
                     //availableAgents.remove(agent1) ;
                 }
             }
-            // System.out.println(availableMDLL.size() + "," + relationshipAgentMDLL.size() + ", totalIts=" + totalIts);
-        }
-        // System.out.println();
-        
 
-        
+            for (int index0 = relationshipAgentList.size() - 1 ; index0 > 0 ; index0--)
+            {
+                MSM msm0 = (MSM) relationshipAgentList.get(index0) ;
+                for (int index1 = index0 - 1 ; index1 >= 0 ; index1-- )
+                {
+                    MSM msm1 = (MSM) relationshipAgentList.get(index1) ;
 
-            // for (int index0 = seroSortList.size() - 1 ; index0 >= 0 ; index0-- )
-            // {
-            //     MSM msm0 = seroSortList.get(index0) ;
-            //     relationshipAgentMDLL.removeNode(msm0.getAgentId());
-            //     relationshipAgentList.remove(msm0) ;
-            //     for (Agent agent : relationshipAgentList)
-            //     {
-            //         MSM msm1 = (MSM) agent ;
+                    if (msm1.statusHIV != msm0.statusHIV) // First two ArrayList are serosorters
+                        continue ;
 
-            //         // Check seroconcordance
-            //         if (msm1.statusHIV != msm0.statusHIV)
-            //             continue ;
+                    // Have only one Relationship between two given MSM 
+                    if (msm1.getCurrentPartnerIds().contains(msm0.getAgentId()))
+                        continue ;
 
-            //         // Have only one Relationship between two given MSM 
-            //         if (msm1.getCurrentPartnerIds().contains(msm0.getAgentId()))
-            //             continue ;
+                    relationshipAgentList.remove(index0) ;
+                    relationshipAgentList.remove(msm1) ;
 
-            //         //seroSortList.remove(msm0) ;
-            //         relationshipAgentList.remove(agent) ;
+                    availableAgentList.remove(msm0) ;
+                    availableAgentList.remove(msm1) ;
+                    index0-- ;
 
-            //         availableAgentList.remove(msm0) ;
-            //         availableAgentList.remove(agent) ;
+                    try
+                    {
+                        relationshipClazz = Class.forName("PRSP.PrEPSTI.community." + relationshipClazzName) ;
+                        Relationship relationship = (Relationship) relationshipClazz.getDeclaredConstructor().newInstance() ;
+                        //incrementNbRelationships() ;
+                        // report += relationship.addAgents(msm0, msm1);
+                        sbReport.append(relationship.addAgents(msm0, msm1));
+                    }
+                    catch( Exception e )
+                    {
+                        LOGGER.severe(e.toString()) ;
+                    }
+                    break ;
 
-            //         if (seroSortList.contains(msm1))  // Same MSM ArrayList
-            //         {
-            //             seroSortList.remove(msm1) ;
-            //             index0-- ;
-            //         }
-                    
-
-                    
-            //         try
-            //         {
-            //             relationshipClazz = Class.forName("PRSP.PrEPSTI.community." + relationshipClazzName) ;
-            //             Relationship relationship = (Relationship) relationshipClazz.getConstructor().newInstance() ;
-            //             // report += relationship.addAgents(msm0, msm1);
-            //             sbReport.append(relationship.addAgents(msm0, msm1));
-            //         }
-            //         catch( Exception e )
-            //         {
-            //             LOGGER.severe(e.toString()) ;
-            //         }
-            //         break ;
-
-            //         // No longer available for other Relationships
-            //         //availableAgents.remove(agent0) ;
-            //         //availableAgents.remove(agent1) ;
-            //     }
-            // }
-
-            // System.out.println("time2ndLoop = " + String.valueOf((System.nanoTime() - t1)/1000000000f));
-
-            // float t3 = System.nanoTime();
-
-            // for (int index0 = relationshipAgentList.size() - 1 ; index0 > 0 ; index0--)
-            // {
-            //     MSM msm0 = (MSM) relationshipAgentList.get(index0) ;
-            //     for (int index1 = index0 - 1 ; index1 >= 0 ; index1-- )
-            //     {
-            //         MSM msm1 = (MSM) relationshipAgentList.get(index1) ;
-
-            //         if (msm1.statusHIV != msm0.statusHIV) // First two ArrayList are serosorters
-            //             continue ;
-
-            //         // Have only one Relationship between two given MSM 
-            //         if (msm1.getCurrentPartnerIds().contains(msm0.getAgentId()))
-            //             continue ;
-                        
-            //         float t4 = System.nanoTime();
-            //         relationshipAgentList.remove(index0) ;
-            //         relationshipAgentList.remove(msm1) ;
-
-            //         availableAgentList.remove(msm0) ;
-            //         availableAgentList.remove(msm1) ;
-            //         // System.out.println("timet4 = " + String.valueOf((System.nanoTime() - t4)/1000000000f));
-
-            //         index0-- ;
-
-            //         try
-            //         {
-            //             relationshipClazz = Class.forName("PRSP.PrEPSTI.community." + relationshipClazzName) ;
-            //             Relationship relationship = (Relationship) relationshipClazz.getConstructor().newInstance() ;
-            //             //incrementNbRelationships() ;
-            //             // report += relationship.addAgents(msm0, msm1);
-            //             sbReport.append(relationship.addAgents(msm0, msm1));
-            //         }
-            //         catch( Exception e )
-            //         {
-            //             LOGGER.severe(e.toString()) ;
-            //         }
-            //         break ;
-
-            //         // No longer available for other Relationships
-            //         //availableAgents.remove(agent0) ;
-            //         //availableAgents.remove(agent1) ;
-            //     }
-            // }
-
-            // // System.out.println("lastLoop = " + String.valueOf((System.nanoTime() - t3)/1000000000f));
-
+                    // No longer available for other Relationships
+                    //availableAgents.remove(agent0) ;
+                    //availableAgents.remove(agent1) ;
+                }
+            }
 
             
-        
+        }
         // System.out.println(report.length() + " time=" + String.valueOf((System.nanoTime()-t1) / 1000000000f));
-        // report = 
-        // timeRun += (System.nanoTime() - t1);
-        // System.out.println("MSM=" + String.valueOf((timeRun) / 1000000000f ) + ", " + String.valueOf(timeRun) + " -> " + String.valueOf(System.nanoTime()));
-        return sbReport.toString();
+        report = sbReport.toString();
+        return report ;
     }
     
     /**
@@ -1144,31 +1241,20 @@ public class MSM extends Agent {
      * @param relationshipClazzName (String) Name of Relationship sub-Class. 
      * @return 
      */
-    static public MDLL<Agent> SEEKING_AGENTS(MDLL<Agent> agentMDLL, String relationshipClazzName)
+    static public ArrayList<Agent> SEEKING_AGENTS(ArrayList<Agent> agentList, String relationshipClazzName)
     {
-        // ArrayList<Agent> seekingAgentList = new ArrayList<Agent>() ;
-        MDLL<Agent> seekingAgentMDLL = new MDLL<Agent>();
-
+        ArrayList<Agent> seekingAgentList = new ArrayList<Agent>() ;
+        
         // Determine which Agents seek out which Relationship Class
-        MDLLForwardIterator<Agent> agentMDLLIteratable = agentMDLL.getForwardIterator();
-        
-        while (agentMDLLIteratable.hasNext()) {
-            Agent currAgent = (Agent) agentMDLLIteratable.getNextAndIterate();
-            MSM msm = (MSM) currAgent ;
-            if (msm.seekRelationship(relationshipClazzName)) seekingAgentMDLL.add(String.valueOf(msm.getAgentId()), msm);
-                // seekingAgentList.add(msm) ;
+        for (Agent agent : agentList)
+        {
+            MSM msm = (MSM) agent ;
+            if (msm.seekRelationship(relationshipClazzName))
+                seekingAgentList.add(msm) ;
         }
-        
-
-        // for (Agent agent : agentList)
-        // {
-        //     MSM msm = (MSM) agent ;
-        //     if (msm.seekRelationship(relationshipClazzName))
-        //         seekingAgentList.add(msm) ;
-        // }
         //Collections.shuffle(seekingAgentList,RAND) ;
         
-        return seekingAgentMDLL ;    
+        return seekingAgentList ;    
     }
     
     /**
@@ -1600,9 +1686,9 @@ public class MSM extends Agent {
         discloseStatusHIV = (RAND.nextDouble() < probabilityDiscloseHIV) ;
         //if (discloseStatusHIV)
         {
-            seroSortCasual = (RAND.nextDouble() < getProbabilitySeroSortCasual(statusHIV)) ;
-            seroSortRegular = (RAND.nextDouble() < getProbabilitySeroSortRegular(statusHIV)) ;
-            seroSortMonogomous = (RAND.nextDouble() < getProbabilitySeroSortMonogomous(statusHIV)) ;
+            seroSortCasual = (RAND.nextDouble() < getProbabilitySeroSortCasual(statusHIV)[0]) ;
+            seroSortRegular = (RAND.nextDouble() < getProbabilitySeroSortRegular(statusHIV)[0]) ;
+            seroSortMonogomous = (RAND.nextDouble() < getProbabilitySeroSortMonogomous(statusHIV)[0]) ;
             seroPosition = (RAND.nextDouble() < getProbabilitySeroPosition(statusHIV)) ;
         }
         
@@ -1732,36 +1818,33 @@ public class MSM extends Agent {
      */
     @Override
     public String getCensusReport()
-    {   
-        StringBuilder sbCensusReport = new StringBuilder();
-        sbCensusReport.append(super.getCensusReport());
-        // String censusReport = super.getCensusReport() ;
-        sbCensusReport.append(Reporter.ADD_REPORT_PROPERTY("statusHIV", statusHIV)) ;
-        sbCensusReport.append(Reporter.ADD_REPORT_PROPERTY("prepStatus", prepStatus)) ;
-        sbCensusReport.append(Reporter.ADD_REPORT_PROPERTY("discloseStatusHIV", discloseStatusHIV)) ;
-        sbCensusReport.append(Reporter.ADD_REPORT_PROPERTY("seroSortCasual", seroSortCasual)) ;
-        sbCensusReport.append(Reporter.ADD_REPORT_PROPERTY("seroSortRegular", seroSortRegular)) ;
-        sbCensusReport.append(Reporter.ADD_REPORT_PROPERTY("seroSortMonogomous", seroSortMonogomous)) ;
-        sbCensusReport.append(Reporter.ADD_REPORT_PROPERTY("seroPosition", seroPosition)) ;
-        sbCensusReport.append(Reporter.ADD_REPORT_PROPERTY("riskyStatus", riskyStatus)) ;
-        sbCensusReport.append(Reporter.ADD_REPORT_PROPERTY("riskyStatusCasual", riskyStatusCasual)) ;
-        sbCensusReport.append(Reporter.ADD_REPORT_PROPERTY("riskyStatusRegular", riskyStatusRegular)) ;
-        sbCensusReport.append(Reporter.ADD_REPORT_PROPERTY("probabilityUseCondom", probabilityUseCondom)) ;
-        sbCensusReport.append(Reporter.ADD_REPORT_PROPERTY("probabilityUseCondomCasual", probabilityUseCondomCasual)) ;
-        sbCensusReport.append(Reporter.ADD_REPORT_PROPERTY("probabilityUseCondomRegular", probabilityUseCondomRegular)) ;
-        sbCensusReport.append(Reporter.ADD_REPORT_PROPERTY("undetectableStatus", undetectableStatus)) ;
-        sbCensusReport.append(Reporter.ADD_REPORT_PROPERTY("trustUndetectable", trustUndetectable)) ;
-        sbCensusReport.append(Reporter.ADD_REPORT_PROPERTY("trustPrep", trustPrep)) ;
-        sbCensusReport.append(Reporter.ADD_REPORT_PROPERTY("consentCasualProbability", consentCasualProbability)) ;
+    {
+        String censusReport = super.getCensusReport() ;
+        censusReport += Reporter.ADD_REPORT_PROPERTY("prepStatus", prepStatus) ;
+        censusReport += Reporter.ADD_REPORT_PROPERTY("statusHIV", statusHIV) ;
+        censusReport += Reporter.ADD_REPORT_PROPERTY("discloseStatusHIV", discloseStatusHIV) ;
+        censusReport += Reporter.ADD_REPORT_PROPERTY("seroSortCasual", seroSortCasual) ;
+        censusReport += Reporter.ADD_REPORT_PROPERTY("seroSortRegular", seroSortRegular) ;
+        censusReport += Reporter.ADD_REPORT_PROPERTY("seroSortMonogomous", seroSortMonogomous) ;
+        censusReport += Reporter.ADD_REPORT_PROPERTY("seroPosition", seroPosition) ;
+        censusReport += Reporter.ADD_REPORT_PROPERTY("riskyStatus", riskyStatus) ;
+        censusReport += Reporter.ADD_REPORT_PROPERTY("riskyStatusCasual", riskyStatusCasual) ;
+        censusReport += Reporter.ADD_REPORT_PROPERTY("riskyStatusRegular", riskyStatusRegular) ;
+        censusReport += Reporter.ADD_REPORT_PROPERTY("probabilityUseCondom", probabilityUseCondom) ;
+        censusReport += Reporter.ADD_REPORT_PROPERTY("probabilityUseCondomCasual", probabilityUseCondomCasual) ;
+        censusReport += Reporter.ADD_REPORT_PROPERTY("probabilityUseCondomRegular", probabilityUseCondomRegular) ;
+        censusReport += Reporter.ADD_REPORT_PROPERTY("undetectableStatus", undetectableStatus) ;
+        censusReport += Reporter.ADD_REPORT_PROPERTY("trustUndetectable", trustUndetectable) ;
+        censusReport += Reporter.ADD_REPORT_PROPERTY("trustPrep", trustPrep) ;
+        censusReport += Reporter.ADD_REPORT_PROPERTY("consentCasualProbability", consentCasualProbability) ;
         
 //        censusReport += Reporter.ADD_REPORT_PROPERTY("",) ;
 //        censusReport += Reporter.ADD_REPORT_PROPERTY("",) ;
 //        censusReport += Reporter.ADD_REPORT_PROPERTY("",) ;
         
         for (Site site : sites)
-            sbCensusReport.append(site.getCensusReport());
-            // censusReport += site.getCensusReport() ;
-        return sbCensusReport.toString() ;
+            censusReport += site.getCensusReport() ;
+        return censusReport ;
     }
     /**
      * Should generate Site[] and not call Site[] MSM.sites to avoid error/complications
@@ -1992,20 +2075,20 @@ public class MSM extends Agent {
      */
     public boolean getSeroSort(String relationshipClazzName)    //, Boolean status)
     {
-        Boolean toReturn = false ;
-        // String returnString = "seroSort" + relationshipClazzName ;
+        Boolean serosort = false ;
+     // String returnString = "seroSort" + relationshipClazzName ;
         switch(relationshipClazzName) {
             case "Casual":
-                toReturn = getSeroSortCasual();
+                serosort = getSeroSortCasual();
                 break;
             case "Regular":
-                toReturn = getSeroSortRegular();
+                serosort = getSeroSortRegular();
                 break;
             case "Monogomous":
-                toReturn = getSeroSortMonogomous();
+                serosort = getSeroSortMonogomous();
                 break;
             default:
-                // LOGGER.severe(relationshipClazzName);
+                LOGGER.severe(relationshipClazzName);
                 break;
         }
 
@@ -2017,7 +2100,7 @@ public class MSM extends Agent {
         // {
         //     LOGGER.log(Level.SEVERE, "{0} {1}", new Object[] {returnString, e.getClass().getSimpleName()});
         // }
-        return toReturn ;
+        return serosort ;
     }
     
     /**
@@ -2506,21 +2589,21 @@ public class MSM extends Agent {
         return PROBABILITY_NEGATIVE_SERO_SORT ;
     }
 
-    public double getProbabilitySeroSortCasual(boolean hivStatus)
+    public double[] getProbabilitySeroSortCasual(boolean hivStatus)
     {
         if (hivStatus)
             return PROBABILITY_POSITIVE_CASUAL_SERO_SORT ;
         return PROBABILITY_NEGATIVE_CASUAL_SERO_SORT ;
     }
 
-    public double getProbabilitySeroSortRegular(boolean hivStatus)
+    public double[] getProbabilitySeroSortRegular(boolean hivStatus)
     {
         if (hivStatus)
             return PROBABILITY_POSITIVE_REGULAR_SERO_SORT ;
         return PROBABILITY_NEGATIVE_REGULAR_SERO_SORT ;
     }
 
-    public double getProbabilitySeroSortMonogomous(boolean hivStatus)
+    public double[] getProbabilitySeroSortMonogomous(boolean hivStatus)
     {
         if (hivStatus)
             return PROBABILITY_POSITIVE_MONOGOMOUS_SERO_SORT ;

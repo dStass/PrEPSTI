@@ -1,11 +1,11 @@
 /**
  * 
  */
-package PRSP.PrEPSTI.reporter;
+package PRSP.PrEPSTI.reporter ;
 
-import PRSP.PrEPSTI.agent.MSM;
-import PRSP.PrEPSTI.community.Community;
-import PRSP.PrEPSTI.configloader.ConfigLoader;
+import PRSP.PrEPSTI.agent.MSM ;
+import PRSP.PrEPSTI.community.Community ;
+import PRSP.PrEPSTI.configloader.ConfigLoader ;
 //import community.* ;
 
 import java.io.* ;
@@ -122,7 +122,7 @@ public class Reporter {
     
     public static final String ADD_REPORT_PROPERTY(String label, String value)
     {
-        StringBuilder sb = new StringBuilder();
+    	StringBuilder sb = new StringBuilder();
         sb.append(ADD_REPORT_LABEL(label));
         sb.append(value);
         sb.append(" ");
@@ -137,7 +137,7 @@ public class Reporter {
         
     public static final String ADD_REPORT_PROPERTY(String label, Object value)
     {
-        return ADD_REPORT_PROPERTY(label, String.valueOf(value));
+        return ADD_REPORT_PROPERTY(label, String.valueOf(value)) ;
     }
      
     /**
@@ -3498,11 +3498,12 @@ public class Reporter {
     }
 
     /**
-     * Reads all lines upto Relationship.BURNIN
-     * seperate key:value pairs
+     * 
+     * Reads all lines up to Relationship.BURNIN
+     * separate key:value pairs
      * save this into a hashmap of type hashmap<str, long>
      */
-    public static HashMap<String, Long> parseInformationFromMetadata(String fileName, String filePath) {
+    public static HashMap<String, Long> PARSE_INFORMATION_FROM_METADATA(String fileName, String filePath) {
         HashMap<String, Long> toReturn = new HashMap<String, Long>();
         BufferedReader reader;
         String STOP_READING = "Relationship.BURNIN_COMMENCE:";
@@ -3531,26 +3532,24 @@ public class Reporter {
         return toReturn;
     }
 
-
     /**
-     * 
-     * @param originalPath
-     * @param originalFileName
-     * @param newPath
-     * @param newFileName
-     * @param modifications
-     */
+    * @param originalPath
+    * @param originalFileName
+    * @param newPath
+    * @param newFileName
+    * @param modifications
+    */
     public static void DUPLICATE_METADATA_WITH_MODIFIED_PROPERTIES
         (String originalPath, String originalFileName, String newPath,
         String newFileName, HashMap<String, String> modifications)
     {
-        originalFileName = originalPath + originalFileName + "-METADATA.txt";
+    	originalFileName = originalPath + originalFileName + "-METADATA.txt";
         newFileName = newPath + newFileName + "-METADATA.txt";
         DUPLICATE_FILE_WITH_MODIFIED_PROPERTIES(originalFileName, newFileName, modifications);
     }
 
     /**
-     * duplicate two files, modifyinh each key-value paired lines separated by ':'
+     * duplicate two files, modifying each key-value paired lines separated by ':'
      * based on a given hashmap of modifications
      * @param originalFile
      * @param newFile
@@ -3664,13 +3663,13 @@ public class Reporter {
 
         // generate our reboot census
         HashMap<Integer, String> populationCensusUpToCycle = populationReporter.prepareCensusReport(cycleToGenerateReportUpTo, screeningReporter);
-        
+
 
         // extract agent census data and write to internal metadata
         // sort agents by id
         TreeSet<Integer> sortedAgentKeySet = new TreeSet<Integer>();
         sortedAgentKeySet.addAll(populationCensusUpToCycle.keySet());
-        
+
         // add rebooted agent data to metadata
         metaLabels.add("Agents") ;
         String agentsReboot = "" ;
@@ -3687,21 +3686,21 @@ public class Reporter {
 
         // extract relationship data and write to internal metadata
         HashMap<Integer, String> relationshipRecordHashMap = relationshipReporter.prepareRelationshipRecordHashMap(cycleToGenerateReportUpTo);
-        
+
         TreeSet<Integer> sortedRelationshipKeySet = new TreeSet<Integer>();
         sortedRelationshipKeySet.addAll(relationshipRecordHashMap.keySet());
-        
+
         // add rebooted relationship data to metadata
         metaLabels.add("Relationships") ;
         String relationshipsReboot = "" ;
         for (Integer relationshipId : sortedRelationshipKeySet)
             relationshipsReboot += relationshipRecordHashMap.get(relationshipId) + ' ' ;
         metaData.add(relationshipsReboot) ;
-        
+
         // dump new metadata
         String rebootedSimName = simName + "$" + String.valueOf(rebootCycle);
         String rebootedFolderPath = Community.FILE_PATH;
-        
+
         // rebootPathAndNames.put("rebootedSimName", rebootedSimName);
         // rebootPathAndNames.put("rebootedFolderPath", rebootedFolderPath);
         rebootData.put("metaLabels", metaLabels);
@@ -3709,9 +3708,7 @@ public class Reporter {
 
         return rebootData;
     }
-
-
-    /**
+/**
      * Object to read saved File output and feed it to Reporter
      */
     private class Reader
