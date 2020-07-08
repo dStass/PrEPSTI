@@ -927,10 +927,14 @@ public class PopulationReporter extends Reporter {
                     if (value.startsWith("{"))
                     {
                         value = value.replace("=", ":") ;
-                        value = value.substring(0, value.length() - 1) ;
+                        value = value.substring(1, value.length() - 1) ;
+                        ArrayList<String> valueProperties = IDENTIFY_PROPERTIES(value) ;
+                        for (String valueProperty : valueProperties)
+                        	rawReport.get(agentId).put(valueProperty, EXTRACT_VALUE(valueProperty,value)) ;
                     }
+                    else
+                        rawReport.get(agentId).put(property, value) ;
                     
-                    rawReport.get(agentId).put(property, value) ;
                     agentIdSet.remove(agentId) ;
                 }
                 if (agentIdSet.isEmpty())
