@@ -628,7 +628,18 @@ public class Community {
         //encounterReporter = new EncounterReporter(Community.SIM_NAME,Community.FILE_PATH) ;
         
         // commented out:
-        LOGGER.info("by HIV-status " + screeningReporter.prepareFinalAtRiskIncidentsRecord(siteNames, 0, "statusHIV")) ;
+        String finalAtRiskString = screeningReporter.prepareFinalAtRiskIncidentsRecord(siteNames, 0, "statusHIV");
+        String[] finalAtRiskArray = finalAtRiskString.split(" ");
+        int total = 4;
+        String hivStatusDifferences = "";
+        for (int i = 0; i < total; ++i)
+        {   
+            String[] falseProperty = finalAtRiskArray[i].split(":");
+            String[] trueProperty = finalAtRiskArray[i + total].split(":");
+            hivStatusDifferences += trueProperty[0] + "-" + falseProperty[0] + ": " + String.valueOf(Float.valueOf(trueProperty[1]) - Float.valueOf(falseProperty[1])) + "\n";
+        }
+        LOGGER.info("by HIV-status " + finalAtRiskString) ;
+        LOGGER.info("differences:\n" + hivStatusDifferences) ;
         //LOGGER.info("Incidence " + encounterReporter.prepareFinalIncidenceRecord(new String[] {"Pharynx","Rectum","Urethra"}, 0, 0, 365, MAX_CYCLES).toString());
         // LOGGER.info("Incidence " + encounterReporter.prepareSortedFinalIncidenceRecord(siteNames, 0, 0, 365, MAX_CYCLES, "statusHIV").toString());
 
@@ -957,8 +968,8 @@ public class Community {
     {
         //String report = "" ;
         float t1 = System.nanoTime();
-        // ArrayList<Agent> availableAgents = (ArrayList<Agent>) agents.clone() ;
-        ArrayList<Agent> availableAgents = agents;
+        ArrayList<Agent> availableAgents = (ArrayList<Agent>) agents.clone() ;
+        // ArrayList<Agent> availableAgents = agents;
         MDLL<Agent> availableMDLL = new MDLL<Agent>();
         
         Collections.shuffle(availableAgents, RAND) ;
