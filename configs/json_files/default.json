@@ -12,7 +12,7 @@
         "POPULATION" : "40000",
         "COMMENT" : "",
         "DYNAMIC" : "true",
-        "REBOOT_SIMULATION" : "",
+        "REBOOT_SIMULATION" : "oldParams31cPop40000Cycles2920",
         "REBOOT_FROM_CYCLE" : "-1",
         "START_YEAR" : "2007",
         "END_YEAR" : "2019",

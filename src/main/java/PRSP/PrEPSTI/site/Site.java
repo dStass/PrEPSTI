@@ -432,19 +432,18 @@ abstract public class Site {
      */
     public String getCensusReport()
     {
-        StringBuilder sbCensusReport = new StringBuilder();
-        sbCensusReport.append(Reporter.ADD_REPORT_PROPERTY("Site",toString())) ;
+        String censusReport = Reporter.ADD_REPORT_PROPERTY("Site",toString()) ;
         //censusReport += Reporter.ADD_REPORT_PROPERTY("screenCycle",getScreenCycle()) ;
         //censusReport += Reporter.ADD_REPORT_PROPERTY("screenTime",getScreenTime()) ;
         if ((infectedStatus) > 0)
         {
             // Order is important, symptomatic must be before all other infection-related properties.
-            sbCensusReport.append(Reporter.ADD_REPORT_PROPERTY("symptomatic",symptomatic)) ;
-            sbCensusReport.append(Reporter.ADD_REPORT_PROPERTY("infectionTime",infectionTime)) ;
-            sbCensusReport.append(Reporter.ADD_REPORT_PROPERTY("incubationTime",incubationTime)) ;
+            censusReport += Reporter.ADD_REPORT_PROPERTY("symptomatic",symptomatic) ;
+            censusReport += Reporter.ADD_REPORT_PROPERTY("infectionTime",infectionTime) ;
+            censusReport += Reporter.ADD_REPORT_PROPERTY("incubationTime",incubationTime) ;
         }
         
-        return sbCensusReport.toString() ;
+        return censusReport ;
     }
 
     public static String[] getAvailableSites() {

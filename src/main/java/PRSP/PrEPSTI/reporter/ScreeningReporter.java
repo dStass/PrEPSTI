@@ -345,9 +345,7 @@ public class ScreeningReporter extends Reporter {
     public String prepareFinalNotificationsRecord(String[] siteNames, boolean unique, int backYears, int backMonths, int backDays, int endCycle, ArrayList<String> sortedAgents)
     {
         HashMap<Comparable,Number[]> finalNotifications = new HashMap<Comparable,Number[]>() ;
-        StringBuilder sbFinalNotifications = new StringBuilder();
-        sbFinalNotifications.append(ADD_REPORT_LABEL(NOTIFICATION));
-        // String finalNotificationsString = ADD_REPORT_LABEL(NOTIFICATION) ;
+        String finalNotificationsString = ADD_REPORT_LABEL(NOTIFICATION) ;
         
         endCycle -= backYears * DAYS_PER_YEAR ;
         //double daysBetweenTests = 505 ;    // PROPORTION_HIV * 6 * 71 + (1-PROPORTION_HIV) * 6 * 85.5
@@ -402,8 +400,7 @@ public class ScreeningReporter extends Reporter {
             }
             Number[] entry = new Number[] {notifications/denominator,positiveAgents.size()} ;
             finalNotifications.put(siteName,entry) ;
-            sbFinalNotifications.append(ADD_REPORT_PROPERTY(siteName, entry[0].doubleValue())) ;
-            // finalNotificationsString += ADD_REPORT_PROPERTY(siteName, entry[0].doubleValue()) ;
+            finalNotificationsString += ADD_REPORT_PROPERTY(siteName, entry[0].doubleValue()) ;
         }
         notifications = 0 ;
         //nbTests = 0 ;
@@ -440,15 +437,9 @@ public class ScreeningReporter extends Reporter {
         double nbTreated = (double) positiveAgents.size() ;
         Number[] entry = new Number[] {notifications/denominator,nbTreated/nbTested} ;
         finalNotifications.put("all",entry) ;
-
-        sbFinalNotifications.append(ADD_REPORT_PROPERTY("all",entry[0].doubleValue())) ;
-        sbFinalNotifications.append(ADD_REPORT_LABEL(POSITIVITY)) ;
-        sbFinalNotifications.append(ADD_REPORT_PROPERTY("all",entry[1].doubleValue())) ;
-
-        
-        // finalNotificationsString += ADD_REPORT_PROPERTY("all",entry[0].doubleValue()) ;
-        // finalNotificationsString += ADD_REPORT_LABEL(POSITIVITY) ;
-        // finalNotificationsString += ADD_REPORT_PROPERTY("all",entry[1].doubleValue()) ;
+        finalNotificationsString += ADD_REPORT_PROPERTY("all",entry[0].doubleValue()) ;
+        finalNotificationsString += ADD_REPORT_LABEL(POSITIVITY) ;
+        finalNotificationsString += ADD_REPORT_PROPERTY("all",entry[1].doubleValue()) ;
         
         // Correct siteName entries by nbTests
         for (String siteName : siteNames)
@@ -457,15 +448,12 @@ public class ScreeningReporter extends Reporter {
             notifications = entry[1].intValue() ;
             entry[1] = (Integer) notifications/nbTested ;
             finalNotifications.put(siteName,entry) ;
-            sbFinalNotifications.append(ADD_REPORT_PROPERTY(siteName,entry[1].doubleValue()));
-            // finalNotificationsString += ADD_REPORT_PROPERTY(siteName,entry[1].doubleValue()) ;
+            finalNotificationsString += ADD_REPORT_PROPERTY(siteName,entry[1].doubleValue()) ;
         }
         
         if (WRITE_REPORT)
             WRITE_CSV(finalNotifications, "Site", new String[] {"incidence",POSITIVITY}, "finalNotifications", simName, getFolderPath()) ;
-        
-        return sbFinalNotifications.toString();
-        // return finalNotificationsString ;
+        return finalNotificationsString ;
     }
     
     /**
@@ -1555,15 +1543,7 @@ public class ScreeningReporter extends Reporter {
         //LOGGER.info(agentTreatedReport.get("all").get("1034").toString());
         return agentTreatedReport ;
     }
-    
-    /**
-     * TODO: parallelisation
-     * @param relationshipClassNames
-     * @param backYears
-     * @param lastYear
-     * @param sortingProperty
-     * @return
-     */
+ 
     public HashMap<Comparable,String> prepareYearsAtRiskIncidenceReport(String[] relationshipClassNames, int backYears, int lastYear, String sortingProperty)
     {
         HashMap<Comparable,String> incidentRateReport = new HashMap<Comparable,String>() ;
@@ -1614,8 +1594,7 @@ public class ScreeningReporter extends Reporter {
      */
     public String prepareAtRiskIncidenceReport(String[] siteNames, int backYears, int backMonths, int backDays, int endCycle, String sortingProperty)
     {
-        // String incidentRateReport = "" ;
-        StringBuilder sbIncidentRateReport = new StringBuilder();
+        String incidentRateReport = "" ;
         
         HashSet<Object> sortingProperties = new HashSet<Object>() ; //(Arrays.asList(new Object[] {""})) ;
         HashMap<Object,ArrayList<String>> sortedAgentsReport = new HashMap<Object,ArrayList<String>>() ;
@@ -1689,11 +1668,10 @@ public class ScreeningReporter extends Reporter {
                 String propertyName = siteName.toString() ;
                 if (!"".equals(sortingValue))
                     propertyName += "_" + sortingValue ;
-                // incidentRateReport += Reporter.ADD_REPORT_PROPERTY(propertyName, incidentRate) ;
-                sbIncidentRateReport.append(Reporter.ADD_REPORT_PROPERTY(propertyName, incidentRate));
+                incidentRateReport += Reporter.ADD_REPORT_PROPERTY(propertyName, incidentRate) ;
             }
         }
-        return sbIncidentRateReport.toString() ;
+        return incidentRateReport ;
     }
     
     /**
