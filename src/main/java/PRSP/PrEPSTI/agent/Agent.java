@@ -841,14 +841,20 @@ public abstract class Agent {
     
     protected int reInitScreenCycle(double rescale)
     {
-        int newScreenCycle = (int) Math.ceil(rescale * getScreenCycle()) ;
-        setScreenCycle(RAND.nextInt(getScreenCycle()) + 1) ;
+        screenCycle = (int) Math.ceil(rescale * getScreenCycle()) ;
+        //setScreenCycle(RAND.nextInt(getScreenCycle()) + 1) ;
         return screenCycle ;
     }
 
     protected int sampleGamma(double shape, double scale, double rescale)
     {
-        return (int) new GammaDistribution(shape,scale * rescale).sample() ;
+    	return sampleGamma(shape, scale, 1.0, rescale) ;
+    }
+
+
+    protected int sampleGamma(double shape, double scale, double reshape, double rescale)
+    {
+        return (int) new GammaDistribution(shape * reshape,scale * rescale).sample() ;
     }
     
     /**

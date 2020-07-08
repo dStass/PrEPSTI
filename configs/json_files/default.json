@@ -7,7 +7,7 @@
 
     "community" : {
         "FILE_PATH" : "output/",
-        "NAME_ROOT" : "to2019serosorthiv2p0corr4B",
+        "NAME_ROOT" : "to2019serosorthiv2p0corr4C",
         "MAX_CYCLES" : "14",
         "POPULATION" : "40000",
         "COMMENT" : "",
