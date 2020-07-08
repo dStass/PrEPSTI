@@ -2388,9 +2388,27 @@ public class MSM extends Agent {
      * @param rescale - The factor to rescale screenCycle by
      * @param ignorePrep - Whether to reInit PrEP users
      */
-    protected int reInitScreenCycle(double rescale, boolean ignorePrep)
+    int reInitScreenCycle(double rescale, boolean ignorePrep)
     {
     	return reInitScreenCycle(1.0, rescale, ignorePrep) ;
+    }
+
+    /**
+     * Reboots screenCycle from given year with given reshaping and rescaling.
+     * Only used for special scenarios.
+     * @param year
+     * @param reshape
+     * @param rescale
+     * @return
+     */
+    public int rebootScreenCycle(int year, double reshape, double rescale)
+    {
+    	if (year > 500)    // Assume calendar year starting 2007
+    		year -= 2007 ;
+    	
+    	double ratio = TEST_RATES[0]/GET_YEAR(TEST_RATES,year) ;
+    	
+    	return reInitScreenCycle(reshape, ratio * rescale, false) ;
     }
 
     

@@ -430,6 +430,10 @@ public abstract class Agent {
                     newAgent.clearInfection();
                     agents.add(newAgent) ;
                     
+                    // Reboot screencycle here when testing it
+                    //if (newAgent.getStatusHIV())
+                        newAgent.rebootScreenCycle(2020, 1.1, 1.0) ;
+                    
                     // Reload infections
                     infectionString = birth ;
                     
@@ -845,7 +849,12 @@ public abstract class Agent {
         //setScreenCycle(RAND.nextInt(getScreenCycle()) + 1) ;
         return screenCycle ;
     }
-
+    
+    protected int reInitScreenCycle(double reshape, double rescale)
+    {
+    	return reInitScreenCycle(reshape * rescale) ;
+    }
+    
     protected int sampleGamma(double shape, double scale, double rescale)
     {
     	return sampleGamma(shape, scale, 1.0, rescale) ;
