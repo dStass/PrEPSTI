@@ -1,10 +1,9 @@
 /**
  * 
  */
-package PRSP.PrEPSTI.reporter;
+package PRSP.PrEPSTI.reporter ;
 
 import PRSP.PrEPSTI.agent.MSM;
-import PRSP.PrEPSTI.community.Community;
 import PRSP.PrEPSTI.configloader.ConfigLoader;
 //import community.* ;
 
@@ -122,12 +121,8 @@ public class Reporter {
     
     public static final String ADD_REPORT_PROPERTY(String label, String value)
     {
-        StringBuilder sb = new StringBuilder();
-        sb.append(ADD_REPORT_LABEL(label));
-        sb.append(value);
-        sb.append(" ");
-        // String report = ADD_REPORT_LABEL(label) ;
-        return sb.toString() ;
+        String report = ADD_REPORT_LABEL(label) ;
+        return report + value + " " ;
     }
         
     public static final String ADD_REPORT_PROPERTY(String label)
@@ -137,7 +132,8 @@ public class Reporter {
         
     public static final String ADD_REPORT_PROPERTY(String label, Object value)
     {
-        return ADD_REPORT_PROPERTY(label, String.valueOf(value));
+        String report = ADD_REPORT_LABEL(label) ;
+        return report + String.valueOf(value) + " " ;
     }
      
     /**
@@ -3498,9 +3494,8 @@ public class Reporter {
     }
 
     /**
-     * Reads all lines upto Relationship.BURNIN
-     * seperate key:value pairs
-     * save this into a hashmap of type hashmap<str, long>
+     * 
+     * TODO: Duplicate of parseSeedsFromMetadata
      */
     public static HashMap<String, Long> parseInformationFromMetadata(String fileName, String filePath) {
         HashMap<String, Long> toReturn = new HashMap<String, Long>();
@@ -3532,30 +3527,23 @@ public class Reporter {
     }
 
 
-    /**
-     * 
-     * @param originalPath
-     * @param originalFileName
-     * @param newPath
-     * @param newFileName
-     * @param modifications
-     */
     public static void DUPLICATE_METADATA_WITH_MODIFIED_PROPERTIES
         (String originalPath, String originalFileName, String newPath,
         String newFileName, HashMap<String, String> modifications)
     {
-        originalFileName = originalPath + originalFileName + "-METADATA.txt";
-        newFileName = newPath + newFileName + "-METADATA.txt";
+        originalFileName = originalPath + originalFileName;
+        newFileName = newPath + newFileName;
+        DUPLICATE_METADATA_WITH_MODIFIED_PROPERTIES(originalFileName, newFileName, modifications);
+    }
+
+    public static void DUPLICATE_METADATA_WITH_MODIFIED_PROPERTIES
+        (String originalFileName, String newFileName, HashMap<String, String> modifications)
+    {
+        originalFileName += "-METADATA.txt";
+        newFileName += "-METADATA.txt";
         DUPLICATE_FILE_WITH_MODIFIED_PROPERTIES(originalFileName, newFileName, modifications);
     }
 
-    /**
-     * duplicate two files, modifyinh each key-value paired lines separated by ':'
-     * based on a given hashmap of modifications
-     * @param originalFile
-     * @param newFile
-     * @param modifications
-     */
     public static void DUPLICATE_FILE_WITH_MODIFIED_PROPERTIES
         (String originalFile, String newFile, HashMap<String, String> modifications)
     {   
@@ -3638,78 +3626,6 @@ public class Reporter {
         // LOGGER.info(String.valueOf(cutoff) + " simulations included.") ;
         //PREPARE_GRAY_REPORT(simNames,folderPath,2007,2017) ;
     }
-
-    /**
-     * Generate metaLabel and metaData up to a particular cycle by reading reports
-     * @param simName
-     * @param rebootCycle
-     * @return
-     */
-    public static HashMap<String, ArrayList<String>> GENERATE_REBOOT_DATA_UPTO_CYCLE(String simName, int rebootCycle) {
-        HashMap<String, ArrayList<String>> rebootData = new HashMap<String, ArrayList<String>>();
-        PopulationReporter populationReporter = new PopulationReporter(simName, ConfigLoader.REBOOT_PATH);
-        RelationshipReporter relationshipReporter = new RelationshipReporter(simName, ConfigLoader.REBOOT_PATH);
-        ScreeningReporter screeningReporter = new ScreeningReporter(simName, ConfigLoader.REBOOT_PATH);
-
-        int cycleToGenerateReportUpTo = rebootCycle;
-
-        // generate rebooted metalabels and metadata
-        ArrayList<String> metaLabels = new ArrayList<String>() ; 
-        ArrayList<String> metaData = new ArrayList<String>() ;
-
-
-        /* * * * * * * * * *
-         *      AGENTS     *
-         * * * * * * * * * */
-
-        // generate our reboot census
-        HashMap<Integer, String> populationCensusUpToCycle = populationReporter.prepareCensusReport(cycleToGenerateReportUpTo, screeningReporter);
-        
-
-        // extract agent census data and write to internal metadata
-        // sort agents by id
-        TreeSet<Integer> sortedAgentKeySet = new TreeSet<Integer>();
-        sortedAgentKeySet.addAll(populationCensusUpToCycle.keySet());
-        
-        // add rebooted agent data to metadata
-        metaLabels.add("Agents") ;
-        String agentsReboot = "" ;
-        for (Integer agentId : sortedAgentKeySet) {
-            String newAgentRecord = populationCensusUpToCycle.get(agentId);
-            agentsReboot += newAgentRecord;
-        }
-        metaData.add(agentsReboot) ;
-
-
-        /* * * * * * * * * *
-         *  RELATIONSHIPS  *
-         * * * * * * * * * */
-
-        // extract relationship data and write to internal metadata
-        HashMap<Integer, String> relationshipRecordHashMap = relationshipReporter.prepareRelationshipRecordHashMap(cycleToGenerateReportUpTo);
-        
-        TreeSet<Integer> sortedRelationshipKeySet = new TreeSet<Integer>();
-        sortedRelationshipKeySet.addAll(relationshipRecordHashMap.keySet());
-        
-        // add rebooted relationship data to metadata
-        metaLabels.add("Relationships") ;
-        String relationshipsReboot = "" ;
-        for (Integer relationshipId : sortedRelationshipKeySet)
-            relationshipsReboot += relationshipRecordHashMap.get(relationshipId) + ' ' ;
-        metaData.add(relationshipsReboot) ;
-        
-        // dump new metadata
-        String rebootedSimName = simName + "$" + String.valueOf(rebootCycle);
-        String rebootedFolderPath = Community.FILE_PATH;
-        
-        // rebootPathAndNames.put("rebootedSimName", rebootedSimName);
-        // rebootPathAndNames.put("rebootedFolderPath", rebootedFolderPath);
-        rebootData.put("metaLabels", metaLabels);
-        rebootData.put("metaData", metaData);
-
-        return rebootData;
-    }
-
 
     /**
      * Object to read saved File output and feed it to Reporter

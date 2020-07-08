@@ -80,7 +80,6 @@ public class Relationship {
     static String PHARYNX = "Pharynx" ;
     
     static public String DEATH_RECORD = "death:" ;
-    static public StringBuilder SB_DEATH_RECORD = new StringBuilder("death:");
     
     static public String BURNIN_COMMENCE = "clear:" ;
     static public String BURNIN_BREAKUP = "" ;
@@ -91,15 +90,14 @@ public class Relationship {
      */
     static public void APPEND_DEATH_RECORD(String record)
     {
-        // DEATH_RECORD += record ;
-        SB_DEATH_RECORD.append(record);
+        DEATH_RECORD += record ;
     }
     
     static public String READ_DEATH_RECORD()
     {
         String output ;
-        output = SB_DEATH_RECORD.toString() ;
-        SB_DEATH_RECORD = new StringBuilder("death:") ;
+        output = DEATH_RECORD ;
+        DEATH_RECORD = "death:" ;
         return output ;
     }
     
@@ -387,11 +385,12 @@ public class Relationship {
      */
     final public String addAgents(Agent agent0, Agent agent1)
     {
+        String report = "" ;
         this.agent0 = agent0 ;
     	this.agent1 = agent1 ;
     	
         this.agent1.enterRelationship(this) ;
-        String report = this.agent0.enterRelationship(this) ;
+        report += this.agent0.enterRelationship(this) ;
         //this.agent0.augmentLowerAgentId() ;
         
         return report ;
@@ -465,7 +464,8 @@ public class Relationship {
      * @throws InvocationTargetException
      * @throws IllegalAccessException 
      */
-    final protected String encounter()
+    final protected String encounter() throws NoSuchMethodException, InvocationTargetException,
+    IllegalAccessException
     {
         String report = "" ;
         StringBuilder sbReport = new StringBuilder();
@@ -637,32 +637,5 @@ public class Relationship {
     public String getRelationship()
     {
     	return relationship ;
-    }
-
-    /**
-     * return polymorphic Relationship object of child classes from name (String)
-     * * Casual
-     * * Regular
-     * * Monogomous
-     * 
-     * @param className
-     * @return
-     */
-    public static Relationship getRelationshipFromClassName(String className) {
-        Relationship relationship = null;
-        switch(className) {
-            case "Casual":
-                relationship = new Casual();
-                break;
-            case "Regular":
-                relationship = new Regular();
-                break;
-            case "Monogomous":
-                relationship = new Monogomous();
-                break;
-            default:
-                break;
-        }
-        return relationship;
     }
 }

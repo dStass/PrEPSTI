@@ -254,7 +254,6 @@ public class EncounterReporter extends Reporter {
     public String prepareFinalIncidenceRecord(String[] siteNames, int backYears, int backMonths, int backDays, int endCycle)
     {
         String finalIncidence = "" ; // new HashMap<Object,Number>() ;
-        StringBuilder sbFinalIncidence = new StringBuilder();
         //HashMap<Object,Number> finalIncidence = new HashMap<Object,Number>() ;
         
         endCycle = endCycle - (backYears * DAYS_PER_YEAR) ;
@@ -284,8 +283,7 @@ public class EncounterReporter extends Reporter {
             // Count them
             incidents += COUNT_VALUE_INCIDENCE(RELATIONSHIPID,"",record,0)[1] ;
         }
-        sbFinalIncidence.append(ADD_REPORT_PROPERTY("all",incidents/denominator));
-        // finalIncidence += ADD_REPORT_PROPERTY("all",incidents/denominator) ;
+        finalIncidence += ADD_REPORT_PROPERTY("all",incidents/denominator) ;
         
         for (String siteName : siteNames)
         {
@@ -300,11 +298,10 @@ public class EncounterReporter extends Reporter {
                 incidents += COUNT_VALUE_INCIDENCE(TRANSMISSION,TRUE,record,0)[0] ;
                 
             }
-            sbFinalIncidence.append(ADD_REPORT_PROPERTY(siteName,incidents/denominator));
-            // finalIncidence += ADD_REPORT_PROPERTY(siteName,incidents/denominator) ;
+            finalIncidence += ADD_REPORT_PROPERTY(siteName,incidents/denominator) ;
         }
         
-        return sbFinalIncidence.toString() ;
+        return finalIncidence ;
     }
     
     
@@ -321,7 +318,6 @@ public class EncounterReporter extends Reporter {
     public String prepareSortedFinalIncidenceRecord(String[] siteNames, int backYears, int backMonths, int backDays, int endCycle, String sortingProperty)
     {
         String finalIncidence = "" ; // new HashMap<Object,Number>() ;
-        StringBuilder sbFinalIncidence = new StringBuilder();
         HashMap<Object,Number[]> sortedFinalIncidence = new HashMap<Object,Number[]>() ;
         ArrayList<String> siteNameList = new ArrayList<String>(Arrays.asList(siteNames)) ;
         siteNameList.add("all") ;
@@ -461,12 +457,11 @@ public class EncounterReporter extends Reporter {
             {
                 String entryName = siteNameList.get(siteIndex) + "_" + sortingKey.toString() ;
                 Number entryValue = sortedFinalIncidence.get(sortingKey)[siteIndex] ;
-                // finalIncidence += ADD_REPORT_PROPERTY(entryName,entryValue.doubleValue()/denominator) ;
-                sbFinalIncidence.append(ADD_REPORT_PROPERTY(entryName,entryValue.doubleValue()/denominator));
+                finalIncidence += ADD_REPORT_PROPERTY(entryName,entryValue.doubleValue()/denominator) ;
             }
         }
 
-        return sbFinalIncidence.toString() ;
+        return finalIncidence ;
     }
     
     /**
