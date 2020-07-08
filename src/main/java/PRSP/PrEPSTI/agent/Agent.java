@@ -1728,6 +1728,27 @@ public abstract class Agent {
     }
 
     /**
+     * runs leave+"relationshipType"() without using try-catch
+     * @param relationship
+     */
+    public void pickLeaveRelationship(Relationship relationship) {
+        String relationshipType = relationship.getRelationship();
+        switch (relationshipType) {
+            case "Casual":
+                this.leaveCasual(relationship);
+                break;
+            case "Regular":
+                this.leaveRegular(relationship);
+                break;
+            case "Monogomous":
+                this.leaveMonogomous(relationship);
+                break;
+            default:
+                break;
+        }
+    }
+
+    /**
      * Removes relationship and partner and modifies nbRelationships count by -1
      * TODO: Change to String Method and return report
      * @param relationship
@@ -1736,7 +1757,11 @@ public abstract class Agent {
     {
         diminishLowerAgentId(relationship) ;
         // Leave specific relationship subclass
-        try
+        this.pickLeaveRelationship(relationship);
+        
+        /*
+         * try
+        
         {
             String leaveMethodName = "leave" + relationship.getRelationship() ;
             Method leaveRelationshipMethod = Agent.class.getMethod(leaveMethodName, Relationship.class) ;
@@ -1754,6 +1779,7 @@ public abstract class Agent {
         {
             LOGGER.severe(nsme.getLocalizedMessage()) ;
         }
+        */
 
         int partnerId = relationship.getPartnerId(agentId) ;
         int partnerIndex = currentPartnerIds.indexOf(partnerId) ;
@@ -1864,15 +1890,15 @@ public abstract class Agent {
         Relationship relationship ;
         
         int startIndex = (nbRelationships - 1) ;
-        String record = "" ;
+        StringBuilder sbRecord = new StringBuilder() ;
         for (int relationshipIndex = startIndex ; relationshipIndex >= 0 ; 
                 relationshipIndex-- )
         {
             relationship = currentRelationships.get(relationshipIndex) ;
             Agent agentLowerId = relationship.getLowerIdAgent() ;
-            record += agentLowerId.endRelationship(relationship) ;
+            sbRecord.append(agentLowerId.endRelationship(relationship)) ;
         }
-        Relationship.APPEND_DEATH_RECORD(record);
+        Relationship.APPEND_DEATH_RECORD(sbRecord.toString()) ;
     }
 	
     /**
