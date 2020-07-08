@@ -106,6 +106,7 @@ public class ConfigLoader {
                 // next line
                 line = reader.readLine();
             }
+            reader.close();
         } catch (IOException e) {
             LOGGER.severe(e.toString());
         }
