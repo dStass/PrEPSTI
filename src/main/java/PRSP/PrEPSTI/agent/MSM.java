@@ -2383,11 +2383,26 @@ public class MSM extends Agent {
     /**
      * Initialises screenCycle from a Gamma distribution to determine how often 
      * an MSM is screened, and then starts the cycle in a random place so that 
-     * not every MSM gets screened at the same time.
+     * not every MSM gets screened at the same time. the shape parameter remains 
+     * unchanged.
      * @param rescale - The factor to rescale screenCycle by
      * @param ignorePrep - Whether to reInit PrEP users
      */
     protected int reInitScreenCycle(double rescale, boolean ignorePrep)
+    {
+    	return reInitScreenCycle(1.0, rescale, ignorePrep) ;
+    }
+
+    
+    /**
+     * Initialises screenCycle from a Gamma distribution to determine how often 
+     * an MSM is screened, and then starts the cycle in a random place so that 
+     * not every MSM gets screened at the same time.
+     * @param rescale - The factor to reshape screenCycle by
+     * @param rescale - The factor to rescale screenCycle by
+     * @param ignorePrep - Whether to reInit PrEP users
+     */
+    protected int reInitScreenCycle(double reshape, double rescale, boolean ignorePrep)
     {
         // For easily testing the effects of the PrEP screening regime
         boolean checkPrepStatus = ConfigLoader.getMethodVariableBoolean("msm", "reInitScreenCycle", "checkPrepStatus");
