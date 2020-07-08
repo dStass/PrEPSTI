@@ -97,7 +97,8 @@ public class MSM extends Agent {
             sbReport.append(REINIT_PROPORTION_UNDETECTABLE(agentList, year)) ;
             
             methodName = "disclosure" ;
-            REINIT_PROBABILITY_DISCLOSURE_HIV(agentList, year) ;
+            sbReport.append(Reporter.ADD_REPORT_PROPERTY(change, methodName)) ;
+            sbReport.append(REINIT_PROBABILITY_DISCLOSURE_HIV(agentList, year)) ;
             
             methodName = "riskinessCasual" ;
             sbReport.append(Reporter.ADD_REPORT_PROPERTY(change, methodName)) ;
@@ -115,7 +116,7 @@ public class MSM extends Agent {
             sbReport.append(Reporter.ADD_REPORT_PROPERTY(change, methodName)) ;
             sbReport.append(REINIT_TRUST_PREP(agentList, year)) ;
             
-            
+            /*
             methodName = "seroSortCasual" ;
             sbReport.append(Reporter.ADD_REPORT_PROPERTY(change, methodName)) ;
             sbReport.append(REINIT_CASUAL_SERO_SORT(agentList, year)) ;
@@ -128,7 +129,7 @@ public class MSM extends Agent {
             methodName = "seroSortMonogomous" ;
             sbReport.append(Reporter.ADD_REPORT_PROPERTY(change, methodName)) ;
             sbReport.append(REINIT_MONOGOMOUS_SERO_SORT(agentList, year)) ;
-            
+            */
             //                                 
         }
         catch ( Exception e )
