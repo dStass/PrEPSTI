@@ -10,6 +10,9 @@ public class MDLL<T> {
     public static final String HEAD_ID = "_RESERVED_HEAD";
     public static final String LAST_ID = "_RESERVED_LAST";
 
+    // number of reserved nodes = 2 (reserved head and last)
+    public static final int NUM_RESERVED_NODES = 2;
+
     // pointers
     private MDLLNode<T> head = null;
     private MDLLNode<T> last = null;
@@ -49,7 +52,7 @@ public class MDLL<T> {
      * (reserved head and reserved last nodes)
      */
     public int size() {
-        return this.mapping.size() - 2;
+        return this.mapping.size() - MDLL.NUM_RESERVED_NODES;
     }
 
     public T get(int nodeId) {
@@ -111,7 +114,9 @@ public class MDLL<T> {
      * @return
      */
     public boolean remove(int nodeId) {
-        return this.remove(String.valueOf(nodeId));
+        boolean removePossible = this.remove(String.valueOf(nodeId));
+        // if (!removePossible) System.out.println("remove failed");
+        return removePossible;
     }
 
     /**
@@ -133,6 +138,9 @@ public class MDLL<T> {
         MDLLNode<T> temp = toRemove.getPrev();
         toRemove.getPrev().setNext(toRemove.getNext());
         toRemove.getNext().setPrev(temp);
+
+        // destroy temp node
+        toRemove.destroy();
 
         // successful removal
         return true;
@@ -164,7 +172,8 @@ public class MDLL<T> {
     //     return currentPosition;
     // }
 
-    /* * * * * * * * * * * *
+    /* 
+     * * * * * * * * * * * *
      *  FORWARD ITERATOR   *
      * * * * * * * * * * * */
 
@@ -191,7 +200,8 @@ public class MDLL<T> {
         else return new MDLLForwardIterator<T>(this.mapping.get(nodeId), this.last);
     }
 
-    /* * * * * * * * * * * *
+    /* 
+     * * * * * * * * * * * *
      *  BACKWARD ITERATOR  *
      * * * * * * * * * * * */
 

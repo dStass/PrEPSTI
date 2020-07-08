@@ -664,31 +664,4 @@ public class Relationship {
     {
     	return relationship ;
     }
-
-    /**
-     * return polymorphic Relationship object of child classes from name (String)
-     * * Casual
-     * * Regular
-     * * Monogomous
-     * 
-     * @param className
-     * @return
-     */
-    public static Relationship getRelationshipFromClassName(String className) {
-        Relationship relationship = null;
-        switch(className) {
-            case "Casual":
-                relationship = new Casual();
-                break;
-            case "Regular":
-                relationship = new Regular();
-                break;
-            case "Monogomous":
-                relationship = new Monogomous();
-                break;
-            default:
-                break;
-        }
-        return relationship;
-    }    
 }

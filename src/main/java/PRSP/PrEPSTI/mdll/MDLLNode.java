@@ -34,4 +34,14 @@ public class MDLLNode<T> {
     public T getObject() {
         return this.object;
     }
+
+    /**
+     * set every field to null
+     */
+    public void destroy() {
+        this.id = null;
+        this.object = null;
+        this.prev = null;
+        this.next = null;
+    }
 }
