@@ -1119,16 +1119,14 @@ public class MSM extends Agent {
         // iterate through each class
         for (String relationshipClassName : relationshipClassNames)
         {
+            // get agents that are seeking relationships
             MDLL<Agent> relationshipAgentMDLL = MSM.SEEKING_AGENTS(availableAgentMDLL, relationshipClassName) ;
-            // ArrayList<Agent> relationshipAgentList = MSM.SEEKING_AGENTS(availableAgentList,relationshipClazzName) ;
-            
-            seroSortMDLL = new MDLL<MSM>() ;
-            // seroSortList = new ArrayList<MSM>() ;
             
             // Sort seekers according to HIV and serosorting status
             MDLLForwardIterator<Agent> iterator = relationshipAgentMDLL.getForwardIterator() ;
-
+            
             // extract agents that seroSort
+            seroSortMDLL = new MDLL<MSM>() ;
             while (iterator.hasNext()) {
                 MSM msm = (MSM) iterator.getNextAndIterate() ;
                 boolean boolSeroSort = msm.getSeroSort(relationshipClassName) ;
@@ -1144,7 +1142,6 @@ public class MSM extends Agent {
                 MDLLForwardIterator<Agent> relationshipForwardIterator = relationshipAgentMDLL.getForwardIterator() ;
                 while (relationshipForwardIterator.hasNext())
                 {
-                    // Agent agent = relationshipForwardIterator.getNextAndIterate();
                     MSM msm1 = (MSM) relationshipForwardIterator.getNextAndIterate() ;
                     if (msm1.statusHIV != msm0.statusHIV)
                         continue ;
@@ -1154,9 +1151,11 @@ public class MSM extends Agent {
                         continue ;
                     
                     // remove msm0 and msm1
+                    // iterate one back first prior to removing the node
                     relationshipForwardIterator.iterateBack() ;
                     relationshipAgentMDLL.remove(msm1.getAgentId()) ;
                     
+                    // remove from all available agents
                     availableAgentMDLL.remove(msm0.getAgentId()) ;
                     availableAgentMDLL.remove(msm1.getAgentId()) ;
                     
@@ -1201,10 +1200,10 @@ public class MSM extends Agent {
                     
                     // move the iterator back by one before we remove it from mdll
                     outerRelationshipBackwardIterator.iterateBack() ;
-
                     relationshipAgentMDLL.remove(msm0.getAgentId()) ;
                     relationshipAgentMDLL.remove(msm1.getAgentId()) ;
                     
+                    // remove from all available agents
                     availableAgentMDLL.remove(msm0.getAgentId()) ;
                     availableAgentMDLL.remove(msm1.getAgentId()) ;
                     
@@ -1227,19 +1226,18 @@ public class MSM extends Agent {
      * @param relationshipClazzName (String) Name of Relationship sub-Class. 
      * @return 
      */
-    static public MDLL<Agent> SEEKING_AGENTS(MDLL<Agent> agentMDLL, String relationshipClazzName)
+    static public MDLL<Agent> SEEKING_AGENTS(MDLL<Agent> agentMDLL, String relationshipClassName)
     {
         // ArrayList<Agent> seekingAgentList = new ArrayList<Agent>() ;
         MDLL<Agent> seekingAgentMDLL = new MDLL<Agent>() ;
 
         // Determine which Agents seek out which Relationship Class
-        MDLLForwardIterator<Agent> agentMDLLIteratable = agentMDLL.getForwardIterator() ;
-        
-        while (agentMDLLIteratable.hasNext())
+        MDLLForwardIterator<Agent> agentForwardIterator = agentMDLL.getForwardIterator() ;
+        while (agentForwardIterator.hasNext())
         {
-            Agent currAgent = (Agent) agentMDLLIteratable.getNextAndIterate() ;
+            Agent currAgent = (Agent) agentForwardIterator.getNextAndIterate() ;
             MSM msm = (MSM) currAgent ;
-            if (msm.seekRelationship(relationshipClazzName))
+            if (msm.seekRelationship(relationshipClassName))
                 seekingAgentMDLL.add(String.valueOf(msm.getAgentId()), msm) ;
         }
         
@@ -2112,15 +2110,14 @@ public class MSM extends Agent {
     public boolean getSeroSort(String relationshipClazzName)    //, Boolean status)
     {
         Boolean serosort = false ;
-     // String returnString = "seroSort" + relationshipClazzName ;
         switch(relationshipClazzName) {
-            case "Casual":
+            case CASUAL:
                 serosort = getSeroSortCasual();
                 break;
-            case "Regular":
+            case REGULAR:
                 serosort = getSeroSortRegular();
                 break;
-            case "Monogomous":
+            case MONOGOMOUS:
                 serosort = getSeroSortMonogomous();
                 break;
             default:
@@ -2537,14 +2534,22 @@ public class MSM extends Agent {
      * relationshipClazzName.
      */
     @Override
-    protected double seekRelationshipProbability(String relationshipClazzName)
+    protected double seekRelationshipProbability(String relationshipClassName)
     {
-        if (CASUAL.equals(relationshipClazzName))
-            return consentCasualProbability ;
-        else if (REGULAR.equals(relationshipClazzName))
-            return getRegularOdds() ;
-        //else if (MONOGOMOUS.equals(relationshipClazzName))
-        return getMonogomousOdds() ;
+        switch (relationshipClassName) {
+            case CASUAL:
+                return consentCasualProbability ;
+            case REGULAR:
+                return getRegularOdds() ;
+            default:
+                return getMonogomousOdds() ;
+        }
+        // if (CASUAL.equals(relationshipClazzName))
+        //     return consentCasualProbability ;
+        // else if (REGULAR.equals(relationshipClazzName))
+        //     return getRegularOdds() ;
+        // //else if (MONOGOMOUS.equals(relationshipClazzName))
+        // return getMonogomousOdds() ;
     }
     
     /**
