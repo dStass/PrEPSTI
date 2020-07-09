@@ -831,9 +831,8 @@ public class PopulationReporter extends Reporter {
         // Census at birth
         HashMap<Object,String> birthReport = prepareCensusPropertyReport() ;
         ArrayList<String> birthReportByCycle = prepareBirthReport(0,0,endCycle,endCycle);
-
-
-        int originalPopulation = 0;
+        
+        // loop through each cycle 
         for (int currentCycle = 0; currentCycle < birthReportByCycle.size(); ++currentCycle) {
             String birthRecord = birthReportByCycle.get(currentCycle);
             birthRecord = birthRecord.substring(6, birthRecord.length()); // removing "birth:" label
@@ -850,11 +849,9 @@ public class PopulationReporter extends Reporter {
                 // update age
                 String extractedAge = birthReportHashMap.get("age");
                 int agentRandBirthDay = 0;
-                // if (Integer.valueOf(agentId) > originalPopulation) agentRandBirthDay = Agent.GET_NEXT_RANDOM_INT(ConfigLoader.DAYS_PER_YEAR);
                 String newAge = String.valueOf(Integer.valueOf(extractedAge) + (endCycle-currentCycle+agentRandBirthDay)/ConfigLoader.DAYS_PER_YEAR);
                 birthReportHashMap.put("age", newAge);
                 
-
                 // updateScreenTime
                 String screenTime = getScreenTime(agentId, endCycle, screenCycle, testingReport, agentTreatedReport);
                 
@@ -866,7 +863,6 @@ public class PopulationReporter extends Reporter {
                 birthReportHashMap.put("screenTime", screenTime);
                 rawReport.put(agentId, birthReportHashMap);     
             }
-            
         }
         
         // Agent death report
@@ -876,44 +872,68 @@ public class PopulationReporter extends Reporter {
         HashSet<String> agentIdSet = new HashSet<String>() ;
         Collections.addAll(agentIdSet, birthReport.keySet().toArray(new String[0])) ;
         
-        for (Comparable agentIdComparable : deathReport) {
+        for (Comparable<?> agentIdComparable : deathReport) {
             String agentIdString = (String) agentIdComparable;
             if (rawReport.containsKey(agentIdString))
             rawReport.remove(agentIdString);
         }
         HashMap<String, String> siteReport = screeningReporter.prepareAgentSiteReport(endCycle, agentIdSet);
-            
-        String properties[] = {
-            "agentId",
-            "agent",
-            "age",
-            "concurrency",
-            "infidelity",
-            "probabilityUseCondom",
-            "probabilityUseCondomCasual",
-            "probabilityUseCondomRegular",
-            "screenCycle",
-            "screenTime",
-            "prepStatus",
-            "statusHIV",
-            "discloseStatusHIV",
-            "seroSortCasual",
-            "seroSortRegular",
-            "seroSortMonogomous",
-            "seroPosition",
-            "riskyStatus",
-            "riskyStatusCasual",
-            "riskyStatusRegular",
-            "probabilityUseCondom",
-            "probabilityUseCondomCasual",
-            "probabilityUseCondomRegular",
-            "undetectableStatus",
-            "trustUndetectable",
-            "trustPrep",
-            "consentCasualProbability"
-        };
+        
+        // identify properties
+        ArrayList<String> fullProps = new ArrayList<String>();
+        for (Object birthReportKeyObj : birthReport.keySet()) {
+            String birthString = birthReport.get(birthReportKeyObj);
+            fullProps = Reporter.IDENTIFY_PROPERTIES(birthString) ;
+            break;
+        }
+
+        // loop through and stop when we see the first "Site"
+        ArrayList<String> propertiesArrayList = new ArrayList<String>();
+        propertiesArrayList.add("agentId");  // add "agentId" at the start since IDENTIFY_PROPERTIES remove this
+        for (String p : fullProps) {
+            if (p.equals("Site")) break;
+            propertiesArrayList.add(p);
+        }
+
+        // convert from ArrayList -> String[]
+        String[] properties = new String[propertiesArrayList.size()];
+        for (int i = 0; i < propertiesArrayList.size(); ++i) {
+            properties[i] = propertiesArrayList.get(i);
+        }
+
+        // String properties[] = {
+        //     "agentId",
+        //     "agent",
+        //     "age",
+        //     "concurrency",
+        //     "infidelity",
+        //     "probabilityUseCondom",
+        //     "probabilityUseCondomCasual",
+        //     "probabilityUseCondomRegular",
+        //     "screenCycle",
+        //     "screenTime",
+        //     "prepStatus",
+        //     "statusHIV",
+        //     "discloseStatusHIV",
+        //     "seroSortCasual",
+        //     "seroSortRegular",
+        //     "seroSortMonogomous",
+        //     "seroPosition",
+        //     "riskyStatus",
+        //     "riskyStatusCasual",
+        //     "riskyStatusRegular",
+        //     "probabilityUseCondom",
+        //     "probabilityUseCondomCasual",
+        //     "probabilityUseCondomRegular",
+        //     "undetectableStatus",
+        //     "trustUndetectable",
+        //     "trustPrep",
+        //     "consentCasualProbability"
+        // };
 
         for (String property : properties) {
+
+            // get all change reports at a given cycle with a particular property
             ArrayList<String> changeReport = prepareChangeReport(property, endCycle) ;
             
             // changeReport.size() is zero if no changes are made
@@ -923,18 +943,24 @@ public class PopulationReporter extends Reporter {
                 ArrayList<String> changeAgentIds = IDENTIFY_PROPERTIES(changeRecord) ;
                 changeAgentIds.retainAll(agentIdSet) ;
                 
+                // for each agent id in current change report
                 for (String agentId : changeAgentIds)
                 {
+                    if (!rawReport.containsKey(agentId)) continue;
+
+                    // extract string between an agent's id and the next
                     int agentIndex = INDEX_OF_PROPERTY(agentId.toString(),changeRecord) ;
                     int colonIndex = changeRecord.indexOf(":",agentIndex) ;
                     int nextColonIndex = changeRecord.indexOf(":",colonIndex + 1) ;
                     int spaceIndex = changeRecord.lastIndexOf(SPACE, nextColonIndex) ;
+
                     if (spaceIndex < 0) spaceIndex = changeRecord.length() ;
+
+                    // extract the entire string
                     String value = changeRecord.substring(colonIndex + 1, spaceIndex) ;
                     
                     // map changes
-                    if (value.startsWith("{"))
-                    {
+                    if (value.startsWith("{")) {
                         value = value.replace("=", ":") ;
                         value = value.substring(1, value.length() - 1) ;
                         ArrayList<String> valueProperties = IDENTIFY_PROPERTIES(value) ;
@@ -946,11 +972,11 @@ public class PopulationReporter extends Reporter {
                     
                     agentIdSet.remove(agentId) ;
                 }
-                if (agentIdSet.isEmpty())
-                break ;
+                if (agentIdSet.isEmpty()) break ;
             }
         }
 
+        // prepare the returned property report
         HashMap<Integer,String> censusPropertyReport = new HashMap<Integer,String>() ;
         for (String agentId : rawReport.keySet()) {
             String value = HASHMAP_TO_STRING(rawReport.get(agentId), properties);

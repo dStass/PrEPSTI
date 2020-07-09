@@ -6,6 +6,7 @@ package PRSP.PrEPSTI.configloader;
 import java.io.* ;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Collections;
 
 // JSON imports:
@@ -28,6 +29,10 @@ import PRSP.PrEPSTI.reporter.presenter.Presenter;
  * @author David
  */
 public class ConfigLoader {
+
+    private ConfigLoader() {
+        throw new IllegalStateException("ConfigLoader class");
+    }
 
     // debug
     public static boolean DEBUG;
@@ -88,15 +93,13 @@ public class ConfigLoader {
      * @author dstass
      */
     private static void readProperties() {
-        String SPLIT_ON = "=";
+        String splitOn = "=";
         HashMap<String, String> readProperties = new HashMap<String, String>();
-        BufferedReader reader;
-        try {
-            reader = new BufferedReader(new FileReader(ConfigLoader.PROPERTIES_FILE_PATH));
+        try (BufferedReader reader = new BufferedReader(new FileReader(ConfigLoader.PROPERTIES_FILE_PATH))) {
             String line = reader.readLine();
             while (line != null) {
                 // extract and split each line about '=' symbol
-                String[] lineSplit = line.split(SPLIT_ON);
+                String[] lineSplit = line.split(splitOn);
 
                 // extract key/value pair and add to our hashmap
                 String lineKey = lineSplit[0];
@@ -111,18 +114,17 @@ public class ConfigLoader {
         }
 
         // save information to CONFIG_PATH and CONFIG_FILE
-        for (String key : readProperties.keySet()) {
-            switch (key) {
+        for (Map.Entry<String,String> entry : readProperties.entrySet()) {
+            switch (entry.getKey()) {
                 case "filepath":
-                    ConfigLoader.CONFIG_PATH = readProperties.get(key);
+                    ConfigLoader.CONFIG_PATH = entry.getValue();
                     break;
                 case "filename":
-                    ConfigLoader.CONFIG_FILE = readProperties.get(key);
+                    ConfigLoader.CONFIG_FILE = entry.getValue();
                     break;
                 default: break;
             }
         }
-
     }
 
 
@@ -369,16 +371,13 @@ public class ConfigLoader {
 
     private static HashMap<String, HashMap> getMethodsHashMapFromJSONObject(JSONObject jsonObject) {
         JSONObject methodsJSON = (JSONObject) jsonObject.get("methods");
-
         if (methodsJSON == null) return null;
-
         HashMap <String, HashMap> methodToVariablesMapHashMap = ConfigLoader.convertJSONObjectToHashMap_StringToNewHashMap(methodsJSON);
-            for (HashMap.Entry<String, HashMap> entry : methodToVariablesMapHashMap.entrySet()) {
-                String methodName = entry.getKey();
-                JSONObject methodVariablesJSON = (JSONObject) methodsJSON.get(methodName);
-                HashMap <String, String> methodVariablesToValues = ConfigLoader.convertJSONObjectToHashMap_StringToString(methodVariablesJSON);
-                methodToVariablesMapHashMap.put(methodName, methodVariablesToValues);
-            }
+        for (String methodName : methodToVariablesMapHashMap.keySet()) {
+            JSONObject methodVariablesJSON = (JSONObject) methodsJSON.get(methodName);
+            HashMap <String, String> methodVariablesToValues = ConfigLoader.convertJSONObjectToHashMap_StringToString(methodVariablesJSON);
+            methodToVariablesMapHashMap.put(methodName, methodVariablesToValues);
+        }
 
         // TODO: if nothing inside methods
         return methodToVariablesMapHashMap;

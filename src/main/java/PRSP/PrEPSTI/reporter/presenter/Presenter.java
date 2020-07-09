@@ -1893,6 +1893,13 @@ public class Presenter {
         if (legend.length == 0)
             legend = new String[] {""} ;
 
+        // if (legend.length == report.size()) {
+        //     HashMap<String, HashMap<String, String[]>> legendIncorporatedReport = new HashMap<String, HashMap<String, String[]>>();
+        //     for (int i = 0; i < legend.length; ++i) {
+
+        //     }
+        // }
+
         for (String property : categoryEntry) {
             HashMap<String, String[]> propertyToCategories = report.get(property);
 
@@ -2393,6 +2400,8 @@ public class Presenter {
             // define lineChart and set error renderer
             JFreeChart lineChart = ChartFactory.createXYLineChart(chartTitle,xLabel,
                 yLabel,dataset,PlotOrientation.VERTICAL,showLegend, true, false);
+
+            // lineChart.getLegend();
 
             // LOGGER.info("LEGEND:" + Arrays.toString(legend));
 

@@ -71,16 +71,16 @@ public class ScreeningPresenter extends Presenter {
         this.reporter = reporter ;
     }
 
-    static String[] simNames = new String[] {} ; // "REPORT_APop2500Cycles2920", "REPORT_BPop2500Cycles2920", "REPORT_CPop2500Cycles2920", "REPORT_DPop2500Cycles2920", "REPORT_EPop2500Cycles2920", "REPORT_FPop2500Cycles2920"} ; //, "to2017newSort17baPop40000Cycles5110","to2017newSort17caPop40000Cycles5110","to2017newSort17daPop40000Cycles5110","to2017newSort17eaPop40000Cycles5110",
-
+    // static String[] simNames = new String[] {} ; // "REPORT_APop2500Cycles2920", "REPORT_BPop2500Cycles2920", "REPORT_CPop2500Cycles2920", "REPORT_DPop2500Cycles2920", "REPORT_EPop2500Cycles2920", "REPORT_FPop2500Cycles2920"} ; //, "to2017newSort17baPop40000Cycles5110","to2017newSort17caPop40000Cycles5110","to2017newSort17daPop40000Cycles5110","to2017newSort17eaPop40000Cycles5110",
+    static String[] simNames = new String[] {"to2019testhiv2p0corr4A"};
 
     
     //      "to2017newSort17faPop40000Cycles5110", "to2017newSort17gaPop40000Cycles5110","to2017newSort17haPop40000Cycles5110","to2017newSort17iaPop40000Cycles5110","to2017newSort17jaPop40000Cycles5110"} ;
             //"from2007seek57fPop40000Cycles5475","from2007seek57gPop40000Cycles5475","from2007seek57hPop40000Cycles5475","from2007seek57iPop40000Cycles5475","from2007seek57jPop40000Cycles5475"} ;
     //static String[] simNames = new String[] {"newSortaPop40000Cycles1825","seek68bPop40000Cycles1825","seek68cPop40000Cycles1825","seek68dPop40000Cycles1825"} ; // ,"seek53ePop40000Cycles1825",
       //      "seek53fPop40000Cycles1825","seek53gPop40000Cycles1825","seek53hPop40000Cycles1825","seek53iPop40000Cycles1825","seek53jPop40000Cycles1825"} ;
-    static String[] testSimNames = new String[] {"riskyIncidence_all_from2020to2025prep0p5cycleParams33aaPop40000Cycles2190", "riskyIncidence_all_from2020to2025prep1p0cycleParams33aaPop40000Cycles2190", "riskyIncidence_all_from2020to2025prep0p75cycleParams33aaPop40000Cycles2190" };
-    // static String[] testSimNames = new String[] {"ALL_OUTLIERS", "NO_OUTLIERS", "MEAN_MODIFIED", "MEDIAN_MODIFIED", "MAD", "PERCENTILE_5"};
+    // static String[] testSimNames = new String[] {"riskyIncidence_HIV_all_true_to2019testhiv2p0corr4A", "riskyIncidence_HIV_true_to2019testhiv2p0corr4A", "riskyIncidence_HIV_Pharynx_false_to2019testhiv2p0corr4A" };
+    static String[] testSimNames = new String[] {"ALL_OUTLIERS", "NO_OUTLIERS", "MEAN_MODIFIED", "MEDIAN_MODIFIED", "MAD", "PERCENTILE_5"};
     
     // static String[] testSimNames = new String[] {"PERCENTILE_5", "PERCENTILE_2.5", "MEAN", "MEDIAN", "MEAN_MODIFIED", "MEDIAN_MODIFIED", "MAD"};
 
@@ -90,8 +90,11 @@ public class ScreeningPresenter extends Presenter {
         ConfigLoader.load();
         
         String prefix = "to2019hiv2p0corrA" ;
+        // String prefix = "" ;
         //String prefix = "to2025UeqUto2019oldParams33" ;
+
         String suffix = "Pop40000Cycles6570" ;
+        // String suffix = "" ;
         // ArrayList<String> simNameList = new ArrayList<String>() ;
         // String letter0 = "" ;
         // //for (String letter0 : new String[] {"a","b","c","d","e","f","g","h","i","j"})
@@ -99,7 +102,7 @@ public class ScreeningPresenter extends Presenter {
         //         simNameList.add(prefix + letter0 + letter1 + suffix) ;
 
         String folderPath = "/scratch/is14/mw7704/prepsti/output/test/" ;
-        // String folderPath = "output/test/";
+        // String folderPath = "output/";
 
         //         String prefix = "old1p5Params26" ;
         //         //String prefix = "to2019fix23" ;
@@ -108,10 +111,10 @@ public class ScreeningPresenter extends Presenter {
         //         simNameList.add("rebootPop20000Cycles1825") ;
         String letter0 = "a" ;
         // //        for (String letter0 : new String[] {"a","b","c","d","e","f","g","h","i","j"})
-        for (String letter1 : new String[] {"f","g","h","i","j"})
-            simNameList.add(prefix + letter0 + letter1 + suffix) ;
+        // for (String letter1 : new String[] {"f","g","h","i","j"})
+        //     simNameList.add(prefix + letter0 + letter1 + suffix) ;
         
-        simNames = (String[]) simNameList.toArray(new String[] {}) ;
+        // simNames = (String[]) simNameList.toArray(new String[] {}) ;
         
         //String simName = "rebootPop20000Cycles1825" ;
         //String simName = "Qibin1p0aPop40000Cycles1460" ;
@@ -119,7 +122,7 @@ public class ScreeningPresenter extends Presenter {
         //String simName = "to2012max3sameScreen34cPop40000Cycles4380" ;
         //String simName = "to2014agentAdjust29aPop40000Cycles4920" ;
         // String simName = simNameList.get(0) ;
-        String simName = "SORTED";
+        String simName = "to2019testhiv2p0corr4A";
         
         boolean unique = false ;
         int notifications = 1 ; 
@@ -196,7 +199,7 @@ public class ScreeningPresenter extends Presenter {
         //screeningPresenter.plotIncidencePerCycle(siteNames) ;
         // screeningPresenter.plotFinalAtRiskIncidentsRecord(siteNames,0,"statusHIV") ;
 
-        // screeningPresenter.plotYearsAtRiskIncidenceReport(siteNames, 13, 2019, "statusHIV") ;  // !! line chart here
+        // screeningPresenter.plotYearsAtRiskIncidenceReport(siteNames, 4, 2019, "statusHIV") ;  // !! line chart here
 
         // screeningPresenter.plotYearsBeenTestedReport(13, 0, 0, 2019, "statusHIV") ;
         //screeningPresenter.plotNotificationsPerCycle(siteNames) ;
@@ -217,23 +220,15 @@ public class ScreeningPresenter extends Presenter {
         // screeningPresenter.plotSiteProportionSymptomatic(siteNames) ;
 
     
-        // DEBUG: testing purposes:
-        // chartTitle = "Runtime vs Size";
-        // String yLabel = "Runtime (seconds)";
-        // String xLabel = "Data size";
+        // plotMedianAndRangeFromCSVFileNames demo
+        // identify parameters
+        chartTitle = "chartTitle";
+        String yLabel = "Runtime (seconds)";
+        String xLabel = "Data size";
+        String[] legend = new String[] {"legendA", "legendB", "legendC", "legendD", "legendE", "legendF"};
 
-        // screeningPresenter = new ScreeningPresenter(simName,chartTitle,reportFileName) ;
-
-        // screeningPresenter.plotIntervalMeansFromCSVFileNames(testSimNames, chartTitle, yLabel, xLabel);
-
-
-        //String methodName = args[3] ;
-        //Method method = EncounterPresenter.class.getMethod(methodName) ;
-
-        //method.invoke(encounterPresenter, (Object[]) Arrays.copyOfRange(args,4,args.length)) ;
-
-        
-        
+        // plot
+        screeningPresenter.plotMedianAndRangeFromCSVFileNames(testSimNames, chartTitle, yLabel, xLabel, legend);       
     }
     
     /**
@@ -1012,7 +1007,7 @@ public class ScreeningPresenter extends Presenter {
             propertyToYAndRange.put(property, yAndRange);
         }
         
-        // // set drawing information
+        // set drawing information
         // setDrawError(true);
         // setErrorType(SHADED_REGION);
 
@@ -1371,24 +1366,33 @@ public class ScreeningPresenter extends Presenter {
 
     /**
      * Extracts information from a range of .csv files
-     * where each .csv file is a property
-     * used primarily for testing purposes
-     * @param fileNames
+     * where each .csv file is name a property IF:
+     * * legend is null OR
+     * * legend.length does NOT equal fileNames.length
+     * 
+     * @param fileNames - full path of fileNames we are extracting information from
+     * @param title - title of our chart
+     * @param yLabel - label for our y-axis
+     * @param xLabel - label for our x-axis
+     * @param legend - String array of properties
      */
-    public void plotIntervalMeansFromCSVFileNames(String[] fileNames, String title, String yLabel, String xLabel) {
+    public void plotMedianAndRangeFromCSVFileNames(String[] fileNames, String title, String yLabel, String xLabel, String[] legend) {
         HashMap<String, HashMap<String,String[]>> propertyToYAndRange = new HashMap<String, HashMap<String,String[]>>();
 
         for (int i = 0; i < fileNames.length; ++i) {
-            String property = fileNames[i];
+
+            // if the legend is the same size as fileNames, we use the legend instead
+            String property = (legend != null && legend.length == fileNames.length) ? legend[i] : fileNames[i];
+
             String fileName = fileNames[i];
-            HashMap<Comparable, String[]> readCSV = Reporter.READ_CSV_STRING(fileName, reporter.getFolderPath(), 0);
+            HashMap<Comparable, String[]> readCSV = Reporter.READ_CSV_STRING(fileName, reporter.getFolderPath(), 1);
             
             int VALUES_TO_ADD = 3; // y-value, lower, upper
             int yValueIndex = 0;
             int lowerIndex = 1;
             int upperIndex = 2;
 
-            for (Comparable keyCmp : readCSV.keySet()) {
+            for (Comparable<?> keyCmp : readCSV.keySet()) {
                 String[] values = readCSV.get(keyCmp);
                 String[] to_add = Reporter.generateMedianAndRangeArrayFromValuesArray(values);
 
@@ -1405,7 +1409,7 @@ public class ScreeningPresenter extends Presenter {
             propertyToYAndRange.put(property, yAndRange);
         }
         
-        plotShadedHashMapStringCI(propertyToYAndRange, yLabel, xLabel, fileNames);
+        plotShadedHashMapStringCI(propertyToYAndRange, yLabel, xLabel, legend);
     }
     
 }

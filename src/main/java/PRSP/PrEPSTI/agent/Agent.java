@@ -104,15 +104,15 @@ public abstract class Agent {
     }
     
     /** String representation of "true". */
-    static String TRUE = "true" ;
+    static final String TRUE = "true" ;
     /** String representation of "false". */
-    static String FALSE = "false" ;
+    static final String FALSE = "false" ;
     /** String representation of "Monogomous". */
-    static String MONOGOMOUS = "Monogomous" ;
+    static final String MONOGOMOUS = "Monogomous" ;
     /** String representation of "Regular". */
-    static String REGULAR = "Regular" ;
+    static final String REGULAR = "Regular" ;
     /** String representation of "Casual". */
-    static String CASUAL = "Casual" ;
+    static final String CASUAL = "Casual" ;
     
     // agentId of next Agent to be created, current number created so far
     static public int NB_AGENTS_CREATED = 0 ;
@@ -240,7 +240,6 @@ public abstract class Agent {
 
     // current partners
     private ArrayList<Integer> currentPartnerIds = new ArrayList<Integer>() ;
-
 
     private ArrayList<Relationship> currentRelationships 
             = new ArrayList<Relationship>() ;
@@ -1561,18 +1560,26 @@ public abstract class Agent {
      * @param (String) relationshipClazzName
      * @return (boolean)
      */
-    public boolean seekRelationship(String relationshipClazzName)
+    public boolean seekRelationship(String relationshipClassName)
     {
-        if (inMonogomous)
-            if (RAND.nextDouble() > infidelity) 
-                return false ;
-        if (CASUAL.equals(relationshipClazzName))
-            return (RAND.nextDouble() < seekRelationshipProbability(CASUAL)) ;
-        else if (REGULAR.equals(relationshipClazzName))
-            return (RAND.nextDouble() < seekRelationshipProbability(REGULAR)) ;
-        else if (0 == currentRelationships.size())   // Seeking Monogomous Relationship
-            return (RAND.nextDouble() < seekRelationshipProbability(MONOGOMOUS)) ;
-        return false ;
+        if (inMonogomous && RAND.nextDouble() > infidelity) return false ;
+        else switch (relationshipClassName) {
+            // special case for monogomous, return false if agent already has a partner
+            case MONOGOMOUS: if (currentRelationships.size() > 0) return false ;
+            
+            // return seekRelationshipProbability for that relationship class
+            default: return (RAND.nextDouble() < seekRelationshipProbability(relationshipClassName)) ;
+        }
+        // if (inMonogomous)
+        //     if (RAND.nextDouble() > infidelity) 
+        //         return false ;
+        // if (CASUAL.equals(relationshipClazzName))
+        //     return (RAND.nextDouble() < seekRelationshipProbability(CASUAL)) ;
+        // else if (REGULAR.equals(relationshipClazzName))
+        //     return (RAND.nextDouble() < seekRelationshipProbability(REGULAR)) ;
+        // else if (0 == currentRelationships.size())   // Seeking Monogomous Relationship
+        //     return (RAND.nextDouble() < seekRelationshipProbability(MONOGOMOUS)) ;
+        // return faldse ;
     }
     
     /**

@@ -21,6 +21,7 @@
 /configs/gadi_default_config.json
 .DS_Store
 /configs/json_files/*.json
+/configs/config.properties
 
 # exceptions
 !output/.gitkeep
@@ -28,3 +29,4 @@
 !data_files/.gitkeep
 !reports/.gitkeep
 !configs/json_files/default.json
+configs/config.properties
