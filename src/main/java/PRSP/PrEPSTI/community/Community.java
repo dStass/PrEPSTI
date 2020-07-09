@@ -27,6 +27,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
+import java.util.stream.IntStream;
 
 /******************************************************************
  * @author Michael Luke Walker
@@ -1209,12 +1210,36 @@ public class Community {
      * @return String record of agentIds in each Relationship and the 
      * description of each sexual contact returned by Relationship.encounter()
      */
+    
     private String runEncounters()
-    {
+    {        
+        StringBuffer stringBufferRecord = new StringBuffer();
+        IntStream.range(0, agents.size() - 1).parallel().forEach(agentIndex -> {
+            Agent agent = agents.get(agentIndex);
+            for (Relationship relationship : agent.getCurrentRelationships())
+            {
+                if (agent != relationship.getLowerIdAgent())
+                    continue ;
+            
+                if (RAND.nextDouble() < relationship.getEncounterProbability()) 
+                {
+                    String newRecord = Reporter.ADD_REPORT_PROPERTY(Reporter.RELATIONSHIPID, relationship.getRelationshipId()) 
+                                        + relationship.encounter() ;
+                    stringBufferRecord.append(newRecord);
+                }
+            }
+        });
+        return stringBufferRecord.toString() ;
+    }
+    
+    
+    /*
+
+    // Non-parallelised Code
+
+    private String runEncounters()
+    {  
         StringBuilder sbRecord = new StringBuilder();
-        //ArrayList<Relationship> currentRelationships ;
-        
-        // LOGGER.info("nb relationships: " + relationships.size());
         for (Agent agent : agents)
         {
             for (Relationship relationship : agent.getCurrentRelationships())
@@ -1239,27 +1264,13 @@ public class Community {
                     }
                     //System.out.println(record);
                 }
-                /*catch (NoSuchMethodException nsme)
-                {
-                    LOGGER.severe(nsme.getLocalizedMessage());
-                    sbRecord.append(nsme.toString());
-                    // record += nsme.toString(); //  .getMessage() ;
-                }
-                catch (InvocationTargetException ite)
-                {
-                    LOGGER.severe(ite.getLocalizedMessage());
-                    //record += ite.getMessage() ;
-                }
-                catch (IllegalAccessException iae)
-                {
-                    LOGGER.severe(iae.getLocalizedMessage());
-                    // record += iae.getMessage() ;
-                    sbRecord.append(iae.getMessage());
-                }*/
             }
         }
         return sbRecord.toString() ;
     }
+    */
+    
+    
 
     /**
      * Loops through relationships and probabilistically chooses to end them.
