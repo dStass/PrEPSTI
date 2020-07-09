@@ -528,6 +528,8 @@ public class Community {
         
         encounterReporter = new EncounterReporter(SIM_NAME, FILE_PATH) ;
         screeningReporter = new ScreeningReporter(SIM_NAME, FILE_PATH) ;
+
+        Community.ADD_TIME_STAMP("after new encounter and screening Reporters");
         
         //screeningReporter = new ScreeningReporter(SIM_NAME,FILE_PATH) ;
                 //new ScreeningReporter("prevalence",community.screeningReport) ;
@@ -551,6 +553,7 @@ public class Community {
             screeningPresenter3.multiPlotScreening(new Object[] {"prevalence","prevalence", new String[] {"Pharynx","Rectum","Urethra"}}) ;  // ,"coprevalence",new String[] {"Pharynx","Rectum"},new String[] {"Urethra","Rectum"}
             // screeningPresenter3.plotYearsAtRiskIncidenceReport(new String[] {"Pharynx","Rectum","Urethra"}, 3, 2020, "statusHIV");
         }
+        Community.ADD_TIME_STAMP("after PLOT_FILE");
         HashMap<Object,Number> finalNotificationsRecord = new HashMap<Object,Number>() ;
         
         for (boolean unique : new boolean[] {})    // false,
@@ -569,6 +572,8 @@ public class Community {
             OUTPUT_RETURN += Reporter.EXTRACT_VALUE("all",notificationsRecord) ; //.("all")[0] + " " ;
             //community.dumpOutputReturn() ;
         }
+
+        Community.ADD_TIME_STAMP("after bool unique");
         
         //LOGGER.log(Level.INFO, "Notification rate {0}", new Object[] {finalNotificationsRecord});
         String[] siteNames = new String[] {"Pharynx","Rectum","Urethra"} ;
@@ -582,6 +587,7 @@ public class Community {
             // LOGGER.log(Level.INFO,"{0} {1}", new Object[] {siteName, prevalenceReport.get(prevalenceReport.size() - 1)}) ;
         }
         prevalenceReport = screeningReporter.preparePrevalenceReport() ;
+        Community.ADD_TIME_STAMP("after prev reports");
         // LOGGER.log(Level.INFO,"{0} {1}", new Object[] {"all", prevalenceReport.get(prevalenceReport.size() - 1)}) ;
 
         HashMap<Comparable,String> incidenceReport = new HashMap<Comparable,String>() ;
@@ -591,6 +597,7 @@ public class Community {
             incidenceReport = screeningReporter.prepareYearsAtRiskIncidenceReport(siteNames, END_YEAR + 1 - START_YEAR, END_YEAR, "statusHIV") ;
             //incidenceReportPrep = screeningReporter.prepareYearsAtRiskIncidenceReport(siteNames, 16, 2022, "prepStatus") ;
         }
+        Community.ADD_TIME_STAMP("after incidence DYNAMIC");
 
                 
         //String finalPrevalencesRecord = screeningReporter.prepareFinalPrevalencesSortedRecord(siteNames, "statusHIV") ;
@@ -639,23 +646,23 @@ public class Community {
         if (!incidenceReport.isEmpty())
         {
             Reporter.DUMP_OUTPUT("riskyIncidence_HIV",SIM_NAME,FILE_PATH,incidenceReport);
-            // LOGGER.info(incidenceReport.toString()) ;
+            LOGGER.info(incidenceReport.toString()) ;
             //Reporter.DUMP_OUTPUT("riskyIncidencePrep",SIM_NAME,FILE_PATH,incidenceReportPrep);
         }
+        Community.ADD_TIME_STAMP("FINAL TIMESTAMP");
         
-        
-        // LOGGER.info("Time Stamps:");
-        // double total = Double.valueOf(timeStamps.get(timeStamps.size() - 2)[1]);
-        // double prev = 0;
-        // for (String[] s : timeStamps) {
-        //     double curr = Double.valueOf(s[1]);
-        //     double difference = curr - prev;
-        //     double percentage = 100 * (difference / total);
-        //     prev = curr;
-        //     // System.out.println(s[0] + " -> stamp: " + s[1] + ", time taken: "
-        //     //     + String.valueOf(difference) + "s, " + String.valueOf(percentage) + "% of sim");
-        //     System.out.println(String.valueOf(percentage) + "% : " + s[0] + ", "+ String.valueOf(difference)+"s");
-        // }
+        LOGGER.info("Time Stamps:");
+        double totalTime = Double.valueOf(timeStamps.get(timeStamps.size() - 2)[1]);
+        double prev = 0;
+        for (String[] s : timeStamps) {
+            double curr = Double.valueOf(s[1]);
+            double difference = curr - prev;
+            double percentage = 100 * (difference / totalTime);
+            prev = curr;
+            // System.out.println(s[0] + " -> stamp: " + s[1] + ", time taken: "
+            //     + String.valueOf(difference) + "s, " + String.valueOf(percentage) + "% of sim");
+            System.out.println(String.valueOf(percentage) + "% : " + s[0] + ", "+ String.valueOf(difference)+"s");
+        }
         
         long timeFinal = System.nanoTime();
         float timeRan = (timeFinal - timeInitial)/  1000000000f;
@@ -818,10 +825,15 @@ public class Community {
             rebootRandomSeeds(rebootedFolderPath, rebootedSimName) ;
             // this.agents = Agent.REBOOT_AGENTS(ConfigLoader.REBOOT_PATH, simName) ;
             this.agents = Agent.REBOOT_AGENTS(rebootedFolderPath, rebootedSimName);
+            StringBuilder sbInitialRecord = new StringBuilder();
+
             this.initialRecord = "" ; 
             for (Agent agent : agents)
-                initialRecord += agent.getCensusReport() ;
-            initialRecord.concat("!") ;
+                sbInitialRecord.append(agent.getCensusReport());
+                // initialRecord += agent.getCensusReport() ;
+            sbInitialRecord.append("!");
+            // initialRecord.concat("!") ;
+            this.initialRecord = sbInitialRecord.toString();
             
             Relationship.REBOOT_RELATIONSHIPS(rebootedFolderPath, rebootedSimName, agents) ;
             scribe = new Scribe(SIM_NAME, new String[] {"relationship","encounter","screening", "population"}) ;
