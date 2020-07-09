@@ -967,11 +967,11 @@ public class Community {
 
         changeAgents.retainAll(agents) ;
         // Make changes
-        report += Agent.REINIT(changeAgents, year + 1) ;
+        return Agent.REINIT(changeAgents, year + 1) ;
         
         //report = "parameters adjusted according to ARTB" ;  // PrEP introduced" ; // gradually" ;
 
-        return report ;
+        // return report ;
     }
     
     /**
@@ -1214,8 +1214,7 @@ public class Community {
     private String runEncounters()
     {        
         StringBuffer stringBufferRecord = new StringBuffer();
-        IntStream.range(0, agents.size() - 1).parallel().forEach(agentIndex -> {
-            Agent agent = agents.get(agentIndex);
+        agents.parallelStream().forEach(agent -> {
             for (Relationship relationship : agent.getCurrentRelationships())
             {
                 if (agent != relationship.getLowerIdAgent())
@@ -1231,6 +1230,8 @@ public class Community {
         });
         return stringBufferRecord.toString() ;
     }
+
+
     
     
     /*
@@ -1340,11 +1341,12 @@ public class Community {
      */
     private String progressInfection(Object[] args)
     {
-    	StringBuilder sbRecord = new StringBuilder();
+        // StringBuilder sbRecord = new StringBuilder();
+        StringBuffer sbRecord = new StringBuffer();
         int infected ;
         int anyInfected = 0 ;
         //long startTime = System.nanoTime() ;
-
+        
         for (Agent agent : agents)
         {
             // record += agent.progressSitesInfection(cycle)

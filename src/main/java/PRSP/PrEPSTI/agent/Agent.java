@@ -142,7 +142,8 @@ public abstract class Agent {
      */
     static public String REINIT(ArrayList<Agent> agentList, int year) 
     {
-        String report = "" ;
+        // String report = "" ;
+        StringBuilder sbReport = new StringBuilder();
         //boolean successful = true ;
         String change = "change" ;
         String methodName = "" ;
@@ -150,7 +151,8 @@ public abstract class Agent {
         reinitScreenCycle = ConfigLoader.getMethodVariableBoolean("agent", "REINIT", "reinitScreenCycle") ;
         //TODO: Automate detection of MSM subClass with reflect
         // Update MSM variables
-        report += MSM.REINIT(agentList, year) ;
+        // report += MSM.REINIT(agentList, year) ;
+        sbReport.append(MSM.REINIT(agentList, year));
         
         if (reinitScreenCycle)
         {
@@ -159,8 +161,8 @@ public abstract class Agent {
                 // Needs to be called after MSM.REINIT() specifically MSM.REINIT_RISK_ODDS()
                 // due to its updating prepStatus.
                 methodName = "screen" ;
-                report += Reporter.ADD_REPORT_PROPERTY(change, methodName) ;
-                report += REINIT_SCREEN_CYCLE(agentList, year) ;
+                sbReport.append(Reporter.ADD_REPORT_PROPERTY(change, methodName)) ;
+                sbReport.append(REINIT_SCREEN_CYCLE(agentList, year)) ;
 
             }
             catch ( Exception e )
@@ -169,7 +171,8 @@ public abstract class Agent {
                 //return false ;
             }
         }
-        return report.concat("!") ;
+        sbReport.append("!");
+        return sbReport.toString() ;
     }
     
     /**
