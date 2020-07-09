@@ -4,6 +4,8 @@
 package PRSP.PrEPSTI.agent;
 
 import PRSP.PrEPSTI.community.* ;
+import PRSP.PrEPSTI.configloader.ConfigLoader;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -144,27 +146,29 @@ public abstract class Agent {
         //boolean successful = true ;
         String change = "change" ;
         String methodName = "" ;
-        
-        
+        Boolean reinitScreenCycle = false ;
+        reinitScreenCycle = ConfigLoader.getMethodVariableBoolean("agent", "REINIT", "reinitScreenCycle") ;
         //TODO: Automate detection of MSM subClass with reflect
         // Update MSM variables
         report += MSM.REINIT(agentList, year) ;
         
-        try
+        if (reinitScreenCycle)
         {
-            // Needs to be called after MSM.REINIT() specifically MSM.REINIT_RISK_ODDS()
-            // due to its updating prepStatus.
-            methodName = "screen" ;
-            report += Reporter.ADD_REPORT_PROPERTY(change, methodName) ;
-            report += REINIT_SCREEN_CYCLE(agentList, year) ;
+            try
+            {
+                // Needs to be called after MSM.REINIT() specifically MSM.REINIT_RISK_ODDS()
+                // due to its updating prepStatus.
+                methodName = "screen" ;
+                report += Reporter.ADD_REPORT_PROPERTY(change, methodName) ;
+                report += REINIT_SCREEN_CYCLE(agentList, year) ;
 
+            }
+            catch ( Exception e )
+            {
+                LOGGER.severe(e.toString() + " in method " + methodName) ;
+                //return false ;
+            }
         }
-        catch ( Exception e )
-        {
-            LOGGER.severe(e.toString() + " in method " + methodName) ;
-            //return false ;
-        }
-        
         return report.concat("!") ;
     }
     
@@ -401,6 +405,10 @@ public abstract class Agent {
         //int daysPerYear = 365 ;
         
         //ArrayList deadAgentIds = new ArrayList<Object>() ; // Get ArrayList of dead Agents so we don't waste time reading their data
+
+        // Which scenario are we running, if any?
+        Boolean scenarioScreenPositive = ConfigLoader.getMethodVariableBoolean("agent", "REBOOT_AGENTS", "scenarioScreenPositive") ;
+        Boolean scenarioScreenPrep = ConfigLoader.getMethodVariableBoolean("agent", "REBOOT_AGENTS", "scenarioScreenPrep") ;
         
         // Reboot saved Agent data 
         int maxAgentId = 0 ;
@@ -410,6 +418,7 @@ public abstract class Agent {
             if (birthList.isEmpty()) 
                 continue ;
             ArrayList<String> properties = Reporter.IDENTIFY_PROPERTIES(birthList.get(0).substring(0, birthList.get(0).indexOf(SITE))) ;
+            
             
             for (String birth : birthList)
             {
@@ -431,8 +440,13 @@ public abstract class Agent {
                     agents.add(newAgent) ;
                     
                     // Reboot screencycle here when testing it
-                    //if (newAgent.getStatusHIV())
-                        newAgent.rebootScreenCycle(2020, 1.1, 1.0) ;
+                    if (scenarioScreenPositive)
+                        if (newAgent.getStatusHIV())
+                            newAgent.rebootScreenCycle(2020, 1.1, 1.0) ;
+                    
+                    if (scenarioScreenPrep)
+                        if (newAgent.getPrepStatus())
+                            newAgent.rebootScreenCycle(2020, 1.1, 1.0) ;
                     
                     // Reload infections
                     infectionString = birth ;

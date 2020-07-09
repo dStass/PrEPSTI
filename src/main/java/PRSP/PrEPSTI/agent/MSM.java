@@ -2390,7 +2390,7 @@ public class MSM extends Agent {
      */
     int reInitScreenCycle(double rescale, boolean ignorePrep)
     {
-    	return reInitScreenCycle(1.0, rescale, ignorePrep) ;
+    	return reInitScreenCycle(rescale, 1.0, ignorePrep) ;
     }
 
     /**
@@ -2426,11 +2426,11 @@ public class MSM extends Agent {
         boolean checkPrepStatus = ConfigLoader.getMethodVariableBoolean("msm", "reInitScreenCycle", "checkPrepStatus");
         
 
-        if (getPrepStatus())
+        if (getPrepStatus() && checkPrepStatus)
         {
-        	if (ignorePrep || !checkPrepStatus)    // ignorePrep for ordinary simulations where PrEP users are rescaled separately
+        	if (ignorePrep)    // ignorePrep for ordinary simulations where PrEP users are rescaled separately
         		return -1 ;
-            if (checkPrepStatus)
+        	else    // checkPrepStatus    for imposing a separate screening regime on PrEP users
                 setScreenCycle((sampleGamma(31,1,1)) + 61) ;
         }
         else
