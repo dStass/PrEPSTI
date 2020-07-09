@@ -30,6 +30,10 @@ import PRSP.PrEPSTI.reporter.presenter.Presenter;
  */
 public class ConfigLoader {
 
+    private ConfigLoader() {
+        throw new IllegalStateException("ConfigLoader class");
+    }
+
     // debug
     public static boolean DEBUG;
 
