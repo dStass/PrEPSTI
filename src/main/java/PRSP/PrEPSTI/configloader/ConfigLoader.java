@@ -161,6 +161,7 @@ public class ConfigLoader {
         ConfigLoader.loadConfigLoaderSettings();
         ConfigLoader.loadCommunity();
         ConfigLoader.loadPaths();
+        ConfigLoader.loadAgent();
         ConfigLoader.loadMSM();
         ConfigLoader.loadReporter();
         ConfigLoader.loadPresenter();
@@ -227,7 +228,7 @@ public class ConfigLoader {
         if (REBOOT_FROM_CYCLE != null && REBOOT_FROM_CYCLE.length() != 0) Community.REBOOT_FROM_CYCLE = Integer.parseInt(REBOOT_FROM_CYCLE) ;
 
         // load methods:
-        loadMethodVariablesHashMap("community", communityJSON);
+        loadMethodVariablesHashMap("community", communityJSON) ;
     }
 
 
@@ -260,6 +261,34 @@ public class ConfigLoader {
             Reporter.DATA_FOLDER = dataPath;
             Presenter.FOLDER_PATH = dataPath;
         }
+    }
+
+
+    /**
+     * handles loading Agent default values
+     * contains default variables inside methods
+     * will implement a hashmap inside Agent class to extract this info
+     */
+    private static void loadAgent() {
+        JSONObject agentJSON = (JSONObject) ConfigLoader.loadedJSON.get("agent");
+        if (agentJSON == null) return;
+
+        // set group sex event size and HIV risky correlation
+        //String reinitScreenCycleStr = (String) agentJSON.get("REINIT");
+        //if (reinitScreenCycleStr != null)
+          //  MSM.GROUP_SEX_EVENT_SIZE = Boolean.parseBoolean(reinitScreenCycleStr);
+        
+        //String hivRiskyCorrelation = (String) msmJSON.get("HIV_RISKY_CORRELATION");
+        //if (hivRiskyCorrelation != null) 
+          //  MSM.HIV_RISKY_CORRELATION = Double.parseDouble(hivRiskyCorrelation);
+
+        // load function methods - set MSM.METHOD_CONFIG
+        // in the json file under MSM, there is methods : { ... }
+        // this will contain function_name -> {} pairs where {} contains 
+        // key-value pairs signifying what variables should be set to
+        // this converts from JSON format to a Java HashMap
+        // for easy access from within the MSM class (remove the need to deal with JSONObjects)
+        loadMethodVariablesHashMap("agent", agentJSON);
     }
 
 
