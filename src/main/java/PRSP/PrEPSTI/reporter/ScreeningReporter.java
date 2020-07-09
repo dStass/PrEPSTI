@@ -16,17 +16,17 @@ import PRSP.PrEPSTI.site.Rectum;
 import PRSP.PrEPSTI.site.Site;
 import PRSP.PrEPSTI.site.Urethra;
 
-import java.io.* ;
-import java.util.ArrayList ;
+import java.io.*;
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections ;
+import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashSet ;
-import java.util.Collections ;
+import java.util.HashSet;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.logging.Level;
-
-import java.lang.reflect.* ;
+import java.util.stream.IntStream;
+import java.lang.reflect.*;
 
 
 public class ScreeningReporter extends Reporter {
@@ -1552,7 +1552,7 @@ public class ScreeningReporter extends Reporter {
     }
  
     /**
-     * TODO: parallelisation
+     * Parallelised wth IntStream
      * @param relationshipClassNames
      * @param backYears
      * @param lastYear
@@ -1561,10 +1561,19 @@ public class ScreeningReporter extends Reporter {
      */
     public HashMap<Comparable,String> prepareYearsAtRiskIncidenceReport(String[] relationshipClassNames, int backYears, int lastYear, String sortingProperty)
     {
-        HashMap<Comparable,String> incidentRateReport = new HashMap<Comparable,String>() ;
-        //HashMap<Object,Number[]> percentAgentCondomlessYears = new HashMap<Object,Number[]>() ;
-    
-        for (int year = 0 ; year < backYears ; year++ )
+        HashMap<Comparable,String> incidentRateReport = new HashMap<Comparable,String>() ;    
+        IntStream.range(0, backYears - 1).parallel().forEach(year -> {
+            String yearlyNumberAgentsEnteredRelationship ;
+            yearlyNumberAgentsEnteredRelationship = prepareFinalAtRiskIncidentsRecord(relationshipClassNames, year, sortingProperty);
+            incidentRateReport.put(lastYear - year, yearlyNumberAgentsEnteredRelationship) ;
+        });
+        return incidentRateReport ;
+    }
+
+    /*
+    Previous code
+
+            for (int year = 0 ; year < backYears ; year++ )
         {
             //LOGGER.info("backYears:" + String.valueOf(year));
             String yearlyNumberAgentsEnteredRelationship ;
@@ -1580,8 +1589,7 @@ public class ScreeningReporter extends Reporter {
         }
         // LOGGER.info(incidentRateReport.toString()) ;
 
-        return incidentRateReport ;
-    }
+    */
     
     /**
      * 
