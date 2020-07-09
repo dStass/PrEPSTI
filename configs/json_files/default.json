@@ -7,8 +7,8 @@
 
     "community" : {
         "FILE_PATH" : "output/",
-        "NAME_ROOT" : "to2019testhiv2p0corr4A",
-        "MAX_CYCLES" : "14",
+        "NAME_ROOT" : "to2019testConfighiv2p0corr4B",
+        "MAX_CYCLES" : "3",
         "POPULATION" : "40000",
         "COMMENT" : "",
         "DYNAMIC" : "true",
@@ -21,6 +21,18 @@
                 "startCycle" : "1"
             }
         }
+    },
+
+    "agent" : {
+          "methods": {
+              "REBOOT_AGENTS" : {
+                  "scenarioScreenPrep" : "false",
+                  "scenarioScreenPositive" : "false"
+              },
+              "REINIT" : {
+                  "reinitScreenCycle" : "true"
+              }
+          }
     },
 
     "msm" : {

@@ -101,7 +101,8 @@ public class MSM extends Agent {
             sbReport.append(REINIT_PROPORTION_UNDETECTABLE(agentList, year)) ;
             
             methodName = "disclosure" ;
-            REINIT_PROBABILITY_DISCLOSURE_HIV(agentList, year) ;
+            sbReport.append(Reporter.ADD_REPORT_PROPERTY(change, methodName)) ;
+            sbReport.append(REINIT_PROBABILITY_DISCLOSURE_HIV(agentList, year)) ;
             
             methodName = "riskinessCasual" ;
             sbReport.append(Reporter.ADD_REPORT_PROPERTY(change, methodName)) ;
@@ -119,7 +120,7 @@ public class MSM extends Agent {
             sbReport.append(Reporter.ADD_REPORT_PROPERTY(change, methodName)) ;
             sbReport.append(REINIT_TRUST_PREP(agentList, year)) ;
             
-            
+            /*
             methodName = "seroSortCasual" ;
             sbReport.append(Reporter.ADD_REPORT_PROPERTY(change, methodName)) ;
             sbReport.append(REINIT_CASUAL_SERO_SORT(agentList, year)) ;
@@ -132,7 +133,7 @@ public class MSM extends Agent {
             methodName = "seroSortMonogomous" ;
             sbReport.append(Reporter.ADD_REPORT_PROPERTY(change, methodName)) ;
             sbReport.append(REINIT_MONOGOMOUS_SERO_SORT(agentList, year)) ;
-            
+            */
             //                                 
         }
         catch ( Exception e )
@@ -2415,21 +2416,54 @@ public class MSM extends Agent {
     /**
      * Initialises screenCycle from a Gamma distribution to determine how often 
      * an MSM is screened, and then starts the cycle in a random place so that 
-     * not every MSM gets screened at the same time.
+     * not every MSM gets screened at the same time. the shape parameter remains 
+     * unchanged.
      * @param rescale - The factor to rescale screenCycle by
      * @param ignorePrep - Whether to reInit PrEP users
      */
-    protected int reInitScreenCycle(double rescale, boolean ignorePrep)
+    int reInitScreenCycle(double rescale, boolean ignorePrep)
+    {
+    	return reInitScreenCycle(rescale, 1.0, ignorePrep) ;
+    }
+
+    /**
+     * Reboots screenCycle from given year with given reshaping and rescaling.
+     * Only used for special scenarios.
+     * @param year
+     * @param reshape
+     * @param rescale
+     * @return
+     */
+    public int rebootScreenCycle(int year, double reshape, double rescale)
+    {
+    	if (year > 500)    // Assume calendar year starting 2007
+    		year -= 2007 ;
+    	
+    	double ratio = TEST_RATES[0]/GET_YEAR(TEST_RATES,year) ;
+    	
+    	return reInitScreenCycle(reshape, ratio * rescale, false) ;
+    }
+
+    
+    /**
+     * Initialises screenCycle from a Gamma distribution to determine how often 
+     * an MSM is screened, and then starts the cycle in a random place so that 
+     * not every MSM gets screened at the same time.
+     * @param rescale - The factor to reshape screenCycle by
+     * @param rescale - The factor to rescale screenCycle by
+     * @param ignorePrep - Whether to reInit PrEP users
+     */
+    protected int reInitScreenCycle(double reshape, double rescale, boolean ignorePrep)
     {
         // For easily testing the effects of the PrEP screening regime
         boolean checkPrepStatus = ConfigLoader.getMethodVariableBoolean("msm", "reInitScreenCycle", "checkPrepStatus");
         
 
-        if (getPrepStatus())
+        if (getPrepStatus() && checkPrepStatus)
         {
-        	if (ignorePrep || !checkPrepStatus)    // ignorePrep for ordinary simulations where PrEP users are rescaled separately
+        	if (ignorePrep)    // ignorePrep for ordinary simulations where PrEP users are rescaled separately
         		return -1 ;
-            if (checkPrepStatus)
+        	else    // checkPrepStatus    for imposing a separate screening regime on PrEP users
                 setScreenCycle((sampleGamma(31,1,1)) + 61) ;
         }
         else
