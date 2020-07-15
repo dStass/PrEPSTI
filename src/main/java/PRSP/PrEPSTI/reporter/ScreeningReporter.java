@@ -2067,6 +2067,7 @@ public class ScreeningReporter extends Reporter {
         // long t1 = System.nanoTime();
 
         // modify internal hashmap with infectious agents
+        // parallelised
         infectiousAgentsHashMap.keySet().parallelStream().forEach(agentId -> {
             String agentInfectiousRecord = infectiousAgentsHashMap.get(agentId);
             for (String site : siteNames) {
@@ -2132,7 +2133,7 @@ public class ScreeningReporter extends Reporter {
      * @return
      */
     private String[] extractInfectionAndIncubationTimeFromBackCycles(String agentId, String site, String symptomatic, int endCycle) {
-        ArrayList<String> screeningBackCycles = this.getBackCyclesReport(0, 0, endCycle, endCycle);
+        ArrayList<String> screeningBackCycles = getBackCyclesReport(0, 0, endCycle, endCycle);
 
         int foundCycle = screeningBackCycles.size() - 1;
         for (int i = screeningBackCycles.size() - 1; i >= 0; --i) {

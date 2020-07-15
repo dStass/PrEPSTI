@@ -766,9 +766,11 @@ public class Community {
                 ArrayList<Object> metaData = new ArrayList<Object>() ;
 
 
-                /* * * * * * * * * *
+                /*
+                 * * * * * * * * * *
                  *      AGENTS     *
-                 * * * * * * * * * */
+                 * * * * * * * * * *
+                 */
 
                 // generate our reboot census
                 HashMap<Integer, String> populationCensusUpToCycle = populationReporter.prepareCensusReport(cycleToGenerateReportUpTo, screeningReporter);
@@ -789,9 +791,11 @@ public class Community {
                 metaData.add(agentsReboot) ;
 
 
-                /* * * * * * * * * *
+                /*
+                 * * * * * * * * * *
                  *  RELATIONSHIPS  *
-                 * * * * * * * * * */
+                 * * * * * * * * * *
+                 */
 
                 // extract relationship data and write to internal metadata
                 HashMap<Integer, String> relationshipRecordHashMap = relationshipReporter.prepareRelationshipRecordHashMap(cycleToGenerateReportUpTo);
@@ -810,7 +814,6 @@ public class Community {
                 rebootedSimName = simName + "$" + String.valueOf(fromCycle);
                 rebootedFolderPath = Community.FILE_PATH;
 
-                // TODO: extract "test/" from CONFIG
                 dumpRebootData(rebootedFolderPath, rebootedSimName, metaLabels, metaData);
 
                 HashMap<String, String> modifiedProperties = new HashMap<String, String>();
@@ -820,16 +823,16 @@ public class Community {
             }
 
             rebootRandomSeeds(rebootedFolderPath, rebootedSimName) ;
-            // this.agents = Agent.REBOOT_AGENTS(ConfigLoader.REBOOT_PATH, simName) ;
             this.agents = Agent.REBOOT_AGENTS(rebootedFolderPath, rebootedSimName);
-            StringBuilder sbInitialRecord = new StringBuilder();
 
-            this.initialRecord = "" ; 
-            for (Agent agent : agents)
+            // initial record
+            StringBuffer sbInitialRecord = new StringBuffer();
+            agents.parallelStream().forEach(agent -> {
                 sbInitialRecord.append(agent.getCensusReport());
-                // initialRecord += agent.getCensusReport() ;
+            });
+            // for (Agent agent : agents)
+            //     sbInitialRecord.append(agent.getCensusReport());
             sbInitialRecord.append("!");
-            // initialRecord.concat("!") ;
             this.initialRecord = sbInitialRecord.toString();
             
             Relationship.REBOOT_RELATIONSHIPS(rebootedFolderPath, rebootedSimName, agents) ;
