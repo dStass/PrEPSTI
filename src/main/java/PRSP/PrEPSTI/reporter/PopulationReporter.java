@@ -8,6 +8,7 @@ package PRSP.PrEPSTI.reporter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.Collections;
 import java.util.HashMap;
@@ -752,11 +753,10 @@ public class PopulationReporter extends Reporter {
     public HashMap<Object,String> prepareCensusPropertyReport()
     {
         HashMap<Object,String> censusPropertyReport = new HashMap<Object,String>() ;
-        
         ArrayList<String>  birthReport = prepareBirthReport() ;
-
-        for (String birthRecord : birthReport)
-        {
+        
+        // new parallel loop:
+        birthReport.parallelStream().forEach(birthRecord -> {
             ArrayList<String> birthArray = EXTRACT_ARRAYLIST(birthRecord,AGENTID) ;
             for (String birthAgent : birthArray)
             {
@@ -772,7 +772,28 @@ public class PopulationReporter extends Reporter {
                 }
                 censusPropertyReport.put(agentId, censusEntry) ;
             }
-        }
+        });
+
+        // old loop:
+
+        // for (String birthRecord : birthReport)
+        // {
+        //     ArrayList<String> birthArray = EXTRACT_ARRAYLIST(birthRecord,AGENTID) ;
+        //     for (String birthAgent : birthArray)
+        //     {
+        //         Object agentId = EXTRACT_VALUE(AGENTID,birthAgent) ;
+        //         String propertyValue ;
+        //         String censusEntry = "" ;
+        //         ArrayList<String> propertyNames = IDENTIFY_PROPERTIES(birthAgent) ;
+        //         propertyNames.remove(AGENTID) ;
+        //         for (String propertyName : propertyNames)
+        //         {
+        //             propertyValue = EXTRACT_VALUE(propertyName,birthAgent);
+        //             censusEntry += Reporter.ADD_REPORT_PROPERTY(propertyName, propertyValue) ;
+        //         }
+        //         censusPropertyReport.put(agentId, censusEntry) ;
+        //     }
+        // }
         return censusPropertyReport ;
     }
     
@@ -784,11 +805,11 @@ public class PopulationReporter extends Reporter {
     public HashMap<String,String> prepareCensusPropertyReport(String propertyName)
     {
         HashMap<String,String> censusPropertyReport = new HashMap<String,String>() ;
-        
         ArrayList<String>  birthReport = prepareBirthReport() ;
         
-        for (String birthRecord : birthReport)
-        {
+        // new loop:
+
+        birthReport.parallelStream().forEach(birthRecord -> {
             ArrayList<String> birthArray = EXTRACT_ARRAYLIST(birthRecord,AGENTID) ;
             for (String birthAgent : birthArray)
             {
@@ -796,7 +817,21 @@ public class PopulationReporter extends Reporter {
                 String propertyValue = EXTRACT_VALUE(propertyName,birthAgent) ;
                 censusPropertyReport.put(agentId, propertyValue) ;
             }
-        }
+        });
+
+
+        // old loop:
+
+        // for (String birthRecord : birthReport)
+        // {
+        //     ArrayList<String> birthArray = EXTRACT_ARRAYLIST(birthRecord,AGENTID) ;
+        //     for (String birthAgent : birthArray)
+        //     {
+        //         String agentId = EXTRACT_VALUE(AGENTID,birthAgent) ;
+        //         String propertyValue = EXTRACT_VALUE(propertyName,birthAgent) ;
+        //         censusPropertyReport.put(agentId, propertyValue) ;
+        //     }
+        // }
         return censusPropertyReport ;
     }
 
@@ -870,12 +905,20 @@ public class PopulationReporter extends Reporter {
         
         // Add all agents and remove dead agents
         HashSet<String> agentIdSet = new HashSet<String>() ;
-        Collections.addAll(agentIdSet, birthReport.keySet().toArray(new String[0])) ;
+
+        // extract set of agent ids in birthReport
+        String[] birthReportKeys = new String[birthReport.size()];
+        int pos = 0;
+        for(Map.Entry<Object, String> entry : birthReport.entrySet()) {
+            String key = (String) entry.getKey();
+            birthReportKeys[pos++] = key;
+        }
+        Collections.addAll(agentIdSet, birthReportKeys);
         
+        // remove dead agents from rawReport
         for (Comparable<?> agentIdComparable : deathReport) {
             String agentIdString = (String) agentIdComparable;
-            if (rawReport.containsKey(agentIdString))
-            rawReport.remove(agentIdString);
+            if (rawReport.containsKey(agentIdString)) rawReport.remove(agentIdString);
         }
         HashMap<String, String> siteReport = screeningReporter.prepareAgentSiteReport(endCycle, agentIdSet);
         
@@ -1067,7 +1110,6 @@ public class PopulationReporter extends Reporter {
         //LOGGER.info(changeReport.toString());
     
         // changeReport.size() is zero if no changes are made
-        // TODO: parallelise: add threads here
         // generating hashmap - ordering doesn't matter
         for (int index = changeReport.size() - 1 ; index >= 0 ; index-- )
         {
@@ -1076,9 +1118,7 @@ public class PopulationReporter extends Reporter {
             //LOGGER.info(changeAgentIds.toString()) ;
             changeAgentIds.retainAll(agentIdSet) ;
             
-            // TODO: add threads here too?
-            for (String agentId : changeAgentIds)
-            {
+            changeAgentIds.parallelStream().forEach(agentId -> {
                 int agentIndex = INDEX_OF_PROPERTY(agentId.toString(),changeRecord) ;
                 int colonIndex = changeRecord.indexOf(":",agentIndex) ;
                 int nextColonIndex = changeRecord.indexOf(":",colonIndex + 1) ;
@@ -1089,23 +1129,50 @@ public class PopulationReporter extends Reporter {
                 
                 //LOGGER.info(value) ;
                 // Might be HashMap of values
-                if (value.startsWith("{"))
+                if (value.startsWith("{") && value.contains(propertyName))
                 {
-                    if (!value.contains(propertyName))
-                        continue ;
                     value = value.replace("=", ":") ;
                     value = EXTRACT_VALUE(propertyName,value) ;
                     value = value.substring(0, value.length() - 1) ;
                 }
                 censusPropertyReport.put(agentId, value) ;
                 agentIdSet.remove(agentId) ;
-            }
-            if (agentIdSet.isEmpty())
-                break ;
+            });
+
+            // TODO: add threads here too?
+            // for (String agentId : changeAgentIds)
+            // {
+            //     int agentIndex = INDEX_OF_PROPERTY(agentId.toString(),changeRecord) ;
+            //     int colonIndex = changeRecord.indexOf(":",agentIndex) ;
+            //     int nextColonIndex = changeRecord.indexOf(":",colonIndex + 1) ;
+            //     int spaceIndex = changeRecord.lastIndexOf(SPACE, nextColonIndex) ;
+            //     if (spaceIndex < 0)
+            //         spaceIndex = changeRecord.length() ;
+            //     String value = changeRecord.substring(colonIndex + 1, spaceIndex) ;
+                
+            //     //LOGGER.info(value) ;
+            //     // Might be HashMap of values
+            //     if (value.startsWith("{"))
+            //     {
+            //         if (!value.contains(propertyName))
+            //             continue ;
+            //         value = value.replace("=", ":") ;
+            //         value = EXTRACT_VALUE(propertyName,value) ;
+            //         value = value.substring(0, value.length() - 1) ;
+            //     }
+            //     censusPropertyReport.put(agentId, value) ;
+            //     agentIdSet.remove(agentId) ;
+            // }
+            // if (agentIdSet.isEmpty())
+            //     break ;
         }
         
-        for (String agentId : agentIdSet)
+        agentIdSet.parallelStream().forEach(agentId -> {
             censusPropertyReport.put(agentId, birthReport.get(agentId)) ;
+        });
+        
+        // for (String agentId : agentIdSet)
+        //     censusPropertyReport.put(agentId, birthReport.get(agentId)) ;
         
         return censusPropertyReport ;
     }
