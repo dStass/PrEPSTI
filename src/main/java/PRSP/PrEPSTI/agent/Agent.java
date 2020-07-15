@@ -752,7 +752,7 @@ public abstract class Agent {
         return true ;
     }
 
-    public ArrayList<Relationship> getCurrentRelationships()
+    public synchronized ArrayList<Relationship> getCurrentRelationships()
     {
             return currentRelationships ;
     }
@@ -953,7 +953,7 @@ public abstract class Agent {
      * 
      * @return (String) giving values of the agent's important properties.
      */
-    public String getCensusReport()
+    public synchronized String getCensusReport()
     {   
         StringBuilder sbCensusReport = new StringBuilder();
         String censusReport ;

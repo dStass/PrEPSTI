@@ -29,6 +29,8 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.stream.IntStream;
 
+import org.apache.commons.math3.analysis.solvers.NewtonRaphsonSolver;
+
 /******************************************************************
  * @author Michael Luke Walker
  *
@@ -854,34 +856,17 @@ public class Community {
      */
     private String initialiseCommunity()
     {
-        StringBuilder sb = new StringBuilder();
-        ArrayList<String> initRecordArrayList = new ArrayList<String>();
-        initRecordArrayList.add("!");
-        String report = "" ;
+        StringBuffer sbInitialRecord = new StringBuffer();
         scribe = new Scribe(SIM_NAME, new String[] {"relationship","encounter","screening", "population"}) ;
-
-        for (int id = 0 ; id <  population ; id++ ) 
-        {
-            //Class<?> AgentClazz = Class.forName("MSM") ; 
-            //Agent newAgent = (Agent) AgentClazz.newInstance() ;
-            //Constructor<?> agentConstructor = AgentClazz.getDeclaredConstructors()[0] ;
-
-            // Call generateAgent to get randomly chosen combination of Agent subclasses
-            //and to impose initial conditions, such as prepStatus=false
-
-            MSM newAgent = generateAgent(-1) ;  //new MSM(-1) ;
-            //newAgent.setPrepStatus(false) ;
-            
-            agents.add(newAgent) ;
-
-            // Record newAgent for later reporting
-            // initialRecord = newAgent.getCensusReport() + initialRecord ;
-            initRecordArrayList.add(0, newAgent.getCensusReport());
-            //LOGGER.info(initialRecord);
-        }
-
-        for (String s : initRecordArrayList) sb.append(s);
-        initialRecord = sb.toString();
+        
+        for (int id = 0 ; id < population ; ++id)
+            agents.add(generateAgent(-1));
+        
+        agents.parallelStream().forEach(agent -> {
+            sbInitialRecord.append(agent.getCensusReport());
+        });
+        sbInitialRecord.append("!");
+        initialRecord = sbInitialRecord.toString();
 
         //String relationshipRecord = generateRelationships() ;
         // Clear all initial infections
@@ -903,7 +888,7 @@ public class Community {
 //            break ;
 //        }
 //        return "Population clear except for one RiskyMSM with asymptomatic Urethral infection." ;
-        report = "Currently no Agents on PrEP" ;
+        String report = "Currently no Agents on PrEP" ;
         return report ;
     }
     

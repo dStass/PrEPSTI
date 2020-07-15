@@ -774,6 +774,11 @@ public class PopulationReporter extends Reporter {
             }
         });
 
+        HashMap<Object,String> returnReport = new HashMap<Object,String>() ;
+        for (Map.Entry<Object, String> entry : censusPropertyReport.entrySet())
+            returnReport.put(entry.getKey(), entry.getValue());
+
+
         // old loop:
 
         // for (String birthRecord : birthReport)
@@ -794,7 +799,7 @@ public class PopulationReporter extends Reporter {
         //         censusPropertyReport.put(agentId, censusEntry) ;
         //     }
         // }
-        return censusPropertyReport ;
+        return returnReport ;
     }
     
     /**
@@ -1103,8 +1108,12 @@ public class PopulationReporter extends Reporter {
         
         // Census at birth
         HashMap<String,String> birthReport = prepareCensusPropertyReport(propertyName) ;
-        HashSet<String> agentIdSet = new HashSet<String>() ;
-        Collections.addAll(agentIdSet, birthReport.keySet().toArray(new String[0])) ;
+        HashSet<String> agentIdSet = new HashSet<String>();
+
+        for (Map.Entry<String, String> entry : birthReport.entrySet())
+            agentIdSet.add(entry.getKey());
+        
+
         //LOGGER.info(agentIdSet.toString());
         ArrayList<String> changeReport = prepareChangeReport(propertyName,endCycle) ;
         //LOGGER.info(changeReport.toString());
@@ -1118,7 +1127,9 @@ public class PopulationReporter extends Reporter {
             //LOGGER.info(changeAgentIds.toString()) ;
             changeAgentIds.retainAll(agentIdSet) ;
             
-            changeAgentIds.parallelStream().forEach(agentId -> {
+            // changeAgentIds.parallelStream().forEach(agentId -> {
+            for (String agentId : changeAgentIds)
+            {
                 int agentIndex = INDEX_OF_PROPERTY(agentId.toString(),changeRecord) ;
                 int colonIndex = changeRecord.indexOf(":",agentIndex) ;
                 int nextColonIndex = changeRecord.indexOf(":",colonIndex + 1) ;
@@ -1137,7 +1148,9 @@ public class PopulationReporter extends Reporter {
                 }
                 censusPropertyReport.put(agentId, value) ;
                 agentIdSet.remove(agentId) ;
-            });
+            // });
+            }
+            
 
             // TODO: add threads here too?
             // for (String agentId : changeAgentIds)
@@ -1167,9 +1180,8 @@ public class PopulationReporter extends Reporter {
             //     break ;
         }
         
-        agentIdSet.parallelStream().forEach(agentId -> {
+        for (String agentId : agentIdSet)
             censusPropertyReport.put(agentId, birthReport.get(agentId)) ;
-        });
         
         // for (String agentId : agentIdSet)
         //     censusPropertyReport.put(agentId, birthReport.get(agentId)) ;

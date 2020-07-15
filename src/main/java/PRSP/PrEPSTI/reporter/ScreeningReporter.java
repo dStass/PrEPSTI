@@ -22,6 +22,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.logging.Level;
@@ -1562,12 +1564,24 @@ public class ScreeningReporter extends Reporter {
      */
     public HashMap<Comparable,String> prepareYearsAtRiskIncidenceReport(String[] relationshipClassNames, int backYears, int lastYear, String sortingProperty)
     {
-        HashMap<Comparable,String> incidentRateReport = new HashMap<Comparable,String>() ;    
+        HashMap<Comparable,String> incidentRateReportConcurrent = new HashMap<Comparable,String>() ;    
+        // for (int year = 0; year < backYears; ++year) {
+        //     String yearlyNumberAgentsEnteredRelationship ;
+        //     yearlyNumberAgentsEnteredRelationship = prepareFinalAtRiskIncidentsRecord(relationshipClassNames, year, sortingProperty);
+        //     incidentRateReportConcurrent.put(lastYear - year, yearlyNumberAgentsEnteredRelationship) ;
+        // }
+
         IntStream.range(0, backYears - 1).parallel().forEach(year -> {
             String yearlyNumberAgentsEnteredRelationship ;
             yearlyNumberAgentsEnteredRelationship = prepareFinalAtRiskIncidentsRecord(relationshipClassNames, year, sortingProperty);
-            incidentRateReport.put(lastYear - year, yearlyNumberAgentsEnteredRelationship) ;
+            incidentRateReportConcurrent.put(lastYear - year, yearlyNumberAgentsEnteredRelationship) ;
         });
+
+        HashMap<Comparable,String> incidentRateReport = new HashMap<Comparable, String>();
+        for (Map.Entry<Comparable, String> entry : incidentRateReportConcurrent.entrySet()) {
+            incidentRateReport.put(entry.getKey(), entry.getValue());
+        }
+
         return incidentRateReport ;
     }
 
@@ -1598,7 +1612,7 @@ public class ScreeningReporter extends Reporter {
      * @param backYears
      * @return atRiskIncidenceReport from year leading up to backYears years ago.
      */
-    public String prepareFinalAtRiskIncidentsRecord(String[] siteNames, int backYears, String sortingProperty)
+    public synchronized String prepareFinalAtRiskIncidentsRecord(String[] siteNames, int backYears, String sortingProperty)
     {
         int endCycle = getMaxCycles() - DAYS_PER_YEAR * backYears ;
         
@@ -2068,7 +2082,9 @@ public class ScreeningReporter extends Reporter {
 
         // modify internal hashmap with infectious agents
         // parallelised
-        infectiousAgentsHashMap.keySet().parallelStream().forEach(agentId -> {
+
+        // Set keySet = infectiousAgentsHashMap.keySet();
+        infectiousAgentsHashMap.keySet().stream().forEach(agentId -> {
             String agentInfectiousRecord = infectiousAgentsHashMap.get(agentId);
             for (String site : siteNames) {
                 // if the site is infectious
