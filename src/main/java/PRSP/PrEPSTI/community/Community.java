@@ -775,20 +775,22 @@ public class Community {
                 // generate our reboot census
                 HashMap<Integer, String> populationCensusUpToCycle = populationReporter.prepareCensusReport(cycleToGenerateReportUpTo, screeningReporter);
                 
-
                 // extract agent census data and write to internal metadata
-                // sort agents by id
-                TreeSet<Integer> sortedAgentKeySet = new TreeSet<Integer>();
-                sortedAgentKeySet.addAll(populationCensusUpToCycle.keySet());
-                
-                // add rebooted agent data to metadata
                 metaLabels.add("Agents") ;
-                String agentsReboot = "" ;
-                for (Integer agentId : sortedAgentKeySet) {
-                    String newAgentRecord = populationCensusUpToCycle.get(agentId);
-                    agentsReboot += newAgentRecord;
-                }
-                metaData.add(agentsReboot) ;
+                StringBuffer sbAgentsReboot = new StringBuffer() ;
+                populationCensusUpToCycle.keySet().parallelStream().forEach(agentId -> {
+                    sbAgentsReboot.append(populationCensusUpToCycle.get(agentId));
+                });
+                metaData.add(sbAgentsReboot.toString()) ;
+
+                // sort agents by id
+                // TreeSet<Integer> sortedAgentKeySet = new TreeSet<Integer>();
+                // sortedAgentKeySet.addAll(populationCensusUpToCycle.keySet());
+
+                // for (Integer agentId : sortedAgentKeySet) {
+                //     String newAgentRecord = populationCensusUpToCycle.get(agentId);
+                //     agentsReboot += newAgentRecord;
+                // }
 
 
                 /*
@@ -799,16 +801,22 @@ public class Community {
 
                 // extract relationship data and write to internal metadata
                 HashMap<Integer, String> relationshipRecordHashMap = relationshipReporter.prepareRelationshipRecordHashMap(cycleToGenerateReportUpTo);
+                metaLabels.add("Relationships") ;
+                StringBuffer sbRelationshipReboot = new StringBuffer();
+                relationshipRecordHashMap.keySet().parallelStream().forEach(relationshipId -> {
+                    sbRelationshipReboot.append(relationshipRecordHashMap.get(relationshipId) + ' ');
+                });
+                metaData.add(sbRelationshipReboot.toString()) ;
+
+                // old relationship reboot
                 
-                TreeSet<Integer> sortedRelationshipKeySet = new TreeSet<Integer>();
-                sortedRelationshipKeySet.addAll(relationshipRecordHashMap.keySet());
+                // TreeSet<Integer> sortedRelationshipKeySet = new TreeSet<Integer>();
+                // sortedRelationshipKeySet.addAll(relationshipRecordHashMap.keySet());
                 
                 // add rebooted relationship data to metadata
-                metaLabels.add("Relationships") ;
-                String relationshipsReboot = "" ;
-                for (Integer relationshipId : sortedRelationshipKeySet)
-                    relationshipsReboot += relationshipRecordHashMap.get(relationshipId) + ' ' ;
-                metaData.add(relationshipsReboot) ;
+                // String relationshipsReboot = "" ;
+                // for (Integer relationshipId : sortedRelationshipKeySet)
+                //     relationshipsReboot += relationshipRecordHashMap.get(relationshipId) + ' ' ;
                 
                 // dump new metadata
                 rebootedSimName = simName + "$" + String.valueOf(fromCycle);
