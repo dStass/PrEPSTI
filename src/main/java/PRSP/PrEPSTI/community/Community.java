@@ -785,12 +785,13 @@ public class Community {
                 
                 // add rebooted agent data to metadata
                 metaLabels.add("Agents") ;
-                String agentsReboot = "" ;
+                StringBuilder sbAgentsReboot = new StringBuilder();
                 for (Integer agentId : sortedAgentKeySet) {
                     String newAgentRecord = populationCensusUpToCycle.get(agentId);
                     agentsReboot += newAgentRecord;
+                    sbAgentsReboot.append(newAgentRecord);
                 }
-                metaData.add(agentsReboot) ;
+                metaData.add(sbAgentsReboot.toString()) ;
 
 
                 /* * * * * * * * * *
@@ -805,10 +806,13 @@ public class Community {
                 
                 // add rebooted relationship data to metadata
                 metaLabels.add("Relationships") ;
-                String relationshipsReboot = "" ;
-                for (Integer relationshipId : sortedRelationshipKeySet)
-                    relationshipsReboot += relationshipRecordHashMap.get(relationshipId) + ' ' ;
-                metaData.add(relationshipsReboot) ;
+                // String relationshipsReboot = "" ;
+                StringBuilder sbRelationshipReboot = new StringBuilder();
+                for (Integer relationshipId : sortedRelationshipKeySet) {
+                    sbRelationshipReboot.append(relationshipRecordHashMap.get(relationshipId));
+                    sbRelationshipReboot.append(' ');
+                }
+                metaData.add(sbRelationshipReboot.toString()) ;
                 
                 // dump new metadata
                 rebootedSimName = simName + "$" + String.valueOf(fromCycle);
@@ -841,7 +845,7 @@ public class Community {
         }
 
         long t2 = System.nanoTime();
-        System.out.println("time = " + (t2 - t1) );
+        System.out.println("time = " + (t2 - t1) / 1_000_000_000);
     }
 
     /**
