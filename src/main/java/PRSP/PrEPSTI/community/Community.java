@@ -747,6 +747,7 @@ public class Community {
      */
     public Community(String simName, int fromCycle)
     {
+        long t1 = System.nanoTime();
         if (simName.isEmpty())
             initialiseCommunity();
         else
@@ -838,6 +839,9 @@ public class Community {
             Relationship.REBOOT_RELATIONSHIPS(rebootedFolderPath, rebootedSimName, agents) ;
             scribe = new Scribe(SIM_NAME, new String[] {"relationship","encounter","screening", "population"}) ;
         }
+
+        long t2 = System.nanoTime();
+        System.out.println("time = " + (t2 - t1) );
     }
 
     /**
