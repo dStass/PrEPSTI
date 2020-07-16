@@ -852,7 +852,7 @@ public class Community {
         }
 
         long t2 = System.nanoTime();
-        System.out.println("time = " + (t2 - t1) );
+        System.out.println("time = " + (t2 - t1) /1_000_000_000);
     }
 
     /**
