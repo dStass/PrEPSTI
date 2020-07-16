@@ -788,7 +788,6 @@ public class Community {
                 StringBuilder sbAgentsReboot = new StringBuilder();
                 for (Integer agentId : sortedAgentKeySet) {
                     String newAgentRecord = populationCensusUpToCycle.get(agentId);
-                    agentsReboot += newAgentRecord;
                     sbAgentsReboot.append(newAgentRecord);
                 }
                 metaData.add(sbAgentsReboot.toString()) ;
