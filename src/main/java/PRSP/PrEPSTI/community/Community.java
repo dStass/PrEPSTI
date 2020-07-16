@@ -746,7 +746,8 @@ public class Community {
      * recommence simulation.
      */
     public Community(String simName, int fromCycle)
-    {
+    {   
+        long t1 = System.nanoTime();
         if (simName.isEmpty())
             initialiseCommunity();
         else
@@ -849,6 +850,9 @@ public class Community {
             Relationship.REBOOT_RELATIONSHIPS(rebootedFolderPath, rebootedSimName, agents) ;
             scribe = new Scribe(SIM_NAME, new String[] {"relationship","encounter","screening", "population"}) ;
         }
+
+        long t2 = System.nanoTime();
+        System.out.println("time = " + (t2 - t1) );
     }
 
     /**
@@ -860,26 +864,29 @@ public class Community {
         StringBuffer sbInitialRecord = new StringBuffer(); 
         scribe = new Scribe(SIM_NAME, new String[] {"relationship","encounter","screening", "population"}) ;
         
-        // for (int id = 0 ; id < population ; ++id)
-        //     agents.add(generateAgent(-1, true));
-
-        // create agents in parallel
-        ConcurrentHashMap<Integer, MSM> initAgentsConcurrentHashMap = new ConcurrentHashMap<Integer, MSM>();
-        IntStream.range(1, population + 1).parallel().forEach(agentId -> {
-            MSM agent = generateAgent(-1, true);
-            initAgentsConcurrentHashMap.put(agentId, agent);
+        for (int id = 0 ; id < population ; ++id) {
+            MSM agent = generateAgent(-1);
             sbInitialRecord.append(agent.getCensusReport());
-        });
-
-        // add all agents from hashmap to Community.agents
-        for (int id = 1; id < population + 1; ++id) {
-            MSM agent = initAgentsConcurrentHashMap.get(id);
-            agent.setAgentId(id);
             agents.add(agent);
         }
 
+        // create agents in parallel
+        // ConcurrentHashMap<Integer, MSM> initAgentsConcurrentHashMap = new ConcurrentHashMap<Integer, MSM>();
+        // IntStream.range(1, population + 1).parallel().forEach(agentId -> {
+        //     MSM agent = generateAgent(-1, true);
+        //     initAgentsConcurrentHashMap.put(agentId, agent);
+        //     sbInitialRecord.append(agent.getCensusReport());
+        // });
+
+        // // add all agents from hashmap to Community.agents
+        // for (int id = 1; id < population + 1; ++id) {
+        //     MSM agent = initAgentsConcurrentHashMap.get(id);
+        //     agent.setAgentId(id);
+        //     agents.add(agent);
+        // }
+
         // set NB_AGENTS_CREATED
-        Agent.NB_AGENTS_CREATED = population + 1;
+        // Agent.NB_AGENTS_CREATED = population + 1;
 
         // agents.parallelStream().forEach(agent -> {
         //     sbInitialRecord.append(agent.getCensusReport());
