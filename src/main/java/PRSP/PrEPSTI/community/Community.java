@@ -178,11 +178,11 @@ public class Community {
                 {
                 case "gadi":
                     //Community.FILE_PATH = "/scratch/is14/mw7704/prepsti/" + Community.FILE_PATH; 
-                    Community.DUMP_CYCLE = 500 ;
+                    Community.DUMP_CYCLE = 2000 ;
                     break ;
                 case "katana":
                     //Community.FILE_PATH = "/srv/scratch/z3524276/prepsti/" + Community.FILE_PATH ;
-                    Community.DUMP_CYCLE = 500 ;
+                    Community.DUMP_CYCLE = 2000 ;
                     break ;
                 default:
                 	if (!args[3].isEmpty())
@@ -194,11 +194,11 @@ public class Community {
                 {
                     case "gadi":
                         //Community.FILE_PATH = "/scratch/is14/mw7704/prepsti/" + Community.FILE_PATH; 
-                        Community.DUMP_CYCLE = 500 ;
+                        Community.DUMP_CYCLE = 2000 ;
                         break ;
                     case "katana":
                         //Community.FILE_PATH = "/srv/scratch/z3524276/prepsti/" + Community.FILE_PATH ;
-                        Community.DUMP_CYCLE = 500 ;
+                        Community.DUMP_CYCLE = 2000 ;
                         break ;
                     default:
                     	if (!args[2].isEmpty())
@@ -927,18 +927,15 @@ public class Community {
             return "" ;
         
         // Run through year 0
-        int year = (cycle - startCycle)/365 + startYear ;
-        if (year == 0)
-            return "" ;
+        int year = (cycle - startCycle + 183)/365 + startYear ;
+        //if (year == 0)
+          //  return "" ;
         
-        // Things to do at the start of each year
         String report = "" ;
-        if ((year - startYear) * 365 == (cycle - startCycle))
+        if ((year - startYear) * 365 == (cycle - startCycle))    // Things to do at the start of each year
         {
-            //report += Agent.REINIT(agents, year) ;
-            unchangedAgents = (ArrayList<Agent>) agents.clone() ;
+        	unchangedAgents = (ArrayList<Agent>) agents.clone() ;
             unchangedIndex1 = unchangedAgents.size() ;
-            //LOGGER.info(String.valueOf(year)) ;
         }
         else
         	unchangedIndex1 -= AGENTS_PER_DAY ;
@@ -973,7 +970,7 @@ public class Community {
 
         changeAgents.retainAll(agents) ;
         // Make changes
-        report += Agent.REINIT(changeAgents, year + 1) ;
+        report += Agent.REINIT(changeAgents, year) ;
         
         //report = "parameters adjusted according to ARTB" ;  // PrEP introduced" ; // gradually" ;
 

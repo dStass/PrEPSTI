@@ -24,7 +24,7 @@ import java.util.Set ;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.logging.Level;
-import org.apache.commons.math3.distribution.GammaDistribution;
+import org.apache.commons.math3.distribution.GammaDistribution ;
 import static PRSP.PrEPSTI.reporter.Reporter.AGENTID ;
 
 /**
@@ -147,7 +147,7 @@ public abstract class Agent {
         String change = "change" ;
         String methodName = "" ;
         Boolean reinitScreenCycle = false ;
-        reinitScreenCycle = ConfigLoader.getMethodVariableBoolean("agent", "REINIT", "reinitScreenCycle") ;
+        //reinitScreenCycle = ConfigLoader.getMethodVariableBoolean("agent", "REINIT", "reinitScreenCycle") ;
         //TODO: Automate detection of MSM subClass with reflect
         // Update MSM variables
         report += MSM.REINIT(agentList, year) ;
@@ -158,9 +158,9 @@ public abstract class Agent {
             {
                 // Needs to be called after MSM.REINIT() specifically MSM.REINIT_RISK_ODDS()
                 // due to its updating prepStatus.
-                methodName = "screen" ;
-                report += Reporter.ADD_REPORT_PROPERTY(change, methodName) ;
-                report += REINIT_SCREEN_CYCLE(agentList, year) ;
+                //methodName = "screen" ;
+                //report += Reporter.ADD_REPORT_PROPERTY(change, methodName) ;
+                //report += REINIT_SCREEN_CYCLE(agentList, year) ;
 
             }
             catch ( Exception e )
@@ -187,10 +187,10 @@ public abstract class Agent {
     }
     
     /**
-     * Tests, given by per 1000 per year, from 2007-2018
+     * Men tested per 1000 per year, from 2007-2018
      * Table 14 ARTB 2018
      */
-    static double[] TEST_RATES = {333,340,398,382,383,382,391,419,445,499,488,488,488} ;
+    static double[] TEST_RATES = {333,340,398,382,383,382,391,419,445,499,488,488} ;
     
     /**
      * Adjusts per year the screening period.
@@ -198,7 +198,7 @@ public abstract class Agent {
      * @param (int) year
      * @throws Exception 
      */
-    static protected String REINIT_SCREEN_CYCLE(ArrayList<Agent> agentList, int year) throws Exception
+    static protected String REINIT_SCREEN_CYCLE_AGENT(ArrayList<Agent> agentList, int year) throws Exception
     {
         StringBuilder report = new StringBuilder() ; // "" ;
         //double[] testRates = new double[] {333,340,398,382,383,382,391,419,445,499,488,488,488} ;
@@ -211,16 +211,20 @@ public abstract class Agent {
           //  year = TEST_RATES.length - 1 ;
         
         double testBase ;
-        //testBase = testRates[0] ;
+        double testBasePositive = TEST_RATES[0] ;
         testBase = GET_YEAR(TEST_RATES,year-1) ;
-        
+
         double ratio = testBase/GET_YEAR(TEST_RATES,year) ;
+        double ratioPositive = Math.sqrt(testBasePositive/GET_YEAR(TEST_RATES,year)) ;
         for (Agent agent : agentList)
         {
-            newScreenCycle = ((MSM) agent).reInitScreenCycle(ratio) ;
+        	if (((MSM) agent).getStatusHIV())
+        	    newScreenCycle = ((MSM) agent).reInitScreenCycle(ratioPositive) ;
+        	else
+        	    newScreenCycle = agent.reInitScreenCycle(ratio) ;
             if (newScreenCycle < 0)
             	continue ;
-            report.append(Reporter.ADD_REPORT_PROPERTY(String.valueOf(agent.agentId), agent.screenCycle)) ;
+            report.append(Reporter.ADD_REPORT_PROPERTY(String.valueOf(agent.agentId), newScreenCycle)) ;
         }
         return report.toString() ;
     }
