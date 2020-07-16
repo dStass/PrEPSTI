@@ -389,7 +389,7 @@ public class Relationship {
      * Getter Method for relationshipId
      * @return relationshipId
      */
-    final public int getRelationshipId()
+    final public synchronized int getRelationshipId()
     {
         return relationshipId ;
     }
@@ -452,7 +452,7 @@ public class Relationship {
      * The probability of any sexual contact in any cycle.
      * @return 
      */
-    protected double getEncounterProbability()
+    protected synchronized double getEncounterProbability()
     {
         return ENCOUNTER_PROBABILITY ;
     }
@@ -636,7 +636,7 @@ public class Relationship {
     	return new Agent[] {agent0,agent1} ;
     }
     
-    public Agent getLowerIdAgent()
+    public synchronized Agent getLowerIdAgent()
     {
         return agent0 ;
     }

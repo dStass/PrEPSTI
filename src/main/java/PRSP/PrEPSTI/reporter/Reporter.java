@@ -135,7 +135,7 @@ public class Reporter {
         return ADD_REPORT_PROPERTY(label,"") ;
     }
         
-    public static final String ADD_REPORT_PROPERTY(String label, Object value)
+    public static synchronized final String ADD_REPORT_PROPERTY(String label, Object value)
     {
         return ADD_REPORT_PROPERTY(label, String.valueOf(value)) ;
     }

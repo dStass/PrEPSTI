@@ -142,7 +142,8 @@ public abstract class Agent {
      */
     static public String REINIT(ArrayList<Agent> agentList, int year) 
     {
-        String report = "" ;
+        // String report = "" ;
+        StringBuilder sbReport = new StringBuilder();
         //boolean successful = true ;
         String change = "change" ;
         String methodName = "" ;
@@ -150,7 +151,8 @@ public abstract class Agent {
         //reinitScreenCycle = ConfigLoader.getMethodVariableBoolean("agent", "REINIT", "reinitScreenCycle") ;
         //TODO: Automate detection of MSM subClass with reflect
         // Update MSM variables
-        report += MSM.REINIT(agentList, year) ;
+        // report += MSM.REINIT(agentList, year) ;
+        sbReport.append(MSM.REINIT(agentList, year));
         
         if (reinitScreenCycle)
         {
@@ -169,7 +171,8 @@ public abstract class Agent {
                 //return false ;
             }
         }
-        return report.concat("!") ;
+        sbReport.append("!");
+        return sbReport.toString() ;
     }
     
     /**
@@ -582,11 +585,22 @@ public abstract class Agent {
             for (String property : propertyArray)
             {
                 testProperty = property ;
-                //LOGGER.info(testProperty) ;
                 valueString = Reporter.EXTRACT_VALUE(property, census) ;
+
+                // try to parse the value, if it is not possible, remove the ending character
+                try
+                {
+                    Double.parseDouble(valueString);
+                }
+                catch (Exception e)
+                {
+                    valueString = valueString.substring(0, valueString.length() - 1);
+                }
                 
                 for (Class agentClazz : clazzFields.keySet())
+                {
                     for (Field field : clazzFields.get(agentClazz))
+                    {
                         if (field.getName().equals(property))
                         {
                             propertyClazz = agentClazz.getDeclaredField(property).getType() ;
@@ -603,14 +617,13 @@ public abstract class Agent {
                                 valueOfClazz = propertyClazz ;
                             }
                             valueOfMethod = valueOfClazz.getMethod("valueOf", String.class) ;
-                            //LOGGER.log(Level.INFO,"{1} {0}", new Object[] {valueOfMethod.invoke(null,valueString),property});
-
-                            setterName = "set" + property.substring(0,1).toUpperCase() 
-                                    + property.substring(1) ;
+                            setterName = "set" + property.substring(0,1).toUpperCase() + property.substring(1) ;
                             setMethod = methodClazz.getDeclaredMethod(setterName, propertyClazz) ;
                             setMethod.invoke(newAgent, valueOfMethod.invoke(null,valueString)) ;
                             break ;
                         }
+                    }
+                }
             }
         }
         catch (Exception e)
@@ -618,7 +631,6 @@ public abstract class Agent {
             LOGGER.severe(e.toString());
             LOGGER.log(Level.SEVERE, "{0} {1} {2}", new Object[] {propertyClazz, testProperty, valueString}) ;
         }
-        
     }
     
     /**
@@ -628,26 +640,48 @@ public abstract class Agent {
      */
     public Agent(int startAge)
     {
+        this.agentId = NB_AGENTS_CREATED ;
+        NB_AGENTS_CREATED++ ;
+        initAge(startAge) ;
+        
+        initConcurrency() ;
+        initInfidelity() ;
+        
+        // initRelationshipOdds() ;    // Defined in preamble.
+
+        Class<?> clazz = this.getClass() ;
+        agent = clazz.asSubclass(clazz).getSimpleName() ;
+    }
+
+    /**
+     *  
+     * Agent Class  
+     * @param startAge - (int) Age at (sexual) birth
+     * @param initialAgents - is agent created via Community.initialiseCommunity()
+     */
+    public Agent(int startAge, boolean initialAgents)
+    {
+        if (!initialAgents) {
             this.agentId = NB_AGENTS_CREATED ;
             NB_AGENTS_CREATED++ ;
-            initAge(startAge) ;
-            
-            initConcurrency() ;
-            initInfidelity() ;
-            
-            // initRelationshipOdds() ;    // Defined in preamble.
+        }
+        initAge(startAge) ;
+        
+        initConcurrency() ;
+        initInfidelity() ;
+        
+        // initRelationshipOdds() ;    // Defined in preamble.
 
-            Class<?> clazz = this.getClass() ;
-            agent = clazz.asSubclass(clazz).getSimpleName() ;
-
+        Class<?> clazz = this.getClass() ;
+        agent = clazz.asSubclass(clazz).getSimpleName() ;
     }
 
     public int getAgentId()
     {
-            return agentId ;
+        return agentId ;
     }
 
-    private void setAgentId(int id)
+    public void setAgentId(int id)
     {
         this.agentId = id ;
     }
@@ -753,7 +787,7 @@ public abstract class Agent {
         return true ;
     }
 
-    public ArrayList<Relationship> getCurrentRelationships()
+    public synchronized ArrayList<Relationship> getCurrentRelationships()
     {
             return currentRelationships ;
     }
@@ -954,7 +988,7 @@ public abstract class Agent {
      * 
      * @return (String) giving values of the agent's important properties.
      */
-    public String getCensusReport()
+    public synchronized String getCensusReport()
     {   
         StringBuilder sbCensusReport = new StringBuilder();
         String censusReport ;
