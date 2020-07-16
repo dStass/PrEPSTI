@@ -626,18 +626,13 @@ public class PopulationReporter extends Reporter {
         String propertyRecord ;
         int propertyIndex ;
         int endPropertyIndex ;
-        String[] riskyArray = new String[] {"probabilityUseCondom","prepStatus","riskyStatus"} ;
+        String[] riskyArray = new String[] {"probabilityUseCondom","riskyStatus"} ;
         
         for (String property : riskyArray)
         	if (property.startsWith(propertyName))
         	{
-        		if (propertyName.equals("prepStatus"))
-        			findPropertyName = "riskinessCasual" ;
-        		else
-        		{
-        			String suffix = propertyName.substring("riskiness".length()) ;
-        			findPropertyName += suffix ;
-        		}
+        		String suffix = propertyName.substring("riskiness".length()) ;
+        		findPropertyName += suffix ;
         		break ;
         	}
         

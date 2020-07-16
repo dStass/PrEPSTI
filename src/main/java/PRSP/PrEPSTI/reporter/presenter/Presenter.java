@@ -505,24 +505,27 @@ public class Presenter {
         //String folder = "output/test/" ;
         String folder = "data_files/" ;
         //String fileName = "incidence" ;
-        String property = "all_false" ;
+        String property = "all_true" ;
         String chartTitle = property ;
         // LOGGER.info(chartTitle) ;
         String[] legend ;
         // legend = args ;
-        legend = new String[] {"0.6 per year","0.7 per year","0.8 per year","0.9 per year","1.1 per year","1.2 per year"} ;
+        legend = new String[] {"constant","0.1","0.2","0.3","0.4","0.5"} ;
         
         
         Presenter presenter = new Presenter(args[0],chartTitle) ;
         LOGGER.info((Arrays.asList(args)).toString()) ;
         
         HashMap<String, HashMap<String,String[]>> propertyToYAndRange = new HashMap<String, HashMap<String,String[]>>();
-        for (String fileName : args)
+        String fileName ;
+        //for (String fileName : args)
+        for (int argIndex = 0 ; argIndex < args.length ; argIndex++ )
         {
+        	fileName = args[argIndex] ;
         	LOGGER.info(fileName);
             HashMap<Comparable, String[]> readCSV = Reporter.READ_CSV_STRING(fileName, FOLDER_PATH, 1);
             HashMap<String, String[]> yAndRange = Reporter.extractYValueAndRange(readCSV);
-            propertyToYAndRange.put(fileName, yAndRange);
+            propertyToYAndRange.put(legend[argIndex], yAndRange);
         }
         LOGGER.info(propertyToYAndRange.toString()) ;
         
@@ -2485,12 +2488,20 @@ public class Presenter {
             // draw ticks based on certain condititions
             // undefined for non-integer domains
             if (this.isDomainInteger(dataset)) {
-                if (upperBound > ConfigLoader.DAYS_PER_YEAR * 2) {
+                if (upperBound > ConfigLoader.DAYS_PER_YEAR * 2) 
+                {
                     domainAxis.setTickUnit(new NumberTickUnit(ConfigLoader.DAYS_PER_YEAR)) ;
                 }
-                else if (upperBound > ConfigLoader.DAYS_PER_YEAR/2 && upperBound <= ConfigLoader.DAYS_PER_YEAR * 2) {
-                    domainAxis.setTickUnit(new NumberTickUnit(ConfigLoader.DAYS_PER_MONTH));
-                } else {
+                else if (upperBound > ConfigLoader.DAYS_PER_YEAR/2 && upperBound <= ConfigLoader.DAYS_PER_YEAR * 2) 
+                {
+                    domainAxis.setTickUnit(new NumberTickUnit(ConfigLoader.DAYS_PER_MONTH)) ;
+                }
+                else if (upperBound <= ConfigLoader.DAYS_PER_MONTH * 2) 
+                {
+                        domainAxis.setTickUnit(new NumberTickUnit(1));
+                } 
+                else 
+                {
                     domainAxis.setTickUnit(new NumberTickUnit(ConfigLoader.DAYS_PER_WEEK));
                 }
                 domainAxis.setMinorTickMarksVisible(false);
