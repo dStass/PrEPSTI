@@ -16,6 +16,7 @@ import java.util.HashMap;
 import java.util.logging.Level;
 
 import PRSP.PrEPSTI.agent.Agent;
+import PRSP.PrEPSTI.concurrency.Concurrency;
 import PRSP.PrEPSTI.configloader.ConfigLoader;
 import PRSP.PrEPSTI.site.Site;
 
@@ -775,9 +776,11 @@ public class PopulationReporter extends Reporter {
             }
         });
 
-        HashMap<Object,String> returnReport = new HashMap<Object,String>() ;
-        for (Map.Entry<Object, String> entry : censusPropertyReport.entrySet())
-            returnReport.put(entry.getKey(), entry.getValue());
+        // HashMap<Object,String> returnReport = new HashMap<Object,String>() ;
+        // for (Map.Entry<Object, String> entry : censusPropertyReport.entrySet())
+        //     returnReport.put(entry.getKey(), entry.getValue());
+        
+        HashMap<Object,String> returnReport = Concurrency.convertConcurrentToNormalHashMap(censusPropertyReport);
 
 
         // old loop:
@@ -1188,9 +1191,11 @@ public class PopulationReporter extends Reporter {
         for (String agentId : concurrentAgentIdExists.keySet())
             concurrentCensusPropertyReport.put(agentId, birthReport.get(agentId)) ;
         
-        HashMap<String,String> returnReport = new HashMap<String,String>() ;
-        for (Map.Entry<String, String> entry : concurrentCensusPropertyReport.entrySet())
-            returnReport.put(entry.getKey(), entry.getValue());
+        // HashMap<String,String> returnReport = new HashMap<String,String>() ;
+        // for (Map.Entry<String, String> entry : concurrentCensusPropertyReport.entrySet())
+        //     returnReport.put(entry.getKey(), entry.getValue());
+
+        HashMap<String,String> returnReport = Concurrency.convertConcurrentToNormalHashMap(concurrentCensusPropertyReport);
         
         // for (String agentId : agentIdSet)
         //     censusPropertyReport.put(agentId, birthReport.get(agentId)) ;

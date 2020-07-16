@@ -7,6 +7,7 @@ package PRSP.PrEPSTI.reporter;
 
 import PRSP.PrEPSTI.agent.MSM;
 import PRSP.PrEPSTI.community.Community;
+import PRSP.PrEPSTI.concurrency.Concurrency;
 import PRSP.PrEPSTI.site.Pharynx;
 import PRSP.PrEPSTI.site.Rectum;
 /**
@@ -1578,10 +1579,12 @@ public class ScreeningReporter extends Reporter {
             concurrentIncidentRateReport.put(lastYear - year, yearlyNumberAgentsEnteredRelationship) ;
         });
 
-        HashMap<Comparable,String> incidentRateReport = new HashMap<Comparable, String>();
-        for (Map.Entry<Comparable, String> entry : concurrentIncidentRateReport.entrySet()) {
-            incidentRateReport.put(entry.getKey(), entry.getValue());
-        }
+        // HashMap<Comparable,String> incidentRateReport = new HashMap<Comparable, String>();
+        // for (Map.Entry<Comparable, String> entry : concurrentIncidentRateReport.entrySet()) {
+        //     incidentRateReport.put(entry.getKey(), entry.getValue());
+        // }
+
+        HashMap<Comparable,String> incidentRateReport = Concurrency.convertConcurrentToNormalHashMap(concurrentIncidentRateReport);
 
         return incidentRateReport ;
     }
@@ -2081,6 +2084,7 @@ public class ScreeningReporter extends Reporter {
             concurrentReturnReport.put(agentId, concurrentSiteHashMap);
         }
 
+
         // modify internal hashmap with infectious agents
         // parallelised
         infectiousAgentsHashMap.keySet().stream().forEach(agentId -> {
@@ -2111,21 +2115,23 @@ public class ScreeningReporter extends Reporter {
         });
 
         // convert ConcurrentHashMap back to HashMap
-        HashMap<String, HashMap<String, String>> returnReport = new HashMap<String, HashMap<String, String>>();
-        for (Map.Entry<String, ConcurrentHashMap<String, String>> entry : concurrentReturnReport.entrySet()) {
-            String returnReportKey = entry.getKey();
-            ConcurrentHashMap<String, String> concurrentSiteReport = entry.getValue();
-            HashMap<String, String> returnSiteReport = new HashMap<String, String>();
-            
-            // convert each specific site from concurrent -> normal hashmap
-            for (Map.Entry<String, String> siteEntry : concurrentSiteReport.entrySet()) {
-                String siteKey = siteEntry.getKey();
-                String siteValue = siteEntry.getValue();
+        HashMap<String, HashMap<String, String>> returnReport = Concurrency.convertConcurrentToNormalHashMap(concurrentReturnReport);
 
-                returnSiteReport.put(siteKey, siteValue);
-            }
-            returnReport.put(returnReportKey, returnSiteReport);
-        }
+        // HashMap<String, HashMap<String, String>> returnReport = new HashMap<String, HashMap<String, String>>();
+        // for (Map.Entry<String, ConcurrentHashMap<String, String>> entry : concurrentReturnReport.entrySet()) {
+        //     String returnReportKey = entry.getKey();
+        //     ConcurrentHashMap<String, String> concurrentSiteReport = entry.getValue();
+        //     HashMap<String, String> returnSiteReport = new HashMap<String, String>();
+            
+        //     // convert each specific site from concurrent -> normal hashmap
+        //     for (Map.Entry<String, String> siteEntry : concurrentSiteReport.entrySet()) {
+        //         String siteKey = siteEntry.getKey();
+        //         String siteValue = siteEntry.getValue();
+
+        //         returnSiteReport.put(siteKey, siteValue);
+        //     }
+        //     returnReport.put(returnReportKey, returnSiteReport);
+        // }
 
         // old loop (not parallelised)
         // for (String agentId : infectiousAgentsHashMap.keySet()) {
