@@ -20,7 +20,6 @@ import PRSP.PrEPSTI.mdll.MDLL;
 
 import java.util.Random;
 import java.util.TreeSet;
-import java.util.concurrent.ConcurrentHashMap;
 import java.lang.reflect.*;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -857,33 +856,15 @@ public class Community {
      */
     private String initialiseCommunity()
     {
-        StringBuffer sbInitialRecord = new StringBuffer(); 
+        StringBuffer sbInitialRecord = new StringBuffer();
         scribe = new Scribe(SIM_NAME, new String[] {"relationship","encounter","screening", "population"}) ;
         
-        // for (int id = 0 ; id < population ; ++id)
-        //     agents.add(generateAgent(-1, true));
-
-        // create agents in parallel
-        ConcurrentHashMap<Integer, MSM> initAgentsConcurrentHashMap = new ConcurrentHashMap<Integer, MSM>();
-        IntStream.range(1, population + 1).parallel().forEach(agentId -> {
-            MSM agent = generateAgent(-1, true);
-            initAgentsConcurrentHashMap.put(agentId, agent);
+        for (int id = 0 ; id < population ; ++id)
+            agents.add(generateAgent(-1));
+        
+        agents.parallelStream().forEach(agent -> {
             sbInitialRecord.append(agent.getCensusReport());
         });
-
-        // add all agents from hashmap to Community.agents
-        for (int id = 1; id < population + 1; ++id) {
-            MSM agent = initAgentsConcurrentHashMap.get(id);
-            agent.setAgentId(id);
-            agents.add(agent);
-        }
-
-        // set NB_AGENTS_CREATED
-        Agent.NB_AGENTS_CREATED = population + 1;
-
-        // agents.parallelStream().forEach(agent -> {
-        //     sbInitialRecord.append(agent.getCensusReport());
-        // });
         sbInitialRecord.append("!");
         initialRecord = sbInitialRecord.toString();
 
@@ -994,22 +975,6 @@ public class Community {
     {
         // if Agent.subclass == MSM
         MSM newAgent = new MSM(startAge);
-        //MSM newAgent = MSM.BIRTH_MSM(startAge);
-        
-        // Impose initial condition here
-            
-        return newAgent ;
-    }
-
-    /**
-     * Initialises a new Agent and sets any initial conditions.
-     * @param startAge (int) The age with which the new Agent is born to the community.
-     * @return MSM subclass newAgent 
-     */
-    private MSM generateAgent(int startAge, boolean initialAgents)
-    {
-        // if Agent.subclass == MSM
-        MSM newAgent = new MSM(startAge, initialAgents);
         //MSM newAgent = MSM.BIRTH_MSM(startAge);
         
         // Impose initial condition here

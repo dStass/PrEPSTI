@@ -636,48 +636,26 @@ public abstract class Agent {
      */
     public Agent(int startAge)
     {
-        this.agentId = NB_AGENTS_CREATED ;
-        NB_AGENTS_CREATED++ ;
-        initAge(startAge) ;
-        
-        initConcurrency() ;
-        initInfidelity() ;
-        
-        // initRelationshipOdds() ;    // Defined in preamble.
-
-        Class<?> clazz = this.getClass() ;
-        agent = clazz.asSubclass(clazz).getSimpleName() ;
-    }
-
-    /**
-     *  
-     * Agent Class  
-     * @param startAge - (int) Age at (sexual) birth
-     * @param initialAgents - is agent created via Community.initialiseCommunity()
-     */
-    public Agent(int startAge, boolean initialAgents)
-    {
-        if (!initialAgents) {
             this.agentId = NB_AGENTS_CREATED ;
             NB_AGENTS_CREATED++ ;
-        }
-        initAge(startAge) ;
-        
-        initConcurrency() ;
-        initInfidelity() ;
-        
-        // initRelationshipOdds() ;    // Defined in preamble.
+            initAge(startAge) ;
+            
+            initConcurrency() ;
+            initInfidelity() ;
+            
+            // initRelationshipOdds() ;    // Defined in preamble.
 
-        Class<?> clazz = this.getClass() ;
-        agent = clazz.asSubclass(clazz).getSimpleName() ;
+            Class<?> clazz = this.getClass() ;
+            agent = clazz.asSubclass(clazz).getSimpleName() ;
+
     }
 
     public int getAgentId()
     {
-        return agentId ;
+            return agentId ;
     }
 
-    public void setAgentId(int id)
+    private void setAgentId(int id)
     {
         this.agentId = id ;
     }
