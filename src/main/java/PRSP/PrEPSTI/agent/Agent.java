@@ -581,11 +581,22 @@ public abstract class Agent {
             for (String property : propertyArray)
             {
                 testProperty = property ;
-                //LOGGER.info(testProperty) ;
                 valueString = Reporter.EXTRACT_VALUE(property, census) ;
+
+                // try to parse the value, if it is not possible, remove the ending character
+                try
+                {
+                    Double.parseDouble(valueString);
+                }
+                catch (Exception e)
+                {
+                    valueString = valueString.substring(0, valueString.length() - 1);
+                }
                 
                 for (Class agentClazz : clazzFields.keySet())
+                {
                     for (Field field : clazzFields.get(agentClazz))
+                    {
                         if (field.getName().equals(property))
                         {
                             propertyClazz = agentClazz.getDeclaredField(property).getType() ;
@@ -602,14 +613,13 @@ public abstract class Agent {
                                 valueOfClazz = propertyClazz ;
                             }
                             valueOfMethod = valueOfClazz.getMethod("valueOf", String.class) ;
-                            //LOGGER.log(Level.INFO,"{1} {0}", new Object[] {valueOfMethod.invoke(null,valueString),property});
-
-                            setterName = "set" + property.substring(0,1).toUpperCase() 
-                                    + property.substring(1) ;
+                            setterName = "set" + property.substring(0,1).toUpperCase() + property.substring(1) ;
                             setMethod = methodClazz.getDeclaredMethod(setterName, propertyClazz) ;
                             setMethod.invoke(newAgent, valueOfMethod.invoke(null,valueString)) ;
                             break ;
                         }
+                    }
+                }
             }
         }
         catch (Exception e)
@@ -617,7 +627,6 @@ public abstract class Agent {
             LOGGER.severe(e.toString());
             LOGGER.log(Level.SEVERE, "{0} {1} {2}", new Object[] {propertyClazz, testProperty, valueString}) ;
         }
-        
     }
     
     /**

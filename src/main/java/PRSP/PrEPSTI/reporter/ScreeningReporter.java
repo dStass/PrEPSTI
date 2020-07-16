@@ -1572,7 +1572,7 @@ public class ScreeningReporter extends Reporter {
         //     incidentRateReportConcurrent.put(lastYear - year, yearlyNumberAgentsEnteredRelationship) ;
         // }
 
-        IntStream.range(0, backYears - 1).parallel().forEach(year -> {
+        IntStream.range(0, backYears).parallel().forEach(year -> {
             String yearlyNumberAgentsEnteredRelationship ;
             yearlyNumberAgentsEnteredRelationship = prepareFinalAtRiskIncidentsRecord(relationshipClassNames, year, sortingProperty);
             concurrentIncidentRateReport.put(lastYear - year, yearlyNumberAgentsEnteredRelationship) ;
