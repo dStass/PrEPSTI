@@ -1216,56 +1216,76 @@ public class Community {
      * description of each sexual contact returned by Relationship.encounter()
      */
     private String runEncounters()
-    {
-        StringBuilder sbRecord = new StringBuilder();
-        //ArrayList<Relationship> currentRelationships ;
-        
-        // LOGGER.info("nb relationships: " + relationships.size());
-        for (Agent agent : agents)
-        {
+    {        
+        StringBuffer stringBufferRecord = new StringBuffer();
+        agents.parallelStream().forEach(agent -> {
             for (Relationship relationship : agent.getCurrentRelationships())
             {
-                // WARNING: May cause future problems with hetero couples
-                // Does agent have lower agentId than partner
-                // Avoid checking relationship twice by accessing only through the 
-                // agent with the lower agentId
-                // TODO: Incorporate this into Agent.Method()
-                //int agentId = agent.getAgentId() ;
-                //int partnerId = relationship.getPartnerId(agentId) ;
-                
                 if (agent != relationship.getLowerIdAgent())
                     continue ;
-                //try
+            
+                if (RAND.nextDouble() < relationship.getEncounterProbability()) 
                 {
-                    if (RAND.nextDouble() < relationship.getEncounterProbability()) 
-                    {
-                        String newRecord = Reporter.ADD_REPORT_PROPERTY(Reporter.RELATIONSHIPID, relationship.getRelationshipId()) 
-                                         + relationship.encounter() ;
-                        sbRecord.append(newRecord);
-                    }
-                    //System.out.println(record);
+                    String newRecord = Reporter.ADD_REPORT_PROPERTY(Reporter.RELATIONSHIPID, relationship.getRelationshipId()) 
+                                        + relationship.encounter() ;
+                    stringBufferRecord.append(newRecord);
                 }
-                /*catch (NoSuchMethodException nsme)
-                {
-                    LOGGER.severe(nsme.getLocalizedMessage());
-                    sbRecord.append(nsme.toString());
-                    // record += nsme.toString(); //  .getMessage() ;
-                }
-                catch (InvocationTargetException ite)
-                {
-                    LOGGER.severe(ite.getLocalizedMessage());
-                    //record += ite.getMessage() ;
-                }
-                catch (IllegalAccessException iae)
-                {
-                    LOGGER.severe(iae.getLocalizedMessage());
-                    // record += iae.getMessage() ;
-                    sbRecord.append(iae.getMessage());
-                }*/
             }
-        }
-        return sbRecord.toString() ;
+        });
+        return stringBufferRecord.toString() ;
     }
+    
+    // private String runEncounters()
+    // {
+    //     StringBuilder sbRecord = new StringBuilder();
+    //     //ArrayList<Relationship> currentRelationships ;
+        
+    //     // LOGGER.info("nb relationships: " + relationships.size());
+    //     for (Agent agent : agents)
+    //     {
+    //         for (Relationship relationship : agent.getCurrentRelationships())
+    //         {
+    //             // WARNING: May cause future problems with hetero couples
+    //             // Does agent have lower agentId than partner
+    //             // Avoid checking relationship twice by accessing only through the 
+    //             // agent with the lower agentId
+    //             // TODO: Incorporate this into Agent.Method()
+    //             //int agentId = agent.getAgentId() ;
+    //             //int partnerId = relationship.getPartnerId(agentId) ;
+                
+    //             if (agent != relationship.getLowerIdAgent())
+    //                 continue ;
+    //             //try
+    //             {
+    //                 if (RAND.nextDouble() < relationship.getEncounterProbability()) 
+    //                 {
+    //                     String newRecord = Reporter.ADD_REPORT_PROPERTY(Reporter.RELATIONSHIPID, relationship.getRelationshipId()) 
+    //                                      + relationship.encounter() ;
+    //                     sbRecord.append(newRecord);
+    //                 }
+    //                 //System.out.println(record);
+    //             }
+    //             /*catch (NoSuchMethodException nsme)
+    //             {
+    //                 LOGGER.severe(nsme.getLocalizedMessage());
+    //                 sbRecord.append(nsme.toString());
+    //                 // record += nsme.toString(); //  .getMessage() ;
+    //             }
+    //             catch (InvocationTargetException ite)
+    //             {
+    //                 LOGGER.severe(ite.getLocalizedMessage());
+    //                 //record += ite.getMessage() ;
+    //             }
+    //             catch (IllegalAccessException iae)
+    //             {
+    //                 LOGGER.severe(iae.getLocalizedMessage());
+    //                 // record += iae.getMessage() ;
+    //                 sbRecord.append(iae.getMessage());
+    //             }*/
+    //         }
+    //     }
+    //     return sbRecord.toString() ;
+    // }
 
     /**
      * Loops through relationships and probabilistically chooses to end them.
