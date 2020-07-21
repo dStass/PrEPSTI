@@ -7,6 +7,7 @@ package PRSP.PrEPSTI.reporter;
 
 import PRSP.PrEPSTI.agent.MSM;
 import PRSP.PrEPSTI.community.Community;
+import PRSP.PrEPSTI.concurrency.Concurrency;
 import PRSP.PrEPSTI.site.Pharynx;
 import PRSP.PrEPSTI.site.Rectum;
 /**
@@ -16,17 +17,18 @@ import PRSP.PrEPSTI.site.Rectum;
 import PRSP.PrEPSTI.site.Site;
 import PRSP.PrEPSTI.site.Urethra;
 
-import java.io.* ;
-import java.util.ArrayList ;
+import java.io.*;
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections ;
+import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashSet ;
-import java.util.Collections ;
+import java.util.HashSet;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.logging.Level;
-
-import java.lang.reflect.* ;
+import java.util.stream.IntStream;
+import java.lang.reflect.*;
 
 
 public class ScreeningReporter extends Reporter {
@@ -1552,7 +1554,7 @@ public class ScreeningReporter extends Reporter {
     }
  
     /**
-     * TODO: parallelisation
+     * Parallelised wth IntStream
      * @param relationshipClassNames
      * @param backYears
      * @param lastYear
@@ -1561,24 +1563,25 @@ public class ScreeningReporter extends Reporter {
      */
     public HashMap<Comparable,String> prepareYearsAtRiskIncidenceReport(String[] relationshipClassNames, int backYears, int lastYear, String sortingProperty)
     {
-        HashMap<Comparable,String> incidentRateReport = new HashMap<Comparable,String>() ;
-        //HashMap<Object,Number[]> percentAgentCondomlessYears = new HashMap<Object,Number[]>() ;
-    
-        for (int year = 0 ; year < backYears ; year++ )
-        {
-            //LOGGER.info("backYears:" + String.valueOf(year));
+        ConcurrentHashMap<Comparable,String> concurrentIncidentRateReport = new ConcurrentHashMap<Comparable,String>() ;    
+        // for (int year = 0; year < backYears; ++year) {
+        //     String yearlyNumberAgentsEnteredRelationship ;
+        //     yearlyNumberAgentsEnteredRelationship = prepareFinalAtRiskIncidentsRecord(relationshipClassNames, year, sortingProperty);
+        //     incidentRateReportConcurrent.put(lastYear - year, yearlyNumberAgentsEnteredRelationship) ;
+        // }
+
+        IntStream.range(0, backYears).parallel().forEach(year -> {
             String yearlyNumberAgentsEnteredRelationship ;
+            yearlyNumberAgentsEnteredRelationship = prepareFinalAtRiskIncidentsRecord(relationshipClassNames, year, sortingProperty);
+            concurrentIncidentRateReport.put(lastYear - year, yearlyNumberAgentsEnteredRelationship) ;
+        });
 
-            //endCycle = maxCycles - year * DAYS_PER_YEAR ;
-            yearlyNumberAgentsEnteredRelationship 
-                = prepareFinalAtRiskIncidentsRecord(relationshipClassNames, year, sortingProperty);
+        // HashMap<Comparable,String> incidentRateReport = new HashMap<Comparable, String>();
+        // for (Map.Entry<Comparable, String> entry : concurrentIncidentRateReport.entrySet()) {
+        //     incidentRateReport.put(entry.getKey(), entry.getValue());
+        // }
 
-//                for (int classIndex = 0 ; classIndex < relationshipClassNames.length ; classIndex++ )
-//                    yearlyNumberAgentsEnteredRelationship[classIndex] = percentAgentCondomlessRecord.get(relationshipClassNames[classIndex]) ;
-
-            incidentRateReport.put(lastYear - year, yearlyNumberAgentsEnteredRelationship) ;
-        }
-        // LOGGER.info(incidentRateReport.toString()) ;
+        HashMap<Comparable,String> incidentRateReport = Concurrency.convertConcurrentToNormalHashMap(concurrentIncidentRateReport);
 
         return incidentRateReport ;
     }
