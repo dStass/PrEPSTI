@@ -115,6 +115,7 @@ public class MDLL<T> {
      */
     public boolean remove(int nodeId) {
         boolean removePossible = this.remove(String.valueOf(nodeId));
+        // if (!removePossible) System.out.println("remove failed");
         return removePossible;
     }
 

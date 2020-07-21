@@ -1830,27 +1830,6 @@ public class MSM extends Agent {
     }
 
     /**
-     * 
-     * Specifies Agent subclass Men having Sex with Men. Necessary to call super()
-     * @param startAge - Age of MSM at sexual 'birth'
-     */
-    public MSM(int startAge, boolean initialAgents) 
-    {
-        super(startAge, initialAgents) ;
-        initStatus() ;
-        // Cannot be called in super() because sites is not initiated yet.
-        initInfectedStatus(startAge) ;
-        initConsentCasualProbability() ;
-        
-        // Choose tops, 1/5
-        //if (RAND.nextInt(5) > 0)
-          //  chooseRectum = 0 ;
-        // Choose bottoms, 4/5 * 3/4
-        //else if (RAND.nextInt(4) > 0)
-          //  chooseUrethra = 0 ;
-    }
-
-    /**
      * Initialises status' at construction of MSM. 
      * Ensures that those MSM who come out during simulation are initially
      * HIV free (statusHIV == false).

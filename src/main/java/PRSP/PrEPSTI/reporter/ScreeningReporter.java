@@ -7,7 +7,6 @@ package PRSP.PrEPSTI.reporter;
 
 import PRSP.PrEPSTI.agent.MSM;
 import PRSP.PrEPSTI.community.Community;
-import PRSP.PrEPSTI.concurrency.Concurrency;
 import PRSP.PrEPSTI.site.Pharynx;
 import PRSP.PrEPSTI.site.Rectum;
 /**
@@ -17,21 +16,17 @@ import PRSP.PrEPSTI.site.Rectum;
 import PRSP.PrEPSTI.site.Site;
 import PRSP.PrEPSTI.site.Urethra;
 
-import java.io.*;
-import java.util.ArrayList;
+import java.io.* ;
+import java.util.ArrayList ;
 import java.util.Arrays;
-import java.util.Collections;
+import java.util.Collections ;
 import java.util.Comparator;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.Collections;
+import java.util.HashSet ;
+import java.util.Collections ;
 import java.util.HashMap;
 import java.util.logging.Level;
-import java.util.stream.IntStream;
-import java.lang.reflect.*;
-import java.sql.Time;
+
+import java.lang.reflect.* ;
 
 
 public class ScreeningReporter extends Reporter {
@@ -1557,7 +1552,7 @@ public class ScreeningReporter extends Reporter {
     }
  
     /**
-     * Parallelised wth IntStream
+     * TODO: parallelisation
      * @param relationshipClassNames
      * @param backYears
      * @param lastYear
@@ -1566,33 +1561,10 @@ public class ScreeningReporter extends Reporter {
      */
     public HashMap<Comparable,String> prepareYearsAtRiskIncidenceReport(String[] relationshipClassNames, int backYears, int lastYear, String sortingProperty)
     {
-        ConcurrentHashMap<Comparable,String> concurrentIncidentRateReport = new ConcurrentHashMap<Comparable,String>() ;    
-        // for (int year = 0; year < backYears; ++year) {
-        //     String yearlyNumberAgentsEnteredRelationship ;
-        //     yearlyNumberAgentsEnteredRelationship = prepareFinalAtRiskIncidentsRecord(relationshipClassNames, year, sortingProperty);
-        //     incidentRateReportConcurrent.put(lastYear - year, yearlyNumberAgentsEnteredRelationship) ;
-        // }
-
-        IntStream.range(0, backYears).parallel().forEach(year -> {
-            String yearlyNumberAgentsEnteredRelationship ;
-            yearlyNumberAgentsEnteredRelationship = prepareFinalAtRiskIncidentsRecord(relationshipClassNames, year, sortingProperty);
-            concurrentIncidentRateReport.put(lastYear - year, yearlyNumberAgentsEnteredRelationship) ;
-        });
-
-        // HashMap<Comparable,String> incidentRateReport = new HashMap<Comparable, String>();
-        // for (Map.Entry<Comparable, String> entry : concurrentIncidentRateReport.entrySet()) {
-        //     incidentRateReport.put(entry.getKey(), entry.getValue());
-        // }
-
-        HashMap<Comparable,String> incidentRateReport = Concurrency.convertConcurrentToNormalHashMap(concurrentIncidentRateReport);
-
-        return incidentRateReport ;
-    }
-
-    /*
-    Previous code
-
-            for (int year = 0 ; year < backYears ; year++ )
+        HashMap<Comparable,String> incidentRateReport = new HashMap<Comparable,String>() ;
+        //HashMap<Object,Number[]> percentAgentCondomlessYears = new HashMap<Object,Number[]>() ;
+    
+        for (int year = 0 ; year < backYears ; year++ )
         {
             //LOGGER.info("backYears:" + String.valueOf(year));
             String yearlyNumberAgentsEnteredRelationship ;
@@ -1608,7 +1580,8 @@ public class ScreeningReporter extends Reporter {
         }
         // LOGGER.info(incidentRateReport.toString()) ;
 
-    */
+        return incidentRateReport ;
+    }
     
     /**
      * 
@@ -1616,7 +1589,7 @@ public class ScreeningReporter extends Reporter {
      * @param backYears
      * @return atRiskIncidenceReport from year leading up to backYears years ago.
      */
-    public synchronized String prepareFinalAtRiskIncidentsRecord(String[] siteNames, int backYears, String sortingProperty)
+    public String prepareFinalAtRiskIncidentsRecord(String[] siteNames, int backYears, String sortingProperty)
     {
         int endCycle = getMaxCycles() - DAYS_PER_YEAR * backYears ;
         
@@ -2063,7 +2036,7 @@ public class ScreeningReporter extends Reporter {
     public HashMap<String, HashMap<String, String>> prepareRawAgentSiteReport(int endCycle, HashSet<String> agentIdSet) {
         String[] siteNames = Site.getAvailableSites();
 
-        ArrayList<String> screeningBackCycles = getBackCyclesReport(0, 0, 1, endCycle);
+        ArrayList<String> screeningBackCycles = this.getBackCyclesReport(0, 0, 1, endCycle);
         
         // extract site data
         String lastCycle = screeningBackCycles.get(screeningBackCycles.size() - 1);
@@ -2074,20 +2047,17 @@ public class ScreeningReporter extends Reporter {
             infectiousAgentsHashMap.put(agentId, lastCycleHashMap.get(agentId));
         }
         
-        ConcurrentHashMap<String, ConcurrentHashMap<String, String>> concurrentReturnReport
-            = new ConcurrentHashMap<String, ConcurrentHashMap<String, String>> ();
+        HashMap<String, HashMap<String, String>> returnReport = new HashMap<String, HashMap<String, String>> ();
         
         // populate report with empty strings - all sites for all agents clear
         for (String agentId : agentIdSet) {
-            ConcurrentHashMap<String, String> concurrentSiteHashMap = new ConcurrentHashMap<String, String>();
-            for (String site : siteNames) concurrentSiteHashMap.put(site, "");
-            concurrentReturnReport.put(agentId, concurrentSiteHashMap);
+            HashMap<String, String> siteHashMap = new HashMap<String, String>();
+            for (String site : siteNames) siteHashMap.put(site, "");
+            returnReport.put(agentId, siteHashMap);
         }
 
-
         // modify internal hashmap with infectious agents
-        // parallelised
-        infectiousAgentsHashMap.keySet().stream().forEach(agentId -> {
+        for (String agentId : infectiousAgentsHashMap.keySet()) {
             String agentInfectiousRecord = infectiousAgentsHashMap.get(agentId);
             for (String site : siteNames) {
                 // if the site is infectious
@@ -2097,70 +2067,19 @@ public class ScreeningReporter extends Reporter {
                     String symptomatic = EXTRACT_VALUE(site, agentInfectiousRecord);
                     String[] infectionAndIncubation = extractInfectionAndIncubationTimeFromBackCycles(agentId, site, symptomatic, endCycle);  // TODO backcycles
                     String infectionTime = infectionAndIncubation[0];
-                    String incubationTime = infectionAndIncubation[1];
+                    String incubationTime = infectionAndIncubation[1]; // TODO work out incubation time
 
                     // build the new record
-                    StringBuffer sbSiteRecord = new StringBuffer();
-
-                    sbSiteRecord.append(Reporter.ADD_REPORT_PROPERTY("symptomatic", symptomatic));
-                    sbSiteRecord.append(Reporter.ADD_REPORT_PROPERTY("infectionTime", infectionTime));
-                    sbSiteRecord.append(Reporter.ADD_REPORT_PROPERTY("incubationTime", incubationTime));
-                    String newSiteRecord = sbSiteRecord.toString();
-                    newSiteRecord = (newSiteRecord).substring(0, newSiteRecord.length() - 1);
+                    String newSiteRecord = Reporter.ADD_REPORT_PROPERTY("symptomatic", symptomatic) ;
+                    newSiteRecord += Reporter.ADD_REPORT_PROPERTY("infectionTime", infectionTime);
+                    newSiteRecord += Reporter.ADD_REPORT_PROPERTY("incubationTime", incubationTime);
+                    newSiteRecord = newSiteRecord.substring(0, newSiteRecord.length() - 1);
                     
                     // replace with the new record
-                    concurrentReturnReport.get(agentId).put(site, newSiteRecord);
+                    returnReport.get(agentId).put(site, newSiteRecord);
                 }
-            } 
-        });
-
-        // convert ConcurrentHashMap back to HashMap
-        HashMap<String, HashMap<String, String>> returnReport = Concurrency.convertConcurrentToNormalHashMap(concurrentReturnReport);
-
-        // HashMap<String, HashMap<String, String>> returnReport = new HashMap<String, HashMap<String, String>>();
-        // for (Map.Entry<String, ConcurrentHashMap<String, String>> entry : concurrentReturnReport.entrySet()) {
-        //     String returnReportKey = entry.getKey();
-        //     ConcurrentHashMap<String, String> concurrentSiteReport = entry.getValue();
-        //     HashMap<String, String> returnSiteReport = new HashMap<String, String>();
-            
-        //     // convert each specific site from concurrent -> normal hashmap
-        //     for (Map.Entry<String, String> siteEntry : concurrentSiteReport.entrySet()) {
-        //         String siteKey = siteEntry.getKey();
-        //         String siteValue = siteEntry.getValue();
-
-        //         returnSiteReport.put(siteKey, siteValue);
-        //     }
-        //     returnReport.put(returnReportKey, returnSiteReport);
-        // }
-
-        // old loop (not parallelised)
-        // for (String agentId : infectiousAgentsHashMap.keySet()) {
-        //     String agentInfectiousRecord = infectiousAgentsHashMap.get(agentId);
-        //     for (String site : siteNames) {
-        //         // if the site is infectious
-        //         if (agentInfectiousRecord.contains(site)) {
-
-        //             // extract correct values
-        //             String symptomatic = EXTRACT_VALUE(site, agentInfectiousRecord);
-        //             String[] infectionAndIncubation = extractInfectionAndIncubationTimeFromBackCycles(agentId, site, symptomatic, endCycle);  // TODO backcycles
-        //             String infectionTime = infectionAndIncubation[0];
-        //             String incubationTime = infectionAndIncubation[1];
-
-        //             // build the new record
-        //             String newSiteRecord = Reporter.ADD_REPORT_PROPERTY("symptomatic", symptomatic) ;
-        //             newSiteRecord += Reporter.ADD_REPORT_PROPERTY("infectionTime", infectionTime);
-        //             newSiteRecord += Reporter.ADD_REPORT_PROPERTY("incubationTime", incubationTime);
-        //             newSiteRecord = newSiteRecord.substring(0, newSiteRecord.length() - 1);
-                    
-        //             // replace with the new record
-        //             returnReport.get(agentId).put(site, newSiteRecord);
-        //         }
-        //     }
-        // }
-
-        // long t2 = System.nanoTime();
-
-        // System.out.println("time taken=" + (t2-t1)/1_000_000_000 + "s");
+            }
+        }
         
         return returnReport;
     }
@@ -2174,7 +2093,7 @@ public class ScreeningReporter extends Reporter {
      * @return
      */
     private String[] extractInfectionAndIncubationTimeFromBackCycles(String agentId, String site, String symptomatic, int endCycle) {
-        ArrayList<String> screeningBackCycles = getBackCyclesReport(0, 0, endCycle, endCycle);
+        ArrayList<String> screeningBackCycles = this.getBackCyclesReport(0, 0, endCycle, endCycle);
 
         int foundCycle = screeningBackCycles.size() - 1;
         for (int i = screeningBackCycles.size() - 1; i >= 0; --i) {

@@ -8,15 +8,12 @@ package PRSP.PrEPSTI.reporter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.logging.Level;
 
 import PRSP.PrEPSTI.agent.Agent;
-import PRSP.PrEPSTI.concurrency.Concurrency;
 import PRSP.PrEPSTI.configloader.ConfigLoader;
 import PRSP.PrEPSTI.site.Site;
 
@@ -749,11 +746,12 @@ public class PopulationReporter extends Reporter {
      */
     public HashMap<Object,String> prepareCensusPropertyReport()
     {
-        ConcurrentHashMap<Object,String> censusPropertyReport = new ConcurrentHashMap<Object,String>() ;
-        ArrayList<String>  birthReport = prepareBirthReport() ;
+        HashMap<Object,String> censusPropertyReport = new HashMap<Object,String>() ;
         
-        // new parallel loop:
-        birthReport.parallelStream().forEach(birthRecord -> {
+        ArrayList<String>  birthReport = prepareBirthReport() ;
+
+        for (String birthRecord : birthReport)
+        {
             ArrayList<String> birthArray = EXTRACT_ARRAYLIST(birthRecord,AGENTID) ;
             for (String birthAgent : birthArray)
             {
@@ -769,36 +767,8 @@ public class PopulationReporter extends Reporter {
                 }
                 censusPropertyReport.put(agentId, censusEntry) ;
             }
-        });
-
-        // HashMap<Object,String> returnReport = new HashMap<Object,String>() ;
-        // for (Map.Entry<Object, String> entry : censusPropertyReport.entrySet())
-        //     returnReport.put(entry.getKey(), entry.getValue());
-        
-        HashMap<Object,String> returnReport = Concurrency.convertConcurrentToNormalHashMap(censusPropertyReport);
-
-
-        // old loop:
-
-        // for (String birthRecord : birthReport)
-        // {
-        //     ArrayList<String> birthArray = EXTRACT_ARRAYLIST(birthRecord,AGENTID) ;
-        //     for (String birthAgent : birthArray)
-        //     {
-        //         Object agentId = EXTRACT_VALUE(AGENTID,birthAgent) ;
-        //         String propertyValue ;
-        //         String censusEntry = "" ;
-        //         ArrayList<String> propertyNames = IDENTIFY_PROPERTIES(birthAgent) ;
-        //         propertyNames.remove(AGENTID) ;
-        //         for (String propertyName : propertyNames)
-        //         {
-        //             propertyValue = EXTRACT_VALUE(propertyName,birthAgent);
-        //             censusEntry += Reporter.ADD_REPORT_PROPERTY(propertyName, propertyValue) ;
-        //         }
-        //         censusPropertyReport.put(agentId, censusEntry) ;
-        //     }
-        // }
-        return returnReport ;
+        }
+        return censusPropertyReport ;
     }
     
     /**
@@ -808,12 +778,12 @@ public class PopulationReporter extends Reporter {
      */
     public HashMap<String,String> prepareCensusPropertyReport(String propertyName)
     {
-        ConcurrentHashMap<String,String> censusPropertyReport = new ConcurrentHashMap<String,String>() ;
+        HashMap<String,String> censusPropertyReport = new HashMap<String,String>() ;
+        
         ArrayList<String>  birthReport = prepareBirthReport() ;
         
-        // new loop:
-
-        birthReport.parallelStream().forEach(birthRecord -> {
+        for (String birthRecord : birthReport)
+        {
             ArrayList<String> birthArray = EXTRACT_ARRAYLIST(birthRecord,AGENTID) ;
             for (String birthAgent : birthArray)
             {
@@ -821,28 +791,8 @@ public class PopulationReporter extends Reporter {
                 String propertyValue = EXTRACT_VALUE(propertyName,birthAgent) ;
                 censusPropertyReport.put(agentId, propertyValue) ;
             }
-        });
-
-        HashMap<String,String> returnReport = new HashMap<String,String>() ;
-        for (Map.Entry<String, String> entry : censusPropertyReport.entrySet())
-            returnReport.put(entry.getKey(), entry.getValue());
-
-
-
-
-        // old loop:
-
-        // for (String birthRecord : birthReport)
-        // {
-        //     ArrayList<String> birthArray = EXTRACT_ARRAYLIST(birthRecord,AGENTID) ;
-        //     for (String birthAgent : birthArray)
-        //     {
-        //         String agentId = EXTRACT_VALUE(AGENTID,birthAgent) ;
-        //         String propertyValue = EXTRACT_VALUE(propertyName,birthAgent) ;
-        //         censusPropertyReport.put(agentId, propertyValue) ;
-        //     }
-        // }
-        return returnReport ;
+        }
+        return censusPropertyReport ;
     }
 
 
@@ -915,20 +865,12 @@ public class PopulationReporter extends Reporter {
         
         // Add all agents and remove dead agents
         HashSet<String> agentIdSet = new HashSet<String>() ;
-
-        // extract set of agent ids in birthReport
-        String[] birthReportKeys = new String[birthReport.size()];
-        int pos = 0;
-        for(Map.Entry<Object, String> entry : birthReport.entrySet()) {
-            String key = (String) entry.getKey();
-            birthReportKeys[pos++] = key;
-        }
-        Collections.addAll(agentIdSet, birthReportKeys);
+        Collections.addAll(agentIdSet, birthReport.keySet().toArray(new String[0])) ;
         
-        // remove dead agents from rawReport
         for (Comparable<?> agentIdComparable : deathReport) {
             String agentIdString = (String) agentIdComparable;
-            if (rawReport.containsKey(agentIdString)) rawReport.remove(agentIdString);
+            if (rawReport.containsKey(agentIdString))
+            rawReport.remove(agentIdString);
         }
         HashMap<String, String> siteReport = screeningReporter.prepareAgentSiteReport(endCycle, agentIdSet);
         
@@ -1109,30 +1051,29 @@ public class PopulationReporter extends Reporter {
      */
     public HashMap<String,String> prepareCensusPropertyReport(String propertyName, int endCycle)
     {
-        ConcurrentHashMap<String,String> concurrentCensusPropertyReport = new ConcurrentHashMap<String,String>() ;
+        HashMap<String,String> censusPropertyReport = new HashMap<String,String>() ;
         
-        // birth census and change report
+        // Census at birth
         HashMap<String,String> birthReport = prepareCensusPropertyReport(propertyName) ;
-        ArrayList<String> changeReport = prepareChangeReport(propertyName, endCycle) ;
-        
-        ConcurrentHashMap<String, Boolean> concurrentAgentIdExists = new ConcurrentHashMap<String, Boolean>();
-
-        for (Map.Entry<String, String> entry : birthReport.entrySet())
-            concurrentAgentIdExists.put(entry.getKey(), true);
-        
+        HashSet<String> agentIdSet = new HashSet<String>() ;
+        Collections.addAll(agentIdSet, birthReport.keySet().toArray(new String[0])) ;
+        //LOGGER.info(agentIdSet.toString());
+        ArrayList<String> changeReport = prepareChangeReport(propertyName,endCycle) ;
+        //LOGGER.info(changeReport.toString());
     
         // changeReport.size() is zero if no changes are made
+        // TODO: parallelise: add threads here
         // generating hashmap - ordering doesn't matter
         for (int index = changeReport.size() - 1 ; index >= 0 ; index-- )
         {
             String changeRecord = changeReport.get(index) ;
             ArrayList<String> changeAgentIds = IDENTIFY_PROPERTIES(changeRecord) ;
             //LOGGER.info(changeAgentIds.toString()) ;
-            changeAgentIds.retainAll(concurrentAgentIdExists.keySet()) ;
+            changeAgentIds.retainAll(agentIdSet) ;
             
-            changeAgentIds.parallelStream().forEach(agentId -> {
-            // for (String agentId : changeAgentIds)
-            // {
+            // TODO: add threads here too?
+            for (String agentId : changeAgentIds)
+            {
                 int agentIndex = INDEX_OF_PROPERTY(agentId.toString(),changeRecord) ;
                 int colonIndex = changeRecord.indexOf(":",agentIndex) ;
                 int nextColonIndex = changeRecord.indexOf(":",colonIndex + 1) ;
@@ -1143,59 +1084,25 @@ public class PopulationReporter extends Reporter {
                 
                 //LOGGER.info(value) ;
                 // Might be HashMap of values
-                if (value.startsWith("{") && value.contains(propertyName))
+                if (value.startsWith("{"))
                 {
+                    if (!value.contains(propertyName))
+                        continue ;
                     value = value.replace("=", ":") ;
                     value = EXTRACT_VALUE(propertyName,value) ;
                     value = value.substring(0, value.length() - 1) ;
                 }
-                concurrentCensusPropertyReport.put(agentId, value) ;
-                concurrentAgentIdExists.remove(agentId) ;
-            });
-            // }
-            
-
-            // TODO: add threads here too?
-            // for (String agentId : changeAgentIds)
-            // {
-            //     int agentIndex = INDEX_OF_PROPERTY(agentId.toString(),changeRecord) ;
-            //     int colonIndex = changeRecord.indexOf(":",agentIndex) ;
-            //     int nextColonIndex = changeRecord.indexOf(":",colonIndex + 1) ;
-            //     int spaceIndex = changeRecord.lastIndexOf(SPACE, nextColonIndex) ;
-            //     if (spaceIndex < 0)
-            //         spaceIndex = changeRecord.length() ;
-            //     String value = changeRecord.substring(colonIndex + 1, spaceIndex) ;
-                
-            //     //LOGGER.info(value) ;
-            //     // Might be HashMap of values
-            //     if (value.startsWith("{"))
-            //     {
-            //         if (!value.contains(propertyName))
-            //             continue ;
-            //         value = value.replace("=", ":") ;
-            //         value = EXTRACT_VALUE(propertyName,value) ;
-            //         value = value.substring(0, value.length() - 1) ;
-            //     }
-            //     censusPropertyReport.put(agentId, value) ;
-            //     agentIdSet.remove(agentId) ;
-            // }
-            // if (agentIdSet.isEmpty())
-            //     break ;
+                censusPropertyReport.put(agentId, value) ;
+                agentIdSet.remove(agentId) ;
+            }
+            if (agentIdSet.isEmpty())
+                break ;
         }
         
-        for (String agentId : concurrentAgentIdExists.keySet())
-            concurrentCensusPropertyReport.put(agentId, birthReport.get(agentId)) ;
+        for (String agentId : agentIdSet)
+            censusPropertyReport.put(agentId, birthReport.get(agentId)) ;
         
-        // HashMap<String,String> returnReport = new HashMap<String,String>() ;
-        // for (Map.Entry<String, String> entry : concurrentCensusPropertyReport.entrySet())
-        //     returnReport.put(entry.getKey(), entry.getValue());
-
-        HashMap<String,String> returnReport = Concurrency.convertConcurrentToNormalHashMap(concurrentCensusPropertyReport);
-        
-        // for (String agentId : agentIdSet)
-        //     censusPropertyReport.put(agentId, birthReport.get(agentId)) ;
-        
-        return returnReport ;
+        return censusPropertyReport ;
     }
     
     /**

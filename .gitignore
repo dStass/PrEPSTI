@@ -30,4 +30,3 @@
 !reports/.gitkeep
 !configs/json_files/default.json
 configs/config.properties
-.vscode/launch.json
