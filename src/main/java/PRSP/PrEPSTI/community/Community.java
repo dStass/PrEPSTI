@@ -779,14 +779,16 @@ public class Community {
                 
 
                 // extract agent census data and write to internal metadata
-                // sort agents by id
-                TreeSet<Integer> sortedAgentKeySet = new TreeSet<Integer>();
-                sortedAgentKeySet.addAll(populationCensusUpToCycle.keySet());
                 
+                // DEBUG: sort agents by id
+                // TreeSet<Integer> sortedAgentKeySet = new TreeSet<Integer>();
+                // sortedAgentKeySet.addAll(populationCensusUpToCycle.keySet());
+
+
                 // add rebooted agent data to metadata
                 metaLabels.add("Agents") ;
                 StringBuilder sbAgentsReboot = new StringBuilder();
-                for (Integer agentId : sortedAgentKeySet) {
+                for (Integer agentId : populationCensusUpToCycle.keySet()) {
                     String newAgentRecord = populationCensusUpToCycle.get(agentId);
                     sbAgentsReboot.append(newAgentRecord);
                 }
@@ -800,14 +802,14 @@ public class Community {
                 // extract relationship data and write to internal metadata
                 HashMap<Integer, String> relationshipRecordHashMap = relationshipReporter.prepareRelationshipRecordHashMap(cycleToGenerateReportUpTo);
                 
-                TreeSet<Integer> sortedRelationshipKeySet = new TreeSet<Integer>();
-                sortedRelationshipKeySet.addAll(relationshipRecordHashMap.keySet());
-                
+                // DEBUG: sort relationships by id
+                // TreeSet<Integer> sortedRelationshipKeySet = new TreeSet<Integer>();
+                // sortedRelationshipKeySet.addAll(relationshipRecordHashMap.keySet());
+
                 // add rebooted relationship data to metadata
                 metaLabels.add("Relationships") ;
-                // String relationshipsReboot = "" ;
                 StringBuilder sbRelationshipReboot = new StringBuilder();
-                for (Integer relationshipId : sortedRelationshipKeySet) {
+                for (Integer relationshipId : relationshipRecordHashMap.keySet()) {
                     sbRelationshipReboot.append(relationshipRecordHashMap.get(relationshipId));
                     sbRelationshipReboot.append(' ');
                 }
