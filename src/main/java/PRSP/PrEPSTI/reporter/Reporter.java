@@ -546,7 +546,6 @@ public class Reporter {
      * @return
      */
     public static HashMap<String, String> SPLIT_RECORD_BY_PROPERTY(String property, String record, HashSet<String> keys) {
-        float t0 = System.nanoTime();
         HashMap<String, String> splitRecord = new HashMap<>();
 
         int previousIndex = 0;
@@ -568,8 +567,6 @@ public class Reporter {
         String key = EXTRACT_VALUE(property, recordString);
         if (keys.size() == 0 || keys.contains(key) && key.length() > 0) splitRecord.put(key, recordString);
 
-        float t1 = System.nanoTime();
-        Community.RECORD_METHOD_TIME("splitRecordByProperty", t1-t0);
         return splitRecord;
     }
 

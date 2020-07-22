@@ -597,6 +597,8 @@ public class Community {
 
         HashMap<Comparable,String> incidenceReport = new HashMap<Comparable,String>() ;
         String finalAtRiskString = "";
+
+        float t0 = System.nanoTime();
         if (DYNAMIC)
         {
             incidenceReport = screeningReporter.prepareYearsAtRiskIncidenceReport(siteNames, END_YEAR + 1 - START_YEAR, END_YEAR, "statusHIV") ;
@@ -607,6 +609,10 @@ public class Community {
         {
             finalAtRiskString = screeningReporter.prepareFinalAtRiskIncidentsRecord(siteNames, 0, "statusHIV");
         }
+
+        float t0_after = System.nanoTime();
+        Community.RECORD_METHOD_TIME("Community.main -> IF DYNAMIC CLAUSE", t0_after-t0);
+        
         Community.ADD_TIME_STAMP("after incidence DYNAMIC");
         
         // log finalAtRisk:

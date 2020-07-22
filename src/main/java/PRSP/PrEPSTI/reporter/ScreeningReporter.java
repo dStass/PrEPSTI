@@ -1320,30 +1320,44 @@ public class ScreeningReporter extends Reporter {
      */
     public HashMap<Comparable,ArrayList<Comparable>> prepareAgentTestingReport(int backYears, int backMonths, int backDays, int endCycle, ArrayList<String> sortedAgentIds)
     {
-        HashMap<Comparable,ArrayList<Comparable>> agentTestingReport = new HashMap<Comparable,ArrayList<Comparable>>() ; 
+        HashMap<Comparable,ArrayList<Comparable>> agentTestingReport = new HashMap<Comparable,ArrayList<Comparable>>() ;
+        HashSet<String> sortedAgentIdSet = new HashSet<String>();
+        for (String agentId : sortedAgentIds) sortedAgentIdSet.add(agentId);
         
         int backCycles = GET_BACK_CYCLES(backYears, backMonths, backDays, endCycle) ;
         int startCycle = endCycle - backCycles ;
         
         ArrayList<String> inputReport = getBackCyclesReport(backYears, backMonths, backDays, endCycle) ;
         String record ;
-        String agentId ;
         for (int cycle = 0 ; cycle < backCycles ; cycle++ )
         {
             record = inputReport.get(cycle) ;
             
             ArrayList<String> agentReport = EXTRACT_ARRAYLIST(record,AGENTID,TESTED) ;
+            HashMap<String, String> agentReportHashMap = new HashMap<String, String>();
+            for (String agentRecord : agentReport) {
+                String agentId = EXTRACT_VALUE(AGENTID,agentRecord) ;
+                agentReportHashMap.put(agentId, agentRecord);
+            }
+
             if (!sortedAgentIds.isEmpty())
-                for (int agentIndex = agentReport.size() - 1 ; agentIndex >= 0 ; agentIndex-- )
-                {
-                    String agentIdString = EXTRACT_VALUE(AGENTID,agentReport.get(agentIndex)) ;
-                    if (!sortedAgentIds.contains(agentIdString)) 
-                        agentReport.remove(agentIndex) ;
-                }
-            
-            for (String agentRecord : agentReport)
             {
-                agentId = EXTRACT_VALUE(AGENTID,agentRecord) ;
+                for (String agentId : agentReportHashMap.keySet()) {
+                    if (!sortedAgentIdSet.contains(agentId)) {
+                        agentReportHashMap.remove(agentId);
+                    }
+                }
+                // for (int agentIndex = agentReport.size() - 1 ; agentIndex >= 0 ; agentIndex-- )
+                // {
+                //     String agentIdString = EXTRACT_VALUE(AGENTID,agentReport.get(agentIndex)) ;
+                //     if (!sortedAgentIds.contains(agentIdString)) 
+                //         agentReport.remove(agentIndex) ;
+                // }
+
+            }
+            
+            for (String agentId : agentReportHashMap.keySet())
+            {
                 agentTestingReport = (HashMap<Comparable,ArrayList<Comparable>>) UPDATE_HASHMAP(agentId, startCycle + cycle, agentTestingReport) ;
             }
         }
@@ -1612,9 +1626,11 @@ public class ScreeningReporter extends Reporter {
      */
     public String prepareAtRiskIncidenceReport(String[] siteNames, int backYears, int backMonths, int backDays, int endCycle, String sortingProperty)
     {
+        // float t0 = System.nanoTime();
     	StringBuilder sbIncidentRateReport = new StringBuilder();
         // String incidentRateReport = "" ;
         
+        float tfirst = System.nanoTime();
         HashSet<Object> sortingProperties = new HashSet<Object>() ; //(Arrays.asList(new Object[] {""})) ;
         HashMap<Object,ArrayList<String>> sortedAgentsReport = new HashMap<Object,ArrayList<String>>() ;
         if (!sortingProperty.isEmpty())
@@ -1629,12 +1645,15 @@ public class ScreeningReporter extends Reporter {
             sortingProperties.add("") ;
         //LOGGER.info(sortedAgentsReport.keySet().toString());
         //LOGGER.log(Level.INFO, "false:{0} true:{1}", new Object[] {sortedAgentsReport.get("false").size(),sortedAgentsReport.get("true").size()});
-            
-        HashMap<Comparable,ArrayList<Comparable>> agentTestingReport = prepareAgentTestingReport(backYears, backMonths, backDays, endCycle) ; 
+        
+        float tsecond = System.nanoTime();
+        System.out.println("tdif=" + (tsecond - tfirst) / 1_000_000_000);
+        HashMap<Comparable,ArrayList<Comparable>> agentTestingReport = prepareAgentTestingReport(backYears, backMonths, backDays, endCycle) ;
         HashMap<Object,HashMap<Comparable,ArrayList<Comparable>>> agentTreatedReport = prepareAgentTreatedReport(siteNames, backYears, backMonths, backDays, endCycle) ; 
         //LOGGER.info(agentTreatedReport.get("all").keySet().toString()) ;
         
         HashMap<Object,HashMap<Object,ArrayList<Integer>>> timeAtRiskReport = prepareTimeAtRiskReport(agentTestingReport,agentTreatedReport) ;
+
         
         //int population = getPopulation() ;
         int daysAtRisk ;
@@ -1691,6 +1710,11 @@ public class ScreeningReporter extends Reporter {
                 // incidentRateReport += Reporter.ADD_REPORT_PROPERTY(propertyName, incidentRate) ;
             }
         }
+
+
+        // float t1 = System.nanoTime();
+        // Community.RECORD_METHOD_TIME("ScreeningReporter.prepareAtRiskIncidenceReport", t1-t0);
+
         return sbIncidentRateReport.toString() ;
     }
     
@@ -2060,7 +2084,6 @@ public class ScreeningReporter extends Reporter {
             returnReport.put(agentId, siteHashMap);
         }
 
-        float tbef = System.nanoTime();
         ArrayList<String> screeningBackCyclesReport = getBackCyclesReport(0, 0, endCycle, endCycle) ;
         
         
@@ -2090,13 +2113,8 @@ public class ScreeningReporter extends Reporter {
                 }
             }
         });
-        float taft = System.nanoTime();
-        System.out.println("secondsBackCycles::" + (taft - tbef) / 1_000_000_000);
 
         returnReport = Concurrency.convertConcurrentToNormalHashMap(concurrentReturnReport);
-
-        float tafter = System.nanoTime();
-        System.out.println("secods=" + (tafter - t0) / 1_000_000_000);
         
 
         // for (String agentId : infectiousAgentsHashMap.keySet()) {

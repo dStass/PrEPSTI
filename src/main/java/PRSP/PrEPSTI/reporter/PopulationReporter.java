@@ -944,11 +944,7 @@ public class PopulationReporter extends Reporter {
             rawReport.remove(agentIdString);
         }
 
-        float tbefore = System.nanoTime();
         HashMap<String, String> siteReport = screeningReporter.prepareAgentSiteReport(endCycle, agentIdSet);
-        float tafr = System.nanoTime();
-        System.out.println("secondsss-> " + (tafr - tbefore) / 1_000_000_000);
-        // Community.ADD_TIME_STAMP("after prepareAgentSiteReport: " + (tafter - tbefore) / 1_000_000_000 + "s");
         
         // identify properties
         ArrayList<String> fullProps = new ArrayList<String>();
