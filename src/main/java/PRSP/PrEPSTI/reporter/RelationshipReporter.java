@@ -2183,6 +2183,9 @@ public class RelationshipReporter extends Reporter {
 
         //for (int reportNb = 0 ; reportNb < inputString.size() ; reportNb += outputCycle )
         // Read in Relationship commencements from simulation.
+        commenceReport.add(record);
+        record = "";
+        
         for (boolean nextInput = true ; nextInput ; nextInput = updateReport() )
             for (String inputRecord : input)
             {
@@ -2191,7 +2194,7 @@ public class RelationshipReporter extends Reporter {
                 int relationshipIdIndex = INDEX_OF_PROPERTY(RELATIONSHIPID,inputRecord) ;
                 int clearIndex = INDEX_OF_PROPERTY("clear",inputRecord) ;
                 if (relationshipIdIndex >= 0 && (relationshipIdIndex < clearIndex)) 
-                    record = inputRecord.substring(relationshipIdIndex,clearIndex) + record ;
+                    record = inputRecord.substring(relationshipIdIndex,clearIndex);
                 else 
                     LOGGER.warning("No Relationships commenced in record " + inputRecord) ;
                 commenceReport.add(record) ;
@@ -2210,8 +2213,9 @@ public class RelationshipReporter extends Reporter {
      */
     private String prepareBurninRecord()
     {
-        
-        String burninCommence = "" ;
+        float t0 = System.nanoTime();
+        // String burninCommence = "" ;
+        StringBuilder sbBurninCommence = new StringBuilder();
         String burninCommenceStatic = Relationship.BURNIN_COMMENCE ;
         String burninBreakupStatic = Relationship.BURNIN_BREAKUP ;
         ArrayList<String> burninCommenceList ;
@@ -2233,11 +2237,12 @@ public class RelationshipReporter extends Reporter {
         {
             relationshipId = EXTRACT_VALUE(RELATIONSHIPID,relationshipEntry) ;
             if (!burninBreakup.contains(relationshipId))
-                burninCommence += relationshipEntry ;
+                sbBurninCommence.append(relationshipEntry) ;
         }
-        
+        float t1 = System.nanoTime();
+        Community.RECORD_METHOD_TIME("RelationshipReporter.prepareBurninRecord", t1 - t0);
         //burninCommence += "clear:" ;
-        return burninCommence ;
+        return sbBurninCommence.toString() ;
     }
     
 }

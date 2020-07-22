@@ -369,6 +369,7 @@ public abstract class Agent {
      */
     static public ArrayList<Agent> REBOOT_AGENTS(String folderPath, String simName)
     {
+        float t0 = System.nanoTime();
         ArrayList<Agent> agents = new ArrayList<Agent>() ;
         String SITE = "Site:" ;
         
@@ -541,6 +542,9 @@ public abstract class Agent {
             }
         }
         NB_AGENTS_CREATED = maxAgentId + 1;
+
+        long t1 = System.nanoTime();
+        Community.RECORD_METHOD_TIME("Agent.REBOOT_AGENTS", t1 - t0);
         
         return agents ;
     }
