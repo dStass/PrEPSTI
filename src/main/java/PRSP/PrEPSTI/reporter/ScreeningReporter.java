@@ -2039,7 +2039,10 @@ public class ScreeningReporter extends Reporter {
     public HashMap<String, HashMap<String, String>> prepareRawAgentSiteReport(int endCycle, HashSet<String> agentIdSet) {
         String[] siteNames = Site.getAvailableSites();
 
-        ArrayList<String> screeningBackCycles = this.getBackCyclesReport(0, 0, 1, endCycle);
+        double tbefore;
+        double tafter;
+        tbefore = System.nanoTime();
+        ArrayList<String> screeningBackCycles = getBackCyclesReport(0, 0, 1, endCycle);
         
         // extract site data
         String lastCycle = screeningBackCycles.get(screeningBackCycles.size() - 1);
@@ -2060,6 +2063,10 @@ public class ScreeningReporter extends Reporter {
         }
 
         ArrayList<String> screeningBackCyclesReport = getBackCyclesReport(0, 0, endCycle, endCycle) ;
+        tafter = System.nanoTime();
+        Community.ADD_TIME_STAMP("prepareRawAgentSiteReport -> firstHALF: " + (tafter - tbefore) / 1_000_000_000 + "s");
+
+        tbefore = System.nanoTime();
 
         // modify internal hashmap with infectious agents
         for (String agentId : infectiousAgentsHashMap.keySet()) {
@@ -2070,9 +2077,9 @@ public class ScreeningReporter extends Reporter {
 
                     // extract correct values
                     String symptomatic = EXTRACT_VALUE(site, agentInfectiousRecord);
-                    String[] infectionAndIncubation = extractInfectionAndIncubationTimeFromBackCycles(agentId, site, symptomatic, screeningBackCyclesReport);  // TODO backcycles
+                    String[] infectionAndIncubation = extractInfectionAndIncubationTimeFromBackCycles(agentId, site, symptomatic, screeningBackCyclesReport);
                     String infectionTime = infectionAndIncubation[0];
-                    String incubationTime = infectionAndIncubation[1]; // TODO work out incubation time
+                    String incubationTime = infectionAndIncubation[1];
 
                     // build the new record
                     String newSiteRecord = Reporter.ADD_REPORT_PROPERTY("symptomatic", symptomatic) ;
@@ -2085,6 +2092,9 @@ public class ScreeningReporter extends Reporter {
                 }
             }
         }
+
+        tafter = System.nanoTime();
+        Community.ADD_TIME_STAMP("prepareRawAgentSiteReport -> secondHalfAfterLoop: " + (tafter - tbefore) / 1_000_000_000 + "s");
         
         return returnReport;
     }
