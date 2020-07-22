@@ -134,11 +134,15 @@ public class Community {
     static final java.util.logging.Logger LOGGER = java.util.logging.Logger.getLogger("reporter") ;
 	private static final String[] RELATIONSHIP_CLAZZ_NAMES = new String[] {"Casual","Regular","Monogomous"};
     static ArrayList<String[]> timeStamps = null;
+    private static HashMap<String, Float> methodsTimeStamp = null;
     static Long timeInitial = null;
 
 
     public static void main(String[] args) {
         timeStamps = new ArrayList<String[]>();
+        methodsTimeStamp = new HashMap<String, Float>();
+
+
         timeInitial = System.nanoTime();
 
         Community.timeStamps.add(new String[] {"initialTime", String.valueOf(0)});
@@ -674,10 +678,37 @@ public class Community {
         long timeFinal = System.nanoTime();
         float timeRan = (timeFinal - timeInitial)/  1000000000f;
         LOGGER.info("Task completed in " + String.valueOf(timeRan));
+
+        LOGGER.info("\n\nMethodTIMESTAMPS:");
+        RECORD_METHOD_TIME("TOTAL", System.nanoTime() - timeInitial);
+        HashMap<String, Float> methodPercentages = FINALISE_METHOD_TIME();
+        for (String s : Community.methodsTimeStamp.keySet()) {
+            System.out.println("- " + methodPercentages.get(s) * 100 + "% : " + s + " -> " + Community.methodsTimeStamp.get(s) / 1_000_000_000 + "s");
+        }
+        System.out.println("DONE");
+
     }
  
     public static void ADD_TIME_STAMP(String name) {
         Community.timeStamps.add(new String[] {name, String.valueOf((System.nanoTime() - timeInitial)/1000000000f)});
+    }
+
+    public static void RECORD_METHOD_TIME(String name, float time) {
+        if (!Community.methodsTimeStamp.containsKey(name)) {
+            float zero = 0;
+            Community.methodsTimeStamp.put(name, zero);
+        }
+        Community.methodsTimeStamp.put(name, Community.methodsTimeStamp.get(name) + time);
+    }
+
+    public static HashMap<String, Float> FINALISE_METHOD_TIME() {
+        HashMap<String, Float> toReturn = new HashMap<String, Float>();
+        for (String name : Community.methodsTimeStamp.keySet()) {
+            if (name.equals("TOTAL")) continue;
+            toReturn.put(name, Community.methodsTimeStamp.get(name) / Community.methodsTimeStamp.get("TOTAL"));
+        }
+        toReturn.put("TOTAL", (float) 1.0);
+        return toReturn;
     }
     
     /**
@@ -862,7 +893,7 @@ public class Community {
         }
 
         long t2 = System.nanoTime();
-        System.out.println("time = " + (t2 - t1) / 1_000_000_000);
+        Community.RECORD_METHOD_TIME("newCommunity", t2 - t1);
     }
 
     /**

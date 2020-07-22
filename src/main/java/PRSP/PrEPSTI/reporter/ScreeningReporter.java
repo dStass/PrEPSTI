@@ -2196,10 +2196,6 @@ public class ScreeningReporter extends Reporter {
             }
             returnReport.put(agentId, agentRecord);
         }
-
-        tafter = System.nanoTime();
-        Community.ADD_TIME_STAMP("prepareAgentSiteReport -> rest: " + (tafter - tbefore) / 1_000_000_000 + "s");
-
         return returnReport;
     }
     
