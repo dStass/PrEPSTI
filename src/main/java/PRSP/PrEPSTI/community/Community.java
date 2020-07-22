@@ -591,15 +591,22 @@ public class Community {
         // LOGGER.log(Level.INFO,"{0} {1}", new Object[] {"all", prevalenceReport.get(prevalenceReport.size() - 1)}) ;
 
         HashMap<Comparable,String> incidenceReport = new HashMap<Comparable,String>() ;
-        //HashMap<Comparable,String> incidenceReportPrep = new HashMap<Comparable,String>() ;
+        String finalAtRiskString = "";
         if (DYNAMIC)
         {
             incidenceReport = screeningReporter.prepareYearsAtRiskIncidenceReport(siteNames, END_YEAR + 1 - START_YEAR, END_YEAR, "statusHIV") ;
+            finalAtRiskString = incidenceReport.get(END_YEAR);
             //incidenceReportPrep = screeningReporter.prepareYearsAtRiskIncidenceReport(siteNames, 16, 2022, "prepStatus") ;
         }
+        else
+        {
+            finalAtRiskString = screeningReporter.prepareFinalAtRiskIncidentsRecord(siteNames, 0, "statusHIV");
+        }
         Community.ADD_TIME_STAMP("after incidence DYNAMIC");
+        
+        // log finalAtRisk:
+        LOGGER.info("by HIV-status " + finalAtRiskString) ;
 
-                
         //String finalPrevalencesRecord = screeningReporter.prepareFinalPrevalencesSortedRecord(siteNames, "statusHIV") ;
         //LOGGER.log(Level.INFO, "prevalence {0}", finalPrevalencesRecord) ;
         
@@ -607,18 +614,18 @@ public class Community {
         //encounterReporter = new EncounterReporter(Community.SIM_NAME,Community.FILE_PATH) ;
         
         // commented out:
-        String finalAtRiskString = screeningReporter.prepareFinalAtRiskIncidentsRecord(siteNames, 0, "statusHIV");
-        String[] finalAtRiskArray = finalAtRiskString.split(" ");
-        int total = 4;
-        String hivStatusDifferences = "";
-        for (int i = 0; i < total; ++i)
-        {   
-            String[] falseProperty = finalAtRiskArray[i].split(":");
-            String[] trueProperty = finalAtRiskArray[i + total].split(":");
-            hivStatusDifferences += trueProperty[0] + "-" + falseProperty[0] + ": " + String.valueOf(Float.valueOf(trueProperty[1]) - Float.valueOf(falseProperty[1])) + "\n";
-        }
-        LOGGER.info("by HIV-status " + finalAtRiskString) ;
-        LOGGER.info("differences:\n" + hivStatusDifferences) ;
+        // String finalAtRiskString = screeningReporter.prepareFinalAtRiskIncidentsRecord(siteNames, 0, "statusHIV");
+        // String[] finalAtRiskArray = finalAtRiskString.split(" ");
+        // int total = 4;
+        // String hivStatusDifferences = "";
+        // for (int i = 0; i < total; ++i)
+        // {   
+        //     String[] falseProperty = finalAtRiskArray[i].split(":");
+        //     String[] trueProperty = finalAtRiskArray[i + total].split(":");
+        //     hivStatusDifferences += trueProperty[0] + "-" + falseProperty[0] + ": " + String.valueOf(Float.valueOf(trueProperty[1]) - Float.valueOf(falseProperty[1])) + "\n";
+        // }
+        // LOGGER.info("by HIV-status " + finalAtRiskString) ;
+        // LOGGER.info("differences:\n" + hivStatusDifferences) ;
         //LOGGER.info("Incidence " + encounterReporter.prepareFinalIncidenceRecord(new String[] {"Pharynx","Rectum","Urethra"}, 0, 0, 365, MAX_CYCLES).toString());
         // LOGGER.info("Incidence " + encounterReporter.prepareSortedFinalIncidenceRecord(siteNames, 0, 0, 365, MAX_CYCLES, "statusHIV").toString());
 
