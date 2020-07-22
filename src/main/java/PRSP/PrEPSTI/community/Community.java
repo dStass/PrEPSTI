@@ -20,6 +20,7 @@ import PRSP.PrEPSTI.mdll.MDLL;
 
 import java.util.Random;
 import java.util.TreeSet;
+import java.util.concurrent.ConcurrentHashMap;
 import java.lang.reflect.*;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -134,13 +135,13 @@ public class Community {
     static final java.util.logging.Logger LOGGER = java.util.logging.Logger.getLogger("reporter") ;
 	private static final String[] RELATIONSHIP_CLAZZ_NAMES = new String[] {"Casual","Regular","Monogomous"};
     static ArrayList<String[]> timeStamps = null;
-    private static HashMap<String, Float> methodsTimeStamp = null;
+    private static ConcurrentHashMap<String, Float> methodsTimeStamp = null;
     static Long timeInitial = null;
 
 
     public static void main(String[] args) {
         timeStamps = new ArrayList<String[]>();
-        methodsTimeStamp = new HashMap<String, Float>();
+        methodsTimeStamp = new ConcurrentHashMap<String, Float>();
 
 
         timeInitial = System.nanoTime();

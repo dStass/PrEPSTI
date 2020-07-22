@@ -2037,10 +2037,11 @@ public class ScreeningReporter extends Reporter {
      * @return
      */
     public HashMap<String, HashMap<String, String>> prepareRawAgentSiteReport(int endCycle, HashSet<String> agentIdSet) {
+        float t0 = System.nanoTime();
         String[] siteNames = Site.getAvailableSites();
 
         ArrayList<String> screeningBackCycles = getBackCyclesReport(0, 0, 1, endCycle);
-        
+
         // extract site data
         String lastCycle = screeningBackCycles.get(screeningBackCycles.size() - 1);
         HashMap<String, String> lastCycleHashMap = SPLIT_RECORD_BY_PROPERTY("agentId", lastCycle);        
@@ -2059,8 +2060,10 @@ public class ScreeningReporter extends Reporter {
             returnReport.put(agentId, siteHashMap);
         }
 
+        float tbef = System.nanoTime();
         ArrayList<String> screeningBackCyclesReport = getBackCyclesReport(0, 0, endCycle, endCycle) ;
-
+        
+        
         // modify internal hashmap with infectious agents
         ConcurrentHashMap<String, ConcurrentHashMap<String, String>> concurrentReturnReport = Concurrency.convertNormalToConcurrentHashMap(returnReport);
         infectiousAgentsHashMap.keySet().parallelStream().forEach(agentId -> 
@@ -2069,13 +2072,13 @@ public class ScreeningReporter extends Reporter {
             for (String site : siteNames) {
                 // if the site is infectious
                 if (agentInfectiousRecord.contains(site)) {
-
+                    
                     // extract correct values
                     String symptomatic = EXTRACT_VALUE(site, agentInfectiousRecord);
                     String[] infectionAndIncubation = extractInfectionAndIncubationTimeFromBackCycles(agentId, site, symptomatic, screeningBackCyclesReport);
                     String infectionTime = infectionAndIncubation[0];
                     String incubationTime = infectionAndIncubation[1];
-
+                    
                     // build the new record
                     String newSiteRecord = Reporter.ADD_REPORT_PROPERTY("symptomatic", symptomatic) ;
                     newSiteRecord += Reporter.ADD_REPORT_PROPERTY("infectionTime", infectionTime);
@@ -2087,8 +2090,13 @@ public class ScreeningReporter extends Reporter {
                 }
             }
         });
+        float taft = System.nanoTime();
+        System.out.println("secondsBackCycles::" + (taft - tbef) / 1_000_000_000);
 
         returnReport = Concurrency.convertConcurrentToNormalHashMap(concurrentReturnReport);
+
+        float tafter = System.nanoTime();
+        System.out.println("secods=" + (tafter - t0) / 1_000_000_000);
         
 
         // for (String agentId : infectiousAgentsHashMap.keySet()) {
@@ -2114,7 +2122,8 @@ public class ScreeningReporter extends Reporter {
         //         }
         //     }
         // }
-        
+        float t1 = System.nanoTime();
+        Community.RECORD_METHOD_TIME("ScreeningReporter.prepareRawAgentSiteReport", t1 - t0);
         return returnReport;
     }
 
@@ -2126,7 +2135,7 @@ public class ScreeningReporter extends Reporter {
      * @param symptomatic
      * @return
      */
-    private String[] extractInfectionAndIncubationTimeFromBackCycles(String agentId, String site, String symptomatic, ArrayList<String> screeningBackCycles) {
+    private String[] extractInfectionAndIncubationTimeFromBackCycles(String agentId, String site, String symptomatic, ArrayList<String> screeningBackCycles) {      
         int foundCycle = screeningBackCycles.size() - 1;
         for (int i = screeningBackCycles.size() - 1; i >= 0; --i) {
             foundCycle -= 1;
@@ -2167,6 +2176,7 @@ public class ScreeningReporter extends Reporter {
         String[] infectionAndIncubation = new String[2];
         infectionAndIncubation[0] = String.valueOf(infectionTime);
         infectionAndIncubation[1] = String.valueOf(incubationTime);
+
         return infectionAndIncubation;
     }
 

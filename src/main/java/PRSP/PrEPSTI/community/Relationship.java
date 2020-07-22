@@ -513,6 +513,7 @@ public class Relationship {
      */
     final protected String encounter() 
     {
+        float t0 = System.nanoTime();
         String report = "" ;
         StringBuilder sbReport = new StringBuilder();
         double infectProbability ;
@@ -617,6 +618,9 @@ public class Relationship {
                 // report += Reporter.ADD_REPORT_PROPERTY("transmission", Boolean.toString(agent0.receiveInfection(infectProbability,site0))) ; 
             }
         }
+
+        float t1 = System.nanoTime();
+        Community.RECORD_METHOD_TIME("Relationship.encounter()", t1-t0);
         
         report = sbReport.toString();
         return report ;   	

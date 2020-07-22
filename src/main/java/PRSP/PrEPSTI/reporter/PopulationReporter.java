@@ -583,6 +583,7 @@ public class PopulationReporter extends Reporter {
      */
     public ArrayList<String> prepareChangeReport(int backYears, int backMonths, int backDays, int endCycle)
     {
+        float t0 = System.nanoTime();
         ArrayList<String> changeReport = new ArrayList<String>() ;
         
         String record ;
@@ -605,7 +606,8 @@ public class PopulationReporter extends Reporter {
                 changeReport.add(record.substring(changeIndex,deathIndex)) ;
             }
         }
-        
+        float t1 = System.nanoTime();
+        Community.RECORD_METHOD_TIME("prepareChangeReport(y,m,d,end)", t1 - t0);
         return changeReport ;
     }
     
@@ -942,9 +944,10 @@ public class PopulationReporter extends Reporter {
             rawReport.remove(agentIdString);
         }
 
-        // tbefore = System.nanoTime();
+        float tbefore = System.nanoTime();
         HashMap<String, String> siteReport = screeningReporter.prepareAgentSiteReport(endCycle, agentIdSet);
-        // tafter = System.nanoTime();
+        float tafr = System.nanoTime();
+        System.out.println("secondsss-> " + (tafr - tbefore) / 1_000_000_000);
         // Community.ADD_TIME_STAMP("after prepareAgentSiteReport: " + (tafter - tbefore) / 1_000_000_000 + "s");
         
         // identify properties
@@ -968,37 +971,8 @@ public class PopulationReporter extends Reporter {
         for (int i = 0; i < propertiesArrayList.size(); ++i) {
             properties[i] = propertiesArrayList.get(i);
         }
-
-        // String properties[] = {
-        //     "agentId",
-        //     "agent",
-        //     "age",
-        //     "concurrency",
-        //     "infidelity",
-        //     "probabilityUseCondom",
-        //     "probabilityUseCondomCasual",
-        //     "probabilityUseCondomRegular",
-        //     "screenCycle",
-        //     "screenTime",
-        //     "prepStatus",
-        //     "statusHIV",
-        //     "discloseStatusHIV",
-        //     "seroSortCasual",
-        //     "seroSortRegular",
-        //     "seroSortMonogomous",
-        //     "seroPosition",
-        //     "riskyStatus",
-        //     "riskyStatusCasual",
-        //     "riskyStatusRegular",
-        //     "probabilityUseCondom",
-        //     "probabilityUseCondomCasual",
-        //     "probabilityUseCondomRegular",
-        //     "undetectableStatus",
-        //     "trustUndetectable",
-        //     "trustPrep",
-        //     "consentCasualProbability"
-        // };
         
+        float tbef = System.nanoTime();
         for (String property : properties) {
 
             // get all change reports at a given cycle with a particular property

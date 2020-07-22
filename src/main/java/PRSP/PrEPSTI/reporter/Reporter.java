@@ -47,6 +47,11 @@ public class Reporter {
      * reportName maps to report.
      */
     static protected HashMap<String,Object> REPORT_LIST = new HashMap<String,Object>() ;
+
+    /**
+     * memoized back_cycles reports for repeated calls
+     */
+    static private HashMap<String, ArrayList<String>> MEMOIZED_BACK_CYCLES = new HashMap<String, ArrayList<String>>();
     
     /**
      * Clears REPORT_LIST so that fresh ones can be generated for the next simulation.
@@ -541,6 +546,7 @@ public class Reporter {
      * @return
      */
     public static HashMap<String, String> SPLIT_RECORD_BY_PROPERTY(String property, String record, HashSet<String> keys) {
+        float t0 = System.nanoTime();
         HashMap<String, String> splitRecord = new HashMap<>();
 
         int previousIndex = 0;
@@ -562,6 +568,8 @@ public class Reporter {
         String key = EXTRACT_VALUE(property, recordString);
         if (keys.size() == 0 || keys.contains(key) && key.length() > 0) splitRecord.put(key, recordString);
 
+        float t1 = System.nanoTime();
+        Community.RECORD_METHOD_TIME("splitRecordByProperty", t1-t0);
         return splitRecord;
     }
 
@@ -4038,6 +4046,24 @@ public class Reporter {
          */
         private ArrayList<String> getBackCyclesReport(int backCycles, int endCycle)
         {
+            // System.out.println("getBackCyclesReport(" + backCycles + "," + endCycle + ")");
+            float t0 = System.nanoTime();
+
+            String backCyclesPairString = '[' + String.valueOf(backCycles) + ',' + String.valueOf(endCycle) + ']';
+            
+            // check if we have seen this combination before, if so, return
+            // bug occurs when backCycles == endCycle
+            if (backCycles != endCycle && Reporter.MEMOIZED_BACK_CYCLES.containsKey(backCyclesPairString)) {
+                ArrayList<String> toReturn = new ArrayList<String>();
+                ArrayList<String> memoized = Reporter.MEMOIZED_BACK_CYCLES.get(backCyclesPairString);
+                for (String backCycleString : memoized) {
+                    toReturn.add(backCycleString);
+                }
+                return toReturn;
+            }
+
+
+
             ArrayList<String> outputList = new ArrayList<String>() ;
             int cycleFileIndex ;
             try
@@ -4104,9 +4130,20 @@ public class Reporter {
                 LOGGER.severe(e.toString());
                 assert(2 < 0) ;
             }
-            return outputList ;
+
+            Reporter.MEMOIZED_BACK_CYCLES.put(backCyclesPairString, outputList);
+            float t1 = System.nanoTime();
+            Community.RECORD_METHOD_TIME("Reporter.getBackCyclesReport(backCycles,endCycles)", t1 - t0);
+
+            ArrayList<String> toReturn = new ArrayList<String>();
+            for (String backCycleString : outputList) {
+                toReturn.add(backCycleString);
+            }
+            return toReturn;
         }
-                
+
+
+
         /**
          * Reads backwards through the files. Used when only last backCycles are 
          * of interest.
