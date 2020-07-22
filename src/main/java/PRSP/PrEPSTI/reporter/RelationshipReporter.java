@@ -5,6 +5,7 @@
  */
 package PRSP.PrEPSTI.reporter;
 
+import PRSP.PrEPSTI.community.Community;
 import PRSP.PrEPSTI.community.Relationship;
 
 import java.util.ArrayList;
@@ -123,6 +124,7 @@ public class RelationshipReporter extends Reporter {
      * @return HashMap with key = relationship ID, value = relationship record
      */
     public HashMap<Integer, String> prepareRelationshipRecordHashMap(int endCycle) {
+        float t0 = System.nanoTime();
         HashMap<Integer, String> relationshipReport = new HashMap<Integer, String>();
 
         // add commenced relationships to our relationshipReport
@@ -181,6 +183,9 @@ public class RelationshipReporter extends Reporter {
                 relationshipReport.remove(relationshipId);
             }
         }
+
+        float t1 = System.nanoTime();
+        Community.RECORD_METHOD_TIME("prepareRelationshipRecordHashMap", t1 - t0);
         return relationshipReport;
     }
 
@@ -2129,6 +2134,7 @@ public class RelationshipReporter extends Reporter {
      */
     protected ArrayList<String> prepareBreakupReport()
     {
+        float t0 = System.nanoTime();
         ArrayList<String> breakupReport = new ArrayList<String>() ;
         
         String record ;
@@ -2143,6 +2149,8 @@ public class RelationshipReporter extends Reporter {
 
                 breakupReport.add(record) ;
             }
+        float t1 = System.nanoTime();
+        Community.RECORD_METHOD_TIME("prepareBreakupReport", t1 - t0);
         return breakupReport ;
     }
     
@@ -2154,6 +2162,7 @@ public class RelationshipReporter extends Reporter {
      */
     protected ArrayList<String> prepareCommenceReport()
     {
+        float t0 = System.nanoTime();
         ArrayList<String> commenceReport = new ArrayList<String>() ;
         // LOGGER.info("prepareCommenceReport");
         //Include burn-in Relationships
@@ -2188,6 +2197,9 @@ public class RelationshipReporter extends Reporter {
                 commenceReport.add(record) ;
                 record = "" ;
             }
+        
+        float t1 = System.nanoTime();
+        Community.RECORD_METHOD_TIME("prepareCommenceReport", t1-t0);
         return commenceReport ;
     }
     

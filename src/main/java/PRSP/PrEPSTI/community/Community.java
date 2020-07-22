@@ -679,14 +679,13 @@ public class Community {
         float timeRan = (timeFinal - timeInitial)/  1000000000f;
         LOGGER.info("Task completed in " + String.valueOf(timeRan));
 
-        LOGGER.info("\n\nMethodTIMESTAMPS:");
+        System.out.println("\n\nTime taken for each methods:");
         RECORD_METHOD_TIME("TOTAL", System.nanoTime() - timeInitial);
         HashMap<String, Float> methodPercentages = FINALISE_METHOD_TIME();
         for (String s : Community.methodsTimeStamp.keySet()) {
             System.out.println("- " + methodPercentages.get(s) * 100 + "% : " + s + " -> " + Community.methodsTimeStamp.get(s) / 1_000_000_000 + "s");
         }
         System.out.println("DONE");
-
     }
  
     public static void ADD_TIME_STAMP(String name) {
@@ -1063,8 +1062,9 @@ public class Community {
         String[] relationshipClazzNames ;
         // relationshipClazzNames = new String[] {"Casual","Regular","Monogomous"} ;
         relationshipClazzNames = Community.RELATIONSHIP_CLAZZ_NAMES;
-        t1 = System.nanoTime();
         String toReturn = MSM.GENERATE_RELATIONSHIPS(availableMDLL, relationshipClazzNames) ;
+        float t2 = System.nanoTime();
+        Community.RECORD_METHOD_TIME("generateRelationships", t2 - t1);
         // System.out.println("generateTime = " + String.valueOf((System.nanoTime() - t1)/1000000000f));
         return toReturn;
 
@@ -1263,7 +1263,8 @@ public class Community {
      * description of each sexual contact returned by Relationship.encounter()
      */
     private String runEncounters()
-    {        
+    {   
+        float t0 = System.nanoTime();
         StringBuffer stringBufferRecord = new StringBuffer();
         agents.parallelStream().forEach(agent -> {
             for (Relationship relationship : agent.getCurrentRelationships())
@@ -1279,6 +1280,8 @@ public class Community {
                 }
             }
         });
+        float t1 = System.nanoTime();
+        Community.RECORD_METHOD_TIME("runEncounters", t1-t0);
         return stringBufferRecord.toString() ;
     }
     

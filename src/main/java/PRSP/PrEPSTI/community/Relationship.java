@@ -277,6 +277,7 @@ public class Relationship {
      */
     static public int REBOOT_RELATIONSHIPS(String folderPath, String simName, ArrayList<Agent> agents)
     {
+        float t0 = System.nanoTime();
         NB_RELATIONSHIPS = 0 ;        
         String relationshipRecord  = "" ;
         Integer relationshipId ;
@@ -356,6 +357,11 @@ public class Relationship {
             LOGGER.severe(e.toString()) ;
         }
         NB_RELATIONSHIPS_CREATED = 1 + ((Integer) Collections.max(new HashSet(currentRelationshipIds))) ;
+
+
+        long t1 = System.nanoTime();
+        Community.RECORD_METHOD_TIME("Relationship.REBOOT_RELATIONSHIPS", t1 - t0);
+
         return NB_RELATIONSHIPS ;
     }
     

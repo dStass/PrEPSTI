@@ -618,6 +618,7 @@ public class PopulationReporter extends Reporter {
      */
     public ArrayList<String> prepareChangeReport(String propertyName, int endCycle)
     {
+        float t0 = System.nanoTime();
         ArrayList<String> propertyChangeReport = new ArrayList<String>() ;
         
         String findPropertyName = propertyName ;
@@ -656,6 +657,9 @@ public class PopulationReporter extends Reporter {
             // LOGGER.info(propertyRecord);
             propertyChangeReport.add(propertyRecord) ;
         }
+
+        float t1 = System.nanoTime();
+        Community.RECORD_METHOD_TIME("prepareChangeReport", t1 - t0);
         
         return propertyChangeReport ;
     }
@@ -879,7 +883,7 @@ public class PopulationReporter extends Reporter {
         HashMap<String, HashMap<String, String>> rawReport = new HashMap<String, HashMap<String, String>>();
         // screening reporter:
 
-        double tbefore;
+        float t0 = System.nanoTime();
         double tafter;
 
         HashMap<Comparable, ArrayList<Comparable>> testingReport
@@ -938,10 +942,10 @@ public class PopulationReporter extends Reporter {
             rawReport.remove(agentIdString);
         }
 
-        tbefore = System.nanoTime();
+        // tbefore = System.nanoTime();
         HashMap<String, String> siteReport = screeningReporter.prepareAgentSiteReport(endCycle, agentIdSet);
-        tafter = System.nanoTime();
-        Community.ADD_TIME_STAMP("after prepareAgentSiteReport: " + (tafter - tbefore) / 1_000_000_000 + "s");
+        // tafter = System.nanoTime();
+        // Community.ADD_TIME_STAMP("after prepareAgentSiteReport: " + (tafter - tbefore) / 1_000_000_000 + "s");
         
         // identify properties
         ArrayList<String> fullProps = new ArrayList<String>();
@@ -1047,7 +1051,8 @@ public class PopulationReporter extends Reporter {
             value += " " + siteReport.get(agentId);
             censusPropertyReport.put(Integer.valueOf(agentId), value);
         }
-
+        long t1 = System.nanoTime();
+        Community.RECORD_METHOD_TIME("prepareCensusReport", t1 - t0);
         return censusPropertyReport ;
     }
 

@@ -2179,13 +2179,12 @@ public class ScreeningReporter extends Reporter {
      */
     public HashMap<String, String> prepareAgentSiteReport(int endCycle, HashSet<String> agentIdSet) {
         String[] siteNames = Site.getAvailableSites();
-        long tbefore = System.nanoTime();
+        float t0 = System.nanoTime();
         HashMap<String, HashMap<String, String>> rawReport = prepareRawAgentSiteReport(endCycle, agentIdSet);
 
-        long tafter = System.nanoTime();
-        Community.ADD_TIME_STAMP("prepareAgentSiteReport -> prepareRawAgentSiteReport: " + (tafter - tbefore) / 1_000_000_000 + "s");
+        // long tafter = System.nanoTime();
+        // Community.ADD_TIME_STAMP("prepareAgentSiteReport -> prepareRawAgentSiteReport: " + (tafter - tbefore) / 1_000_000_000 + "s");
 
-        tbefore = System.nanoTime();
         HashMap<String, String> returnReport = new HashMap<String, String>();
         for (String agentId : agentIdSet) {
             String agentRecord = "";
@@ -2196,6 +2195,8 @@ public class ScreeningReporter extends Reporter {
             }
             returnReport.put(agentId, agentRecord);
         }
+        float t1 = System.nanoTime();
+        Community.RECORD_METHOD_TIME("ScreeningReporter.prepareAgentSiteReport", t1 - t0);
         return returnReport;
     }
     

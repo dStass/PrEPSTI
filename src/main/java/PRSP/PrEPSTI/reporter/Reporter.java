@@ -1218,6 +1218,7 @@ public class Reporter {
      * @return
      */
     public String HASHMAP_TO_STRING(HashMap<String, String> report, String[] properties) {
+        float t0 = System.nanoTime();
         String toReturn = "";
         Set<String> keySet = report.keySet();
         for (String property : properties) {
@@ -1225,6 +1226,8 @@ public class Reporter {
                 toReturn += property + ":" + report.get(property) + " ";
             }
         }
+        float t1 = System.nanoTime();
+        Community.RECORD_METHOD_TIME("Reporter.HASHMAP_TO_STRING", t1 - t0);
         return toReturn.trim();
     }
     
@@ -1240,6 +1243,7 @@ public class Reporter {
      */
     static protected int GET_BACK_CYCLES(int backYears, int backMonths, int backDays, int maxCycles)
     {
+        float t0 = System.nanoTime();
         int backCycles ;
         
         // Don't go further back than records allow.
@@ -1262,6 +1266,9 @@ public class Reporter {
             backCycles = maxCycles ;
             LOGGER.warning("Tried to go back more days than records allow.") ;
         }
+
+        float t1 = System.nanoTime();
+        Community.RECORD_METHOD_TIME("GET_BACK_CYCLES(y,m,d,maxCycles)", t1 - t0);
         
         return backCycles ;
     }
