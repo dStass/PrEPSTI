@@ -2039,9 +2039,6 @@ public class ScreeningReporter extends Reporter {
     public HashMap<String, HashMap<String, String>> prepareRawAgentSiteReport(int endCycle, HashSet<String> agentIdSet) {
         String[] siteNames = Site.getAvailableSites();
 
-        double tbefore;
-        double tafter;
-        tbefore = System.nanoTime();
         ArrayList<String> screeningBackCycles = getBackCyclesReport(0, 0, 1, endCycle);
         
         // extract site data
@@ -2063,13 +2060,11 @@ public class ScreeningReporter extends Reporter {
         }
 
         ArrayList<String> screeningBackCyclesReport = getBackCyclesReport(0, 0, endCycle, endCycle) ;
-        tafter = System.nanoTime();
-        Community.ADD_TIME_STAMP("prepareRawAgentSiteReport -> firstHALF: " + (tafter - tbefore) / 1_000_000_000 + "s");
-
-        tbefore = System.nanoTime();
 
         // modify internal hashmap with infectious agents
-        for (String agentId : infectiousAgentsHashMap.keySet()) {
+        ConcurrentHashMap<String, ConcurrentHashMap<String, String>> concurrentReturnReport = Concurrency.convertNormalToConcurrentHashMap(returnReport);
+        infectiousAgentsHashMap.keySet().parallelStream().forEach(agentId -> 
+        {
             String agentInfectiousRecord = infectiousAgentsHashMap.get(agentId);
             for (String site : siteNames) {
                 // if the site is infectious
@@ -2088,13 +2083,37 @@ public class ScreeningReporter extends Reporter {
                     newSiteRecord = newSiteRecord.substring(0, newSiteRecord.length() - 1);
                     
                     // replace with the new record
-                    returnReport.get(agentId).put(site, newSiteRecord);
+                    concurrentReturnReport.get(agentId).put(site, newSiteRecord);
                 }
             }
-        }
+        });
 
-        tafter = System.nanoTime();
-        Community.ADD_TIME_STAMP("prepareRawAgentSiteReport -> secondHalfAfterLoop: " + (tafter - tbefore) / 1_000_000_000 + "s");
+        returnReport = Concurrency.convertConcurrentToNormalHashMap(concurrentReturnReport);
+        
+
+        // for (String agentId : infectiousAgentsHashMap.keySet()) {
+        //     String agentInfectiousRecord = infectiousAgentsHashMap.get(agentId);
+        //     for (String site : siteNames) {
+        //         // if the site is infectious
+        //         if (agentInfectiousRecord.contains(site)) {
+
+        //             // extract correct values
+        //             String symptomatic = EXTRACT_VALUE(site, agentInfectiousRecord);
+        //             String[] infectionAndIncubation = extractInfectionAndIncubationTimeFromBackCycles(agentId, site, symptomatic, screeningBackCyclesReport);
+        //             String infectionTime = infectionAndIncubation[0];
+        //             String incubationTime = infectionAndIncubation[1];
+
+        //             // build the new record
+        //             String newSiteRecord = Reporter.ADD_REPORT_PROPERTY("symptomatic", symptomatic) ;
+        //             newSiteRecord += Reporter.ADD_REPORT_PROPERTY("infectionTime", infectionTime);
+        //             newSiteRecord += Reporter.ADD_REPORT_PROPERTY("incubationTime", incubationTime);
+        //             newSiteRecord = newSiteRecord.substring(0, newSiteRecord.length() - 1);
+                    
+        //             // replace with the new record
+        //             returnReport.get(agentId).put(site, newSiteRecord);
+        //         }
+        //     }
+        // }
         
         return returnReport;
     }

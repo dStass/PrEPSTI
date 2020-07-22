@@ -882,30 +882,15 @@ public class PopulationReporter extends Reporter {
         double tbefore;
         double tafter;
 
-
-        tbefore = System.nanoTime();
         HashMap<Comparable, ArrayList<Comparable>> testingReport
             = screeningReporter.prepareAgentTestingReport(0, 0, endCycle, endCycle);
-        
-        tafter = System.nanoTime();
-        Community.ADD_TIME_STAMP("prepareCensusReport -> prepareAgentTestingReport: " + (tafter - tbefore) / 1_000_000_000 + "s");
 
-        tbefore = System.nanoTime();
         HashMap<Object,HashMap<Comparable,ArrayList<Comparable>>> agentTreatedReport
             = screeningReporter.prepareAgentTreatedReport(Site.getAvailableSites(), 0, 0, endCycle, endCycle);
 
-        tafter = System.nanoTime();
-        Community.ADD_TIME_STAMP("prepareCensusReport -> prepareAgentTreatedReport: " + (tafter - tbefore) / 1_000_000_000 + "s");
-
-        tbefore = System.nanoTime();
         // Census at birth
         HashMap<Object,String> birthReport = prepareCensusPropertyReport() ;
         ArrayList<String> birthReportByCycle = prepareBirthReport(0,0,endCycle,endCycle);
-
-        tafter = System.nanoTime();
-        Community.ADD_TIME_STAMP("prepareCensusReport -> prepareCensusPropertyReport + prepareBirthReport: " + (tafter - tbefore) / 1_000_000_000 + "s");
-
-        tbefore = System.nanoTime();
         
         // loop through each cycle 
         for (int currentCycle = 0; currentCycle < birthReportByCycle.size(); ++currentCycle) {
@@ -939,16 +924,9 @@ public class PopulationReporter extends Reporter {
                 rawReport.put(agentId, birthReportHashMap);     
             }
         }
-
-        tafter = System.nanoTime();
-        Community.ADD_TIME_STAMP("prepareCensusReport -> bigLoop1 " + (tafter - tbefore) / 1_000_000_000 + "s");
         
-        
-        tbefore = System.nanoTime();
         // Agent death report
         ArrayList<Comparable> deathReport = prepareAgentsDeadRecord(endCycle);
-        tafter = System.nanoTime();
-        Community.ADD_TIME_STAMP("prepareCensusReport -> deathReport: " + (tafter - tbefore) / 1_000_000_000 + "s");
         
         // Add all agents and remove dead agents
         HashSet<String> agentIdSet = new HashSet<String>() ;
@@ -960,10 +938,7 @@ public class PopulationReporter extends Reporter {
             rawReport.remove(agentIdString);
         }
 
-        tbefore = System.nanoTime();
         HashMap<String, String> siteReport = screeningReporter.prepareAgentSiteReport(endCycle, agentIdSet);
-        tafter = System.nanoTime();
-        Community.ADD_TIME_STAMP("prepareCensusReport -> prepareAgentSiteReport: " + (tafter - tbefore) / 1_000_000_000 + "s");
         
         // identify properties
         ArrayList<String> fullProps = new ArrayList<String>();
@@ -1017,7 +992,6 @@ public class PopulationReporter extends Reporter {
         //     "consentCasualProbability"
         // };
         
-        tbefore = System.nanoTime();
         for (String property : properties) {
 
             // get all change reports at a given cycle with a particular property
@@ -1062,9 +1036,6 @@ public class PopulationReporter extends Reporter {
                 if (agentIdSet.isEmpty()) break ;
             }
         }
-
-        tafter = System.nanoTime();
-        Community.ADD_TIME_STAMP("prepareCensusReport -> bigLoop2: " + (tafter - tbefore) / 1_000_000_000 + "s");
 
         // prepare the returned property report
         HashMap<Integer,String> censusPropertyReport = new HashMap<Integer,String>() ;
