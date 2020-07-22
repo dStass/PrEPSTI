@@ -2059,6 +2059,8 @@ public class ScreeningReporter extends Reporter {
             returnReport.put(agentId, siteHashMap);
         }
 
+        ArrayList<String> screeningBackCyclesReport = getBackCyclesReport(0, 0, endCycle, endCycle) ;
+
         // modify internal hashmap with infectious agents
         for (String agentId : infectiousAgentsHashMap.keySet()) {
             String agentInfectiousRecord = infectiousAgentsHashMap.get(agentId);
@@ -2068,7 +2070,7 @@ public class ScreeningReporter extends Reporter {
 
                     // extract correct values
                     String symptomatic = EXTRACT_VALUE(site, agentInfectiousRecord);
-                    String[] infectionAndIncubation = extractInfectionAndIncubationTimeFromBackCycles(agentId, site, symptomatic, endCycle);  // TODO backcycles
+                    String[] infectionAndIncubation = extractInfectionAndIncubationTimeFromBackCycles(agentId, site, symptomatic, screeningBackCyclesReport);  // TODO backcycles
                     String infectionTime = infectionAndIncubation[0];
                     String incubationTime = infectionAndIncubation[1]; // TODO work out incubation time
 
@@ -2095,9 +2097,7 @@ public class ScreeningReporter extends Reporter {
      * @param symptomatic
      * @return
      */
-    private String[] extractInfectionAndIncubationTimeFromBackCycles(String agentId, String site, String symptomatic, int endCycle) {
-        ArrayList<String> screeningBackCycles = this.getBackCyclesReport(0, 0, endCycle, endCycle);
-
+    private String[] extractInfectionAndIncubationTimeFromBackCycles(String agentId, String site, String symptomatic, ArrayList<String> screeningBackCycles) {
         int foundCycle = screeningBackCycles.size() - 1;
         for (int i = screeningBackCycles.size() - 1; i >= 0; --i) {
             foundCycle -= 1;
@@ -2150,9 +2150,13 @@ public class ScreeningReporter extends Reporter {
      */
     public HashMap<String, String> prepareAgentSiteReport(int endCycle, HashSet<String> agentIdSet) {
         String[] siteNames = Site.getAvailableSites();
-
+        long tbefore = System.nanoTime();
         HashMap<String, HashMap<String, String>> rawReport = prepareRawAgentSiteReport(endCycle, agentIdSet);
 
+        long tafter = System.nanoTime();
+        Community.ADD_TIME_STAMP("prepareAgentSiteReport -> prepareRawAgentSiteReport: " + (tafter - tbefore) / 1_000_000_000 + "s");
+
+        tbefore = System.nanoTime();
         HashMap<String, String> returnReport = new HashMap<String, String>();
         for (String agentId : agentIdSet) {
             String agentRecord = "";
@@ -2163,6 +2167,9 @@ public class ScreeningReporter extends Reporter {
             }
             returnReport.put(agentId, agentRecord);
         }
+
+        tafter = System.nanoTime();
+        Community.ADD_TIME_STAMP("prepareAgentSiteReport -> rest: " + (tafter - tbefore) / 1_000_000_000 + "s");
 
         return returnReport;
     }

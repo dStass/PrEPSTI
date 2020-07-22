@@ -762,9 +762,12 @@ public class Community {
             String rebootedSimName = simName;
             String rebootedFolderPath = ConfigLoader.REBOOT_PATH;
             if (fromCycle >= 0) {
+                double tbefore = System.nanoTime();
                 PopulationReporter populationReporter = new PopulationReporter(simName, ConfigLoader.REBOOT_PATH);
                 RelationshipReporter relationshipReporter = new RelationshipReporter(simName, ConfigLoader.REBOOT_PATH);
                 ScreeningReporter screeningReporter = new ScreeningReporter(simName, ConfigLoader.REBOOT_PATH);
+                double tafter = System.nanoTime();
+                Community.ADD_TIME_STAMP("new reports: " + (tafter - tbefore) / 1_000_000_000 + "s");
                 
                 // generate the exact pseudorandom sequence for agent birth days
                 // rebootRandomSeeds(rebootedFolderPath, rebootedSimName) ;
@@ -781,9 +784,12 @@ public class Community {
                  *      AGENTS     *
                  * * * * * * * * * */
 
+                tbefore = System.nanoTime();
+
                 // generate our reboot census
                 HashMap<Integer, String> populationCensusUpToCycle = populationReporter.prepareCensusReport(cycleToGenerateReportUpTo, screeningReporter);
-                
+                tafter = System.nanoTime();
+                Community.ADD_TIME_STAMP("after prepareCensusReport: " + (tafter - tbefore) / 1_000_000_000 + "s");
 
                 // extract agent census data and write to internal metadata
                 
@@ -807,7 +813,10 @@ public class Community {
                  * * * * * * * * * */
 
                 // extract relationship data and write to internal metadata
+                tbefore = System.nanoTime();
                 HashMap<Integer, String> relationshipRecordHashMap = relationshipReporter.prepareRelationshipRecordHashMap(cycleToGenerateReportUpTo);
+                tafter = System.nanoTime();
+                Community.ADD_TIME_STAMP("after prepareRelationshipRecordHashMap: " + (tafter - tbefore) / 1_000_000_000 + "s");
                 
                 // DEBUG: sort relationships by id
                 // TreeSet<Integer> sortedRelationshipKeySet = new TreeSet<Integer>();

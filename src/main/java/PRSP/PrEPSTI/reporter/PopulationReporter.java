@@ -9,13 +9,16 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.logging.Level;
 
 import PRSP.PrEPSTI.agent.Agent;
+import PRSP.PrEPSTI.community.Community;
 import PRSP.PrEPSTI.configloader.ConfigLoader;
 import PRSP.PrEPSTI.site.Site;
+import PRSP.PrEPSTI.concurrency.Concurrency;
 
 
 /**
@@ -739,21 +742,18 @@ public class PopulationReporter extends Reporter {
         
         return concordants ;
     }
-    
-    /**
-     * 
-     * @return (HashMap) agentId maps to String describing census properties.
-     */
+
     public HashMap<Object,String> prepareCensusPropertyReport()
     {
-        HashMap<Object,String> censusPropertyReport = new HashMap<Object,String>() ;
         
+        // new parallel loop:
         ArrayList<String>  birthReport = prepareBirthReport() ;
+        ConcurrentHashMap<Object,String> censusPropertyReport = new ConcurrentHashMap<Object,String>() ;
 
-        for (String birthRecord : birthReport)
+        for (String birthRecord : birthReport) 
         {
             ArrayList<String> birthArray = EXTRACT_ARRAYLIST(birthRecord,AGENTID) ;
-            for (String birthAgent : birthArray)
+            birthArray.parallelStream().forEach(birthAgent ->
             {
                 Object agentId = EXTRACT_VALUE(AGENTID,birthAgent) ;
                 String propertyValue ;
@@ -766,10 +766,72 @@ public class PopulationReporter extends Reporter {
                     censusEntry += Reporter.ADD_REPORT_PROPERTY(propertyName, propertyValue) ;
                 }
                 censusPropertyReport.put(agentId, censusEntry) ;
-            }
+            });
         }
-        return censusPropertyReport ;
+        // HashMap<Object,String> returnReport = new HashMap<Object,String>() ;
+        // for (Map.Entry<Object, String> entry : censusPropertyReport.entrySet())
+        //     returnReport.put(entry.getKey(), entry.getValue());
+        
+        HashMap<Object,String> returnReport = Concurrency.convertConcurrentToNormalHashMap(censusPropertyReport);
+        return returnReport ;
     }
+
+
+        // old loop:
+    //     ArrayList<String>  birthReport = prepareBirthReport() ;
+    //     HashMap<Object,String> censusPropertyReport = new HashMap<Object,String>() ;
+
+    //     for (String birthRecord : birthReport)
+    //     {
+    //         ArrayList<String> birthArray = EXTRACT_ARRAYLIST(birthRecord,AGENTID) ;
+    //         for (String birthAgent : birthArray)
+    //         {
+    //             Object agentId = EXTRACT_VALUE(AGENTID,birthAgent) ;
+    //             String propertyValue ;
+    //             String censusEntry = "" ;
+    //             ArrayList<String> propertyNames = IDENTIFY_PROPERTIES(birthAgent) ;
+    //             propertyNames.remove(AGENTID) ;
+    //             for (String propertyName : propertyNames)
+    //             {
+    //                 propertyValue = EXTRACT_VALUE(propertyName,birthAgent);
+    //                 censusEntry += Reporter.ADD_REPORT_PROPERTY(propertyName, propertyValue) ;
+    //             }
+    //             censusPropertyReport.put(agentId, censusEntry) ;
+    //         }
+    //     }
+    //     return censusPropertyReport ;
+    // }
+    
+    // /**
+    //  * 
+    //  * @return (HashMap) agentId maps to String describing census properties.
+    //  */
+    // public HashMap<Object,String> prepareCensusPropertyReport()
+    // {
+    //     HashMap<Object,String> censusPropertyReport = new HashMap<Object,String>() ;
+        
+    //     ArrayList<String>  birthReport = prepareBirthReport() ;
+
+    //     for (String birthRecord : birthReport)
+    //     {
+    //         ArrayList<String> birthArray = EXTRACT_ARRAYLIST(birthRecord,AGENTID) ;
+    //         for (String birthAgent : birthArray)
+    //         {
+    //             Object agentId = EXTRACT_VALUE(AGENTID,birthAgent) ;
+    //             String propertyValue ;
+    //             String censusEntry = "" ;
+    //             ArrayList<String> propertyNames = IDENTIFY_PROPERTIES(birthAgent) ;
+    //             propertyNames.remove(AGENTID) ;
+    //             for (String propertyName : propertyNames)
+    //             {
+    //                 propertyValue = EXTRACT_VALUE(propertyName,birthAgent);
+    //                 censusEntry += Reporter.ADD_REPORT_PROPERTY(propertyName, propertyValue) ;
+    //             }
+    //             censusPropertyReport.put(agentId, censusEntry) ;
+    //         }
+    //     }
+    //     return censusPropertyReport ;
+    // }
     
     /**
      * 
@@ -816,16 +878,34 @@ public class PopulationReporter extends Reporter {
     public HashMap<Integer, String> prepareCensusReport(int endCycle, ScreeningReporter screeningReporter)     {
         HashMap<String, HashMap<String, String>> rawReport = new HashMap<String, HashMap<String, String>>();
         // screening reporter:
+
+        double tbefore;
+        double tafter;
+
+
+        tbefore = System.nanoTime();
         HashMap<Comparable, ArrayList<Comparable>> testingReport
             = screeningReporter.prepareAgentTestingReport(0, 0, endCycle, endCycle);
+        
+        tafter = System.nanoTime();
+        Community.ADD_TIME_STAMP("prepareCensusReport -> prepareAgentTestingReport: " + (tafter - tbefore) / 1_000_000_000 + "s");
 
+        tbefore = System.nanoTime();
         HashMap<Object,HashMap<Comparable,ArrayList<Comparable>>> agentTreatedReport
             = screeningReporter.prepareAgentTreatedReport(Site.getAvailableSites(), 0, 0, endCycle, endCycle);
 
-            
+        tafter = System.nanoTime();
+        Community.ADD_TIME_STAMP("prepareCensusReport -> prepareAgentTreatedReport: " + (tafter - tbefore) / 1_000_000_000 + "s");
+
+        tbefore = System.nanoTime();
         // Census at birth
         HashMap<Object,String> birthReport = prepareCensusPropertyReport() ;
         ArrayList<String> birthReportByCycle = prepareBirthReport(0,0,endCycle,endCycle);
+
+        tafter = System.nanoTime();
+        Community.ADD_TIME_STAMP("prepareCensusReport -> prepareCensusPropertyReport + prepareBirthReport: " + (tafter - tbefore) / 1_000_000_000 + "s");
+
+        tbefore = System.nanoTime();
         
         // loop through each cycle 
         for (int currentCycle = 0; currentCycle < birthReportByCycle.size(); ++currentCycle) {
@@ -859,9 +939,16 @@ public class PopulationReporter extends Reporter {
                 rawReport.put(agentId, birthReportHashMap);     
             }
         }
+
+        tafter = System.nanoTime();
+        Community.ADD_TIME_STAMP("prepareCensusReport -> bigLoop1 " + (tafter - tbefore) / 1_000_000_000 + "s");
         
+        
+        tbefore = System.nanoTime();
         // Agent death report
         ArrayList<Comparable> deathReport = prepareAgentsDeadRecord(endCycle);
+        tafter = System.nanoTime();
+        Community.ADD_TIME_STAMP("prepareCensusReport -> deathReport: " + (tafter - tbefore) / 1_000_000_000 + "s");
         
         // Add all agents and remove dead agents
         HashSet<String> agentIdSet = new HashSet<String>() ;
@@ -872,7 +959,11 @@ public class PopulationReporter extends Reporter {
             if (rawReport.containsKey(agentIdString))
             rawReport.remove(agentIdString);
         }
+
+        tbefore = System.nanoTime();
         HashMap<String, String> siteReport = screeningReporter.prepareAgentSiteReport(endCycle, agentIdSet);
+        tafter = System.nanoTime();
+        Community.ADD_TIME_STAMP("prepareCensusReport -> prepareAgentSiteReport: " + (tafter - tbefore) / 1_000_000_000 + "s");
         
         // identify properties
         ArrayList<String> fullProps = new ArrayList<String>();
@@ -925,7 +1016,8 @@ public class PopulationReporter extends Reporter {
         //     "trustPrep",
         //     "consentCasualProbability"
         // };
-
+        
+        tbefore = System.nanoTime();
         for (String property : properties) {
 
             // get all change reports at a given cycle with a particular property
@@ -970,6 +1062,9 @@ public class PopulationReporter extends Reporter {
                 if (agentIdSet.isEmpty()) break ;
             }
         }
+
+        tafter = System.nanoTime();
+        Community.ADD_TIME_STAMP("prepareCensusReport -> bigLoop2: " + (tafter - tbefore) / 1_000_000_000 + "s");
 
         // prepare the returned property report
         HashMap<Integer,String> censusPropertyReport = new HashMap<Integer,String>() ;
