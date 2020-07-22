@@ -281,7 +281,17 @@ public class Relationship {
         NB_RELATIONSHIPS = 0 ;        
         String relationshipRecord  = "" ;
         Integer relationshipId ;
-        ArrayList<Integer> currentRelationshipIds = new ArrayList<Integer>() ;
+
+
+        HashSet<Integer> currentRelationshipIds = new HashSet<Integer>() ;
+
+        // optimisation:
+        HashMap<Integer, Agent> agentMapping = new HashMap<Integer, Agent>();
+        for (Agent agent : agents) {
+            agentMapping.put(agent.getAgentId(), agent);
+        }
+
+        
         
         String rebootFileName = simName.concat("-REBOOT.txt") ;
         //ArrayList<String> nameArray = new ArrayList<String>() ;
@@ -299,12 +309,12 @@ public class Relationship {
                 }
             }
             fileReader.close() ;
-            String agentId0 ;
-            String agentId1 ;
+            // String agentId0 ;
+            // String agentId1 ;
             int agentIndex0 = 0 ;
             int agentIndex1 = 0 ;
-            int agentsFound ;
-            int agentIndex ;
+            // int agentsFound ;
+            // int agentIndex ;
             String relationshipClazzName ;
 
             ArrayList<String> relationshipIdList = Reporter.EXTRACT_ARRAYLIST(relationshipRecord, Reporter.RELATIONSHIPID) ;
@@ -319,34 +329,37 @@ public class Relationship {
                 }
                 currentRelationshipIds.add(relationshipId) ;
 
-                agentId0 = Reporter.EXTRACT_VALUE(Reporter.AGENTID0, relationshipString) ;
-                agentId1 = Reporter.EXTRACT_VALUE(Reporter.AGENTID1, relationshipString) ;
+                String agentId0 = Reporter.EXTRACT_VALUE(Reporter.AGENTID0, relationshipString) ;
+                String agentId1 = Reporter.EXTRACT_VALUE(Reporter.AGENTID1, relationshipString) ;
+
+                Agent agent0 = agentMapping.get(Integer.valueOf(agentId0));
+                Agent agent1 = agentMapping.get(Integer.valueOf(agentId1));
 
                 // Add Agents of correct agentId
-                agentsFound = 0 ;
-                agentIndex = 0 ;
-                //for (int agentIndex = 0 ; agentIndex < agents.size() ; agentIndex++ )
-                while (agentsFound < 2)
-                {
-                    if (agents.get(agentIndex).getAgentId() == Integer.valueOf(agentId0))
-                    {
-                        agentIndex0 = agentIndex ;
-                        agentsFound++ ;
-                    }
-                    else if (agents.get(agentIndex).getAgentId() == Integer.valueOf(agentId1))
-                    {
-                        agentIndex1 = agentIndex ;
-                        agentsFound++ ;
-                    }
-                    agentIndex++ ;
-                }
+                // agentsFound = 0 ;
+                // agentIndex = 0 ;
+                // //for (int agentIndex = 0 ; agentIndex < agents.size() ; agentIndex++ )
+                // while (agentsFound < 2)
+                // {
+                //     if (agents.get(agentIndex).getAgentId() == Integer.valueOf(agentId0))
+                //     {
+                //         agentIndex0 = agentIndex ;
+                //         agentsFound++ ;
+                //     }
+                //     else if (agents.get(agentIndex).getAgentId() == Integer.valueOf(agentId1))
+                //     {
+                //         agentIndex1 = agentIndex ;
+                //         agentsFound++ ;
+                //     }
+                //     agentIndex++ ;
+                // }
 
                 // Find Relationship Class and create Relationship
                 relationshipClazzName = Reporter.EXTRACT_VALUE("relationship", relationshipString) ;
                 Class relationshipClazz = Class.forName("PRSP.PrEPSTI.community.".concat(relationshipClazzName)) ;
 
                 Relationship relationship = (Relationship) relationshipClazz.getDeclaredConstructor().newInstance() ;
-                relationship.addAgents(agents.get(agentIndex0), agents.get(agentIndex1)) ;
+                relationship.addAgents(agent0, agent1) ;
                 NB_RELATIONSHIPS++ ;
                 relationship.setRelationshipId(relationshipId) ;
             }
