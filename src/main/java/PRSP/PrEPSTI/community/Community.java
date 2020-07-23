@@ -283,6 +283,12 @@ public class Community {
         // Establish Community of Agents for simulation
         LOGGER.info(SIM_NAME);
         Community community = new Community(REBOOT_SIMULATION, REBOOT_FROM_CYCLE) ;
+        
+        // clear all memoized reports
+        Reporter.CLEAR_MEMOIZED();
+        PopulationReporter.CLEAR_MEMOIZED();
+
+
         Community.ADD_TIME_STAMP("new community created");
 
         // Establish conditions for specific simulation questions

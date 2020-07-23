@@ -1,19 +1,20 @@
 /**
  * 
  */
-package PRSP.PrEPSTI.reporter ;
+package PRSP.PrEPSTI.reporter;
 
-import PRSP.PrEPSTI.agent.MSM ;
-import PRSP.PrEPSTI.community.Community ;
-import PRSP.PrEPSTI.configloader.ConfigLoader ;
+import PRSP.PrEPSTI.agent.MSM;
+import PRSP.PrEPSTI.community.Community;
+import PRSP.PrEPSTI.configloader.ConfigLoader;
 //import community.* ;
 
-import java.io.* ;
+import java.io.*;
 
 import java.lang.reflect.*;
-import java.util.ArrayList ;
+import java.util.ArrayList;
 //import java.util.Arrays;
-import java.util.Set ;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.Collections;
 import java.util.* ;
 import java.util.HashMap ;
@@ -48,10 +49,6 @@ public class Reporter {
      */
     static protected HashMap<String,Object> REPORT_LIST = new HashMap<String,Object>() ;
 
-    /**
-     * memoized back_cycles reports for repeated calls
-     */
-    static private HashMap<String, ArrayList<String>> MEMOIZED_BACK_CYCLES = new HashMap<String, ArrayList<String>>();
     
     /**
      * Clears REPORT_LIST so that fresh ones can be generated for the next simulation.
@@ -59,6 +56,16 @@ public class Reporter {
     static public void CLEAR_REPORT_LIST()
     {
         REPORT_LIST.clear() ;
+    }
+
+    /**
+     * memoized back_cycles reports for repeated calls
+     */
+    static private ConcurrentHashMap<String, ArrayList<String>> MEMOIZED_BACK_CYCLES = new ConcurrentHashMap<String, ArrayList<String>>();
+
+    static public void CLEAR_MEMOIZED()
+    {
+        MEMOIZED_BACK_CYCLES = new ConcurrentHashMap<String, ArrayList<String>>();
     }
     
     /** Whether to automatically save reports */
@@ -4050,13 +4057,13 @@ public class Reporter {
             // System.out.println("getBackCyclesReport(" + backCycles + "," + endCycle + ")");
             float t0 = System.nanoTime();
 
-            String backCyclesPairString = '[' + String.valueOf(backCycles) + ',' + String.valueOf(endCycle) + ']';
+            String memoizedKey = '(' + this.getClass().toString() + ':' + String.valueOf(backCycles) + ',' + String.valueOf(endCycle) + ')';
             
             // check if we have seen this combination before, if so, return
             // bug occurs when backCycles == endCycle
-            if (backCycles != endCycle && Reporter.MEMOIZED_BACK_CYCLES.containsKey(backCyclesPairString)) {
+            if (backCycles != endCycle && Reporter.MEMOIZED_BACK_CYCLES.containsKey(memoizedKey)) {
                 ArrayList<String> toReturn = new ArrayList<String>();
-                ArrayList<String> memoized = Reporter.MEMOIZED_BACK_CYCLES.get(backCyclesPairString);
+                ArrayList<String> memoized = Reporter.MEMOIZED_BACK_CYCLES.get(memoizedKey);
                 for (String backCycleString : memoized) {
                     toReturn.add(backCycleString);
                 }
@@ -4132,7 +4139,7 @@ public class Reporter {
                 assert(2 < 0) ;
             }
 
-            Reporter.MEMOIZED_BACK_CYCLES.put(backCyclesPairString, outputList);
+            Reporter.MEMOIZED_BACK_CYCLES.put(memoizedKey, outputList);
             float t1 = System.nanoTime();
             Community.RECORD_METHOD_TIME("Reporter.getBackCyclesReport(backCycles,endCycles)", t1 - t0);
 

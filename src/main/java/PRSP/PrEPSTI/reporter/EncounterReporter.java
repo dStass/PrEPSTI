@@ -337,7 +337,7 @@ public class EncounterReporter extends Reporter {
                 //(HashMap<Object,String[]>) getReport("relationshipAgent",relationshipReporter) ; //  
         
         PopulationReporter populationReporter = new PopulationReporter(simName,getFolderPath()) ;
-        HashMap<Object,ArrayList<String>> sortedAgentReport = populationReporter.agentIdSorted(sortingProperty) ;
+        HashMap<String,ArrayList<String>> sortedAgentReport = populationReporter.agentIdSorted(sortingProperty) ;
         HashMap<Object,Object> sortedAgentIds = populationReporter.sortedAgentIds(sortingProperty) ;
         ArrayList<String> agentsAliveReport = populationReporter.prepareAgentsAliveRecord(endCycle - DAYS_PER_YEAR) ;
 
@@ -952,7 +952,7 @@ public class EncounterReporter extends Reporter {
         //during the specified period.
         
         // Get Report of sortingValue mapping to agentIds
-        HashMap<Object,ArrayList<String>> sortedAgentReport = new HashMap<Object,ArrayList<String>>() ;
+        HashMap<String,ArrayList<String>> sortedAgentReport = new HashMap<String,ArrayList<String>>() ;
         if (sortingProperty.isEmpty())
             sortedAgentReport.put("",new ArrayList<String>()) ;
         else

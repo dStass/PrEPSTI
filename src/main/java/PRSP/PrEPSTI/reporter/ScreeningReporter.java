@@ -183,14 +183,14 @@ public class ScreeningReporter extends Reporter {
         prepareSortedYearsNotificationsRecord(String[] siteNames, int backYears, int lastYear, String sortingProperty)
         {
             HashMap<Comparable,String> sortedYearsNotificationsReport = new HashMap<Comparable,String>() ;
-            HashMap<Object,HashMap<Comparable,String>> sortedYearsNotificationsRecord = new HashMap<Object,HashMap<Comparable,String>>() ;
+            HashMap<String,HashMap<Comparable,String>> sortedYearsNotificationsRecord = new HashMap<String,HashMap<Comparable,String>>() ;
             //HashMap<Object,HashMap<Object,Number[]>> sortedYearsNotificationsRecord = new HashMap<Object,HashMap<Object,Number[]>>() ;
             
             // Get Report of sortingValue mapping to agentIds
             PopulationReporter populationReporter = new PopulationReporter(simName,getFolderPath()) ;
-            HashMap<Object,ArrayList<String>> sortedAgentReport = populationReporter.agentIdSorted(sortingProperty) ;
+            HashMap<String,ArrayList<String>> sortedAgentReport = populationReporter.agentIdSorted(sortingProperty) ;
 
-            for (Object sortingValue : sortedAgentReport.keySet())
+            for (String sortingValue : sortedAgentReport.keySet())
             {
               // logger.log(level.info, "value:{0} population:{1}", new Object[] {sortingValue,sortedAgentReport.get(sortingValue).size()});
                 HashMap<Comparable,String> yearsNotificationsRecord = new HashMap<Comparable,String>() ; 
@@ -290,7 +290,7 @@ public class ScreeningReporter extends Reporter {
         
         // Get Report of sortingValue mapping to agentIds
         PopulationReporter populationReporter = new PopulationReporter(simName,getFolderPath()) ;
-        HashMap<Object,ArrayList<String>> sortedAgentReport = populationReporter.agentIdSorted(sortingProperty) ;
+        HashMap<String,ArrayList<String>> sortedAgentReport = populationReporter.agentIdSorted(sortingProperty) ;
         
         for (Object sortingValue : sortedAgentReport.keySet())
         {
@@ -746,7 +746,7 @@ public class ScreeningReporter extends Reporter {
         //String finalPrevalencesSortedRecord = new HashMap<Object,String>() ;
         
         PopulationReporter populationReporter = new PopulationReporter(simName,getFolderPath()) ;
-        HashMap<Object,ArrayList<String>> sortedAgentReport = populationReporter.agentIdSorted(sortingProperty) ;
+        HashMap<String,ArrayList<String>> sortedAgentReport = populationReporter.agentIdSorted(sortingProperty) ;
         
         ArrayList<String> agentsAliveReport = populationReporter.prepareAgentsAliveRecord(endCycle) ;
             
@@ -992,15 +992,15 @@ public class ScreeningReporter extends Reporter {
         HashMap<Object,Number> testingRateReport = new HashMap<Object,Number>() ; 
         
         ArrayList<String> sortedAgentIds ;
-        ArrayList<Object> sortingValues = new ArrayList<Object>() ;
-        HashMap<Object,ArrayList<String>> sortedAgentReport = new HashMap<Object,ArrayList<String>>() ;
+        ArrayList<String> sortingValues = new ArrayList<String>() ;
+        HashMap<String,ArrayList<String>> sortedAgentReport = new HashMap<String,ArrayList<String>>() ;
         if (sortingProperty.isEmpty())
             sortingValues.add("") ;
         else
         {
             PopulationReporter populationReporter = new PopulationReporter(simName,getFolderPath()) ;
             sortedAgentReport = populationReporter.agentIdSorted(sortingProperty) ;
-            sortingValues = new ArrayList<Object>(sortedAgentReport.keySet()) ;
+            sortingValues = new ArrayList<String>(sortedAgentReport.keySet()) ;
         }
         
         for (Object value : sortingValues)
@@ -1146,8 +1146,8 @@ public class ScreeningReporter extends Reporter {
             int endCycle ;
             
             // Sorted AgentId
-            ArrayList<Object> sortingValues = new ArrayList<Object>() ;
-            HashMap<Object,ArrayList<String>> sortedAgentIds = new HashMap<Object,ArrayList<String>>() ;
+            ArrayList<String> sortingValues = new ArrayList<String>() ;
+            HashMap<String,ArrayList<String>> sortedAgentIds = new HashMap<String,ArrayList<String>>() ;
             PopulationReporter populationReporter = new PopulationReporter(simName,getFolderPath()) ;
             if (sortingProperty.isEmpty())
                 sortingValues.add("") ;
@@ -1158,17 +1158,17 @@ public class ScreeningReporter extends Reporter {
             Number[] cumulativeAgentTestingRecord = new Number[] {} ;
             for (int year = 0 ; year < backYears ; year++ )
             {
-                HashMap<Object,Number[]> sortedCumulativeAgentTestingRecord = new HashMap<Object,Number[]>() ;
+                HashMap<String,Number[]> sortedCumulativeAgentTestingRecord = new HashMap<String,Number[]>() ;
             
                 endCycle = maxCycles - year * DAYS_PER_YEAR ;
                 
                 if (!sortingProperty.isEmpty())
                 {
                     sortedAgentIds = populationReporter.agentIdSorted(sortingProperty,endCycle) ;
-                    sortingValues = new ArrayList<Object>(sortedAgentIds.keySet()) ;
+                    sortingValues = new ArrayList<String>(sortedAgentIds.keySet()) ;
                 }
 
-                for (Object sortingValue : sortingValues)
+                for (String sortingValue : sortingValues)
                 {
                     if (!sortingProperty.isEmpty())
                     {
@@ -1238,10 +1238,10 @@ public class ScreeningReporter extends Reporter {
         PopulationReporter populationReporter = new PopulationReporter(simName,getFolderPath()) ;
         
         ArrayList<String> agentIdSorted = new ArrayList<String>() ;
-        ArrayList<Object> sortingValues = new ArrayList<Object>() ;
+        ArrayList<String> sortingValues = new ArrayList<String>() ;
         sortingValues.add(EMPTY) ;
         
-        HashMap<Object,ArrayList<String>> sortedAgentIds = new HashMap<Object,ArrayList<String>>() ;
+        HashMap<String,ArrayList<String>> sortedAgentIds = new HashMap<String,ArrayList<String>>() ;
         
         // Extract yearly values for one or more tests
         for (int year = 0 ; year < backYears ; year++ )
@@ -1251,13 +1251,13 @@ public class ScreeningReporter extends Reporter {
             if (!sortingProperty.isEmpty())
             {
                 sortedAgentIds = populationReporter.agentIdSorted(sortingProperty,endCycle) ;
-                sortingValues = new ArrayList<Object>(sortedAgentIds.keySet()) ;
+                sortingValues = new ArrayList<String>(sortedAgentIds.keySet()) ;
             }
 
-            HashMap<Object,Number[]> sortedCumulativeAgentTestingRecord = new HashMap<Object,Number[]>() ;
-            HashMap<Object,Number> sortedBeenTestedRecord = new HashMap<Object,Number>() ; 
+            HashMap<String,Number[]> sortedCumulativeAgentTestingRecord = new HashMap<String,Number[]>() ;
+            HashMap<String,Number> sortedBeenTestedRecord = new HashMap<String,Number>() ; 
             //for (Object sortingValue : new Object[] {TRUE,FALSE})
-            for (Object sortingValue : sortingValues)
+            for (String sortingValue : sortingValues)
             {
                 if (!sortingProperty.isEmpty())
                 {
@@ -1631,13 +1631,15 @@ public class ScreeningReporter extends Reporter {
         // String incidentRateReport = "" ;
         
         float tfirst = System.nanoTime();
-        HashSet<Object> sortingProperties = new HashSet<Object>() ; //(Arrays.asList(new Object[] {""})) ;
-        HashMap<Object,ArrayList<String>> sortedAgentsReport = new HashMap<Object,ArrayList<String>>() ;
+        HashSet<String> sortingProperties = new HashSet<String>() ; //(Arrays.asList(new Object[] {""})) ;
+        HashMap<String,ArrayList<String>> sortedAgentsReport = new HashMap<String,ArrayList<String>>() ;
         if (!sortingProperty.isEmpty())
         {
             PopulationReporter populationReporter = new PopulationReporter(simName,getFolderPath()) ;
             sortedAgentsReport = populationReporter.agentIdSorted(sortingProperty,endCycle) ;
-            Collections.addAll(sortingProperties,sortedAgentsReport.keySet().toArray()) ;
+            for (String key : sortedAgentsReport.keySet()) {
+                sortingProperties.add(key);
+            }
 //            LOGGER.info(sortedAgentsReport.toString());
 //            LOGGER.info(sortedAgentsReport.keySet().toString());
         }
