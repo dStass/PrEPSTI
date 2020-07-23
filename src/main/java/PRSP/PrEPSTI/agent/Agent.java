@@ -444,6 +444,7 @@ public abstract class Agent {
                         maxAgentId = newAgent.getAgentId() ;
                     newAgent.clearInfection();
                     agents.add(newAgent) ;
+                    agentsMDLL.add(newAgent.getAgentId(), newAgent);
                     
                     // Reboot screencycle here when testing it
                     if (scenarioScreenPositive)

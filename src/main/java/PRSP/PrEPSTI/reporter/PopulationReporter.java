@@ -162,7 +162,7 @@ public class PopulationReporter extends Reporter {
                 sortedHashMap.put(sortingValue, new ArrayList<String>()) ;
             ArrayList<String> agentIdList = (ArrayList<String>) sortedHashMap.get(sortingValue).clone() ;
             agentIdList.add(agentId) ;
-            sortedHashMap.put(sortingValue, (ArrayList<String>) agentIdList.clone()) ;
+            sortedHashMap.put(sortingValue, agentIdList) ;
         }
         //LOGGER.log(Level.INFO,"{0}", sortedHashMap) ;
 

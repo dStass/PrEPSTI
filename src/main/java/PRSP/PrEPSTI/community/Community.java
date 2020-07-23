@@ -93,6 +93,7 @@ public class Community {
     
     /** Agents in population */
     private ArrayList<Agent> agents = new ArrayList<Agent>() ;
+    private MDLL<Agent> agentsMDLL = new MDLL<Agent>();
     
     /** 
      * Agents in population who have not yet changed to current yearly parameter settings.
@@ -929,6 +930,7 @@ public class Community {
             //newAgent.setPrepStatus(false) ;
             
             agents.add(newAgent) ;
+            agentsMDLL.add(newAgent.getAgentId(), newAgent);
 
             // Record newAgent for later reporting
             // initialRecord = newAgent.getCensusReport() + initialRecord ;
@@ -999,7 +1001,9 @@ public class Community {
           //  unchangedAgents.retainAll(agents) ;    // Remove dead Agents
           
         // Choose Agents to change that day
-        ArrayList<Agent> changeAgents = new ArrayList<Agent>() ;
+        // ArrayList<Agent> changeAgents = new ArrayList<Agent>() ;
+        HashMap<Integer, Agent> changeAgentsHashMap = new HashMap<Integer, Agent>();
+        // HashMap<String, Agent> changeAgentsHash
         
         // How many Agents?
         int nbChangeAgents = AGENTS_PER_DAY ;
@@ -1007,8 +1011,37 @@ public class Community {
         if (unchangedIndex1 < AGENTS_PER_DAY)    // Clean the leftovers  
             nbChangeAgents = unchangedIndex1 ;
         unchangedIndex0 = unchangedIndex1 - nbChangeAgents ;
+
+
+
+        // changeAgents.addAll(unchangedAgents.subList(unchangedIndex0, unchangedIndex1)) ;
+        for (int i = unchangedIndex0; i < unchangedIndex1; ++i) {
+            changeAgentsHashMap.put(unchangedAgents.get(i).getAgentId(), unchangedAgents.get(i));
+        }
         
-        changeAgents.addAll(unchangedAgents.subList(unchangedIndex0, unchangedIndex1)) ;
+        // keep ids we want to remove to a list
+        ArrayList<Integer> removeIds = new ArrayList<Integer>();
+        for (Integer id : changeAgentsHashMap.keySet()) {
+            if (!agentsMDLL.contains(id)) {
+                removeIds.add(id);
+            }
+        }
+
+        // remove agents
+        for (Integer id : removeIds) {
+            changeAgentsHashMap.remove(id);
+        }
+
+        // retained agents
+        ArrayList<Agent> changeAgents = new ArrayList<Agent>() ;
+        for (Integer agentId : changeAgentsHashMap.keySet()) {
+            Agent agent = changeAgentsHashMap.get(agentId);
+            changeAgents.add(agent);
+        }
+
+
+        
+
 
         //int changeIndex ;
         //for (int index = 0 ; index < nbChangeAgents ; index++ )
@@ -1025,7 +1058,7 @@ public class Community {
         
         //unchangedAgents.removeAll(changeAgents) ;
 
-        changeAgents.retainAll(agents) ;
+        // changeAgents.retainAll(agents) ;
         // Make changes
         report += Agent.REINIT(changeAgents, year) ;
         
@@ -1223,6 +1256,7 @@ public class Community {
             newAgent = generateAgent(0) ; // MSM.BIRTH_MSM(0) ;
             newAgent.update(Math.floorDiv(cycle, 365)) ;
             agents.add(newAgent) ;
+            agentsMDLL.add(newAgent.getAgentId(), newAgent);
             sbRecord.append(newAgent.getCensusReport());
             // record += newAgent.getCensusReport() ;
             //currentPopulation++ ;
@@ -1254,6 +1288,7 @@ public class Community {
             {
                 //agents.remove(agent) ;
                 sbRecord.append(Reporter.ADD_REPORT_PROPERTY("agentId", agent.getAgentId())) ;
+                agentsMDLL.remove(agent.getAgentId());
                 //record += Reporter.ADD_REPORT_PROPERTY("age", agent.getAge()) ;
                 //currentPopulation-- ;
             }

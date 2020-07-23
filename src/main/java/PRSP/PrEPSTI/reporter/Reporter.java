@@ -127,12 +127,13 @@ public class Reporter {
     
     public static final String ADD_REPORT_PROPERTY(String label, String value)
     {
-    	StringBuilder sb = new StringBuilder();
-        sb.append(ADD_REPORT_LABEL(label));
-        sb.append(value);
-        sb.append(" ");
-        // String report = ADD_REPORT_LABEL(label) ;
-        return sb.toString() ;
+    	// StringBuilder sb = new StringBuilder();
+        // sb.append(ADD_REPORT_LABEL(label));
+        // sb.append(value);
+        // sb.append(" ");
+        // // String report = ADD_REPORT_LABEL(label) ;
+        // return sb.toString() ;
+        return ADD_REPORT_LABEL(label) + value + " ";
     }
         
     public static final String ADD_REPORT_PROPERTY(String label)
