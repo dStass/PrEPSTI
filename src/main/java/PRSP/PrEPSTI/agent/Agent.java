@@ -3,8 +3,9 @@
  */
 package PRSP.PrEPSTI.agent;
 
-import PRSP.PrEPSTI.community.* ;
+import PRSP.PrEPSTI.community.*;
 import PRSP.PrEPSTI.configloader.ConfigLoader;
+import PRSP.PrEPSTI.mdll.MDLL;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -371,6 +372,7 @@ public abstract class Agent {
     {
         float t0 = System.nanoTime();
         ArrayList<Agent> agents = new ArrayList<Agent>() ;
+        MDLL<Agent> agentsMDLL = new MDLL<Agent>();
         String SITE = "Site:" ;
         
         // Needed if rebootFile == false

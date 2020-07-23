@@ -1273,7 +1273,7 @@ public class Reporter {
         }
 
         float t1 = System.nanoTime();
-        Community.RECORD_METHOD_TIME("GET_BACK_CYCLES(y,m,d,maxCycles)", t1 - t0);
+        Community.RECORD_METHOD_TIME("Reporter.GET_BACK_CYCLES(y,m,d,maxCycles)", t1 - t0);
         
         return backCycles ;
     }
@@ -3236,7 +3236,10 @@ public class Reporter {
     
     public Reporter(String simname, String fileName)
     {
+        float t0 = System.nanoTime();
         initReporter(simname, fileName) ;
+        float t1 = System.nanoTime();
+        Community.RECORD_METHOD_TIME("Reporter.CONSTRUCTOR", t1 - t0);
     }
 
     /**

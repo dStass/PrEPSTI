@@ -150,6 +150,7 @@ public class PopulationReporter extends Reporter {
      */
     protected HashMap<Object,ArrayList<String>> agentIdSorted(String sortingProperty, int endCycle)
     {
+        float t0 = System.nanoTime();
         HashMap<Object,ArrayList<String>> sortedHashMap = new HashMap<Object,ArrayList<String>>() ;
         //LOGGER.info("birthReport");
         
@@ -164,6 +165,11 @@ public class PopulationReporter extends Reporter {
             sortedHashMap.put(sortingValue, (ArrayList<String>) agentIdList.clone()) ;
         }
         //LOGGER.log(Level.INFO,"{0}", sortedHashMap) ;
+
+        float t1 = System.nanoTime();
+
+        Community.RECORD_METHOD_TIME("PopulationReporter.agentIdSorted", t1 - t0);
+
         return sortedHashMap ;
     }
     
@@ -607,7 +613,7 @@ public class PopulationReporter extends Reporter {
             }
         }
         float t1 = System.nanoTime();
-        Community.RECORD_METHOD_TIME("prepareChangeReport(y,m,d,end)", t1 - t0);
+        Community.RECORD_METHOD_TIME("PopulationReporter.prepareChangeReport(y,m,d,end)", t1 - t0);
         return changeReport ;
     }
     
@@ -661,7 +667,7 @@ public class PopulationReporter extends Reporter {
         }
 
         float t1 = System.nanoTime();
-        Community.RECORD_METHOD_TIME("prepareChangeReport", t1 - t0);
+        Community.RECORD_METHOD_TIME("PopulationReporter.prepareChangeReport", t1 - t0);
         
         return propertyChangeReport ;
     }
@@ -846,9 +852,12 @@ public class PopulationReporter extends Reporter {
      */
     public HashMap<String,String> prepareCensusPropertyReport(String propertyName)
     {
+        float t0 = System.nanoTime();
         HashMap<String,String> censusPropertyReport = new HashMap<String,String>() ;
         
         ArrayList<String>  birthReport = prepareBirthReport() ;
+
+        float t00 = System.nanoTime();
         
         for (String birthRecord : birthReport)
         {
@@ -860,6 +869,10 @@ public class PopulationReporter extends Reporter {
                 censusPropertyReport.put(agentId, propertyValue) ;
             }
         }
+
+        float t1 = System.nanoTime();
+        Community.RECORD_METHOD_TIME("PopulationReporter.prepareCensusPropertyReport(propName)", t1 - t0);
+        Community.RECORD_METHOD_TIME("PopulationReporter.prepareCensusPropertyReport(propName) NO PREPARE BIRTH", t1 - t00);
         return censusPropertyReport ;
     }
 
@@ -1022,7 +1035,7 @@ public class PopulationReporter extends Reporter {
             censusPropertyReport.put(Integer.valueOf(agentId), value);
         }
         long t1 = System.nanoTime();
-        Community.RECORD_METHOD_TIME("prepareCensusReport", t1 - t0);
+        Community.RECORD_METHOD_TIME("PopulationReporter.prepareCensusReport", t1 - t0);
         return censusPropertyReport ;
     }
 
@@ -1095,6 +1108,7 @@ public class PopulationReporter extends Reporter {
      */
     public HashMap<String,String> prepareCensusPropertyReport(String propertyName, int endCycle)
     {
+        float t0 = System.nanoTime();
         HashMap<String,String> censusPropertyReport = new HashMap<String,String>() ;
         
         // Census at birth
@@ -1108,16 +1122,19 @@ public class PopulationReporter extends Reporter {
         // changeReport.size() is zero if no changes are made
         // TODO: parallelise: add threads here
         // generating hashmap - ordering doesn't matter
+        Community.RECORD_METHOD_TIME("PopulationReporter.prepareCensusPropertyReport(name, endCycle) --> STRING MANIPULATION", 0);
         for (int index = changeReport.size() - 1 ; index >= 0 ; index-- )
         {
             String changeRecord = changeReport.get(index) ;
             ArrayList<String> changeAgentIds = IDENTIFY_PROPERTIES(changeRecord) ;
+            HashSet<String> changeAgentIdSet = new HashSet<String>(changeAgentIds);
             //LOGGER.info(changeAgentIds.toString()) ;
-            changeAgentIds.retainAll(agentIdSet) ;
+            changeAgentIdSet.retainAll(agentIdSet) ;
             
             // TODO: add threads here too?
-            for (String agentId : changeAgentIds)
+            for (String agentId : changeAgentIdSet)
             {
+                float t00 = System.nanoTime();
                 int agentIndex = INDEX_OF_PROPERTY(agentId.toString(),changeRecord) ;
                 int colonIndex = changeRecord.indexOf(":",agentIndex) ;
                 int nextColonIndex = changeRecord.indexOf(":",colonIndex + 1) ;
@@ -1136,6 +1153,8 @@ public class PopulationReporter extends Reporter {
                     value = EXTRACT_VALUE(propertyName,value) ;
                     value = value.substring(0, value.length() - 1) ;
                 }
+                float t11 = System.nanoTime();
+                Community.RECORD_METHOD_TIME("PopulationReporter.prepareCensusPropertyReport(name, endCycle) --> STRING MANIPULATION", t11-t00);
                 censusPropertyReport.put(agentId, value) ;
                 agentIdSet.remove(agentId) ;
             }
@@ -1146,6 +1165,8 @@ public class PopulationReporter extends Reporter {
         for (String agentId : agentIdSet)
             censusPropertyReport.put(agentId, birthReport.get(agentId)) ;
         
+        float t1 = System.nanoTime();
+        Community.RECORD_METHOD_TIME("PopulationReporter.prepareCensusPropertyReport(name, endCycle)", t1-t0);
         return censusPropertyReport ;
     }
     

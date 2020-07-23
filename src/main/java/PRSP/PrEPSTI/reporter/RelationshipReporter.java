@@ -185,7 +185,7 @@ public class RelationshipReporter extends Reporter {
         }
 
         float t1 = System.nanoTime();
-        Community.RECORD_METHOD_TIME("prepareRelationshipRecordHashMap", t1 - t0);
+        Community.RECORD_METHOD_TIME("RelationshipReporter.prepareRelationshipRecordHashMap", t1 - t0);
         return relationshipReport;
     }
 
@@ -1926,6 +1926,7 @@ public class RelationshipReporter extends Reporter {
      */
     public HashMap<Object,String> prepareRelationshipConcordantsReport()
     {
+        float t0 = System.nanoTime();
         HashMap<Object,String> relationshipConcordantsReport = new HashMap<Object,String>() ;
         
         HashMap<Object,String[]> relationshipAgentReport 
@@ -1954,6 +1955,8 @@ public class RelationshipReporter extends Reporter {
             }
             relationshipConcordantsReport.put(relationshipId, concordantOutput) ;
         }
+        float t1 = System.nanoTime();
+        Community.RECORD_METHOD_TIME("PopulationReporter.prepareCensusPropertyReport()", t1-t0);
         return relationshipConcordantsReport ;
     }
     
@@ -2150,7 +2153,7 @@ public class RelationshipReporter extends Reporter {
                 breakupReport.add(record) ;
             }
         float t1 = System.nanoTime();
-        Community.RECORD_METHOD_TIME("prepareBreakupReport", t1 - t0);
+        Community.RECORD_METHOD_TIME("RelationshipReporter.prepareBreakupReport", t1 - t0);
         return breakupReport ;
     }
     
@@ -2202,7 +2205,7 @@ public class RelationshipReporter extends Reporter {
             }
         
         float t1 = System.nanoTime();
-        Community.RECORD_METHOD_TIME("prepareCommenceReport", t1-t0);
+        Community.RECORD_METHOD_TIME("RelationshipReporter.prepareCommenceReport", t1-t0);
         return commenceReport ;
     }
     

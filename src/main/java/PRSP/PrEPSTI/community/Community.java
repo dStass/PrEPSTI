@@ -689,7 +689,9 @@ public class Community {
         System.out.println("\n\nTime taken for each methods:");
         RECORD_METHOD_TIME("TOTAL", System.nanoTime() - timeInitial);
         HashMap<String, Float> methodPercentages = FINALISE_METHOD_TIME();
-        for (String s : Community.methodsTimeStamp.keySet()) {
+        ArrayList<String> keys = new ArrayList<String>(Community.methodsTimeStamp.keySet());
+        Collections.sort(keys);
+        for (String s : keys) {
             System.out.println("- " + methodPercentages.get(s) * 100 + "% : " + s + " -> " + Community.methodsTimeStamp.get(s) / 1_000_000_000 + "s");
         }
         System.out.println("DONE");
@@ -899,7 +901,7 @@ public class Community {
         }
 
         long t2 = System.nanoTime();
-        Community.RECORD_METHOD_TIME("newCommunity", t2 - t1);
+        Community.RECORD_METHOD_TIME("Community.newCommunity", t2 - t1);
     }
 
     /**
@@ -1071,7 +1073,7 @@ public class Community {
         relationshipClazzNames = Community.RELATIONSHIP_CLAZZ_NAMES;
         String toReturn = MSM.GENERATE_RELATIONSHIPS(availableMDLL, relationshipClazzNames) ;
         float t2 = System.nanoTime();
-        Community.RECORD_METHOD_TIME("generateRelationships", t2 - t1);
+        Community.RECORD_METHOD_TIME("Community.generateRelationships", t2 - t1);
         // System.out.println("generateTime = " + String.valueOf((System.nanoTime() - t1)/1000000000f));
         return toReturn;
 
@@ -1288,7 +1290,7 @@ public class Community {
             }
         });
         float t1 = System.nanoTime();
-        Community.RECORD_METHOD_TIME("runEncounters", t1-t0);
+        Community.RECORD_METHOD_TIME("Community.runEncounters", t1-t0);
         return stringBufferRecord.toString() ;
     }
     
