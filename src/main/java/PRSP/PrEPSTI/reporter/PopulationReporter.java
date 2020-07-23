@@ -172,9 +172,10 @@ public class PopulationReporter extends Reporter {
             String sortingValue = propertyReport.get(agentId) ;
             if (!sortedHashMap.containsKey(sortingValue))
                 sortedHashMap.put(sortingValue, new ArrayList<String>()) ;
-            ArrayList<String> agentIdList = (ArrayList<String>) sortedHashMap.get(sortingValue).clone() ;
+            // ArrayList<String> agentIdList = (ArrayList<String>) sortedHashMap.get(sortingValue).clone() ;
+            ArrayList<String> agentIdList = sortedHashMap.get(sortingValue) ;
             agentIdList.add(agentId) ;
-            sortedHashMap.put(sortingValue, agentIdList) ;
+            // sortedHashMap.put(sortingValue, agentIdList) ;
         }
         //LOGGER.log(Level.INFO,"{0}", sortedHashMap) ;
 
