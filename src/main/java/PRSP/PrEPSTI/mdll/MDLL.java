@@ -1,4 +1,6 @@
 package PRSP.PrEPSTI.mdll;
+
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 
@@ -55,6 +57,10 @@ public class MDLL<T> implements Iterable<T> {
         return this.mapping.size() - MDLL.NUM_RESERVED_NODES;
     }
 
+    /*
+     * * * * * * * * * * * * GET * * * * * * * * * * *
+     */    
+
     public T get(int nodeId) {
         return this.get(String.valueOf(nodeId));
     }
@@ -62,6 +68,10 @@ public class MDLL<T> implements Iterable<T> {
     public T get(String nodeId) {
         return this.mapping.get(nodeId).getObject();
     }
+
+    /*
+     * * * * * * * * * * * * ADD * * * * * * * * * * *
+     */
 
     /**
      * add a new node based on an Id
@@ -90,6 +100,10 @@ public class MDLL<T> implements Iterable<T> {
         this.last.setPrev(this.curr);
     }
 
+    /*
+     * * * * * * * * * * * * CONTAINS * * * * * * * * * * *
+     */
+
     /**
      * boolean check on whether a particular nodeId exists
      * 
@@ -112,6 +126,10 @@ public class MDLL<T> implements Iterable<T> {
         else
             return false;
     }
+
+    /*
+     * * * * * * * * * * * * REMOVE * * * * * * * * * * *
+     */    
 
     /**
      * removes a particular node based on given id assumes nodeId exists
@@ -154,6 +172,11 @@ public class MDLL<T> implements Iterable<T> {
         return true;
     }
 
+    /*
+     * * * * * * * * * * * * INDEX * * * * * * * * * * *
+     */
+
+
     public int indexOf(T object) {
         MDLLForwardIterator<T> forwardIterator = this.getForwardIterator();
         int currentPosition = -1;
@@ -163,23 +186,28 @@ public class MDLL<T> implements Iterable<T> {
             if (object.equals(nextObject))
                 return currentPosition;
         }
-        return currentPosition;
+
+        // returns -1 if object does not exist
+        return -1;
     }
 
-    // public int indexOf(int nodeId) {
-    // return indexOf(String.valueOf(nodeId));
-    // }
+    public int indexOf(int nodeId) {
+        return indexOf(String.valueOf(nodeId));
+    }
 
-    // public int indexOf(String nodeId) {
-    // MDLLForwardIterator<T> forwardIterator = this.getForwardIterator();
-    // int currentPosition = -1;
-    // while (forwardIterator.hasNext()) {
-    // T nextObject = forwardIterator.next();
-    // currentPosition += 1;
+    public int indexOf(String nodeId) {
+        T object = get(nodeId);
+        return indexOf(object);
+    }
 
-    // }
-    // return currentPosition;
-    // }
+    /*
+     * * * * * * * * * * * * * * ITERATORS * * * * * * * * * * * *
+     */
+
+    @Override
+    public Iterator<T> iterator() {
+        return new MDLLForwardIterator<T>(this.head, this.last);
+    }
 
     /*
      * * * * * * * * * * * * FORWARD ITERATOR * * * * * * * * * * *
@@ -230,8 +258,30 @@ public class MDLL<T> implements Iterable<T> {
             return new MDLLBackwardIterator<T>(this.head, this.mapping.get(nodeId));
     }
 
+    /*
+     * * * * * * * * * * * * CONVERSIONS * * * * * * * * * * *
+     */    
+
+    public ArrayList<T> toArrayList() {
+        ArrayList<T> toReturn = new ArrayList<T>();
+        for (T obj : this) {
+            toReturn.add(obj);
+        }
+        return toReturn;
+    }
+
+    /*
+     * * * * * * * * * * * * CLONE * * * * * * * * * * *
+     */    
+
     @Override
-    public Iterator<T> iterator() {
-        return new MDLLForwardIterator<T>(this.head, this.last);
+    public MDLL<T> clone() {
+        MDLL<T> toReturn = new MDLL<T>();
+        MDLLNode<T> currentNode = head;
+        while (currentNode != null) {
+            toReturn.add(currentNode.getId(), currentNode.getObject());
+            currentNode = currentNode.getNext();
+        }
+        return toReturn;
     }
 }

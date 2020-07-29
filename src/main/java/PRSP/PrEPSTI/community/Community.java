@@ -92,7 +92,7 @@ public class Community {
     static Random RAND = new Random(RANDOM_SEED) ;
     
     /** Agents in population */
-    private ArrayList<Agent> agents = new ArrayList<Agent>() ;
+    // private ArrayList<Agent> agents = new ArrayList<Agent>() ;
     private MDLL<Agent> agentsMDLL = new MDLL<Agent>();
     
     /** 
@@ -326,7 +326,7 @@ public class Community {
             // relationshipRecordsArrayList.add(Relationship.BURNIN_COMMENCE);
 
 
-            for (Agent agent : community.agents)
+            for (Agent agent : community.agentsMDLL)
             {
                 for (Relationship relationship : agent.getCurrentRelationships())
                 {
@@ -450,7 +450,7 @@ public class Community {
             timeProInf += (System.nanoTime() - t1);
             
             //deathRecord = cycleString
-            int deltaPopulation = community.agents.size() ;  // Current population
+            int deltaPopulation = community.agentsMDLL.size() ;  // Current population
             
             //LOGGER.info("death");
             t1 = System.nanoTime();
@@ -463,7 +463,7 @@ public class Community {
             // relationshipRecord += Relationship.READ_DEATH_RECORD() ;
             
             // How many births to maintain population?
-            deltaPopulation = deltaPopulation - community.agents.size() ;
+            deltaPopulation = deltaPopulation - community.agentsMDLL.size() ;
 
             t1 = System.nanoTime();
             community.submitRecords(sbRelationshipRecord.toString(),encounterRecord,screeningRecord,sbPopulationRecord.toString()) ;  // 
@@ -892,18 +892,18 @@ public class Community {
 
             rebootRandomSeeds(rebootedFolderPath, rebootedSimName) ;
             // this.agents = Agent.REBOOT_AGENTS(ConfigLoader.REBOOT_PATH, simName) ;
-            this.agents = Agent.REBOOT_AGENTS(rebootedFolderPath, rebootedSimName);
+            this.agentsMDLL = Agent.REBOOT_AGENTS(rebootedFolderPath, rebootedSimName);
             StringBuilder sbInitialRecord = new StringBuilder();
 
             this.initialRecord = "" ; 
-            for (Agent agent : agents)
+            for (Agent agent : agentsMDLL)
                 sbInitialRecord.append(agent.getCensusReport());
                 // initialRecord += agent.getCensusReport() ;
             sbInitialRecord.append("!");
             // initialRecord.concat("!") ;
             this.initialRecord = sbInitialRecord.toString();
             
-            Relationship.REBOOT_RELATIONSHIPS(rebootedFolderPath, rebootedSimName, agents) ;
+            Relationship.REBOOT_RELATIONSHIPS(rebootedFolderPath, rebootedSimName, agentsMDLL) ;
             scribe = new Scribe(SIM_NAME, new String[] {"relationship","encounter","screening", "population"}) ;
         }
 
@@ -935,7 +935,7 @@ public class Community {
             MSM newAgent = generateAgent(-1) ;  //new MSM(-1) ;
             //newAgent.setPrepStatus(false) ;
             
-            agents.add(newAgent) ;
+            // agents.add(newAgent) ;
             agentsMDLL.add(newAgent.getAgentId(), newAgent);
 
             // Record newAgent for later reporting
@@ -1000,7 +1000,7 @@ public class Community {
         if ((year - startYear) * 365 == (cycle - startCycle))    // Things to do at the start of each year
         {
             // unchangedAgents = (ArrayList<Agent>) agents.clone() ;
-            unchangedAgents = agents;
+            unchangedAgents = agentsMDLL.toArrayList();
             unchangedIndex1 = unchangedAgents.size() ;
         }
         else
@@ -1100,7 +1100,7 @@ public class Community {
     {
         //String report = "" ;
         float t1 = System.nanoTime();
-        ArrayList<Agent> availableAgents = (ArrayList<Agent>) agents.clone() ;
+        ArrayList<Agent> availableAgents = agentsMDLL.clone() ;
         // ArrayList<Agent> availableAgents = agents;
         MDLL<Agent> availableMDLL = new MDLL<Agent>();
         
