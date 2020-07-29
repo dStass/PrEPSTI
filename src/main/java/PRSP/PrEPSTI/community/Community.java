@@ -1102,12 +1102,12 @@ public class Community {
     {
         //String report = "" ;
         float t1 = System.nanoTime();
-        ArrayList<Agent> availableAgents = agentsMDLL.toArrayList() ;
+        // ArrayList<Agent> availableAgents = agentsMDLL.toArrayList() ;
         // ArrayList<Agent> availableAgents = agents;
-        MDLL<Agent> availableMDLL = new MDLL<Agent>();
+        MDLL<Agent> availableMDLL = agentsMDLL.returnShuffled();
         
-        Collections.shuffle(availableAgents, RAND) ;
-        for (Agent a : availableAgents) availableMDLL.add(a.getAgentId(), a);
+        // Collections.shuffle(availableAgents, RAND) ;
+        // for (Agent a : availableAgents) availableMDLL.add(a.getAgentId(), a);
 
         // System.out.println("timeClone + timeShuffle = " + String.valueOf((System.nanoTime() - t1)/1000000000f));
         String[] relationshipClazzNames ;
@@ -1290,26 +1290,35 @@ public class Community {
         
         // ArrayList<Agent> newAgentsList = new ArrayList<Agent>();
         MDLL<Agent> newAgentsMDLL = new MDLL<Agent>();
-        MDLLForwardIterator<Agent> agentsMDLLForwardIterator = agentsMDLL.getForwardIterator();
+        // MDLLForwardIterator<Agent> agentsMDLLForwardIterator = agentsMDLL.getForwardIterator();
         //for (int agentIndex = agents.size() - 1 ; agentIndex >= 0 ; agentIndex-- )
-        while (agentsMDLLForwardIterator.hasNext())
-        {
-            Agent agent  = agentsMDLLForwardIterator.next();
-            //agent = agents.get(agentIndex) ; 
-            if (agent.grimReaper())
-            {
-                //agents.remove(agent) ;
-                sbRecord.append(Reporter.ADD_REPORT_PROPERTY("agentId", agent.getAgentId())) ;
-                agentsMDLLForwardIterator.iterateBack();
+        // while (agentsMDLLForwardIterator.hasNext())
+        // {
+        //     Agent agent  = agentsMDLLForwardIterator.next();
+        //     //agent = agents.get(agentIndex) ; 
+        //     if (agent.grimReaper())
+        //     {
+        //         //agents.remove(agent) ;
+        //         sbRecord.append(Reporter.ADD_REPORT_PROPERTY("agentId", agent.getAgentId())) ;
+        //         agentsMDLLForwardIterator.iterateBack();
 
-                agentsMDLL.remove(agent.getAgentId());
-                //record += Reporter.ADD_REPORT_PROPERTY("age", agent.getAge()) ;
-                //currentPopulation-- ;
+        //         agentsMDLL.remove(agent.getAgentId());
+        //         //record += Reporter.ADD_REPORT_PROPERTY("age", agent.getAge()) ;
+        //         //currentPopulation-- ;
+        //     }
+        //     else 
+        //         // newAgentsList.add(agent) ;
+        //         newAgentsMDLL.add(agent.getAgentId(), agent);
+        // }
+        for (Agent agent : agentsMDLL) {
+            if (agent.grimReaper()) {
+                sbRecord.append(Reporter.ADD_REPORT_PROPERTY("agentId", agent.getAgentId())) ; 
             }
-            else 
-                // newAgentsList.add(agent) ;
+            else {
                 newAgentsMDLL.add(agent.getAgentId(), agent);
+            }
         }
+
         agentsMDLL = newAgentsMDLL ;
 
         return sbRecord.toString() ;
@@ -1327,8 +1336,10 @@ public class Community {
         StringBuffer stringBufferRecord = new StringBuffer();
 
         // parallelised retrieval of elements
-        agentsMDLL.getInternalMap().keySet().parallelStream().forEach( agentId -> {
-            Agent agent = agentsMDLL.getInternalMap().get(agentId).getObject();
+        // agentsMDLL.getInternalMap().keySet().parallelStream().forEach( agentId -> {
+        agentsMDLL.getStream().parallel().forEach( agent -> {
+
+            // Agent agent = agentsMDLL.getInternalMap().get(agentId).getObject();
             if (agent == null) return;
             for (Relationship relationship : agent.getCurrentRelationships())
             {

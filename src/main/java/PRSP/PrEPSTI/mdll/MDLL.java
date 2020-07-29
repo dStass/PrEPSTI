@@ -4,6 +4,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Stream;
+
+import PRSP.PrEPSTI.community.Community;
 
 /**
  * ADT containing a HashMap pointing to a Doubly Linked List of a given type
@@ -20,10 +23,11 @@ public class MDLL<T> implements Iterable<T> {
     // pointers
     private MDLLNode<T> head = null;
     private MDLLNode<T> last = null;
-    private MDLLNode<T> curr = null;
+    // private MDLLNode<T> curr = null;
 
     // mapping from nodeId (int/str) --> MDLLNode
-    private ConcurrentHashMap<String, MDLLNode<T>> mapping = null;
+    // private ConcurrentHashMap<String, MDLLNode<T>> mapping = null;
+    private HashMap<String, MDLLNode<T>> mapping = null;
 
     /**
      * 
@@ -31,7 +35,7 @@ public class MDLL<T> implements Iterable<T> {
      * last)
      */
     public MDLL() {
-        this.mapping = new ConcurrentHashMap<String, MDLLNode<T>>();
+        this.mapping = new HashMap<String, MDLLNode<T>>();
 
         // create dummy head
         MDLLNode<T> headNode = new MDLLNode<T>(MDLL.HEAD_ID, null);
@@ -46,7 +50,7 @@ public class MDLL<T> implements Iterable<T> {
         // linking step
         this.head.setNext(this.last);
         this.last.setPrev(this.head);
-        this.curr = this.head;
+        // this.curr = this.head;
 
     }
 
@@ -91,14 +95,26 @@ public class MDLL<T> implements Iterable<T> {
      * @param object
      */
     public void add(String nodeId, T object) {
-        MDLLNode<T> newNode = new MDLLNode<T>(nodeId, object);
-        mapping.put(nodeId, newNode);
+        addBefore(nodeId, object, this.last.getId());
+    }
 
-        this.curr.setNext(newNode);
-        newNode.setPrev(this.curr);
-        this.curr = this.curr.getNext();
-        this.curr.setNext(this.last);
-        this.last.setPrev(this.curr);
+    /**
+     * 
+     * @param newId
+     * @param newObject
+     * @param beforeId
+     */
+    private void addBefore(String nodeId, T object, String afterId) {
+        MDLLNode<T> newNode = new MDLLNode<T>(nodeId, object);
+        this.mapping.put(nodeId, newNode);
+
+        MDLLNode<T> after = this.mapping.get(afterId);
+        MDLLNode<T> before = after.getPrev();
+
+        before.setNext(newNode);
+        newNode.setPrev(before);
+        newNode.setNext(after);
+        after.setPrev(newNode);
     }
 
     /*
@@ -271,7 +287,40 @@ public class MDLL<T> implements Iterable<T> {
         return toReturn;
     }
 
-    public ConcurrentHashMap<String, MDLLNode<T>> getInternalMap() {
+    /**
+     * @return returns a shuffled MDLL in one passing
+     */
+    public MDLL<T> returnShuffled() {
+        float t1 =  System.nanoTime();
+        MDLL<T> shuffled = new MDLL<T>();
+        ArrayList<String> idList = new ArrayList<String>(size() + 1);
+        idList.add(LAST_ID);
+        MDLLNode<T> current = head.getNext();
+        while (!current.getId().equals(LAST_ID)) {
+            String currentId = current.getId();
+            int randomIndex = (int) (Math.random() * idList.size());
+            String randomId = idList.get(randomIndex);
+            shuffled.addBefore(currentId, current.getObject(), randomId);
+            idList.add(currentId);
+            current = current.getNext();
+        }
+
+        float t2 = System.nanoTime();
+        Community.RECORD_METHOD_TIME("MDLL.returnShuffled", t2 - t1);
+        return shuffled;
+    }
+
+    /**
+     * Generate a stream of T objects
+     * @return
+     */
+    public Stream<T> getStream() {
+        return mapping.keySet().parallelStream().map(nodeId ->
+        {
+            return mapping.get(nodeId).getObject();
+        });
+    }
+    public HashMap<String, MDLLNode<T>> getInternalMap() {
         return mapping;
     }
 
