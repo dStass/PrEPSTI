@@ -1,6 +1,8 @@
 package PRSP.PrEPSTI.community;
 
-import PRSP.PrEPSTI.agent.* ;
+import PRSP.PrEPSTI.agent.*;
+import PRSP.PrEPSTI.mdll.MDLL;
+
 import java.io.BufferedReader;
 
 //import java.io.File;
@@ -264,7 +266,7 @@ public class Relationship {
      * @param agents
      * @return
      */
-    static public int REBOOT_RELATIONSHIPS(String simName, ArrayList<Agent> agents) {
+    static public int REBOOT_RELATIONSHIPS(String simName, MDLL<Agent> agents) {
         return REBOOT_RELATIONSHIPS(FOLDER_PATH, simName, agents);
     }
 
@@ -275,7 +277,7 @@ public class Relationship {
      * @param agents
      * @return 
      */
-    static public int REBOOT_RELATIONSHIPS(String folderPath, String simName, ArrayList<Agent> agents)
+    static public int REBOOT_RELATIONSHIPS(String folderPath, String simName, MDLL<Agent> agentsMDLL)
     {
         float t0 = System.nanoTime();
         NB_RELATIONSHIPS = 0 ;        
@@ -286,10 +288,10 @@ public class Relationship {
         HashSet<Integer> currentRelationshipIds = new HashSet<Integer>() ;
 
         // optimisation:
-        HashMap<Integer, Agent> agentMapping = new HashMap<Integer, Agent>();
-        for (Agent agent : agents) {
-            agentMapping.put(agent.getAgentId(), agent);
-        }
+        // HashMap<Integer, Agent> agentMapping = new HashMap<Integer, Agent>();
+        // for (Agent agent : agentsMDLL) {
+        //     agentMapping.put(agent.getAgentId(), agent);
+        // }
 
         
         
@@ -332,8 +334,8 @@ public class Relationship {
                 String agentId0 = Reporter.EXTRACT_VALUE(Reporter.AGENTID0, relationshipString) ;
                 String agentId1 = Reporter.EXTRACT_VALUE(Reporter.AGENTID1, relationshipString) ;
 
-                Agent agent0 = agentMapping.get(Integer.valueOf(agentId0));
-                Agent agent1 = agentMapping.get(Integer.valueOf(agentId1));
+                Agent agent0 = agentsMDLL.get(Integer.valueOf(agentId0));
+                Agent agent1 = agentsMDLL.get(Integer.valueOf(agentId1));
 
                 // Add Agents of correct agentId
                 // agentsFound = 0 ;
@@ -355,10 +357,11 @@ public class Relationship {
                 // }
 
                 // Find Relationship Class and create Relationship
-                relationshipClazzName = Reporter.EXTRACT_VALUE("relationship", relationshipString) ;
-                Class relationshipClazz = Class.forName("PRSP.PrEPSTI.community.".concat(relationshipClazzName)) ;
+                String relationshipClassName = Reporter.EXTRACT_VALUE("relationship", relationshipString) ;
+                Relationship relationship = Relationship.GET_RELATIONSHIP_FROM_CLASS_NAME(relationshipClassName);
+                // Class relationshipClazz = Class.forName("PRSP.PrEPSTI.community.".concat(relationshipClazzName)) ;
 
-                Relationship relationship = (Relationship) relationshipClazz.getDeclaredConstructor().newInstance() ;
+                // Relationship relationship = (Relationship) relationshipClazz.getDeclaredConstructor().newInstance() ;
                 relationship.addAgents(agent0, agent1) ;
                 NB_RELATIONSHIPS++ ;
                 relationship.setRelationshipId(relationshipId) ;

@@ -359,7 +359,7 @@ public abstract class Agent {
      * @param simName
      * @return
      */
-    static public ArrayList<Agent> REBOOT_AGENTS(String simName) {
+    static public MDLL<Agent> REBOOT_AGENTS(String simName) {
         return REBOOT_AGENTS(FOLDER_PATH, simName);
     }
 
@@ -368,10 +368,10 @@ public abstract class Agent {
      * @param simName 
      * @return  
      */
-    static public ArrayList<Agent> REBOOT_AGENTS(String folderPath, String simName)
+    static public MDLL<Agent> REBOOT_AGENTS(String folderPath, String simName)
     {
         float t0 = System.nanoTime();
-        ArrayList<Agent> agents = new ArrayList<Agent>() ;
+        // ArrayList<Agent> agents = new ArrayList<Agent>() ;
         MDLL<Agent> agentsMDLL = new MDLL<Agent>();
         String SITE = "Site:" ;
         
@@ -443,7 +443,7 @@ public abstract class Agent {
                     if (maxAgentId < newAgent.getAgentId())
                         maxAgentId = newAgent.getAgentId() ;
                     newAgent.clearInfection();
-                    agents.add(newAgent) ;
+                    // agents.add(newAgent) ;
                     agentsMDLL.add(newAgent.getAgentId(), newAgent);
                     
                     // Reboot screencycle here when testing it
@@ -549,7 +549,8 @@ public abstract class Agent {
         long t1 = System.nanoTime();
         Community.RECORD_METHOD_TIME("Agent.REBOOT_AGENTS", t1 - t0);
         
-        return agents ;
+        // return agents ;
+        return agentsMDLL;
     }
     
     /**

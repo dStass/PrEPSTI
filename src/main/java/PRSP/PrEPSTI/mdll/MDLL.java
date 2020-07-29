@@ -3,6 +3,7 @@ package PRSP.PrEPSTI.mdll;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * ADT containing a HashMap pointing to a Doubly Linked List of a given type
@@ -22,7 +23,7 @@ public class MDLL<T> implements Iterable<T> {
     private MDLLNode<T> curr = null;
 
     // mapping from nodeId (int/str) --> MDLLNode
-    private HashMap<String, MDLLNode<T>> mapping = null;
+    private ConcurrentHashMap<String, MDLLNode<T>> mapping = null;
 
     /**
      * 
@@ -30,7 +31,7 @@ public class MDLL<T> implements Iterable<T> {
      * last)
      */
     public MDLL() {
-        this.mapping = new HashMap<String, MDLLNode<T>>();
+        this.mapping = new ConcurrentHashMap<String, MDLLNode<T>>();
 
         // create dummy head
         MDLLNode<T> headNode = new MDLLNode<T>(MDLL.HEAD_ID, null);
@@ -261,13 +262,17 @@ public class MDLL<T> implements Iterable<T> {
     /*
      * * * * * * * * * * * * CONVERSIONS * * * * * * * * * * *
      */    
-
+    
     public ArrayList<T> toArrayList() {
         ArrayList<T> toReturn = new ArrayList<T>();
         for (T obj : this) {
             toReturn.add(obj);
         }
         return toReturn;
+    }
+
+    public ConcurrentHashMap<String, MDLLNode<T>> getInternalMap() {
+        return mapping;
     }
 
     /*
