@@ -999,7 +999,8 @@ public class Community {
         String report = "" ;
         if ((year - startYear) * 365 == (cycle - startCycle))    // Things to do at the start of each year
         {
-        	unchangedAgents = (ArrayList<Agent>) agents.clone() ;
+            // unchangedAgents = (ArrayList<Agent>) agents.clone() ;
+            unchangedAgents = agents;
             unchangedIndex1 = unchangedAgents.size() ;
         }
         else
@@ -1027,15 +1028,15 @@ public class Community {
         
         // keep ids we want to remove to a list
         ArrayList<Integer> removeIds = new ArrayList<Integer>();
-        for (Integer id : changeAgentsHashMap.keySet()) {
-            if (!agentsMDLL.contains(id)) {
-                removeIds.add(id);
+        for (Integer agentId : changeAgentsHashMap.keySet()) {
+            if (!agentsMDLL.contains(agentId)) {
+                removeIds.add(agentId);
             }
         }
 
         // remove agents
-        for (Integer id : removeIds) {
-            changeAgentsHashMap.remove(id);
+        for (Integer agentId : removeIds) {
+            changeAgentsHashMap.remove(agentId);
         }
 
         // retained agents

@@ -1648,13 +1648,12 @@ public class ScreeningReporter extends Reporter {
         //LOGGER.info(sortedAgentsReport.keySet().toString());
         //LOGGER.log(Level.INFO, "false:{0} true:{1}", new Object[] {sortedAgentsReport.get("false").size(),sortedAgentsReport.get("true").size()});
         
-        float tsecond = System.nanoTime();
-        System.out.println("tdif=" + (tsecond - tfirst) / 1_000_000_000);
         HashMap<Comparable,ArrayList<Comparable>> agentTestingReport = prepareAgentTestingReport(backYears, backMonths, backDays, endCycle) ;
         HashMap<Object,HashMap<Comparable,ArrayList<Comparable>>> agentTreatedReport = prepareAgentTreatedReport(siteNames, backYears, backMonths, backDays, endCycle) ; 
         //LOGGER.info(agentTreatedReport.get("all").keySet().toString()) ;
         
         HashMap<Object,HashMap<Object,ArrayList<Integer>>> timeAtRiskReport = prepareTimeAtRiskReport(agentTestingReport,agentTreatedReport) ;
+
 
         
         //int population = getPopulation() ;
@@ -1712,7 +1711,8 @@ public class ScreeningReporter extends Reporter {
                 // incidentRateReport += Reporter.ADD_REPORT_PROPERTY(propertyName, incidentRate) ;
             }
         }
-
+        float tsecond = System.nanoTime();
+        System.out.println("tdif=" + (tsecond - tfirst) / 1_000_000_000);
 
         // float t1 = System.nanoTime();
         // Community.RECORD_METHOD_TIME("ScreeningReporter.prepareAtRiskIncidenceReport", t1-t0);
