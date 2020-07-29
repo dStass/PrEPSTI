@@ -1,7 +1,7 @@
 package PRSP.PrEPSTI.mdll;
 
-public interface MDLLIterator<T> {
-    public boolean hasNext();
-    public T getNextAndIterate();
+import java.util.Iterator;
+
+public interface MDLLIterator<T> extends Iterator<T> {
     public void iterateBack();
 }

@@ -1,12 +1,13 @@
 package PRSP.PrEPSTI.mdll;
 import java.util.HashMap;
-/**
- * ADT containing a HashMap pointing to a Doubly Linked List of
- * a given type
- */
-public class MDLL<T> {
+import java.util.Iterator;
 
-    // reserved ids 
+/**
+ * ADT containing a HashMap pointing to a Doubly Linked List of a given type
+ */
+public class MDLL<T> implements Iterable<T> {
+
+    // reserved ids
     public static final String HEAD_ID = "_RESERVED_HEAD";
     public static final String LAST_ID = "_RESERVED_LAST";
 
@@ -23,8 +24,8 @@ public class MDLL<T> {
 
     /**
      * 
-     * constructor for MDLL containing two dummy nodes
-     * (reserved head and reserved last)
+     * constructor for MDLL containing two dummy nodes (reserved head and reserved
+     * last)
      */
     public MDLL() {
         this.mapping = new HashMap<String, MDLLNode<T>>();
@@ -33,7 +34,7 @@ public class MDLL<T> {
         MDLLNode<T> headNode = new MDLLNode<T>(MDLL.HEAD_ID, null);
         mapping.put(MDLL.HEAD_ID, headNode);
         this.head = headNode;
-        
+
         // create dummy last
         MDLLNode<T> lastNode = new MDLLNode<T>(MDLL.LAST_ID, null);
         mapping.put(MDLL.LAST_ID, lastNode);
@@ -47,9 +48,8 @@ public class MDLL<T> {
     }
 
     /**
-     * Returns the amount of nodes 
-     * This is the size of mapping hashmap subtracted by 2
-     * (reserved head and reserved last nodes)
+     * Returns the amount of nodes This is the size of mapping hashmap subtracted by
+     * 2 (reserved head and reserved last nodes)
      */
     public int size() {
         return this.mapping.size() - MDLL.NUM_RESERVED_NODES;
@@ -65,6 +65,7 @@ public class MDLL<T> {
 
     /**
      * add a new node based on an Id
+     * 
      * @param nodeId
      * @param object
      */
@@ -74,6 +75,7 @@ public class MDLL<T> {
 
     /**
      * add a new node based on an Id
+     * 
      * @param nodeId
      * @param object
      */
@@ -90,6 +92,7 @@ public class MDLL<T> {
 
     /**
      * boolean check on whether a particular nodeId exists
+     * 
      * @param nodeId
      * @return boolean
      */
@@ -99,17 +102,20 @@ public class MDLL<T> {
 
     /**
      * boolean check on whether a particular nodeId exists
+     * 
      * @param nodeId
      * @return boolean
      */
     public boolean contains(String nodeId) {
-        if (this.mapping.containsKey(nodeId)) return true;
-        else return false;
+        if (this.mapping.containsKey(nodeId))
+            return true;
+        else
+            return false;
     }
 
     /**
-     * removes a particular node based on given id
-     * assumes nodeId exists
+     * removes a particular node based on given id assumes nodeId exists
+     * 
      * @param nodeId
      * @return
      */
@@ -120,15 +126,17 @@ public class MDLL<T> {
     }
 
     /**
-     * for a successful removal if nodeId exists, return true
-     * otherwise, return false
+     * for a successful removal if nodeId exists, return true otherwise, return
+     * false
+     * 
      * @param nodeId
      * @return
      */
     public boolean remove(String nodeId) {
-        
+
         // if node doesn't exist, return false
-        if (!this.mapping.containsKey(nodeId)) return false;
+        if (!this.mapping.containsKey(nodeId))
+            return false;
 
         // identify node to be removed and remove it from the mapping
         MDLLNode<T> toRemove = this.mapping.get(nodeId);
@@ -150,35 +158,36 @@ public class MDLL<T> {
         MDLLForwardIterator<T> forwardIterator = this.getForwardIterator();
         int currentPosition = -1;
         while (forwardIterator.hasNext()) {
-            T nextObject = forwardIterator.getNextAndIterate();
+            T nextObject = forwardIterator.next();
             currentPosition += 1;
-            if (object.equals(nextObject)) return currentPosition;
+            if (object.equals(nextObject))
+                return currentPosition;
         }
         return currentPosition;
     }
 
     // public int indexOf(int nodeId) {
-    //     return indexOf(String.valueOf(nodeId));
+    // return indexOf(String.valueOf(nodeId));
     // }
 
     // public int indexOf(String nodeId) {
-    //     MDLLForwardIterator<T> forwardIterator = this.getForwardIterator();
-    //     int currentPosition = -1;
-    //     while (forwardIterator.hasNext()) {
-    //         T nextObject = forwardIterator.getNextAndIterate();
-    //         currentPosition += 1;
+    // MDLLForwardIterator<T> forwardIterator = this.getForwardIterator();
+    // int currentPosition = -1;
+    // while (forwardIterator.hasNext()) {
+    // T nextObject = forwardIterator.next();
+    // currentPosition += 1;
 
-    //     }
-    //     return currentPosition;
+    // }
+    // return currentPosition;
     // }
 
-    /* 
-     * * * * * * * * * * * *
-     *  FORWARD ITERATOR   *
-     * * * * * * * * * * * */
+    /*
+     * * * * * * * * * * * * FORWARD ITERATOR * * * * * * * * * * *
+     */
 
     /**
      * return an iterator moving forward from the start of MDLL
+     * 
      * @return MDLLForward
      */
     public MDLLForwardIterator<T> getForwardIterator() {
@@ -186,35 +195,43 @@ public class MDLL<T> {
     }
 
     /**
-     * return a forward iterator from a particular nodeId
-     * assume valid nodeId
+     * return a forward iterator from a particular nodeId assume valid nodeId
+     * 
      * @param nodeId
      * @return
      */
-    public MDLLForwardIterator<T> getForwardIterator(int nodeId) { 
+    public MDLLForwardIterator<T> getForwardIterator(int nodeId) {
         return this.getForwardIterator(String.valueOf(nodeId));
-    }    
-
-    public MDLLForwardIterator<T> getForwardIterator(String nodeId) {
-        if (!this.mapping.containsKey(nodeId)) return null;
-        else return new MDLLForwardIterator<T>(this.mapping.get(nodeId), this.last);
     }
 
-    /* 
-     * * * * * * * * * * * *
-     *  BACKWARD ITERATOR  *
-     * * * * * * * * * * * */
+    public MDLLForwardIterator<T> getForwardIterator(String nodeId) {
+        if (!this.mapping.containsKey(nodeId))
+            return null;
+        else
+            return new MDLLForwardIterator<T>(this.mapping.get(nodeId), this.last);
+    }
+
+    /*
+     * * * * * * * * * * * * BACKWARD ITERATOR * * * * * * * * * * *
+     */
 
     public MDLLBackwardIterator<T> getBackwardIterator() {
         return new MDLLBackwardIterator<T>(this.head, this.last);
     }
 
-    public MDLLBackwardIterator<T> getBackwardIterator(int nodeId) { 
+    public MDLLBackwardIterator<T> getBackwardIterator(int nodeId) {
         return this.getBackwardIterator(String.valueOf(nodeId));
     }
 
     public MDLLBackwardIterator<T> getBackwardIterator(String nodeId) {
-        if (!this.mapping.containsKey(nodeId)) return null;
-        else return new MDLLBackwardIterator<T>(this.head, this.mapping.get(nodeId));
+        if (!this.mapping.containsKey(nodeId))
+            return null;
+        else
+            return new MDLLBackwardIterator<T>(this.head, this.mapping.get(nodeId));
+    }
+
+    @Override
+    public Iterator<T> iterator() {
+        return new MDLLForwardIterator<T>(this.head, this.last);
     }
 }
