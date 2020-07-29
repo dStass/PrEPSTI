@@ -3,19 +3,20 @@ package PRSP.PrEPSTI.mdll;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
-
-import PRSP.PrEPSTI.community.Community;
 
 /**
  * ADT containing a HashMap pointing to a Doubly Linked List of a given type
+ * keys cannot be negative
  */
 public class MDLL<T> implements Iterable<T> {
 
     // reserved ids
-    public static final String HEAD_ID = "_RESERVED_HEAD";
-    public static final String LAST_ID = "_RESERVED_LAST";
+    // public static final String HEAD_ID = "_RESERVED_HEAD";
+    // public static final String LAST_ID = "_RESERVED_LAST";
+
+    public static final int HEAD_ID = -1;
+    public static final int LAST_ID = -2;
 
     // number of reserved nodes = 2 (reserved head and last)
     public static final int NUM_RESERVED_NODES = 2;
@@ -27,7 +28,7 @@ public class MDLL<T> implements Iterable<T> {
 
     // mapping from nodeId (int/str) --> MDLLNode
     // private ConcurrentHashMap<String, MDLLNode<T>> mapping = null;
-    private HashMap<String, MDLLNode<T>> mapping = null;
+    private HashMap<Integer, MDLLNode<T>> mapping = null;
 
     /**
      * 
@@ -35,7 +36,7 @@ public class MDLL<T> implements Iterable<T> {
      * last)
      */
     public MDLL() {
-        this.mapping = new HashMap<String, MDLLNode<T>>();
+        this.mapping = new HashMap<Integer, MDLLNode<T>>();
 
         // create dummy head
         MDLLNode<T> headNode = new MDLLNode<T>(MDLL.HEAD_ID, null);
@@ -66,17 +67,27 @@ public class MDLL<T> implements Iterable<T> {
      * * * * * * * * * * * * GET * * * * * * * * * * *
      */    
 
-    public T get(int nodeId) {
-        return this.get(String.valueOf(nodeId));
-    }
+    // public T get(int nodeId) {
+    //     return this.get(String.valueOf(nodeId));
+    // }
 
-    public T get(String nodeId) {
+    public T get(int nodeId) {
         return this.mapping.get(nodeId).getObject();
     }
 
     /*
      * * * * * * * * * * * * ADD * * * * * * * * * * *
      */
+
+    // /**
+    //  * add a new node based on an Id
+    //  * 
+    //  * @param nodeId
+    //  * @param object
+    //  */
+    // public void add(int nodeId, T object) {
+    //     this.add(String.valueOf(nodeId), object);
+    // }
 
     /**
      * add a new node based on an Id
@@ -85,16 +96,6 @@ public class MDLL<T> implements Iterable<T> {
      * @param object
      */
     public void add(int nodeId, T object) {
-        this.add(String.valueOf(nodeId), object);
-    }
-
-    /**
-     * add a new node based on an Id
-     * 
-     * @param nodeId
-     * @param object
-     */
-    public void add(String nodeId, T object) {
         addBefore(nodeId, object, this.last.getId());
     }
 
@@ -104,7 +105,7 @@ public class MDLL<T> implements Iterable<T> {
      * @param newObject
      * @param beforeId
      */
-    private void addBefore(String nodeId, T object, String afterId) {
+    private void addBefore(int nodeId, T object, int afterId) {
         MDLLNode<T> newNode = new MDLLNode<T>(nodeId, object);
         this.mapping.put(nodeId, newNode);
 
@@ -121,15 +122,15 @@ public class MDLL<T> implements Iterable<T> {
      * * * * * * * * * * * * CONTAINS * * * * * * * * * * *
      */
 
-    /**
-     * boolean check on whether a particular nodeId exists
-     * 
-     * @param nodeId
-     * @return boolean
-     */
-    public boolean contains(int nodeId) {
-        return this.contains(String.valueOf(nodeId));
-    }
+    // /**
+    //  * boolean check on whether a particular nodeId exists
+    //  * 
+    //  * @param nodeId
+    //  * @return boolean
+    //  */
+    // public boolean contains(int nodeId) {
+    //     return this.contains(String.valueOf(nodeId));
+    // }
 
     /**
      * boolean check on whether a particular nodeId exists
@@ -137,7 +138,7 @@ public class MDLL<T> implements Iterable<T> {
      * @param nodeId
      * @return boolean
      */
-    public boolean contains(String nodeId) {
+    public boolean contains(int nodeId) {
         if (this.mapping.containsKey(nodeId))
             return true;
         else
@@ -148,17 +149,17 @@ public class MDLL<T> implements Iterable<T> {
      * * * * * * * * * * * * REMOVE * * * * * * * * * * *
      */    
 
-    /**
-     * removes a particular node based on given id assumes nodeId exists
-     * 
-     * @param nodeId
-     * @return
-     */
-    public boolean remove(int nodeId) {
-        boolean removePossible = this.remove(String.valueOf(nodeId));
-        // if (!removePossible) System.out.println("remove failed");
-        return removePossible;
-    }
+    // /**
+    //  * removes a particular node based on given id assumes nodeId exists
+    //  * 
+    //  * @param nodeId
+    //  * @return
+    //  */
+    // public boolean remove(int nodeId) {
+    //     boolean removePossible = this.remove(String.valueOf(nodeId));
+    //     // if (!removePossible) System.out.println("remove failed");
+    //     return removePossible;
+    // }
 
     /**
      * for a successful removal if nodeId exists, return true otherwise, return
@@ -167,7 +168,7 @@ public class MDLL<T> implements Iterable<T> {
      * @param nodeId
      * @return
      */
-    public boolean remove(String nodeId) {
+    public boolean remove(int nodeId) {
 
         // if node doesn't exist, return false
         if (!this.mapping.containsKey(nodeId))
@@ -208,11 +209,11 @@ public class MDLL<T> implements Iterable<T> {
         return -1;
     }
 
-    public int indexOf(int nodeId) {
-        return indexOf(String.valueOf(nodeId));
-    }
+    // public int indexOf(int nodeId) {
+    //     return indexOf(String.valueOf(nodeId));
+    // }
 
-    public int indexOf(String nodeId) {
+    public int indexOf(int nodeId) {
         T object = get(nodeId);
         return indexOf(object);
     }
@@ -239,17 +240,17 @@ public class MDLL<T> implements Iterable<T> {
         return new MDLLForwardIterator<T>(this.head, this.last);
     }
 
-    /**
-     * return a forward iterator from a particular nodeId assume valid nodeId
-     * 
-     * @param nodeId
-     * @return
-     */
-    public MDLLForwardIterator<T> getForwardIterator(int nodeId) {
-        return this.getForwardIterator(String.valueOf(nodeId));
-    }
+    // /**
+    //  * return a forward iterator from a particular nodeId assume valid nodeId
+    //  * 
+    //  * @param nodeId
+    //  * @return
+    //  */
+    // public MDLLForwardIterator<T> getForwardIterator(int nodeId) {
+    //     return this.getForwardIterator(String.valueOf(nodeId));
+    // }
 
-    public MDLLForwardIterator<T> getForwardIterator(String nodeId) {
+    public MDLLForwardIterator<T> getForwardIterator(int nodeId) {
         if (!this.mapping.containsKey(nodeId))
             return null;
         else
@@ -264,11 +265,11 @@ public class MDLL<T> implements Iterable<T> {
         return new MDLLBackwardIterator<T>(this.head, this.last);
     }
 
-    public MDLLBackwardIterator<T> getBackwardIterator(int nodeId) {
-        return this.getBackwardIterator(String.valueOf(nodeId));
-    }
+    // public MDLLBackwardIterator<T> getBackwardIterator(int nodeId) {
+    //     return this.getBackwardIterator(String.valueOf(nodeId));
+    // }
 
-    public MDLLBackwardIterator<T> getBackwardIterator(String nodeId) {
+    public MDLLBackwardIterator<T> getBackwardIterator(int nodeId) {
         if (!this.mapping.containsKey(nodeId))
             return null;
         else
@@ -280,10 +281,8 @@ public class MDLL<T> implements Iterable<T> {
      */    
     
     public ArrayList<T> toArrayList() {
-        ArrayList<T> toReturn = new ArrayList<T>();
-        for (T obj : this) {
-            toReturn.add(obj);
-        }
+        ArrayList<T> toReturn = new ArrayList<T>(size());
+        for (T obj : this) toReturn.add(obj);
         return toReturn;
     }
 
@@ -291,22 +290,19 @@ public class MDLL<T> implements Iterable<T> {
      * @return returns a shuffled MDLL in one passing
      */
     public MDLL<T> returnShuffled() {
-        float t1 =  System.nanoTime();
         MDLL<T> shuffled = new MDLL<T>();
-        ArrayList<String> idList = new ArrayList<String>(size() + 1);
+        ArrayList<Integer> idList = new ArrayList<Integer>(size() + 1);
         idList.add(LAST_ID);
         MDLLNode<T> current = head.getNext();
         while (!current.getId().equals(LAST_ID)) {
-            String currentId = current.getId();
+            int currentId = current.getId();
             int randomIndex = (int) (Math.random() * idList.size());
-            String randomId = idList.get(randomIndex);
+            int randomId = idList.get(randomIndex);
             shuffled.addBefore(currentId, current.getObject(), randomId);
             idList.add(currentId);
             current = current.getNext();
         }
 
-        float t2 = System.nanoTime();
-        Community.RECORD_METHOD_TIME("MDLL.returnShuffled", t2 - t1);
         return shuffled;
     }
 
@@ -320,7 +316,7 @@ public class MDLL<T> implements Iterable<T> {
             return mapping.get(nodeId).getObject();
         });
     }
-    public HashMap<String, MDLLNode<T>> getInternalMap() {
+    public HashMap<Integer, MDLLNode<T>> getInternalMap() {
         return mapping;
     }
 

@@ -1,12 +1,12 @@
 package PRSP.PrEPSTI.mdll;
 
 public class MDLLNode<T> {
-    private String id = null;
+    private Integer id = null;
     private T object = null;
     private MDLLNode<T> prev = null;
     private MDLLNode<T> next = null;
 
-    public MDLLNode(String id, T object) {
+    public MDLLNode(int id, T object) {
         this.id = id;
         this.object = object;
     }
@@ -19,7 +19,7 @@ public class MDLLNode<T> {
         this.next = nextNode;
     }
 
-    public String getId() {
+    public Integer getId() {
         return this.id;
     }
 

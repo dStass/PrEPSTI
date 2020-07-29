@@ -1437,7 +1437,7 @@ public class MSM extends Agent {
             Agent currAgent = (Agent) agentForwardIterator.next() ;
             MSM msm = (MSM) currAgent ;
             if (msm.seekRelationship(relationshipClassName))
-                seekingAgentMDLL.add(String.valueOf(msm.getAgentId()), msm) ;
+                seekingAgentMDLL.add(msm.getAgentId(), msm) ;
         }
         
 
