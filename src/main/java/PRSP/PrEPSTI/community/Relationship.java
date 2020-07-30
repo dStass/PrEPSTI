@@ -82,7 +82,7 @@ public class Relationship {
     static String PHARYNX = "Pharynx" ;
     
     static public String DEATH_RECORD = "death:" ;
-    static public StringBuilder SB_DEATH_RECORD = new StringBuilder("death:");
+    static public StringBuffer SB_DEATH_RECORD = new StringBuffer("death:");
 
     static public String BURNIN_COMMENCE = "clear:" ;
     static public String BURNIN_BREAKUP = "" ;
@@ -101,7 +101,7 @@ public class Relationship {
     {
         String output ;
         output = SB_DEATH_RECORD.toString() ;
-        SB_DEATH_RECORD = new StringBuilder("death:") ;
+        SB_DEATH_RECORD = new StringBuffer("death:") ;
         return output ;
     }
     

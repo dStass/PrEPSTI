@@ -307,14 +307,16 @@ public class MDLL<T> implements Iterable<T> {
     }
 
     /**
-     * Generate a stream of T objects
+     * Generate a stream of T objects and remove nulls
      * @return
      */
     public Stream<T> getStream() {
         return mapping.keySet().parallelStream().map(nodeId ->
         {
             return mapping.get(nodeId).getObject();
-        });
+        })
+        .filter(obj -> obj != null)
+        ;
     }
     public HashMap<Integer, MDLLNode<T>> getInternalMap() {
         return mapping;

@@ -1284,12 +1284,12 @@ public class Community {
      */
     private String grimReaper()
     {
-    	StringBuilder sbRecord = new StringBuilder();
+    	StringBuffer sbRecord = new StringBuffer();
         sbRecord.append("death:");
         // String record = "death:" ;
         
         // ArrayList<Agent> newAgentsList = new ArrayList<Agent>();
-        MDLL<Agent> newAgentsMDLL = new MDLL<Agent>();
+        // MDLL<Agent> newAgentsMDLL = new MDLL<Agent>();
         // MDLLForwardIterator<Agent> agentsMDLLForwardIterator = agentsMDLL.getForwardIterator();
         //for (int agentIndex = agents.size() - 1 ; agentIndex >= 0 ; agentIndex-- )
         // while (agentsMDLLForwardIterator.hasNext())
@@ -1310,16 +1310,30 @@ public class Community {
         //         // newAgentsList.add(agent) ;
         //         newAgentsMDLL.add(agent.getAgentId(), agent);
         // }
+        HashMap<Integer, Agent> toRemove = new HashMap<Integer, Agent>();
+        // agentsMDLL.getStream().parallel().forEach(agent -> {
         for (Agent agent : agentsMDLL) {
+
             if (agent.grimReaper()) {
-                sbRecord.append(Reporter.ADD_REPORT_PROPERTY("agentId", agent.getAgentId())) ; 
-            }
-            else {
-                newAgentsMDLL.add(agent.getAgentId(), agent);
+                sbRecord.append(Reporter.ADD_REPORT_PROPERTY("agentId", agent.getAgentId())) ;
+                toRemove.put(agent.getAgentId(), agent);
             }
         }
+        // });
 
-        agentsMDLL = newAgentsMDLL ;
+        for (Integer agentId : toRemove.keySet()) {
+            agentsMDLL.remove(agentId);
+        }
+        // for (Agent agent : agentsMDLL) {
+        //     if (agent.grimReaper()) {
+        //         sbRecord.append(Reporter.ADD_REPORT_PROPERTY("agentId", agent.getAgentId())) ; 
+        //     }
+        //     else {
+        //         newAgentsMDLL.add(agent.getAgentId(), agent);
+        //     }
+        // }
+
+        // agentsMDLL = newAgentsMDLL ;
 
         return sbRecord.toString() ;
     }
