@@ -1,20 +1,20 @@
 {   
     "paths": {
-        "REBOOT_PATH" : "output/",
+        "REBOOT_PATH" : "output/test/",
         "REPORT_PATH" : "reports/",
         "DATA_PATH" : "data_files/"
     },
 
     "community" : {
         "FILE_PATH" : "output/test/",
-        "NAME_ROOT" : "reinitPrepD",
-        "MAX_CYCLES" : "14",
+        "NAME_ROOT" : "cali2008brate68a",
+        "MAX_CYCLES" : "25",
         "POPULATION" : "40000",
-        "COMMENT" : "debuggingD",
-        "DYNAMIC" : "true",
-        "REBOOT_SIMULATION" : "oldParams31cPop40000Cycles2920",
+        "COMMENT" : "calibrate to ASR 2008",
+        "DYNAMIC" : "false",
+        "REBOOT_SIMULATION" : "",
         "REBOOT_FROM_CYCLE" : "-1",
-        "START_YEAR" : "2007",
+        "START_YEAR" : "2008",
         "END_YEAR" : "2019",
         "methods" : {
             "interveneCommunity" : {
@@ -28,9 +28,6 @@
               "REBOOT_AGENTS" : {
                   "scenarioScreenPrep" : "false",
                   "scenarioScreenPositive" : "false"
-              },
-              "REINIT" : {
-                  "reinitScreenCycle" : "true"
               }
           }
     },
@@ -45,6 +42,9 @@
             },
             "REINIT_RISK_CASUAL" : {
                 "prepHasTests" : "true"
+            },
+            "REINIT" : {
+                "reinitScreenCycle" : "true"
             }
         }
     },

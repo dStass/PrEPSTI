@@ -1385,7 +1385,7 @@ public class RelationshipReporter extends Reporter {
      * @param backMonths
      * @param backDays
      * @param endCycle
-     * @return (HashMap) relationshipClassName maps to the number of Agents involved in 
+     * @return (HashMap) relationshipClassName maps to the proportion of Agents involved in 
      * given class of Relationship during the specified period.
      */
     public HashMap<Comparable,Number> prepareProportionRelationshipsReport(String[] relationshipClassNames, int backYears, int backMonths, int backDays, int endCycle)
