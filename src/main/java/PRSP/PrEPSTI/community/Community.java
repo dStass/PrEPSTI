@@ -529,7 +529,6 @@ public class Community {
         int seconds = (int) milliTime/1000 ;
         int minutes = seconds/60 ;
         System.out.println("population: " + POPULATION + ", Cycles: " + MAX_CYCLES);
-        System.out.println("Elapsed running time: " + milliTime + "millseconds") ;
         System.out.println("Elapsed running time: " + seconds + "seconds") ;
         System.out.println("Elapsed running time: " + minutes + "minutes") ;
         
@@ -539,7 +538,7 @@ public class Community {
         encounterReporter = new EncounterReporter(SIM_NAME, FILE_PATH) ;
         screeningReporter = new ScreeningReporter(SIM_NAME, FILE_PATH) ;
 
-        Community.ADD_TIME_STAMP("after new encounter and screening Reporters");
+        //Community.ADD_TIME_STAMP("after new encounter and screening Reporters");
         
         //screeningReporter = new ScreeningReporter(SIM_NAME,FILE_PATH) ;
                 //new ScreeningReporter("prevalence",community.screeningReport) ;
@@ -555,7 +554,8 @@ public class Community {
         //screeningPresenter2.plotNotificationsPerCycle();
 
 
-        // LOGGER.info(MSM.TRANSMISSION_PROBABILITY_REPORT());
+        // David, please do not comment this out! It is useful to me.
+        LOGGER.info(MSM.TRANSMISSION_PROBABILITY_REPORT());
 
         if (PLOT_FILE)
         {
@@ -563,7 +563,7 @@ public class Community {
             screeningPresenter3.multiPlotScreening(new Object[] {"prevalence","prevalence", new String[] {"Pharynx","Rectum","Urethra"}}) ;  // ,"coprevalence",new String[] {"Pharynx","Rectum"},new String[] {"Urethra","Rectum"}
             // screeningPresenter3.plotYearsAtRiskIncidenceReport(new String[] {"Pharynx","Rectum","Urethra"}, 3, 2020, "statusHIV");
         }
-        Community.ADD_TIME_STAMP("after PLOT_FILE");
+        //Community.ADD_TIME_STAMP("after PLOT_FILE");
         HashMap<Object,Number> finalNotificationsRecord = new HashMap<Object,Number>() ;
         
         for (boolean unique : new boolean[] {})    // false,
@@ -583,7 +583,7 @@ public class Community {
             //community.dumpOutputReturn() ;
         }
 
-        Community.ADD_TIME_STAMP("after bool unique");
+        //Community.ADD_TIME_STAMP("after bool unique");
         
         //LOGGER.log(Level.INFO, "Notification rate {0}", new Object[] {finalNotificationsRecord});
         String[] siteNames = new String[] {"Pharynx","Rectum","Urethra"} ;
@@ -597,31 +597,17 @@ public class Community {
             // LOGGER.log(Level.INFO,"{0} {1}", new Object[] {siteName, prevalenceReport.get(prevalenceReport.size() - 1)}) ;
         }
         prevalenceReport = screeningReporter.preparePrevalenceReport() ;
-        Community.ADD_TIME_STAMP("after prev reports");
+        //Community.ADD_TIME_STAMP("after prev reports");
         // LOGGER.log(Level.INFO,"{0} {1}", new Object[] {"all", prevalenceReport.get(prevalenceReport.size() - 1)}) ;
 
         HashMap<Comparable,String> incidenceReport = new HashMap<Comparable,String>() ;
-        String finalAtRiskString = "";
-
-        float t0 = System.nanoTime();
+        HashMap<Comparable,String> incidenceReportPrep = new HashMap<Comparable,String>() ;
         if (DYNAMIC)
         {
             incidenceReport = screeningReporter.prepareYearsAtRiskIncidenceReport(siteNames, END_YEAR + 1 - START_YEAR, END_YEAR, "statusHIV") ;
-            finalAtRiskString = incidenceReport.get(END_YEAR);
-            //incidenceReportPrep = screeningReporter.prepareYearsAtRiskIncidenceReport(siteNames, 16, 2022, "prepStatus") ;
+            incidenceReportPrep = screeningReporter.prepareYearsAtRiskIncidenceReport(siteNames, END_YEAR + 1 - START_YEAR, END_YEAR, "prepStatus") ;
         }
-        else
-        {
-            finalAtRiskString = screeningReporter.prepareFinalAtRiskIncidentsRecord(siteNames, 0, "statusHIV");
-        }
-
-        float t0_after = System.nanoTime();
-        Community.RECORD_METHOD_TIME("Community.main -> IF DYNAMIC CLAUSE", t0_after-t0);
-        
-        Community.ADD_TIME_STAMP("after incidence DYNAMIC");
-        
-        // log finalAtRisk:
-        LOGGER.info("by HIV-status " + finalAtRiskString) ;
+        //Community.ADD_TIME_STAMP("after incidence DYNAMIC");
 
         //String finalPrevalencesRecord = screeningReporter.prepareFinalPrevalencesSortedRecord(siteNames, "statusHIV") ;
         //LOGGER.log(Level.INFO, "prevalence {0}", finalPrevalencesRecord) ;
@@ -630,19 +616,18 @@ public class Community {
         //encounterReporter = new EncounterReporter(Community.SIM_NAME,Community.FILE_PATH) ;
         
         // commented out:
-        // String finalAtRiskString = screeningReporter.prepareFinalAtRiskIncidentsRecord(siteNames, 0, "statusHIV");
-        // String[] finalAtRiskArray = finalAtRiskString.split(" ");
-        // int total = 4;
-        // String hivStatusDifferences = "";
-        // for (int i = 0; i < total; ++i)
-        // {   
-        //     String[] falseProperty = finalAtRiskArray[i].split(":");
-        //     String[] trueProperty = finalAtRiskArray[i + total].split(":");
-        //     hivStatusDifferences += trueProperty[0] + "-" + falseProperty[0] + ": " + String.valueOf(Float.valueOf(trueProperty[1]) - Float.valueOf(falseProperty[1])) + "\n";
-        // }
-        // LOGGER.info("by HIV-status " + finalAtRiskString) ;
-        // LOGGER.info("differences:\n" + hivStatusDifferences) ;
-        //LOGGER.info("Incidence " + encounterReporter.prepareFinalIncidenceRecord(new String[] {"Pharynx","Rectum","Urethra"}, 0, 0, 365, MAX_CYCLES).toString());
+        String finalAtRiskString = screeningReporter.prepareFinalAtRiskIncidentsRecord(siteNames, 0, "statusHIV");
+        String[] finalAtRiskArray = finalAtRiskString.split(" ");
+        int total = 4;
+        String hivStatusDifferences = "";
+        for (int i = 0; i < total; ++i)
+        {   
+            String[] falseProperty = finalAtRiskArray[i].split(":");
+            String[] trueProperty = finalAtRiskArray[i + total].split(":");
+            hivStatusDifferences += trueProperty[0] + "-" + falseProperty[0] + ": " + String.valueOf(Float.valueOf(trueProperty[1]) - Float.valueOf(falseProperty[1])) + "\n";
+        }
+        LOGGER.info("by HIV-status " + finalAtRiskString) ;
+        ////LOGGER.info("Incidence " + encounterReporter.prepareFinalIncidenceRecord(new String[] {"Pharynx","Rectum","Urethra"}, 0, 0, 365, MAX_CYCLES).toString());
         // LOGGER.info("Incidence " + encounterReporter.prepareSortedFinalIncidenceRecord(siteNames, 0, 0, 365, MAX_CYCLES, "statusHIV").toString());
 
 
@@ -670,9 +655,9 @@ public class Community {
         {
             Reporter.DUMP_OUTPUT("riskyIncidence_HIV",SIM_NAME,FILE_PATH,incidenceReport);
             LOGGER.info(incidenceReport.toString()) ;
-            //Reporter.DUMP_OUTPUT("riskyIncidencePrep",SIM_NAME,FILE_PATH,incidenceReportPrep);
+            Reporter.DUMP_OUTPUT("riskyIncidence_Prep",SIM_NAME,FILE_PATH,incidenceReportPrep);
         }
-        Community.ADD_TIME_STAMP("FINAL TIMESTAMP");
+        /*Community.ADD_TIME_STAMP("FINAL TIMESTAMP");
         
         LOGGER.info("Time Stamps:");
         double totalTime = Double.valueOf(timeStamps.get(timeStamps.size() - 2)[1]);
@@ -684,22 +669,22 @@ public class Community {
             prev = curr;
             // System.out.println(s[0] + " -> stamp: " + s[1] + ", time taken: "
             //     + String.valueOf(difference) + "s, " + String.valueOf(percentage) + "% of sim");
-            System.out.println(String.valueOf(percentage) + "% : " + s[0] + ", "+ String.valueOf(difference)+"s");
+            //System.out.println(String.valueOf(percentage) + "% : " + s[0] + ", "+ String.valueOf(difference)+"s");
         }
-        
+        */
         long timeFinal = System.nanoTime();
         float timeRan = (timeFinal - timeInitial)/  1000000000f;
         LOGGER.info("Task completed in " + String.valueOf(timeRan));
 
-        System.out.println("\n\nTime taken for each methods:");
-        RECORD_METHOD_TIME("TOTAL", System.nanoTime() - timeInitial);
-        HashMap<String, Float> methodPercentages = FINALISE_METHOD_TIME();
-        ArrayList<String> keys = new ArrayList<String>(Community.methodsTimeStamp.keySet());
-        Collections.sort(keys);
-        for (String s : keys) {
-            System.out.println("- " + methodPercentages.get(s) * 100 + "% : " + s + " -> " + Community.methodsTimeStamp.get(s) / 1_000_000_000 + "s");
-        }
-        System.out.println("DONE");
+        // System.out.println("\n\nTime taken for each methods:");
+        // RECORD_METHOD_TIME("TOTAL", System.nanoTime() - timeInitial);
+        // HashMap<String, Float> methodPercentages = FINALISE_METHOD_TIME();
+        // ArrayList<String> keys = new ArrayList<String>(Community.methodsTimeStamp.keySet());
+        // Collections.sort(keys);
+        // for (String s : keys) {
+        //     System.out.println("- " + methodPercentages.get(s) * 100 + "% : " + s + " -> " + Community.methodsTimeStamp.get(s) / 1_000_000_000 + "s");
+        // }
+        // System.out.println("DONE");
     }
  
     public static void ADD_TIME_STAMP(String name) {
@@ -876,7 +861,7 @@ public class Community {
                 metaData.add(sbRelationshipReboot.toString()) ;
                 
                 // dump new metadata
-                rebootedSimName = simName + "$" + String.valueOf(fromCycle);
+                rebootedSimName = simName + "REBOOT" + String.valueOf(fromCycle);
                 rebootedFolderPath = Community.FILE_PATH;
 
                 // TODO: extract "test/" from CONFIG
@@ -983,7 +968,7 @@ public class Community {
         int startYear = START_YEAR - 2007 ;
 
         // No more burn-in if starting at a later date than 2007
-        if (startYear > 0)
+        if (startYear > 1)
             startCycle = 0 ;
         
         if ((cycle < startCycle))

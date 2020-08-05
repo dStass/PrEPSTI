@@ -590,7 +590,7 @@ public class PopulationReporter extends Reporter {
     /**
      * 
      * @param endCycle
-     * @return (ArrayList(String)) report of which agentId changes up to which cycle
+     * @return (ArrayList(String)) report of which agentId changes which properties up to which cycle
      */
     public ArrayList<String> prepareChangeReport(int backYears, int backMonths, int backDays, int endCycle)
     {
@@ -648,15 +648,22 @@ public class PopulationReporter extends Reporter {
         String propertyRecord ;
         int propertyIndex ;
         int endPropertyIndex ;
-        String[] riskyArray = new String[] {"probabilityUseCondom","riskyStatus"} ;
         
+        // riskinessCasual/Regular
+        String[] riskyArray = new String[] {"probabilityUseCondom","riskyStatus"} ;
         for (String property : riskyArray)
-        	if (property.startsWith(propertyName))
-        	{
-        		String suffix = propertyName.substring("riskiness".length()) ;
-        		findPropertyName += suffix ;
-        		break ;
-        	}
+        {
+            if (propertyName.startsWith(property))
+              {
+               String suffix = propertyName.substring(property.length()) ;
+               findPropertyName = "riskiness" + suffix ;    // change:riskinessCasual/Regular
+                  break ;
+              }
+        }
+        
+        // prep-related parameters
+        if (propertyName.contains("prep"))
+        	findPropertyName = "PrEP" ;    // change:PrEP
         
         for (String record : changeReport)
         {

@@ -26,6 +26,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.logging.Level;
 import org.apache.commons.math3.distribution.GammaDistribution ;
+import org.apache.commons.math3.distribution.TriangularDistribution ;
 import static PRSP.PrEPSTI.reporter.Reporter.AGENTID ;
 
 /**
@@ -145,31 +146,11 @@ public abstract class Agent {
     {
         String report = "" ;
         //boolean successful = true ;
-        String change = "change" ;
         String methodName = "" ;
-        Boolean reinitScreenCycle = false ;
-        //reinitScreenCycle = ConfigLoader.getMethodVariableBoolean("agent", "REINIT", "reinitScreenCycle") ;
         //TODO: Automate detection of MSM subClass with reflect
         // Update MSM variables
         report += MSM.REINIT(agentList, year) ;
         
-        if (reinitScreenCycle)
-        {
-            try
-            {
-                // Needs to be called after MSM.REINIT() specifically MSM.REINIT_RISK_ODDS()
-                // due to its updating prepStatus.
-                //methodName = "screen" ;
-                //report += Reporter.ADD_REPORT_PROPERTY(change, methodName) ;
-                //report += REINIT_SCREEN_CYCLE(agentList, year) ;
-
-            }
-            catch ( Exception e )
-            {
-                LOGGER.severe(e.toString() + " in method " + methodName) ;
-                //return false ;
-            }
-        }
         return report.concat("!") ;
     }
     
@@ -889,6 +870,44 @@ public abstract class Agent {
     protected int sampleGamma(double shape, double scale, double reshape, double rescale)
     {
         return (int) new GammaDistribution(shape * reshape,scale * rescale).sample() ;
+    }
+    
+    protected int sampleGamma(double shape, double scale)
+    {
+        return (int) new GammaDistribution(shape,scale).sample() ;
+    }
+    
+    protected double triangularUpper(double cdf, double lower)
+    {
+    	return triangularMode(cdf, lower, 365.0) - lower + 365.0 ;
+    } 
+    
+    protected double triangularUpper(double cdf, double lower, double x)
+    {
+    	return triangularMode(cdf, lower, x) - lower + x ;
+    }
+    
+    protected double triangularMode(double cdf, double lower)
+    {
+    	return triangularMode(cdf, lower, 365.0) ;
+    } 
+    
+    protected double triangularMode(double cdf, double lower, double x)
+    {
+    	double modeCDF = lower*(2*cdf - 1) + x*(1 - cdf) ;
+    	return modeCDF/cdf ;
+    }
+    
+    protected int sampleTriangular(double cdf, double lower)
+    {
+    	double mode = triangularMode(cdf, lower) ;
+    	double upper = triangularUpper(cdf, lower) ;
+    	return sampleTriangular(lower, mode, upper) ;
+    }
+    
+    protected int sampleTriangular(double lower, double mode, double upper)
+    {
+        return (int) new TriangularDistribution(lower,mode,upper).sample() ;
     }
     
     /**
