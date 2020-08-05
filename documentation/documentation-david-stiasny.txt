@@ -1,0 +1,122 @@
+@author: David Stiasny
+@date: 05/08/2020
+@contact: dstiasny@outlook.com
+
+
+
+Section 1: MDLL
+- MDLL (Mapped Doubly-Linked List) is a data structure that combines two sub data structures (map and a doubly-linked list)
+
+Supported operations:
+
+Instantiation:
+- [new] Supports instantiation without parameters the same way an ArrayList or HashMap is instantiated, i.e:
+  - Constant-time operation
+  - MDLL<Agent> agentMDLL = new MDLL<Agent>();
+
+Adding:
+- [add(..)] Supports adding objects by using a key and value. For this particular application, the key must be an integer,
+  and keys are assumed to be unique, i.e. given (an Agent object) agent:
+  - Constant-time operation
+  - agentMDLL.add(agent.getAgentId(), agent)
+
+- [addBefore(..)] Supports adding objects before another object given its key, i.e.:
+  - Constant-time operation
+  - agentMDLL.addBefore(agent.getAgentId(), agent, 2)
+  - // this will add the new agent directly in position before the agent with id 2
+
+- Assumptions:
+  - key is of type integer
+  - key is not equal to MDLL.HEAD_ID and MDLL.LAST_ID, reserved as -1 and -2
+  - if these ids are required, make modifications to reserved ids accordingly
+
+Checking:
+- [contains(..)] Supports checking whether a key exists, i.e.:
+  - Constant-time operation
+  - boolean doesExist = agentMDLL.contains(2020)
+
+Getting:
+- [get(id)] Supports getting declared type objects given an existing key, i.e.:
+  - Agent extractedAgent = agentMDLL.get(2020)
+  - Constant-time operation
+
+- [size()] Supports getting size of MDLL collection, i.e.:
+  - Constant-time operation
+  - int agentMDLLSize = agentMDLL.size()
+  - // simply returns the number of exists nodes minus 2 reserved ndoes
+
+Removing:
+- [remove(id)] Supports removal of declared type objects given an existing key, i.e.:
+  - Constant-time operation
+  - removes an object from internal map and reassigns the correct pointers from internal doubly-linked list
+  - returns a boolean on whether the removal was successful
+
+Collection operations:
+- [clone()] Supports returning a shallow copy of the collection,
+  - Linear-time operation 
+
+  What gets cloned:
+  - MDLL collection
+  - MDLLNodes
+
+  What doesn't get cloned:
+  - declared type objects
+
+  Example, assuming we have two Agent objects (agent1 and agent2), and an MDLL containing them (originalMDLL)
+  - MDLL<Agent> clonedMDLL = originalMDLL.clone()
+  - // originalMDLL.size() == clonedMDLL.size()
+  - originalMDLL.remove(0)
+  - // originalMDLL.size() == 1, clonedMDLL.size() == 2
+  - // if agent0 is modified, this Agent specific modification will also be modified in clonedMDLL
+
+- [toArrayList()] Supports returning a conversion to ArrayList of objects, i.e.:
+  - Linear-time operation
+  - ArrayList<Agent> agentArrayList = agentMDLL.toArrayList()
+
+- [returnShuffled()] Supports returning a new shuffled MDLL, i.e.:
+  - Linear-time operation
+  - MDLL<Agent> shuffledMDLL = agentMDLL.returnShuffled()
+  - this is accomplished by first randomly selecting an object and then applying addBefore(..) to it
+
+- [getStream()] Supports returning a stream of declared type objects, i.e.:
+  - Linear-time operation
+  - Stream<Agent> agentStream = agentMDLL.getStream()
+  - handles removal of reserved nodes (such as internal head and last nodes)
+
+Traversing collection:
+- Supports forward and backward moving iterators by calling agentMDLL.getForwardIterator()
+- and agentMDLL.getBackwardIterator() respectively
+- These implements the MDLLIterator interface, which inself extends the Iterator interface
+
+Support operations:
+- [hasNext()] Supports checking whether the iterator can traverse forward by one
+  - Constant-time operation
+  - returns a boolean
+
+- [next()] Supports iterating forward by one in the desired direction
+  - Constant-time operation
+  - returns type object
+  - Agent nextObject = agentMDLLForwardIterator.next()
+  - // internally agentMDLLForwardIterator also moves its internal pointer forward
+
+- [iterateBack()] Supports iterating back by one and returning the desired object
+  - Assumes user knows that iterating back is possible
+  - this should only be used prior to removing an object the iterator is pointing to
+
+  Assumptions:
+  - Currently does not support checking whether iterateBack() is a valid operation
+
+
+Where it is used in this project:
+  - 
+
+Section 2: Concurrency
+
+Section 2a: class Concurrency
+- contains two static methods to convert:
+  - nested HashMap<K, HashMap<..>> to ConcurrentHashMap<K, ConcurrentHashMap<..>>
+  - nested ConcurrentHashMap<K, ConcurrentHashMap<..>> to HashMap<K, HashMap<..>> 
+
+- Primarily used when converting a HashMap to ConcurrentHashMap 
+
+
