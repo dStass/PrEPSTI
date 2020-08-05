@@ -33,16 +33,6 @@ public class PopulationReporter extends Reporter {
     static String AGE = "age" ;
     static String START_AGE = "startAge" ;
 
-    // // memoizations:
-    // static ConcurrentHashMap<String, HashMap<String, String>> CENSUS_PROPERTY_MEMOIZED_REPORTS = new ConcurrentHashMap<String, HashMap<String, String>>();
-    // static ConcurrentHashMap<String, ArrayList<String>> CHANGE_MEMOIZED_REPORTS = new ConcurrentHashMap<String, ArrayList<String>>();
-
-    // static public void CLEAR_MEMOIZED()
-    // {
-    //     CENSUS_PROPERTY_MEMOIZED_REPORTS = new ConcurrentHashMap<String, HashMap<String, String>>();
-    //     CHANGE_MEMOIZED_REPORTS = new ConcurrentHashMap<String, ArrayList<String>>();
-    // }
-
     
     public PopulationReporter()
     {
