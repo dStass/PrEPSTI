@@ -33,15 +33,15 @@ public class PopulationReporter extends Reporter {
     static String AGE = "age" ;
     static String START_AGE = "startAge" ;
 
-    // memoizations:
-    static ConcurrentHashMap<String, HashMap<String, String>> CENSUS_PROPERTY_MEMOIZED_REPORTS = new ConcurrentHashMap<String, HashMap<String, String>>();
-    static ConcurrentHashMap<String, ArrayList<String>> CHANGE_MEMOIZED_REPORTS = new ConcurrentHashMap<String, ArrayList<String>>();
+    // // memoizations:
+    // static ConcurrentHashMap<String, HashMap<String, String>> CENSUS_PROPERTY_MEMOIZED_REPORTS = new ConcurrentHashMap<String, HashMap<String, String>>();
+    // static ConcurrentHashMap<String, ArrayList<String>> CHANGE_MEMOIZED_REPORTS = new ConcurrentHashMap<String, ArrayList<String>>();
 
-    static public void CLEAR_MEMOIZED()
-    {
-        CENSUS_PROPERTY_MEMOIZED_REPORTS = new ConcurrentHashMap<String, HashMap<String, String>>();
-        CHANGE_MEMOIZED_REPORTS = new ConcurrentHashMap<String, ArrayList<String>>();
-    }
+    // static public void CLEAR_MEMOIZED()
+    // {
+    //     CENSUS_PROPERTY_MEMOIZED_REPORTS = new ConcurrentHashMap<String, HashMap<String, String>>();
+    //     CHANGE_MEMOIZED_REPORTS = new ConcurrentHashMap<String, ArrayList<String>>();
+    // }
 
     
     public PopulationReporter()
@@ -604,23 +604,7 @@ public class PopulationReporter extends Reporter {
      */
     public ArrayList<String> prepareChangeReport(int backYears, int backMonths, int backDays, int endCycle)
     {
-        float t0 = System.nanoTime();
-        String memoizedKey = '(' + this.getClass().toString()
-                           + ':' + String.valueOf(backYears)
-                           + ',' + String.valueOf(backMonths)
-                           + ',' + String.valueOf(backDays)
-                           + ',' + String.valueOf(endCycle)
-                           + ')';
-
-        // return a clone of memoized report
-        if (CHANGE_MEMOIZED_REPORTS.containsKey(memoizedKey)) {
-            ArrayList<String> toReturn = new ArrayList<String>();
-            for (String s : CHANGE_MEMOIZED_REPORTS.get(memoizedKey)) {
-                toReturn.add(s);
-            }
-            return toReturn;
-        }
-        
+        float t0 = System.nanoTime();        
         ArrayList<String> changeReport = new ArrayList<String>() ;
         
 
@@ -648,13 +632,7 @@ public class PopulationReporter extends Reporter {
         float t1 = System.nanoTime();
         Community.RECORD_METHOD_TIME("PopulationReporter.prepareChangeReport(y,m,d,end)", t1 - t0);
 
-        // put and return
-        CHANGE_MEMOIZED_REPORTS.put(memoizedKey, changeReport);
-        ArrayList<String> toReturn = new ArrayList<String>();
-        for (String s : changeReport) {
-            toReturn.add(s);
-        }
-        return toReturn;
+        return changeReport;
     }
     
     
@@ -896,16 +874,6 @@ public class PopulationReporter extends Reporter {
     {
         float t0 = System.nanoTime();
 
-        String memoizedKey = '(' + this.getClass().toString() + ':' + propertyName + ')';
-        if (CENSUS_PROPERTY_MEMOIZED_REPORTS.containsKey(memoizedKey)) {
-            HashMap<String, String> memoizedReport = CENSUS_PROPERTY_MEMOIZED_REPORTS.get(memoizedKey);
-            HashMap<String, String> toReturn = new HashMap<String, String>();
-            for (Map.Entry<String, String> memoizedEntry : memoizedReport.entrySet()) {
-                toReturn.put(memoizedEntry.getKey(), memoizedEntry.getValue());
-            }
-            return toReturn;
-        }
-
 
         HashMap<String,String> censusPropertyReport = new HashMap<String,String>() ;
         
@@ -928,13 +896,7 @@ public class PopulationReporter extends Reporter {
         Community.RECORD_METHOD_TIME("PopulationReporter.prepareCensusPropertyReport(propName)", t1 - t0);
         Community.RECORD_METHOD_TIME("PopulationReporter.prepareCensusPropertyReport(propName) NO PREPARE BIRTH", t1 - t00);
 
-        // put memoized and return
-        CENSUS_PROPERTY_MEMOIZED_REPORTS.put(memoizedKey, censusPropertyReport);
-        HashMap<String, String> toReturn = new HashMap<String, String>();
-        for (Map.Entry<String, String> memoizedEntry : censusPropertyReport.entrySet()) {
-            toReturn.put(memoizedEntry.getKey(), memoizedEntry.getValue());
-        }
-        return toReturn;
+        return censusPropertyReport;
 
     }
 
@@ -1170,17 +1132,6 @@ public class PopulationReporter extends Reporter {
      */
     public HashMap<String,String> prepareCensusPropertyReport(String propertyName, int endCycle)
     {
-        String memoizedKey = '(' + this.getClass().toString() + ":" + propertyName + ',' + String.valueOf(endCycle) + ')';
-        if (CENSUS_PROPERTY_MEMOIZED_REPORTS.containsKey(memoizedKey)) {
-            HashMap<String, String> memoizedReport = CENSUS_PROPERTY_MEMOIZED_REPORTS.get(memoizedKey);
-            HashMap<String, String> toReturn = new HashMap<String, String>();
-            for (Map.Entry<String, String> memoizedEntry : memoizedReport.entrySet()) {
-                toReturn.put(memoizedEntry.getKey(), memoizedEntry.getValue());
-            }
-            return toReturn;
-        }
-
-
 
         float t0 = System.nanoTime();
         HashMap<String,String> censusPropertyReport = new HashMap<String,String>() ;
@@ -1242,15 +1193,7 @@ public class PopulationReporter extends Reporter {
         float t1 = System.nanoTime();
         Community.RECORD_METHOD_TIME("PopulationReporter.prepareCensusPropertyReport(name, endCycle)", t1-t0);
 
-        // add to memoized reports
-        CENSUS_PROPERTY_MEMOIZED_REPORTS.put(memoizedKey, censusPropertyReport);
-
-        // return a clone
-        HashMap<String, String> toReturn = new HashMap<String, String>();
-        for (Map.Entry<String, String> memoizedEntry : censusPropertyReport.entrySet()) {
-            toReturn.put(memoizedEntry.getKey(), memoizedEntry.getValue());
-        }
-        return toReturn;
+        return censusPropertyReport;
     }
     
     /**

@@ -287,8 +287,8 @@ public class Community {
         Community community = new Community(REBOOT_SIMULATION, REBOOT_FROM_CYCLE) ;
         
         // clear all memoized reports
-        Reporter.CLEAR_MEMOIZED();
-        PopulationReporter.CLEAR_MEMOIZED();
+        // Reporter.CLEAR_MEMOIZED();
+        // PopulationReporter.CLEAR_MEMOIZED();
 
 
         Community.ADD_TIME_STAMP("new community created");

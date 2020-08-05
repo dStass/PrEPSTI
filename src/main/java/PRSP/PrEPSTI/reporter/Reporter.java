@@ -58,15 +58,6 @@ public class Reporter {
         REPORT_LIST.clear() ;
     }
 
-    /**
-     * memoized back_cycles reports for repeated calls
-     */
-    static private ConcurrentHashMap<String, ArrayList<String>> MEMOIZED_BACK_CYCLES = new ConcurrentHashMap<String, ArrayList<String>>();
-
-    static public void CLEAR_MEMOIZED()
-    {
-        MEMOIZED_BACK_CYCLES = new ConcurrentHashMap<String, ArrayList<String>>();
-    }
     
     /** Whether to automatically save reports */
     public static boolean WRITE_REPORT;
@@ -4057,21 +4048,6 @@ public class Reporter {
             // System.out.println("getBackCyclesReport(" + backCycles + "," + endCycle + ")");
             float t0 = System.nanoTime();
 
-            String memoizedKey = '(' + this.getClass().toString() + ':' + String.valueOf(backCycles) + ',' + String.valueOf(endCycle) + ')';
-            
-            // check if we have seen this combination before, if so, return
-            // bug occurs when backCycles == endCycle
-            if (backCycles != endCycle && Reporter.MEMOIZED_BACK_CYCLES.containsKey(memoizedKey)) {
-                ArrayList<String> toReturn = new ArrayList<String>();
-                ArrayList<String> memoized = Reporter.MEMOIZED_BACK_CYCLES.get(memoizedKey);
-                for (String backCycleString : memoized) {
-                    toReturn.add(backCycleString);
-                }
-                return toReturn;
-            }
-
-
-
             ArrayList<String> outputList = new ArrayList<String>() ;
             int cycleFileIndex ;
             try
@@ -4139,15 +4115,10 @@ public class Reporter {
                 assert(2 < 0) ;
             }
 
-            Reporter.MEMOIZED_BACK_CYCLES.put(memoizedKey, outputList);
             float t1 = System.nanoTime();
             Community.RECORD_METHOD_TIME("Reporter.getBackCyclesReport(backCycles,endCycles)", t1 - t0);
-
-            ArrayList<String> toReturn = new ArrayList<String>();
-            for (String backCycleString : outputList) {
-                toReturn.add(backCycleString);
-            }
-            return toReturn;
+            
+            return outputList;
         }
 
 
