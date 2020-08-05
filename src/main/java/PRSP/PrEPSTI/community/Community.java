@@ -1307,7 +1307,6 @@ public class Community {
         //         newAgentsMDLL.add(agent.getAgentId(), agent);
         // }
         HashMap<Integer, Agent> toRemove = new HashMap<Integer, Agent>();
-        // agentsMDLL.getStream().parallel().forEach(agent -> {
         for (Agent agent : agentsMDLL) {
 
             if (agent.grimReaper()) {
@@ -1315,21 +1314,10 @@ public class Community {
                 toRemove.put(agent.getAgentId(), agent);
             }
         }
-        // });
 
         for (Integer agentId : toRemove.keySet()) {
             agentsMDLL.remove(agentId);
         }
-        // for (Agent agent : agentsMDLL) {
-        //     if (agent.grimReaper()) {
-        //         sbRecord.append(Reporter.ADD_REPORT_PROPERTY("agentId", agent.getAgentId())) ; 
-        //     }
-        //     else {
-        //         newAgentsMDLL.add(agent.getAgentId(), agent);
-        //     }
-        // }
-
-        // agentsMDLL = newAgentsMDLL ;
 
         return sbRecord.toString() ;
     }
@@ -1346,7 +1334,6 @@ public class Community {
         StringBuffer stringBufferRecord = new StringBuffer();
 
         // parallelised retrieval of elements
-        // agentsMDLL.getInternalMap().keySet().parallelStream().forEach( agentId -> {
         agentsMDLL.getStream().parallel().forEach( agent -> {
 
             // Agent agent = agentsMDLL.getInternalMap().get(agentId).getObject();

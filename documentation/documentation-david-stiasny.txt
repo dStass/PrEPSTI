@@ -1,6 +1,17 @@
 @author: David Stiasny
 @date: 05/08/2020
 @contact: dstiasny@outlook.com
+@GitHub: dStass
+
+
+
+Index
+- Section 1: MDLL                         ... line   13
+- Section 2: Concurrency                  ... line  100
+- Section 3: Simulation Reboot            ... line  150
+- Section 4: Build: Ant and Maven         ... line  200
+- Section 5: Plots: Shaded and Interval   ... line  250
+- Section 6: Configuration files          ... line  300
 
 
 
@@ -108,15 +119,24 @@ Support operations:
 
 
 Where it is used in this project:
-  - 
+  - maintaining a collection of current agents in the simmulation inside Community (replaces ArrayList<Agent>)
+  - used in generateRelationships() for significance speed gain
+
+Note: This uses significantly more memory than using a standard list
+
+
 
 Section 2: Concurrency
 
-Section 2a: class Concurrency
+
+Section 2a: package PRSP.PrEPSTI.concurrency;
 - contains two static methods to convert:
   - nested HashMap<K, HashMap<..>> to ConcurrentHashMap<K, ConcurrentHashMap<..>>
   - nested ConcurrentHashMap<K, ConcurrentHashMap<..>> to HashMap<K, HashMap<..>> 
 
-- Primarily used when converting a HashMap to ConcurrentHashMap 
+- Primarily used when converting a HashMap to ConcurrentHashMap before multithreading and then converting back afterwards
 
 
+Section 2a: Where multithreading is used in this application
+- Community.runEcnounters(): retrieve a stream of agents from MDLL using getStream() and apply Agent.encounter() on each
+- PopulationReporter.prepareCensusPropertyReport(): 
