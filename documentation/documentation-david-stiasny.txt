@@ -1,0 +1,299 @@
+@author: David Stiasny
+@date: 05/08/2020
+@contact: dstiasny@outlook.com
+@GitHub: dStass
+
+
+
+Index
+- Section 1: MDLL ............................................................. line   13
+- Section 2: Concurrency ...................................................... line  100
+  - Section 2a: package ....................................................... line  100
+  - Section 2b: multithreading location ....................................... line  100
+- Section 3: Simulation Reboot ................................................ line  150
+- Section 4: Build: Ant and Maven ............................................. line  200
+- Section 5: Plots: Shaded and Interval ....................................... line  250
+- Section 6: Configuration files .............................................. line  300
+- Section 7: Other miscellaneous fixes......................................... line  320
+  - Section 7a: StringBuilder and StringBuffer ................................ line  350
+
+
+Section 1: MDLL
+- MDLL (Mapped Doubly-Linked List) is a data structure that combines two sub data 
+  tructures (map and a doubly-linked list)
+
+Supported operations:
+
+Instantiation:
+- [new] Supports instantiation without parameters the same way an ArrayList
+  or HashMap is instantiated, i.e:
+  - Constant-time operation
+  - MDLL<Agent> agentMDLL = new MDLL<Agent>();
+
+Adding:
+- [add(..)] Supports adding objects by using a key and value. For this particular
+  application, the key must be an integer,
+  and keys are assumed to be unique, i.e. given (an Agent object) agent:
+  - Constant-time operation
+  - agentMDLL.add(agent.getAgentId(), agent)
+
+- [addBefore(..)] Supports adding objects before another object given its key, i.e.:
+  - Constant-time operation
+  - agentMDLL.addBefore(agent.getAgentId(), agent, 2)
+  - // this will add the new agent directly in position before the agent with id 2
+
+- Assumptions:
+  - key is of type integer
+  - key is not equal to MDLL.HEAD_ID and MDLL.LAST_ID, reserved as -1 and -2
+  - if these ids are required, make modifications to reserved ids accordingly
+
+Checking:
+- [contains(..)] Supports checking whether a key exists, i.e.:
+  - Constant-time operation
+  - boolean doesExist = agentMDLL.contains(2020)
+
+Getting:
+- [get(id)] Supports getting declared type objects given an existing key, i.e.:
+  - Agent extractedAgent = agentMDLL.get(2020)
+  - Constant-time operation
+
+- [size()] Supports getting size of MDLL collection, i.e.:
+  - Constant-time operation
+  - int agentMDLLSize = agentMDLL.size()
+  - // simply returns the number of exists nodes minus 2 reserved ndoes
+
+Removing:
+- [remove(id)] Supports removal of declared type objects given an existing key, i.e.:
+  - Constant-time operation
+  - removes an object from internal map and reassigns the correct pointers from
+    internal doubly-linked list
+  - returns a boolean on whether the removal was successful
+
+Collection operations:
+- [clone()] Supports returning a shallow copy of the collection,
+  - Linear-time operation 
+
+  What gets cloned:
+  - MDLL collection
+  - MDLLNodes
+
+  What doesn't get cloned:
+  - declared type objects
+
+  Example, assuming we have two Agent objects (agent1 and agent2), and an MDLL
+  containing them (originalMDLL)
+  - MDLL<Agent> clonedMDLL = originalMDLL.clone()
+  - // originalMDLL.size() == clonedMDLL.size()
+  - originalMDLL.remove(0)
+  - // originalMDLL.size() == 1, clonedMDLL.size() == 2
+  - // if agent0 is modified, this Agent specific modification will also be modified
+    in clonedMDLL
+
+- [toArrayList()] Supports returning a conversion to ArrayList of objects, i.e.:
+  - Linear-time operation
+  - ArrayList<Agent> agentArrayList = agentMDLL.toArrayList()
+
+- [returnShuffled()] Supports returning a new randomly shuffled MDLL, i.e.:
+  - Linear-time operation
+  - MDLL<Agent> shuffledMDLL = agentMDLL.returnShuffled()
+  - this is accomplished by first randomly selecting an object and then applying
+    addBefore(..) to it
+
+- [getStream()] Supports returning a stream of declared type objects, i.e.:
+  - Linear-time operation
+  - Stream<Agent> agentStream = agentMDLL.getStream()
+  - handles removal of reserved nodes (such as internal head and last nodes)
+
+Traversing collection:
+- Supports forward and backward moving iterators by calling agentMDLL.getForwardIterator()
+- and agentMDLL.getBackwardIterator() respectively
+- These implements the MDLLIterator interface, which inself extends the Iterator interface
+
+Supported operations:
+- [hasNext()] Supports checking whether the iterator can traverse forward by one
+  - Constant-time operation
+  - returns a boolean
+
+- [next()] Supports iterating forward by one in the desired direction
+  - Constant-time operation
+  - returns type object
+  - Agent nextObject = agentMDLLForwardIterator.next()
+  - // internally agentMDLLForwardIterator also moves its internal pointer forward
+
+- [iterateBack()] Supports iterating back by one and returning the desired object
+  - Assumes user knows that iterating back is possible
+  - this should only be used prior to removing an object the iterator is pointing to
+
+- Traversal by utilising for each syntax, i.e.:
+  - for (Agent agent : agentsMDLL) {
+  -   ...
+  - }
+
+  Assumptions:
+  - Currently does not support checking whether iterateBack() is a valid operation
+
+
+Where it is used in this project:
+  - maintaining a collection of current agents in the simmulation inside Community
+    (replaces ArrayList<Agent>)
+  - used in generateRelationships() for significance speed gain
+
+Note: This uses significantly more memory than using a standard list
+
+
+
+Section 2: Concurrency
+
+
+Section 2a: package PRSP.PrEPSTI.concurrency;
+- contains two static methods to convert:
+  - nested HashMap<K, HashMap<..>> to ConcurrentHashMap<K, ConcurrentHashMap<..>>
+  - nested ConcurrentHashMap<K, ConcurrentHashMap<..>> to HashMap<K, HashMap<..>> 
+
+- Primarily used when converting a HashMap to ConcurrentHashMap before multithreading
+  and then converting back afterwards
+
+
+Section 2b: Where multithreading is used in this application
+- Community.runEcnounters(): retrieve a stream of agents from MDLL using getStream()
+  and apply Agent.encounter() on each agent
+- PopulationReporter.prepareCensusPropertyReport(): parallelised on agents per birth
+  record
+- ScreeningReporter.prepareYearsAtRiskIncidenceReport(): parallelised on backYears,
+  generating each year's report in parallel
+- ScreeningReporter.prepareRawAgentSiteReport(): parallelised on each agent when looking
+  at their infections
+
+Note: currently does not support nested maps with other data structures, such as:
+HashMap<K1, HashMap<K2, ArrayList<T>>>
+
+Some things to note when parallelising and writing to HashMaps, they must first be
+converted into ConcurrentHashMaps or the application is at risk of stalling
+due to concurrency isues.
+This can be done using the methods outlined in section 2a.
+
+
+Section 3: Simulation Reboot (at a given cycle)
+
+The application allows the user to restart a simulation at a particular cycle as
+an extension to the previous functionality.
+Given a particular reboot cycle, variable in config file: "REBOOT_FROM_CYCLE"
+
+Note: REBOOT_FROM_CYCLE must be between 0 and the total length of the sim being rebooted
+Note: if the user wants to reboot from the end of a given simulation,
+      they can declare this value as the legnth of the simulation they want to reboot,
+      or the alternatively, set this as '-1'
+
+For this, two new -METADATA and -REBOOT files at that particular cycle are generated
+and used for rebooting.
+They take the form [TODO].
+
+Part A: -REBOOT
+
+In order to generate the -REBOOT file, Agent and Relationship reboot information are
+generated.
+
+1. Agent reboot:
+- generated from PopulationReporter.generateCensusReport() with parameters:
+  - cycle // to generate up to
+  - new screeningReporter object
+
+- Generates a rawReport containing all relevant information
+Generates the following reports and combines them in the rawReport:
+  - Agent testing report
+  - Agent treated report
+  - Census property report
+  - Birth report of agents
+  - Death report of agents
+  - Agent site report
+  - change report
+
+This is done by preparing how the population looks at the start of the simulation;
+followed by preparing the necessary change reports to different values throughout the
+simulation,
+followed by removing dead agents (stored in the death report).
+
+Some introduced methods:
+- prepareRawAgentSiteReport (runs concurrently)
+  - extracts the correct infection string for each agent at each site to be added
+    to -REBOOT file
+- extractInfectionAndIncubationFromBackCycles
+  - Calculates infectionTime and incubationTime by traversing backwards from the last
+    cycle
+  - until when the agent last had the infection
+  - Once this cycle has been found, the infectionTime and incubationTime can be
+    deduce with 
+  - calculations representative in
+    ScreeningReporter.extractInfectionAndIncubationFromBackCycles()
+
+2. Relationship reboot:
+- loop back over records, introduce relationships that have been created and
+  remove those that have ended
+
+Note: Agent ages can be off by 1 using this method due to the way their ages are
+saved which will round to the nearest year
+
+Part B: -METADATA
+
+Duplicates the -METADATA file with modified MAX_CYCLES using the method:
+- Reporter.DUPLICATE_METADATA_WITH_MODIFIED_PROPERTIES
+
+
+
+Section 4: Build files with Ant and project migration to Maven post working from
+home due to Covid-19
+
+Notable changes:
+
+Packages are sourced in two ways:
+1. Maven is used as an option using an IDE such as Eclipse and Visual Studio Code.
+   Dependencies are sourced online, automatically downloaded and updated.
+- maven-build.xml contains build information, the file used in this project
+  is generated directly using Eclipse
+- Dependencies and external packages can be added to the file pom.xml under
+  the tag <dependencies>
+
+2. Directly sourced and stored locally in the lib/ folder as .jar files
+In order to add new dependencies, modify build.xml:
+  a. Add the stored locations of each dependency under the comment given a library name
+  <!-- declare locations of dependencies  -->
+  b. Add the new library name in the <attribute name="Class-Path"> by modifying
+  the value, directly under <!-- add all our dependencies in jar file -->
+
+In order to build a project using Ant
+Run: ant clean build clean
+- this generates a .jar file in the build folder
+- clean: used to remove compiled class files in target/
+
+This is useful for running the simulation in environments where Maven is not available,
+such as on a supercomputer. It is assumed Ant is available.
+
+To modify build source, modify mainClass field in build.properties.
+This changes which file in which the main method exists. 
+
+
+
+Section 5: Plots with shading and error intervals
+
+
+
+
+
+Section 7: Other miscellaneous fixes and additions
+
+7a) StringBuilder and StringBuffer
+Many places in the code-base utilises StringBuilder and StringBuffer with the former
+being the preferred choice. This effectively replaces concatenating strings or using
+the += operator for string operations. This was implemented to reduce time taken to 
+concatenate long strings many times over and over, as it brings the total time
+taken to concatenate from linear time to constant time, using the .append() method.
+
+The differences between both:
+- StringBuilder: Faster when single-threading but not thread-safe
+  - use when SINGLE-THREADING
+- StringBuffer: Slower but can be used to append strings concurrently
+  - use when MULTI-THREADING
+
+Apply a final .toString() to convert a StringBuilder/StringBuffer object into a String
+
+

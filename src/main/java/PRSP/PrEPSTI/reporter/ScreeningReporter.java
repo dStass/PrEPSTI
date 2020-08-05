@@ -7,6 +7,7 @@ package PRSP.PrEPSTI.reporter;
 
 import PRSP.PrEPSTI.agent.MSM;
 import PRSP.PrEPSTI.community.Community;
+import PRSP.PrEPSTI.concurrency.Concurrency;
 import PRSP.PrEPSTI.site.Pharynx;
 import PRSP.PrEPSTI.site.Rectum;
 /**
@@ -16,17 +17,18 @@ import PRSP.PrEPSTI.site.Rectum;
 import PRSP.PrEPSTI.site.Site;
 import PRSP.PrEPSTI.site.Urethra;
 
-import java.io.* ;
-import java.util.ArrayList ;
+import java.io.*;
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections ;
+import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashSet ;
-import java.util.Collections ;
+import java.util.HashSet;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.logging.Level;
-
-import java.lang.reflect.* ;
+import java.util.stream.IntStream;
+import java.lang.reflect.*;
 
 
 public class ScreeningReporter extends Reporter {
@@ -181,14 +183,14 @@ public class ScreeningReporter extends Reporter {
         prepareSortedYearsNotificationsRecord(String[] siteNames, int backYears, int lastYear, String sortingProperty)
         {
             HashMap<Comparable,String> sortedYearsNotificationsReport = new HashMap<Comparable,String>() ;
-            HashMap<Object,HashMap<Comparable,String>> sortedYearsNotificationsRecord = new HashMap<Object,HashMap<Comparable,String>>() ;
+            HashMap<String,HashMap<Comparable,String>> sortedYearsNotificationsRecord = new HashMap<String,HashMap<Comparable,String>>() ;
             //HashMap<Object,HashMap<Object,Number[]>> sortedYearsNotificationsRecord = new HashMap<Object,HashMap<Object,Number[]>>() ;
             
             // Get Report of sortingValue mapping to agentIds
             PopulationReporter populationReporter = new PopulationReporter(simName,getFolderPath()) ;
-            HashMap<Object,ArrayList<String>> sortedAgentReport = populationReporter.agentIdSorted(sortingProperty) ;
+            HashMap<String,ArrayList<String>> sortedAgentReport = populationReporter.agentIdSorted(sortingProperty) ;
 
-            for (Object sortingValue : sortedAgentReport.keySet())
+            for (String sortingValue : sortedAgentReport.keySet())
             {
               // logger.log(level.info, "value:{0} population:{1}", new Object[] {sortingValue,sortedAgentReport.get(sortingValue).size()});
                 HashMap<Comparable,String> yearsNotificationsRecord = new HashMap<Comparable,String>() ; 
@@ -288,7 +290,7 @@ public class ScreeningReporter extends Reporter {
         
         // Get Report of sortingValue mapping to agentIds
         PopulationReporter populationReporter = new PopulationReporter(simName,getFolderPath()) ;
-        HashMap<Object,ArrayList<String>> sortedAgentReport = populationReporter.agentIdSorted(sortingProperty) ;
+        HashMap<String,ArrayList<String>> sortedAgentReport = populationReporter.agentIdSorted(sortingProperty) ;
         
         for (Object sortingValue : sortedAgentReport.keySet())
         {
@@ -440,12 +442,9 @@ public class ScreeningReporter extends Reporter {
         double nbTreated = (double) positiveAgents.size() ;
         Number[] entry = new Number[] {notifications/denominator,nbTreated/nbTested} ;
         finalNotifications.put("all",entry) ;
-
         sbFinalNotifications.append(ADD_REPORT_PROPERTY("all",entry[0].doubleValue())) ;
         sbFinalNotifications.append(ADD_REPORT_LABEL(POSITIVITY)) ;
         sbFinalNotifications.append(ADD_REPORT_PROPERTY("all",entry[1].doubleValue())) ;
-
-        
         // finalNotificationsString += ADD_REPORT_PROPERTY("all",entry[0].doubleValue()) ;
         // finalNotificationsString += ADD_REPORT_LABEL(POSITIVITY) ;
         // finalNotificationsString += ADD_REPORT_PROPERTY("all",entry[1].doubleValue()) ;
@@ -463,9 +462,7 @@ public class ScreeningReporter extends Reporter {
         
         if (WRITE_REPORT)
             WRITE_CSV(finalNotifications, "Site", new String[] {"incidence",POSITIVITY}, "finalNotifications", simName, getFolderPath()) ;
-        
-        return sbFinalNotifications.toString();
-        // return finalNotificationsString ;
+        return sbFinalNotifications.toString() ;
     }
     
     /**
@@ -749,7 +746,7 @@ public class ScreeningReporter extends Reporter {
         //String finalPrevalencesSortedRecord = new HashMap<Object,String>() ;
         
         PopulationReporter populationReporter = new PopulationReporter(simName,getFolderPath()) ;
-        HashMap<Object,ArrayList<String>> sortedAgentReport = populationReporter.agentIdSorted(sortingProperty) ;
+        HashMap<String,ArrayList<String>> sortedAgentReport = populationReporter.agentIdSorted(sortingProperty) ;
         
         ArrayList<String> agentsAliveReport = populationReporter.prepareAgentsAliveRecord(endCycle) ;
             
@@ -995,15 +992,15 @@ public class ScreeningReporter extends Reporter {
         HashMap<Object,Number> testingRateReport = new HashMap<Object,Number>() ; 
         
         ArrayList<String> sortedAgentIds ;
-        ArrayList<Object> sortingValues = new ArrayList<Object>() ;
-        HashMap<Object,ArrayList<String>> sortedAgentReport = new HashMap<Object,ArrayList<String>>() ;
+        ArrayList<String> sortingValues = new ArrayList<String>() ;
+        HashMap<String,ArrayList<String>> sortedAgentReport = new HashMap<String,ArrayList<String>>() ;
         if (sortingProperty.isEmpty())
             sortingValues.add("") ;
         else
         {
             PopulationReporter populationReporter = new PopulationReporter(simName,getFolderPath()) ;
             sortedAgentReport = populationReporter.agentIdSorted(sortingProperty) ;
-            sortingValues = new ArrayList<Object>(sortedAgentReport.keySet()) ;
+            sortingValues = new ArrayList<String>(sortedAgentReport.keySet()) ;
         }
         
         for (Object value : sortingValues)
@@ -1149,8 +1146,8 @@ public class ScreeningReporter extends Reporter {
             int endCycle ;
             
             // Sorted AgentId
-            ArrayList<Object> sortingValues = new ArrayList<Object>() ;
-            HashMap<Object,ArrayList<String>> sortedAgentIds = new HashMap<Object,ArrayList<String>>() ;
+            ArrayList<String> sortingValues = new ArrayList<String>() ;
+            HashMap<String,ArrayList<String>> sortedAgentIds = new HashMap<String,ArrayList<String>>() ;
             PopulationReporter populationReporter = new PopulationReporter(simName,getFolderPath()) ;
             if (sortingProperty.isEmpty())
                 sortingValues.add("") ;
@@ -1161,17 +1158,17 @@ public class ScreeningReporter extends Reporter {
             Number[] cumulativeAgentTestingRecord = new Number[] {} ;
             for (int year = 0 ; year < backYears ; year++ )
             {
-                HashMap<Object,Number[]> sortedCumulativeAgentTestingRecord = new HashMap<Object,Number[]>() ;
+                HashMap<String,Number[]> sortedCumulativeAgentTestingRecord = new HashMap<String,Number[]>() ;
             
                 endCycle = maxCycles - year * DAYS_PER_YEAR ;
                 
                 if (!sortingProperty.isEmpty())
                 {
                     sortedAgentIds = populationReporter.agentIdSorted(sortingProperty,endCycle) ;
-                    sortingValues = new ArrayList<Object>(sortedAgentIds.keySet()) ;
+                    sortingValues = new ArrayList<String>(sortedAgentIds.keySet()) ;
                 }
 
-                for (Object sortingValue : sortingValues)
+                for (String sortingValue : sortingValues)
                 {
                     if (!sortingProperty.isEmpty())
                     {
@@ -1241,10 +1238,10 @@ public class ScreeningReporter extends Reporter {
         PopulationReporter populationReporter = new PopulationReporter(simName,getFolderPath()) ;
         
         ArrayList<String> agentIdSorted = new ArrayList<String>() ;
-        ArrayList<Object> sortingValues = new ArrayList<Object>() ;
+        ArrayList<String> sortingValues = new ArrayList<String>() ;
         sortingValues.add(EMPTY) ;
         
-        HashMap<Object,ArrayList<String>> sortedAgentIds = new HashMap<Object,ArrayList<String>>() ;
+        HashMap<String,ArrayList<String>> sortedAgentIds = new HashMap<String,ArrayList<String>>() ;
         
         // Extract yearly values for one or more tests
         for (int year = 0 ; year < backYears ; year++ )
@@ -1254,13 +1251,13 @@ public class ScreeningReporter extends Reporter {
             if (!sortingProperty.isEmpty())
             {
                 sortedAgentIds = populationReporter.agentIdSorted(sortingProperty,endCycle) ;
-                sortingValues = new ArrayList<Object>(sortedAgentIds.keySet()) ;
+                sortingValues = new ArrayList<String>(sortedAgentIds.keySet()) ;
             }
 
-            HashMap<Object,Number[]> sortedCumulativeAgentTestingRecord = new HashMap<Object,Number[]>() ;
-            HashMap<Object,Number> sortedBeenTestedRecord = new HashMap<Object,Number>() ; 
+            HashMap<String,Number[]> sortedCumulativeAgentTestingRecord = new HashMap<String,Number[]>() ;
+            HashMap<String,Number> sortedBeenTestedRecord = new HashMap<String,Number>() ; 
             //for (Object sortingValue : new Object[] {TRUE,FALSE})
-            for (Object sortingValue : sortingValues)
+            for (String sortingValue : sortingValues)
             {
                 if (!sortingProperty.isEmpty())
                 {
@@ -1323,30 +1320,44 @@ public class ScreeningReporter extends Reporter {
      */
     public HashMap<Comparable,ArrayList<Comparable>> prepareAgentTestingReport(int backYears, int backMonths, int backDays, int endCycle, ArrayList<String> sortedAgentIds)
     {
-        HashMap<Comparable,ArrayList<Comparable>> agentTestingReport = new HashMap<Comparable,ArrayList<Comparable>>() ; 
+        HashMap<Comparable,ArrayList<Comparable>> agentTestingReport = new HashMap<Comparable,ArrayList<Comparable>>() ;
+        HashSet<String> sortedAgentIdSet = new HashSet<String>();
+        for (String agentId : sortedAgentIds) sortedAgentIdSet.add(agentId);
         
         int backCycles = GET_BACK_CYCLES(backYears, backMonths, backDays, endCycle) ;
         int startCycle = endCycle - backCycles ;
         
         ArrayList<String> inputReport = getBackCyclesReport(backYears, backMonths, backDays, endCycle) ;
         String record ;
-        String agentId ;
         for (int cycle = 0 ; cycle < backCycles ; cycle++ )
         {
             record = inputReport.get(cycle) ;
             
             ArrayList<String> agentReport = EXTRACT_ARRAYLIST(record,AGENTID,TESTED) ;
+            HashMap<String, String> agentReportHashMap = new HashMap<String, String>();
+            for (String agentRecord : agentReport) {
+                String agentId = EXTRACT_VALUE(AGENTID,agentRecord) ;
+                agentReportHashMap.put(agentId, agentRecord);
+            }
+
             if (!sortedAgentIds.isEmpty())
-                for (int agentIndex = agentReport.size() - 1 ; agentIndex >= 0 ; agentIndex-- )
-                {
-                    String agentIdString = EXTRACT_VALUE(AGENTID,agentReport.get(agentIndex)) ;
-                    if (!sortedAgentIds.contains(agentIdString)) 
-                        agentReport.remove(agentIndex) ;
-                }
-            
-            for (String agentRecord : agentReport)
             {
-                agentId = EXTRACT_VALUE(AGENTID,agentRecord) ;
+                for (String agentId : agentReportHashMap.keySet()) {
+                    if (!sortedAgentIdSet.contains(agentId)) {
+                        agentReportHashMap.remove(agentId);
+                    }
+                }
+                // for (int agentIndex = agentReport.size() - 1 ; agentIndex >= 0 ; agentIndex-- )
+                // {
+                //     String agentIdString = EXTRACT_VALUE(AGENTID,agentReport.get(agentIndex)) ;
+                //     if (!sortedAgentIds.contains(agentIdString)) 
+                //         agentReport.remove(agentIndex) ;
+                // }
+
+            }
+            
+            for (String agentId : agentReportHashMap.keySet())
+            {
                 agentTestingReport = (HashMap<Comparable,ArrayList<Comparable>>) UPDATE_HASHMAP(agentId, startCycle + cycle, agentTestingReport) ;
             }
         }
@@ -1555,9 +1566,9 @@ public class ScreeningReporter extends Reporter {
         //LOGGER.info(agentTreatedReport.get("all").get("1034").toString());
         return agentTreatedReport ;
     }
-    
+ 
     /**
-     * TODO: parallelisation
+     * Parallelised wth IntStream
      * @param relationshipClassNames
      * @param backYears
      * @param lastYear
@@ -1566,24 +1577,25 @@ public class ScreeningReporter extends Reporter {
      */
     public HashMap<Comparable,String> prepareYearsAtRiskIncidenceReport(String[] relationshipClassNames, int backYears, int lastYear, String sortingProperty)
     {
-        HashMap<Comparable,String> incidentRateReport = new HashMap<Comparable,String>() ;
-        //HashMap<Object,Number[]> percentAgentCondomlessYears = new HashMap<Object,Number[]>() ;
-    
-        for (int year = 0 ; year < backYears ; year++ )
-        {
-            //LOGGER.info("backYears:" + String.valueOf(year));
+        ConcurrentHashMap<Comparable,String> concurrentIncidentRateReport = new ConcurrentHashMap<Comparable,String>() ;    
+        // for (int year = 0; year < backYears; ++year) {
+        //     String yearlyNumberAgentsEnteredRelationship ;
+        //     yearlyNumberAgentsEnteredRelationship = prepareFinalAtRiskIncidentsRecord(relationshipClassNames, year, sortingProperty);
+        //     incidentRateReportConcurrent.put(lastYear - year, yearlyNumberAgentsEnteredRelationship) ;
+        // }
+
+        IntStream.range(0, backYears).parallel().forEach(year -> {
             String yearlyNumberAgentsEnteredRelationship ;
+            yearlyNumberAgentsEnteredRelationship = prepareFinalAtRiskIncidentsRecord(relationshipClassNames, year, sortingProperty);
+            concurrentIncidentRateReport.put(lastYear - year, yearlyNumberAgentsEnteredRelationship) ;
+        });
 
-            //endCycle = maxCycles - year * DAYS_PER_YEAR ;
-            yearlyNumberAgentsEnteredRelationship 
-                = prepareFinalAtRiskIncidentsRecord(relationshipClassNames, year, sortingProperty);
+        // HashMap<Comparable,String> incidentRateReport = new HashMap<Comparable, String>();
+        // for (Map.Entry<Comparable, String> entry : concurrentIncidentRateReport.entrySet()) {
+        //     incidentRateReport.put(entry.getKey(), entry.getValue());
+        // }
 
-//                for (int classIndex = 0 ; classIndex < relationshipClassNames.length ; classIndex++ )
-//                    yearlyNumberAgentsEnteredRelationship[classIndex] = percentAgentCondomlessRecord.get(relationshipClassNames[classIndex]) ;
-
-            incidentRateReport.put(lastYear - year, yearlyNumberAgentsEnteredRelationship) ;
-        }
-        // LOGGER.info(incidentRateReport.toString()) ;
+        HashMap<Comparable,String> incidentRateReport = Concurrency.convertConcurrentToNormalHashMap(concurrentIncidentRateReport);
 
         return incidentRateReport ;
     }
@@ -1614,16 +1626,20 @@ public class ScreeningReporter extends Reporter {
      */
     public String prepareAtRiskIncidenceReport(String[] siteNames, int backYears, int backMonths, int backDays, int endCycle, String sortingProperty)
     {
+        // float t0 = System.nanoTime();
+    	StringBuilder sbIncidentRateReport = new StringBuilder();
         // String incidentRateReport = "" ;
-        StringBuilder sbIncidentRateReport = new StringBuilder();
         
-        HashSet<Object> sortingProperties = new HashSet<Object>() ; //(Arrays.asList(new Object[] {""})) ;
-        HashMap<Object,ArrayList<String>> sortedAgentsReport = new HashMap<Object,ArrayList<String>>() ;
+        float tfirst = System.nanoTime();
+        HashSet<String> sortingProperties = new HashSet<String>() ; //(Arrays.asList(new Object[] {""})) ;
+        HashMap<String,ArrayList<String>> sortedAgentsReport = new HashMap<String,ArrayList<String>>() ;
         if (!sortingProperty.isEmpty())
         {
             PopulationReporter populationReporter = new PopulationReporter(simName,getFolderPath()) ;
             sortedAgentsReport = populationReporter.agentIdSorted(sortingProperty,endCycle) ;
-            Collections.addAll(sortingProperties,sortedAgentsReport.keySet().toArray()) ;
+            for (String key : sortedAgentsReport.keySet()) {
+                sortingProperties.add(key);
+            }
 //            LOGGER.info(sortedAgentsReport.toString());
 //            LOGGER.info(sortedAgentsReport.keySet().toString());
         }
@@ -1631,12 +1647,14 @@ public class ScreeningReporter extends Reporter {
             sortingProperties.add("") ;
         //LOGGER.info(sortedAgentsReport.keySet().toString());
         //LOGGER.log(Level.INFO, "false:{0} true:{1}", new Object[] {sortedAgentsReport.get("false").size(),sortedAgentsReport.get("true").size()});
-            
-        HashMap<Comparable,ArrayList<Comparable>> agentTestingReport = prepareAgentTestingReport(backYears, backMonths, backDays, endCycle) ; 
+        
+        HashMap<Comparable,ArrayList<Comparable>> agentTestingReport = prepareAgentTestingReport(backYears, backMonths, backDays, endCycle) ;
         HashMap<Object,HashMap<Comparable,ArrayList<Comparable>>> agentTreatedReport = prepareAgentTreatedReport(siteNames, backYears, backMonths, backDays, endCycle) ; 
         //LOGGER.info(agentTreatedReport.get("all").keySet().toString()) ;
         
         HashMap<Object,HashMap<Object,ArrayList<Integer>>> timeAtRiskReport = prepareTimeAtRiskReport(agentTestingReport,agentTreatedReport) ;
+
+
         
         //int population = getPopulation() ;
         int daysAtRisk ;
@@ -1689,10 +1707,16 @@ public class ScreeningReporter extends Reporter {
                 String propertyName = siteName.toString() ;
                 if (!"".equals(sortingValue))
                     propertyName += "_" + sortingValue ;
+                sbIncidentRateReport.append(Reporter.ADD_REPORT_PROPERTY(propertyName, incidentRate)) ;
                 // incidentRateReport += Reporter.ADD_REPORT_PROPERTY(propertyName, incidentRate) ;
-                sbIncidentRateReport.append(Reporter.ADD_REPORT_PROPERTY(propertyName, incidentRate));
             }
         }
+        float tsecond = System.nanoTime();
+        System.out.println("tdif=" + (tsecond - tfirst) / 1_000_000_000);
+
+        // float t1 = System.nanoTime();
+        // Community.RECORD_METHOD_TIME("ScreeningReporter.prepareAtRiskIncidenceReport", t1-t0);
+
         return sbIncidentRateReport.toString() ;
     }
     
@@ -2039,10 +2063,11 @@ public class ScreeningReporter extends Reporter {
      * @return
      */
     public HashMap<String, HashMap<String, String>> prepareRawAgentSiteReport(int endCycle, HashSet<String> agentIdSet) {
+        float t0 = System.nanoTime();
         String[] siteNames = Site.getAvailableSites();
 
-        ArrayList<String> screeningBackCycles = this.getBackCyclesReport(0, 0, 1, endCycle);
-        
+        ArrayList<String> screeningBackCycles = getBackCyclesReport(0, 0, 1, endCycle);
+
         // extract site data
         String lastCycle = screeningBackCycles.get(screeningBackCycles.size() - 1);
         HashMap<String, String> lastCycleHashMap = SPLIT_RECORD_BY_PROPERTY("agentId", lastCycle);        
@@ -2061,19 +2086,24 @@ public class ScreeningReporter extends Reporter {
             returnReport.put(agentId, siteHashMap);
         }
 
+        ArrayList<String> screeningBackCyclesReport = getBackCyclesReport(0, 0, endCycle, endCycle) ;
+        
+        
         // modify internal hashmap with infectious agents
-        for (String agentId : infectiousAgentsHashMap.keySet()) {
+        ConcurrentHashMap<String, ConcurrentHashMap<String, String>> concurrentReturnReport = Concurrency.convertNormalToConcurrentHashMap(returnReport);
+        infectiousAgentsHashMap.keySet().parallelStream().forEach(agentId -> 
+        {
             String agentInfectiousRecord = infectiousAgentsHashMap.get(agentId);
             for (String site : siteNames) {
                 // if the site is infectious
                 if (agentInfectiousRecord.contains(site)) {
-
+                    
                     // extract correct values
                     String symptomatic = EXTRACT_VALUE(site, agentInfectiousRecord);
-                    String[] infectionAndIncubation = extractInfectionAndIncubationTimeFromBackCycles(agentId, site, symptomatic, endCycle);  // TODO backcycles
+                    String[] infectionAndIncubation = extractInfectionAndIncubationTimeFromBackCycles(agentId, site, symptomatic, screeningBackCyclesReport);
                     String infectionTime = infectionAndIncubation[0];
-                    String incubationTime = infectionAndIncubation[1]; // TODO work out incubation time
-
+                    String incubationTime = infectionAndIncubation[1];
+                    
                     // build the new record
                     String newSiteRecord = Reporter.ADD_REPORT_PROPERTY("symptomatic", symptomatic) ;
                     newSiteRecord += Reporter.ADD_REPORT_PROPERTY("infectionTime", infectionTime);
@@ -2081,11 +2111,39 @@ public class ScreeningReporter extends Reporter {
                     newSiteRecord = newSiteRecord.substring(0, newSiteRecord.length() - 1);
                     
                     // replace with the new record
-                    returnReport.get(agentId).put(site, newSiteRecord);
+                    concurrentReturnReport.get(agentId).put(site, newSiteRecord);
                 }
             }
-        }
+        });
+
+        returnReport = Concurrency.convertConcurrentToNormalHashMap(concurrentReturnReport);
         
+
+        // for (String agentId : infectiousAgentsHashMap.keySet()) {
+        //     String agentInfectiousRecord = infectiousAgentsHashMap.get(agentId);
+        //     for (String site : siteNames) {
+        //         // if the site is infectious
+        //         if (agentInfectiousRecord.contains(site)) {
+
+        //             // extract correct values
+        //             String symptomatic = EXTRACT_VALUE(site, agentInfectiousRecord);
+        //             String[] infectionAndIncubation = extractInfectionAndIncubationTimeFromBackCycles(agentId, site, symptomatic, screeningBackCyclesReport);
+        //             String infectionTime = infectionAndIncubation[0];
+        //             String incubationTime = infectionAndIncubation[1];
+
+        //             // build the new record
+        //             String newSiteRecord = Reporter.ADD_REPORT_PROPERTY("symptomatic", symptomatic) ;
+        //             newSiteRecord += Reporter.ADD_REPORT_PROPERTY("infectionTime", infectionTime);
+        //             newSiteRecord += Reporter.ADD_REPORT_PROPERTY("incubationTime", incubationTime);
+        //             newSiteRecord = newSiteRecord.substring(0, newSiteRecord.length() - 1);
+                    
+        //             // replace with the new record
+        //             returnReport.get(agentId).put(site, newSiteRecord);
+        //         }
+        //     }
+        // }
+        float t1 = System.nanoTime();
+        Community.RECORD_METHOD_TIME("ScreeningReporter.prepareRawAgentSiteReport", t1 - t0);
         return returnReport;
     }
 
@@ -2097,9 +2155,7 @@ public class ScreeningReporter extends Reporter {
      * @param symptomatic
      * @return
      */
-    private String[] extractInfectionAndIncubationTimeFromBackCycles(String agentId, String site, String symptomatic, int endCycle) {
-        ArrayList<String> screeningBackCycles = this.getBackCyclesReport(0, 0, endCycle, endCycle);
-
+    private String[] extractInfectionAndIncubationTimeFromBackCycles(String agentId, String site, String symptomatic, ArrayList<String> screeningBackCycles) {      
         int foundCycle = screeningBackCycles.size() - 1;
         for (int i = screeningBackCycles.size() - 1; i >= 0; --i) {
             foundCycle -= 1;
@@ -2140,6 +2196,7 @@ public class ScreeningReporter extends Reporter {
         String[] infectionAndIncubation = new String[2];
         infectionAndIncubation[0] = String.valueOf(infectionTime);
         infectionAndIncubation[1] = String.valueOf(incubationTime);
+
         return infectionAndIncubation;
     }
 
@@ -2152,8 +2209,11 @@ public class ScreeningReporter extends Reporter {
      */
     public HashMap<String, String> prepareAgentSiteReport(int endCycle, HashSet<String> agentIdSet) {
         String[] siteNames = Site.getAvailableSites();
-
+        float t0 = System.nanoTime();
         HashMap<String, HashMap<String, String>> rawReport = prepareRawAgentSiteReport(endCycle, agentIdSet);
+
+        // long tafter = System.nanoTime();
+        // Community.ADD_TIME_STAMP("prepareAgentSiteReport -> prepareRawAgentSiteReport: " + (tafter - tbefore) / 1_000_000_000 + "s");
 
         HashMap<String, String> returnReport = new HashMap<String, String>();
         for (String agentId : agentIdSet) {
@@ -2165,7 +2225,8 @@ public class ScreeningReporter extends Reporter {
             }
             returnReport.put(agentId, agentRecord);
         }
-
+        float t1 = System.nanoTime();
+        Community.RECORD_METHOD_TIME("ScreeningReporter.prepareAgentSiteReport", t1 - t0);
         return returnReport;
     }
     

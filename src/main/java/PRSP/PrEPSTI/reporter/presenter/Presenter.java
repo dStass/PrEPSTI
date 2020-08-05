@@ -18,6 +18,7 @@ import java.awt.Toolkit;
 import java.awt.font.TextAttribute;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.text.DecimalFormat ;
 
 import org.jfree.chart.*;
 import org.jfree.chart.ui.ApplicationFrame;
@@ -65,7 +66,8 @@ import java.util.logging.Level;
 
 import org.apache.commons.math3.analysis.interpolation.SplineInterpolator ;
 import org.apache.commons.math3.analysis.polynomials.PolynomialSplineFunction ;
-import org.jfree.chart.ui.RectangleEdge;
+import org.jfree.chart.ui.RectangleEdge ;
+import org.jfree.chart.annotations.* ;
 
 //import statec.Extrapolate.Value;
 
@@ -81,7 +83,7 @@ public class Presenter {
     //protected ArrayList<ArrayList<Object>> categoryData = new ArrayList<ArrayList<Object>>() ;
     protected ArrayList<ArrayList<Object>> scoreData = new ArrayList<ArrayList<Object>>() ;
     protected String applicationTitle ;
-    protected String chartTitle ;
+    public String chartTitle ;
     
     static protected String BASE = "base" ;
     static protected String INTERVAL = "interval" ;
@@ -505,26 +507,45 @@ public class Presenter {
         //String folder = "output/test/" ;
         String folder = "data_files/" ;
         //String fileName = "incidence" ;
-        String property = "all_false" ;
+        String property = "PrEP users - PrEP use 0.74" ;
+        //String property = "Overall - HIV negative" ;
         String chartTitle = property ;
         // LOGGER.info(chartTitle) ;
         String[] legend ;
         // legend = args ;
-        legend = new String[] {"0.6 per year","0.7 per year","0.8 per year","0.9 per year","1.1 per year","1.2 per year"} ;
+        legend = new String[] {" 78 days"," 92 days (standard)","106 days","123 days"} ; // ,"154 days","185 days"} ; //,"216 days"} ;    // 
+        //legend = new String[] {"screening no PrEP","PrEP no screening","no PrEP","constant"} ;
+        //PREP_PROBABILITY_ARRAY = new double[] {0.39,0.46,0.53,0.60,0.67,0.74} ; // 2013 to 2019
+        // gonoGoneWild header  
+        // year	all_false_wild	all_false_ASR	all_true_wild	all_true_ASR	Urethra_false_wild	Urethra_false_ASR	Urethra_true_wild	Urethra_true_ASR	
+        //    Rectum_false_wild	Rectum_false_ASR	Rectum_true_wild	Rectum_true_ASR	Pharynx_false_wild	Pharynx_false_ASR	Pharynx_true_wild	Pharynx_true_ASR
         
         
         Presenter presenter = new Presenter(args[0],chartTitle) ;
         LOGGER.info((Arrays.asList(args)).toString()) ;
         
         HashMap<String, HashMap<String,String[]>> propertyToYAndRange = new HashMap<String, HashMap<String,String[]>>();
-        for (String fileName : args)
+        String fileName ;
+        //for (String fileName : args)
+        for (int argIndex = 0 ; argIndex < args.length ; argIndex++ )
         {
+        	fileName = args[argIndex] ;
         	LOGGER.info(fileName);
             HashMap<Comparable, String[]> readCSV = Reporter.READ_CSV_STRING(fileName, FOLDER_PATH, 1);
             HashMap<String, String[]> yAndRange = Reporter.extractYValueAndRange(readCSV);
-            propertyToYAndRange.put(fileName, yAndRange);
+            propertyToYAndRange.put(legend[argIndex], yAndRange);
         }
-        LOGGER.info(propertyToYAndRange.toString()) ;
+        //LOGGER.info(propertyToYAndRange.toString()) ;
+        
+
+    	/*HashMap<Comparable, String[]> goneWild = Reporter.READ_CSV_STRING("gonoGoneWild", "data_files/", 1);
+    	LOGGER.info(String.valueOf(goneWild.keySet())) ;
+    	for (int index : new int[] {0,1,2,3} ) // = legend.length - 2 ; index < legend.length ; index++ )
+        {
+            HashMap<String, String[]> yAndRange = Reporter.extractYValueAndRange(goneWild,index);
+            propertyToYAndRange.put(legend[index+2], yAndRange) ;
+        }
+        */
         
         presenter.plotShadedHashMapStringCI(propertyToYAndRange,ScreeningPresenter.INCIDENCE,"year", legend) ;
         
@@ -735,6 +756,7 @@ public class Presenter {
         int openSegmentNb = 0 ;
         int closeSegmentNb = openSegmentNb + interval ;    // (int) Math.pow(base, nextIndex) - 1 ;    // First category stands alone
         //scoreValueArray = scoreData.get(index) ;
+        int nbDigits = 1 ;
 
         while (closeSegmentNb > openSegmentNb)
         {
@@ -742,7 +764,10 @@ public class Presenter {
             scoreValue = 0.0 ;
             categoryValue  = //String.valueOf(categoryEntry.get(openSegmentNb)) + "-" +
                     String.valueOf(categoryEntry.get(closeSegmentNb-1)) ;
-            int nbDigits = ((int) Math.log10(Integer.valueOf(String.valueOf(categoryEntry.get(openSegmentNb))))) + 1 ;
+            if (0 == Integer.valueOf(String.valueOf(categoryEntry.get(openSegmentNb))))
+            	nbDigits = 1 ;
+            else
+                nbDigits = ((int) Math.log10(Integer.valueOf(String.valueOf(categoryEntry.get(openSegmentNb))))) + 1 ;
             for (int addSpace = nbDigits ; addSpace < totalDigits ; addSpace++ )
                 categoryValue = " ".concat(categoryValue) ;
             
@@ -764,20 +789,22 @@ public class Presenter {
     }
         
     /**
-     * 
+     * // TODO: Clean this up and the one above it too.
      * @param unbinned
      * @param scoreName (redundant)
      * @return HashMap with keyValues() binned.
      */
-    protected HashMap<Comparable,Number> binHashMap(HashMap<Comparable,Number> unbinned, String scoreName)
+    public HashMap<Comparable,Number> binHashMap(HashMap<Comparable,Number> unbinned, String scoreName)
     {
         HashMap<Comparable,Number> binned = new HashMap<Comparable,Number>() ;
         
         // Find keys in order
         ArrayList<Object> categoryEntry = new ArrayList<Object>() ;
+        Integer[] categories = new Integer[] {0,2,11,51,100,100} ;
+        
         double scoreValue ;
         int base = 2 ;
-        String categoryValue = "" ;
+        String categoryValue = "-1" ;
         
         // Put keys in order
         for (Object key : unbinned.keySet())
@@ -791,16 +818,28 @@ public class Presenter {
         int dataSize = categoryEntry.size() ;
         
         // Bin entries
+        int categoryIndex = 1 ;
         int openSegmentNb = 0 ;
-        int closeSegmentNb = 1 ;    // (int) Math.pow(base, nextIndex) - 1 ;    // First category stands alone
+        int closeSegmentNb = categories[categoryIndex] ;    // (int) Math.pow(base, nextIndex) - 1 ;    // First category stands alone
+        //int openSegmentIndex = 0 ;
+        //int closeSegmentIndex = 1 ;
+        
         //scoreValueArray = scoreData.get(index) ;
+        int nbDigits = 1 ;
 
-        while (closeSegmentNb > openSegmentNb)
+        
+        while (categoryIndex < categories.length)   // (closeSegmentNb > openSegmentNb)
         {
+        	//openSegmentNb = categoryEntry.get(openSegmentIndex) ;
+        	//closeSegmentNb = categoryEntry.get(closeSegmentIndex) ;
+        	
             // Initialise scoreValue
             scoreValue = 0.0 ;
-            categoryValue  = String.valueOf(categoryEntry.get(openSegmentNb)) + categoryValue ;
-            int nbDigits = ((int) Math.log10(Integer.valueOf(String.valueOf(categoryEntry.get(openSegmentNb))))) + 1 ;
+            categoryValue = String.valueOf(categoryEntry.get(openSegmentNb)) + categoryValue ;
+            if (0 == Integer.valueOf(String.valueOf(categoryEntry.get(openSegmentNb))))
+            	nbDigits = 1 ;
+            else
+                nbDigits = ((int) Math.log10(Integer.valueOf(String.valueOf(categoryEntry.get(openSegmentNb))))) + 1 ;
             for (int addSpace = nbDigits ; addSpace < totalDigits ; addSpace++ )
                 categoryValue = " ".concat(categoryValue) ;
             
@@ -811,12 +850,18 @@ public class Presenter {
             // Add bin to dataset
             binned.put(categoryValue, scoreValue) ;
                     
+            if (categoryIndex == categories.length) 
+            	break ;
             // prepare for next bin
             openSegmentNb = closeSegmentNb ;    // (int) Math.pow(base, binIndex) - 1 ;    // -1 java counts from 0
-            closeSegmentNb = (closeSegmentNb + 1) * base - 1  ;    // (int) Math.pow(base, nextIndex) - 1 ;    // -1 include closeSegmentNB in for-loop
-            if (closeSegmentNb > dataSize) 
+            closeSegmentNb = categories[categoryIndex] ;    // (closeSegmentNb + 1) * base - 1  ;    // (int) Math.pow(base, nextIndex) - 1 ;    // -1 include closeSegmentNB in for-loop
+            categoryIndex++ ;
+            if ((closeSegmentNb > dataSize) || (closeSegmentNb == openSegmentNb))
                 closeSegmentNb = dataSize ;
-            categoryValue = "-" + String.valueOf(categoryEntry.get(closeSegmentNb-1)) ;
+            if (closeSegmentNb == openSegmentNb)
+            	categoryValue = "+" ;
+            else
+                categoryValue = "-" + String.valueOf(categoryEntry.get(closeSegmentNb-1)) ;
                     
         }
 
@@ -829,7 +874,7 @@ public class Presenter {
      * @param scoreNames
      * @return HashMap with keyValues() binned.
      */
-    protected HashMap<Comparable,Number[]> binHashMap(HashMap<Comparable,Number[]> unbinned, String[] scoreNames)
+    public HashMap<Comparable,Number[]> binHashMap(HashMap<Comparable,Number[]> unbinned, String[] scoreNames)
     {
         HashMap<Comparable,Number[]> binned = new HashMap<Comparable,Number[]>() ;
         
@@ -1910,6 +1955,11 @@ public class Presenter {
             for (String category : propertyToCategories.keySet()) {
                 String[] extractedYAndRange = (String[]) report.get(property).get(category);
                 double xValue = Double.valueOf(category);
+                
+                // Needed for gaps in the data, such as in gonoGoneWild.csv
+                // TODO: There is probably a better way to do this
+                if (extractedYAndRange[0].isEmpty())
+                	continue ;
 
                 // TODO: these are hard-coded at the moment - extract based on col
                 double yMean = Double.valueOf(extractedYAndRange[0]);
@@ -1929,6 +1979,7 @@ public class Presenter {
             
             }
         }
+
 
         return xyIntervalSeriesCollection;
     }
@@ -2369,7 +2420,7 @@ public class Presenter {
             if (String.valueOf(dataset.getColumnKeys().get(0)).length() > 1)
                 domainAxis.setCategoryLabelPositions(CategoryLabelPositions.UP_45);
             
-            //saveChart(barChart) ;
+            saveChart(barChart) ;
             displayChart(barChart) ;
         }
         
@@ -2413,8 +2464,10 @@ public class Presenter {
                     XYErrorRenderer rErrorRenderer = new XYErrorRenderer();
                     
                     // determine whether to draw confidence intervals
-                    if (getDrawCI())    rErrorRenderer.setDrawYError(true);
-                    else                rErrorRenderer.setDrawYError(false);
+                    if (getDrawCI())    
+                    	rErrorRenderer.setDrawYError(true);
+                    else                
+                    	rErrorRenderer.setDrawYError(false);
 
                     rErrorRenderer.setDrawXError(false);
 
@@ -2444,7 +2497,7 @@ public class Presenter {
             // setting logarithmic 
             // lineChart.getXYPlot().setDomainAxis(new LogarithmicAxis(xLabel));
             NumberAxis domainAxis = (NumberAxis) lineChart.getXYPlot().getDomainAxis() ;
-            ValueAxis rangeAxis = lineChart.getXYPlot().getRangeAxis();
+            ValueAxis rangeAxis = lineChart.getXYPlot().getRangeAxis() ;
             // NumberAxis rangeAxis = (NumberAxis) lineChart.getXYPlot().getRangeAxis();
 
             double upperBound = dataset.getItemCount(0) ;    // domainAxis.getRange().getUpperBound() ;
@@ -2480,17 +2533,42 @@ public class Presenter {
             //     domainAxis.setTickUnit(new NumberTickUnit(1)) ;
             // }
 
+         // set font:
+            String UNIFORM_FONT = "Helvetica";
+            
+            Font titleFont = new Font(UNIFORM_FONT, Font.PLAIN, 48) ;
+            Font labelFont = new Font(UNIFORM_FONT, Font.PLAIN, 30) ;
+            Font legendFont = new Font(UNIFORM_FONT, Font.PLAIN, 30) ;
+            Font tickDomainFont = new Font(UNIFORM_FONT, Font.PLAIN, 24) ;
+            Font tickRangeFont = new Font(UNIFORM_FONT, Font.PLAIN, 36) ;
+            
+            domainAxis.setNumberFormatOverride(new DecimalFormat("####")) ;
             
             // randomly pick domain values to find out if the domain contains only integer values
             // draw ticks based on certain condititions
             // undefined for non-integer domains
             if (this.isDomainInteger(dataset)) {
-                if (upperBound > ConfigLoader.DAYS_PER_YEAR * 2) {
+            	if (upperBound > ConfigLoader.DAYS_PER_YEAR * 10) 
+                {
+                    domainAxis.setTickUnit(new NumberTickUnit(3*ConfigLoader.DAYS_PER_YEAR)) ;
+                }
+                else if (upperBound > ConfigLoader.DAYS_PER_YEAR * 2) 
+                {
                     domainAxis.setTickUnit(new NumberTickUnit(ConfigLoader.DAYS_PER_YEAR)) ;
                 }
-                else if (upperBound > ConfigLoader.DAYS_PER_YEAR/2 && upperBound <= ConfigLoader.DAYS_PER_YEAR * 2) {
-                    domainAxis.setTickUnit(new NumberTickUnit(ConfigLoader.DAYS_PER_MONTH));
-                } else {
+                else if (upperBound > ConfigLoader.DAYS_PER_YEAR/2 && upperBound <= ConfigLoader.DAYS_PER_YEAR * 2) 
+                {
+                    domainAxis.setTickUnit(new NumberTickUnit(ConfigLoader.DAYS_PER_MONTH)) ;
+                }
+                else if (upperBound <= ConfigLoader.DAYS_PER_MONTH * 2) 
+                {
+                        domainAxis.setTickUnit(new NumberTickUnit(2));
+                        tickDomainFont = new Font(UNIFORM_FONT, Font.PLAIN, 28) ;
+                        //domainAxis.setVerticalTickLabels(true);
+                        //domainAxis.setNumberFormatOverride(new DecimalFormat("####")) ;
+                } 
+                else 
+                {
                     domainAxis.setTickUnit(new NumberTickUnit(ConfigLoader.DAYS_PER_WEEK));
                 }
                 domainAxis.setMinorTickMarksVisible(false);
@@ -2500,9 +2578,23 @@ public class Presenter {
             // domainAxis.setTickUnit(new NumberTickUnit(500));
 
             // draw legend
+            boolean insetLegend = false ;
             if (!legend[0].isEmpty()) {
                 LegendTitle plotLegend = lineChart.getLegend() ;
-                plotLegend.setPosition(RectangleEdge.RIGHT);
+                if (!insetLegend)
+                    plotLegend.setPosition(RectangleEdge.RIGHT);
+                else
+                {
+                    //LegendTitle lt = new LegendTitle(plot);
+                    plotLegend.setItemFont(new Font("Dialog", Font.PLAIN, 9));
+                    plotLegend.setBackgroundPaint(new Color(200, 200, 255, 100));
+                    //plotLegend.setFrame(new BlockBorder(Color.white));
+                    //plotLegend.setPosition(RectangleEdge.BOTTOM);
+                    XYTitleAnnotation ta = new XYTitleAnnotation(0.98, 0.02, plotLegend,RectangleAnchor.BOTTOM_RIGHT);
+
+                    //ta.setMaxWidth(0.48);
+                    lineChart.getXYPlot().addAnnotation(ta);
+                }
             }
 
             /* !!!
@@ -2554,14 +2646,6 @@ public class Presenter {
             }
             
             
-            // set font:
-            String UNIFORM_FONT = "Helvetica";
-            
-            Font titleFont = new Font(UNIFORM_FONT, Font.PLAIN, 30);
-            Font labelFont = new Font(UNIFORM_FONT, Font.PLAIN, 15);
-            Font legendFont = new Font(UNIFORM_FONT, Font.PLAIN, 15);
-            Font tickFont = new Font(UNIFORM_FONT, Font.PLAIN, 12);
-            
             // title:
             lineChart.getTitle().setFont(titleFont);
             
@@ -2569,15 +2653,15 @@ public class Presenter {
             domainAxis.setLabelFont(labelFont);
             rangeAxis.setLabelFont(labelFont);
             
-            domainAxis.setTickLabelFont(tickFont);
-            rangeAxis.setTickLabelFont(tickFont);
+            domainAxis.setTickLabelFont(tickDomainFont);
+            rangeAxis.setTickLabelFont(tickRangeFont);
             
             // legend
             lineChart.getLegend().setItemFont(legendFont);
             
             
             displayChart(lineChart) ;
-            //saveChart(lineChart);
+            saveChart(lineChart);
         }
 
 
@@ -2677,6 +2761,7 @@ public class Presenter {
             catch (InterruptedException e) { e.printStackTrace(); }
 
             String APPLICATION_TITLE = applicationTitle;
+            //String APPLICATION_TITLE = chartTitle;
 
             if (!detectHPC()) {
                 ChartPanel chartPanel = new ChartPanel( chart );

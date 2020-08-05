@@ -253,9 +253,8 @@ public class EncounterReporter extends Reporter {
      */
     public String prepareFinalIncidenceRecord(String[] siteNames, int backYears, int backMonths, int backDays, int endCycle)
     {
-        String finalIncidence = "" ; // new HashMap<Object,Number>() ;
-        StringBuilder sbFinalIncidence = new StringBuilder();
-        //HashMap<Object,Number> finalIncidence = new HashMap<Object,Number>() ;
+    	StringBuilder sbFinalIncidence = new StringBuilder();
+        //String finalIncidence = "" ; // new HashMap<Object,Number>() ;
         
         endCycle = endCycle - (backYears * DAYS_PER_YEAR) ;
         
@@ -320,8 +319,8 @@ public class EncounterReporter extends Reporter {
      */
     public String prepareSortedFinalIncidenceRecord(String[] siteNames, int backYears, int backMonths, int backDays, int endCycle, String sortingProperty)
     {
-        String finalIncidence = "" ; // new HashMap<Object,Number>() ;
-        StringBuilder sbFinalIncidence = new StringBuilder();
+    	StringBuilder sbFinalIncidence = new StringBuilder() ;
+        // String finalIncidence = "" ; // new HashMap<Object,Number>() ;
         HashMap<Object,Number[]> sortedFinalIncidence = new HashMap<Object,Number[]>() ;
         ArrayList<String> siteNameList = new ArrayList<String>(Arrays.asList(siteNames)) ;
         siteNameList.add("all") ;
@@ -338,7 +337,7 @@ public class EncounterReporter extends Reporter {
                 //(HashMap<Object,String[]>) getReport("relationshipAgent",relationshipReporter) ; //  
         
         PopulationReporter populationReporter = new PopulationReporter(simName,getFolderPath()) ;
-        HashMap<Object,ArrayList<String>> sortedAgentReport = populationReporter.agentIdSorted(sortingProperty) ;
+        HashMap<String,ArrayList<String>> sortedAgentReport = populationReporter.agentIdSorted(sortingProperty) ;
         HashMap<Object,Object> sortedAgentIds = populationReporter.sortedAgentIds(sortingProperty) ;
         ArrayList<String> agentsAliveReport = populationReporter.prepareAgentsAliveRecord(endCycle - DAYS_PER_YEAR) ;
 
@@ -461,8 +460,8 @@ public class EncounterReporter extends Reporter {
             {
                 String entryName = siteNameList.get(siteIndex) + "_" + sortingKey.toString() ;
                 Number entryValue = sortedFinalIncidence.get(sortingKey)[siteIndex] ;
-                // finalIncidence += ADD_REPORT_PROPERTY(entryName,entryValue.doubleValue()/denominator) ;
                 sbFinalIncidence.append(ADD_REPORT_PROPERTY(entryName,entryValue.doubleValue()/denominator));
+                // finalIncidence += ADD_REPORT_PROPERTY(entryName,entryValue.doubleValue()/denominator) ;
             }
         }
 
@@ -953,7 +952,7 @@ public class EncounterReporter extends Reporter {
         //during the specified period.
         
         // Get Report of sortingValue mapping to agentIds
-        HashMap<Object,ArrayList<String>> sortedAgentReport = new HashMap<Object,ArrayList<String>>() ;
+        HashMap<String,ArrayList<String>> sortedAgentReport = new HashMap<String,ArrayList<String>>() ;
         if (sortingProperty.isEmpty())
             sortedAgentReport.put("",new ArrayList<String>()) ;
         else

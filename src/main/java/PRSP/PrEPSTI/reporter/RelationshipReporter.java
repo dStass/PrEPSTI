@@ -5,6 +5,7 @@
  */
 package PRSP.PrEPSTI.reporter;
 
+import PRSP.PrEPSTI.community.Community;
 import PRSP.PrEPSTI.community.Relationship;
 
 import java.util.ArrayList;
@@ -123,6 +124,7 @@ public class RelationshipReporter extends Reporter {
      * @return HashMap with key = relationship ID, value = relationship record
      */
     public HashMap<Integer, String> prepareRelationshipRecordHashMap(int endCycle) {
+        float t0 = System.nanoTime();
         HashMap<Integer, String> relationshipReport = new HashMap<Integer, String>();
 
         // add commenced relationships to our relationshipReport
@@ -181,6 +183,9 @@ public class RelationshipReporter extends Reporter {
                 relationshipReport.remove(relationshipId);
             }
         }
+
+        float t1 = System.nanoTime();
+        Community.RECORD_METHOD_TIME("RelationshipReporter.prepareRelationshipRecordHashMap", t1 - t0);
         return relationshipReport;
     }
 
@@ -1385,7 +1390,7 @@ public class RelationshipReporter extends Reporter {
      * @param backMonths
      * @param backDays
      * @param endCycle
-     * @return (HashMap) relationshipClassName maps to the number of Agents involved in 
+     * @return (HashMap) relationshipClassName maps to the proportion of Agents involved in 
      * given class of Relationship during the specified period.
      */
     public HashMap<Comparable,Number> prepareProportionRelationshipsReport(String[] relationshipClassNames, int backYears, int backMonths, int backDays, int endCycle)
@@ -1921,6 +1926,7 @@ public class RelationshipReporter extends Reporter {
      */
     public HashMap<Object,String> prepareRelationshipConcordantsReport()
     {
+        float t0 = System.nanoTime();
         HashMap<Object,String> relationshipConcordantsReport = new HashMap<Object,String>() ;
         
         HashMap<Object,String[]> relationshipAgentReport 
@@ -1949,6 +1955,8 @@ public class RelationshipReporter extends Reporter {
             }
             relationshipConcordantsReport.put(relationshipId, concordantOutput) ;
         }
+        float t1 = System.nanoTime();
+        Community.RECORD_METHOD_TIME("PopulationReporter.prepareCensusPropertyReport()", t1-t0);
         return relationshipConcordantsReport ;
     }
     
@@ -2129,6 +2137,7 @@ public class RelationshipReporter extends Reporter {
      */
     protected ArrayList<String> prepareBreakupReport()
     {
+        float t0 = System.nanoTime();
         ArrayList<String> breakupReport = new ArrayList<String>() ;
         
         String record ;
@@ -2143,6 +2152,8 @@ public class RelationshipReporter extends Reporter {
 
                 breakupReport.add(record) ;
             }
+        float t1 = System.nanoTime();
+        Community.RECORD_METHOD_TIME("RelationshipReporter.prepareBreakupReport", t1 - t0);
         return breakupReport ;
     }
     
@@ -2154,6 +2165,7 @@ public class RelationshipReporter extends Reporter {
      */
     protected ArrayList<String> prepareCommenceReport()
     {
+        float t0 = System.nanoTime();
         ArrayList<String> commenceReport = new ArrayList<String>() ;
         // LOGGER.info("prepareCommenceReport");
         //Include burn-in Relationships
@@ -2174,6 +2186,9 @@ public class RelationshipReporter extends Reporter {
 
         //for (int reportNb = 0 ; reportNb < inputString.size() ; reportNb += outputCycle )
         // Read in Relationship commencements from simulation.
+        commenceReport.add(record);
+        record = "";
+        
         for (boolean nextInput = true ; nextInput ; nextInput = updateReport() )
             for (String inputRecord : input)
             {
@@ -2182,12 +2197,15 @@ public class RelationshipReporter extends Reporter {
                 int relationshipIdIndex = INDEX_OF_PROPERTY(RELATIONSHIPID,inputRecord) ;
                 int clearIndex = INDEX_OF_PROPERTY("clear",inputRecord) ;
                 if (relationshipIdIndex >= 0 && (relationshipIdIndex < clearIndex)) 
-                    record = inputRecord.substring(relationshipIdIndex,clearIndex) + record ;
+                    record = inputRecord.substring(relationshipIdIndex,clearIndex);
                 else 
                     LOGGER.warning("No Relationships commenced in record " + inputRecord) ;
                 commenceReport.add(record) ;
                 record = "" ;
             }
+        
+        float t1 = System.nanoTime();
+        Community.RECORD_METHOD_TIME("RelationshipReporter.prepareCommenceReport", t1-t0);
         return commenceReport ;
     }
     
@@ -2198,8 +2216,9 @@ public class RelationshipReporter extends Reporter {
      */
     private String prepareBurninRecord()
     {
-        
-        String burninCommence = "" ;
+        float t0 = System.nanoTime();
+        // String burninCommence = "" ;
+        StringBuilder sbBurninCommence = new StringBuilder();
         String burninCommenceStatic = Relationship.BURNIN_COMMENCE ;
         String burninBreakupStatic = Relationship.BURNIN_BREAKUP ;
         ArrayList<String> burninCommenceList ;
@@ -2221,11 +2240,12 @@ public class RelationshipReporter extends Reporter {
         {
             relationshipId = EXTRACT_VALUE(RELATIONSHIPID,relationshipEntry) ;
             if (!burninBreakup.contains(relationshipId))
-                burninCommence += relationshipEntry ;
+                sbBurninCommence.append(relationshipEntry) ;
         }
-        
+        float t1 = System.nanoTime();
+        Community.RECORD_METHOD_TIME("RelationshipReporter.prepareBurninRecord", t1 - t0);
         //burninCommence += "clear:" ;
-        return burninCommence ;
+        return sbBurninCommence.toString() ;
     }
     
 }
