@@ -1,25 +1,31 @@
+* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+START OF DOCUMENTATION
+* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
 @author: David Stiasny
 @date: 05/08/2020
 @contact: dstiasny@outlook.com
 @GitHub: dStass
+@contracted period: 03/03/2020 - 12/08/2020
 
 
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 Index
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
-- Section 1: MDLL ............................................................. line   25
-- Section 2: Concurrency ...................................................... line  100
-  - Section 2a: package ....................................................... line  100
-  - Section 2b: multithreading location ....................................... line  100
-- Section 3: Simulation Reboot (at a given cycle) ............................. line  150
-- Section 4: Build: Ant, Maven and dependencies ............................... line  200
-- Section 5: JFreeChart: Shaded and Interval Plots ............................ line  250
-- Section 6: Configuration files .............................................. line  300
-- Section 7: Other miscellaneous topics ....................................... line  320
-  - Section 7a: StringBuilder and StringBuffer ................................ line  350
-  - Section 7b: Runtime analysis .............................................. line  370
-
+- Section 1: MDLL ............................................................. line   31
+- Section 2: Concurrency ...................................................... line  157
+  - Section 2a: package ....................................................... line  160
+  - Section 2b: multithreading location ....................................... line  169
+- Section 3: Simulation Reboot (at a given cycle) ............................. line  189
+- Section 4: Build: Ant, Maven and dependencies ............................... line  257
+- Section 5: JFreeChart: Shaded and Interval Plots ............................ line  291
+- Section 6: Configuration files .............................................. line  342
+- Section 7: Other miscellaneous topics ....................................... line  418
+  - Section 7a: StringBuilder and StringBuffer ................................ line  421
+  - Section 7b: Runtime analysis .............................................. line  439
+  - Section 7c: Headless detection and chart generation on a supercomputer .... line  494
+  - Section 7d: Chart colours ................................................. line  513
 
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 Section 1: MDLL
@@ -285,6 +291,51 @@ This changes which file in which the main method exists.
 Section 5: JFreeChart: Shaded and Interval Plots 
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
+Some modifications have been done to JFreeChart and graphical abilities of this project.
+
+1. JFreeChart has been upgraded to version 1.5.0 and no longer require to be compiled
+   It exists as a .jar file within the /lib folder
+
+2. Main settings for charts can be found in Presenter.java under
+   "LINE GRAPH DRAWING INFO"
+
+They include:
+- lineGraphErrorType: this can be set to either ERROR_INTERVALS or SHADED_REGION
+  - ERROR_INTERVALS:  if this is set, charts with error intervals will display BARS
+                      indicating the range at a particular point
+  - SHADED_REGION:    in a similar way, this will display shaded regions of error instead
+
+- drawPoints: this boolean will dictate whether particular points are drawn, generally
+              good when the user wants to plot points at yearly intervals,
+              this is less desirable for line charts plotting at daily intervals
+
+- drawError: this dictates whether or not error bars or shaded regions are drawn
+
+3. Line charts:
+- The type of renderer used is dependent on lineGraphErrorType from above, it will be
+  set to:
+  - XYErrorRenderer: if error intervals are being plotted
+  - XYDeviationRenderer: otherwise (this is used for shaded regions)
+- Other graphical changes such as font, colour, etc can be found in Presenter
+  under plotLineChart()
+- Some settings will change based on whether the domain contains only integer values,
+  this is identified in isDomainInteger(XYDataset) by randomly sampling three points
+  and checking whether they are all integers.
+
+4. Bar charts:
+- Some minor changes to plotting features such as colours, etc. have been implemented.
+- changes can be viewed at plotBarChart()
+
+5. ScreeningPresenter.plotMedianAndRangeFromCSVFileNames()
+- This method receives a list of filenames and a legend (amongst a few other parameters)
+  and plots the first three columns in those files where:
+  - column 1: indicates a particular y-value to plot
+  - column 2: indicates the lower error bound
+  - column 3: indicates the upper error bound
+- Each row indicates an x-value and they are all evenly spaced
+- Each fileName will indicate a different property to be plotted on the same chart
+- The index of each fileName corresponds to a legend item at the same index in the
+  legends array
 
 
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -304,7 +355,6 @@ Calling ConfigLoader.load() will do three things:
 
 3. Sets the required information into the variables specified into variables in different
    classes.
-
 
 Layout:
 
@@ -365,7 +415,7 @@ omit "methods" entirely from the .json configuration files.
 
 
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-Section 7: Other miscellaneous fixes and additions
+Section 7: Other miscellaneous topics
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
 Section 7a: StringBuilder and StringBuffer
@@ -441,5 +491,34 @@ This will effectively add the duration of method B into method A.
 Currently the implementation does not handle any double counting fix.
 
 
+Section 7c: Detecting headless state and generating charts on a supercomputer
+
+Headless state detection for running this package on an HPC
+- the method detectHPC() will detect whether the current state of the application is
+  headless, in this context, it means that graphical output does not exists.
+- if a headless state is detected, a warning message will be displayed when displaying
+  a generated chart, otherwise a graphical window will launch. This occurs when launching
+  the application on a laptop or a computer with a monitor.
+
+- Important: For this package to run on a supercomputer, the user must add the
+  the following script prior to submitting a job:
+  - unset DISPLAY
+  This is used to set the environment's headless state to true, which then gets verified
+  using detectHPC()
+
+- Note: This has been tested and works on macOS, Windows 10 and the linux version
+        running on Katana and Gadi.
 
 
+Section 7d: Chart colours
+
+Different colours used in charts can be specified in configuration .json files under
+"colours" as a list of RGB sub-lists.
+
+The user can extract this list from ConfigLoader.getColours() to get them in that
+particular order or getColoursShuffled() to get a shuffled list.
+
+
+* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+END OF DOCUMENTATION
+* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
