@@ -18,12 +18,13 @@ import java.awt.Toolkit;
 import java.awt.font.TextAttribute;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.text.DecimalFormat ;
+import java.text.DecimalFormat;
 
 import org.jfree.chart.*;
 import org.jfree.chart.ui.ApplicationFrame;
 import org.jfree.chart.plot.*;
 import org.jfree.chart.axis.*;
+import org.jfree.chart.block.BlockBorder;
 import org.jfree.chart.ui.RectangleAnchor;
 import org.jfree.chart.ui.RectangleEdge;
 import org.jfree.chart.ui.RectangleInsets;
@@ -2445,8 +2446,12 @@ public class Presenter {
          * @param xLabel 
          */
         private void plotLineChart(String chartTitle, XYDataset dataset, String yLabel, String xLabel, String[] legend) {
+            
 
-            boolean showLegend = !(legend[0].isEmpty()) ;
+            // Handle legend
+            boolean insetLegend = false ;
+
+            boolean showLegend = (legend[0].isEmpty() || insetLegend) ? false : true ;
 
             // define lineChart and set error renderer
             JFreeChart lineChart = ChartFactory.createXYLineChart(chartTitle,xLabel,
@@ -2578,22 +2583,25 @@ public class Presenter {
             // domainAxis.setTickUnit(new NumberTickUnit(500));
 
             // draw legend
-            boolean insetLegend = false ;
+            
             if (!legend[0].isEmpty()) {
                 LegendTitle plotLegend = lineChart.getLegend() ;
-                if (!insetLegend)
-                    plotLegend.setPosition(RectangleEdge.RIGHT);
+                if (insetLegend)
+                {
+                    LegendTitle lt = new LegendTitle(lineChart.getXYPlot());
+                    lt.setItemFont(new Font("Dialog", Font.PLAIN, 9));
+                    lt.setBackgroundPaint(new Color(200, 200, 255, 100));
+                    lt.setFrame(new BlockBorder(Color.white));
+                    lt.setPosition(RectangleEdge.BOTTOM);
+                    XYTitleAnnotation ta = new XYTitleAnnotation(0.98, 0.02, lt, RectangleAnchor.BOTTOM_RIGHT);
+                    lineChart.getXYPlot().addAnnotation(ta);
+
+                    // code snippet from GrahamA's solution at:
+                    // https://stackoverflow.com/questions/11320360/embed-the-legend-into-the-plot-area-of-jfreechart
+                }
                 else
                 {
-                    //LegendTitle lt = new LegendTitle(plot);
-                    plotLegend.setItemFont(new Font("Dialog", Font.PLAIN, 9));
-                    plotLegend.setBackgroundPaint(new Color(200, 200, 255, 100));
-                    //plotLegend.setFrame(new BlockBorder(Color.white));
-                    //plotLegend.setPosition(RectangleEdge.BOTTOM);
-                    XYTitleAnnotation ta = new XYTitleAnnotation(0.98, 0.02, plotLegend,RectangleAnchor.BOTTOM_RIGHT);
-
-                    //ta.setMaxWidth(0.48);
-                    lineChart.getXYPlot().addAnnotation(ta);
+                    plotLegend.setPosition(RectangleEdge.RIGHT);
                 }
             }
 
@@ -2657,7 +2665,7 @@ public class Presenter {
             rangeAxis.setTickLabelFont(tickRangeFont);
             
             // legend
-            lineChart.getLegend().setItemFont(legendFont);
+            if (showLegend) lineChart.getLegend().setItemFont(legendFont);
             
             
             displayChart(lineChart) ;
@@ -2682,6 +2690,7 @@ public class Presenter {
                 int series = this.randIntInRangeInclusive(0, numSeries - 1);
                 int itemCount = dataset.getItemCount(series);
 
+                if (itemCount == 0) continue;
                 // randomly select an item
                 int item = this.randIntInRangeInclusive(0, itemCount - 1);
 

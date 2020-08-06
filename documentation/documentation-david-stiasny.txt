@@ -5,7 +5,7 @@ START OF DOCUMENTATION
 @author: David Stiasny
 @date: 05/08/2020
 @contact: dstiasny@outlook.com
-@GitHub: dStass
+@GitHub: dStass [https://github.com/dStass]
 @contracted period: 03/03/2020 - 12/08/2020
 
 
@@ -14,25 +14,29 @@ Index
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
 - Section 1: MDLL ............................................................. line   31
-- Section 2: Concurrency ...................................................... line  157
-  - Section 2a: package ....................................................... line  160
-  - Section 2b: multithreading location ....................................... line  169
-- Section 3: Simulation Reboot (at a given cycle) ............................. line  189
-- Section 4: Build: Ant, Maven and dependencies ............................... line  257
-- Section 5: JFreeChart: Shaded and Interval Plots ............................ line  291
-- Section 6: Configuration files .............................................. line  342
-- Section 7: Other miscellaneous topics ....................................... line  418
-  - Section 7a: StringBuilder and StringBuffer ................................ line  421
-  - Section 7b: Runtime analysis .............................................. line  439
-  - Section 7c: Headless detection and chart generation on a supercomputer .... line  494
-  - Section 7d: Chart colours ................................................. line  513
+- Section 2: Concurrency ...................................................... line  161
+  - Section 2a: package ....................................................... line  164
+  - Section 2b: multithreading location ....................................... line  173
+- Section 3: Simulation Reboot (at a given cycle) ............................. line  193
+- Section 4: Build: Ant, Maven and dependencies ............................... line  261
+- Section 5: JFreeChart: Shaded and Interval Plots ............................ line  295
+- Section 6: Configuration files .............................................. line  346
+- Section 7: Other miscellaneous topics ....................................... line  422
+  - Section 7a: StringBuilder and StringBuffer ................................ line  425
+  - Section 7b: Runtime analysis .............................................. line  444
+  - Section 7c: Headless detection and chart generation on a supercomputer .... line  498
+  - Section 7d: Chart colours ................................................. line  517
 
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-Section 1: MDLL
+Section 1: MDLL (Mapped Doubly-Linked List)
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
-- MDLL (Mapped Doubly-Linked List) is a data structure that combines two sub data 
-  tructures (map and a doubly-linked list)
+Motivation:
+- An alternate data structure which combines a doubly-linked list and a Hashmap, it
+  is able to preserve insertion order and have the special properties of constant time
+  insertion, retrieval and removal.
+- It is used in place of a list to store agents for significant speed gain.
+- Each agent added must have a unique key associated (such as its id)
 
 Supported operations:
 
@@ -148,7 +152,7 @@ Supported operations:
 Where it is used in this project:
   - maintaining a collection of current agents in the simmulation inside Community
     (replaces ArrayList<Agent>)
-  - used in generateRelationships() for significance speed gain
+  - used in generateRelationships() for significant runtime reduction
 
 Note: This uses significantly more memory than using a standard list
 

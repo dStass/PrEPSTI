@@ -137,8 +137,8 @@ public class Community {
     // Logger
     static final java.util.logging.Logger LOGGER = java.util.logging.Logger.getLogger("reporter") ;
 	private static final String[] RELATIONSHIP_CLAZZ_NAMES = new String[] {"Casual","Regular","Monogomous"};
-    static ArrayList<String[]> timeStamps = null;
-    private static ConcurrentHashMap<String, Float> methodsTimeStamp = null;
+    public static ArrayList<String[]> timeStamps = null;
+    public static ConcurrentHashMap<String, Float> methodsTimeStamp = null;
     static Long timeInitial = null;
 
 

@@ -5,11 +5,13 @@
  */
 package PRSP.PrEPSTI.reporter.presenter;
 
+import PRSP.PrEPSTI.community.Community;
 import PRSP.PrEPSTI.configloader.ConfigLoader;
 
-import java.util.ArrayList ;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.Collections;
 
 //import community.Community ;
@@ -72,7 +74,7 @@ public class ScreeningPresenter extends Presenter {
     }
 
     // static String[] simNames = new String[] {} ; // "REPORT_APop2500Cycles2920", "REPORT_BPop2500Cycles2920", "REPORT_CPop2500Cycles2920", "REPORT_DPop2500Cycles2920", "REPORT_EPop2500Cycles2920", "REPORT_FPop2500Cycles2920"} ; //, "to2017newSort17baPop40000Cycles5110","to2017newSort17caPop40000Cycles5110","to2017newSort17daPop40000Cycles5110","to2017newSort17eaPop40000Cycles5110",
-    static String[] simNames = new String[] {"to2019testhiv2p0corr4A"};
+    static String[] simNames = new String[] {"OrI", "REBT"};
 
     
     //      "to2017newSort17faPop40000Cycles5110", "to2017newSort17gaPop40000Cycles5110","to2017newSort17haPop40000Cycles5110","to2017newSort17iaPop40000Cycles5110","to2017newSort17jaPop40000Cycles5110"} ;
@@ -87,10 +89,14 @@ public class ScreeningPresenter extends Presenter {
     public static void main(String[] args)
     {
 
+        Community.timeStamps = new ArrayList<String[]>();
+        Community.methodsTimeStamp = new ConcurrentHashMap<String, Float>();
+
+
         ConfigLoader.load();
         
-        String prefix = "to2019hiv2p0corrA" ;
-        // String prefix = "" ;
+        // String prefix = "to2019hiv2p0corrA" ;
+        String prefix = "" ;
         //String prefix = "to2025UeqUto2019oldParams33" ;
 
         String suffix = "Pop40000Cycles6570" ;
@@ -101,8 +107,8 @@ public class ScreeningPresenter extends Presenter {
         //     for (String letter1: new String[] {"Ebi"}) //,"Dbc","Eje","Hji","Jce","Iae","Iad","Cfi","Fjc","Chh","Bci","Dhj","Bhi","Ibe","Keg","Kjc","Kbh","Fag","Jad","Bfd","Idg","Keh","Ggb","Dee","Ghh","Dac","Dgd","Fab","Hdh","Ibg","Fcc","Ghd","Hfa","Fci","Ifd","Gfd","Hje","Eei","Hhb","Aah","Gdh","Bjh","Cbf","Dcg","Ifc","Kej","Ajc","Fii","Hfb","Cdd"} ;
         //         simNameList.add(prefix + letter0 + letter1 + suffix) ;
 
-        String folderPath = "/scratch/is14/mw7704/prepsti/output/test/" ;
-        // String folderPath = "output/";
+        // String folderPath = "/scratch/is14/mw7704/prepsti/output/test/" ;
+        String folderPath = "output/";
 
         //         String prefix = "old1p5Params26" ;
         //         //String prefix = "to2019fix23" ;
@@ -122,8 +128,9 @@ public class ScreeningPresenter extends Presenter {
         //String simName = "to2012max3sameScreen34cPop40000Cycles4380" ;
         //String simName = "to2014agentAdjust29aPop40000Cycles4920" ;
         // String simName = simNameList.get(0) ;
-        String simName = "to2019testhiv2p0corr4A";
-        
+        // String simName = "to2019testhiv2p0corr4A";
+        String simName = "OrI";
+
         boolean unique = false ;
         int notifications = 1 ; 
         String chartTitle = "" ;
@@ -199,7 +206,7 @@ public class ScreeningPresenter extends Presenter {
         //screeningPresenter.plotIncidencePerCycle(siteNames) ;
         // screeningPresenter.plotFinalAtRiskIncidentsRecord(siteNames,0,"statusHIV") ;
 
-        // screeningPresenter.plotYearsAtRiskIncidenceReport(siteNames, 4, 2019, "statusHIV") ;  // !! line chart here
+        screeningPresenter.plotYearsAtRiskIncidenceReport(siteNames, 4, 2019, "statusHIV") ;  // !! line chart here
 
         // screeningPresenter.plotYearsBeenTestedReport(13, 0, 0, 2019, "statusHIV") ;
         //screeningPresenter.plotNotificationsPerCycle(siteNames) ;
@@ -220,15 +227,15 @@ public class ScreeningPresenter extends Presenter {
         // screeningPresenter.plotSiteProportionSymptomatic(siteNames) ;
 
     
-        // plotMedianAndRangeFromCSVFileNames demo
-        // identify parameters
-        chartTitle = "chartTitle";
-        String yLabel = "Runtime (seconds)";
-        String xLabel = "Data size";
-        String[] legend = new String[] {"legendA", "legendB", "legendC", "legendD", "legendE", "legendF"};
+    //     // plotMedianAndRangeFromCSVFileNames demo
+    //     // identify parameters
+    //     chartTitle = "chartTitle";
+    //     String yLabel = "Runtime (seconds)";
+    //     String xLabel = "Data size";
+    //     String[] legend = new String[] {"legendA", "legendB", "legendC", "legendD", "legendE", "legendF"};
 
-        // plot
-        screeningPresenter.plotMedianAndRangeFromCSVFileNames(testSimNames, chartTitle, yLabel, xLabel, legend);       
+    //     // plot
+    //     screeningPresenter.plotMedianAndRangeFromCSVFileNames(testSimNames, chartTitle, yLabel, xLabel, legend);       
     }
     
     /**
