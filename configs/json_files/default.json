@@ -24,7 +24,7 @@
     },
 
     "agent" : {
-          "methods": {
+          "methods" : {
               "REBOOT_AGENTS" : {
                   "scenarioScreenPrep" : "false",
                   "scenarioScreenPositive" : "false"
@@ -64,7 +64,12 @@
             "pharyngeal_gone_wild" 
         ],
         "FIGURE_WIDTH" : "1280",
-        "FIGURE_HEIGHT": "1280"
+        "FIGURE_HEIGHT": "1280",
+        "methods" : {
+            "plotShadedHashMapStringCI" : {
+                "drawShadedRegion" : "false"
+            }
+        }      
     },
 
     "config_loader" : {
