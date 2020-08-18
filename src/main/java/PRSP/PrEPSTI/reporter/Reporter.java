@@ -1848,9 +1848,9 @@ public class Reporter {
      * @param simName 
      * @param folderPath 
      */
-    static public void WRITE_CSV(HashMap<Comparable,Number[]> report, String categoryName, String[] scoreNames, String reportName, String simName, String folderPath)
+    static public boolean WRITE_CSV(HashMap<Comparable,Number[]> report, String categoryName, String[] scoreNames, String reportName, String simName, String folderPath)
     {
-        WRITE_CSV(report, categoryName, scoreNames, new ArrayList<Object>(), reportName, simName, folderPath) ;
+        return WRITE_CSV(report, categoryName, scoreNames, new ArrayList<Object>(), reportName, simName, folderPath) ;
     }
     
     /**
@@ -1862,13 +1862,13 @@ public class Reporter {
      * @param simName 
      * @param folderPath 
      */
-    static public void WRITE_CSV(HashMap<Comparable,Number> report, String categoryName, String scoreName, String reportName, String simName, String folderPath)
+    static public boolean WRITE_CSV(HashMap<Comparable,Number> report, String categoryName, String scoreName, String reportName, String simName, String folderPath)
     {
         HashMap<Comparable,Number[]> convertedReport = new HashMap<Comparable,Number[]>() ;
         for (Comparable key : report.keySet())
             convertedReport.put(key, new Number[] {report.get(key)}) ;
         
-        WRITE_CSV(convertedReport, categoryName, new String[] {scoreName}, new ArrayList<Object>(report.keySet()), reportName, simName, folderPath) ;
+        return WRITE_CSV(convertedReport, categoryName, new String[] {scoreName}, new ArrayList<Object>(report.keySet()), reportName, simName, folderPath) ;
     }
     
     /**
@@ -2117,14 +2117,22 @@ public class Reporter {
                     if (keyIndex2 < 0)
                         keyIndex2 = fileLine.length() ;
                     String scoreString = fileLine.substring(keyIndex, keyIndex2) ;
-                    scoreValue = EXTRACT_VALUE(scoreName,scoreString) ;
+                    if (!scoreString.contains(":"))
+                    {
+                        int commaIndex = scoreString.indexOf(",") ;
+                        if (commaIndex < 0)
+                        	commaIndex = scoreString.length() - 1 ;
+                        scoreValue = scoreString.substring(1,commaIndex) ;
+                    }
+                    else
+                        scoreValue = EXTRACT_VALUE(scoreName,scoreString) ;
                     //LOGGER.log(Level.INFO, "year:{0} score:{1}", new Object[] {categoryValue,scoreString});
                     keyIndex = keyIndex2 ;
                     // Select SPACE immediately before "="
                     spaceIndex = fileLine.lastIndexOf(SPACE, keyIndex) ;
                     
-                    if (Integer.valueOf(categoryValue) < 2015)
-                    	continue ;
+                    //if (Integer.valueOf(categoryValue) < 2015)
+                    //	continue ;
                     
                     // Initialise fileLine for Each categoryValue with "categoryValue"
                     
@@ -2224,6 +2232,7 @@ public class Reporter {
             LOGGER.severe(e.toString()) ;
             return false ;
         }
+        LOGGER.info(filePath) ;
         
         return true ;
     }
@@ -2248,7 +2257,8 @@ public class Reporter {
         // this will hopefully remove some outliers so this standard deviation represents 
         // most of the data (outliers do not factor in the calculations of this number)
         ArrayList<Double> sortedValuesInterdecile = new ArrayList<Double>();
-        for (Double value : sortedValues) sortedValuesInterdecile.add(value);
+        for (Double value : sortedValues) 
+        	sortedValuesInterdecile.add(value);
         Reporter.removeOutliersFromSortedArrayListPercentileMethod(sortedValuesInterdecile, 0.05);        
         Double numValues = (double) sortedValuesInterdecile.size();
         Double meanValue = 0.0;
@@ -2726,7 +2736,82 @@ public class Reporter {
         
     }
     
+    /**
+     * Reads in .csv files named in fileNames and creates a new .csv file
+     * with contribution from each of them.
+     * Currently takes only first column.
+     * TODO: Allow specification property to be read and multiple files when multiple properties
+     * @param fileNames - (ArrayList(String)) Names of files to be read
+     * @param folderPath - (String) Name of folder containing files
+     * @return (boolean) - true if successful, false otherwise
+     */
+    public static boolean MERGE_HASHMAP_CSV(ArrayList<String> fileNames, String reportName, String folderPath)
+    {
+        HashMap<Comparable,Number[]> report = new HashMap<Comparable,Number[]>() ;
+        
+        String fileName ;
+        Comparable key ;
+        String[] firstLine = new String[] {} ;
+        
+        try
+        {
+        	for (int fileIndex = 0 ; fileIndex < fileNames.size() ; fileIndex++ )
+        	{
+        		fileName = fileNames.get(fileIndex) ;
+        		
+        		BufferedReader fileReader 
+                = new BufferedReader(new FileReader(folderPath + fileName + reportName + CSV)) ;
+        
+                // Get first line
+                String record = fileReader.readLine().substring(1) ;    // Remove invisible character at beginning of first entry
+                String[] recordArray = record.split(COMMA) ;
+                if (firstLine.length == 0)
+                	firstLine = new String[] {recordArray[0], recordArray[3]} ;
+            
+        
+                record = fileReader.readLine() ;
+                recordArray = record.split(COMMA) ;
+                
+                // report.put(Reporter.COLUMN_NAME, recordArray);
 
+                while (recordArray.length > 1)    // ((record != null) && (!record.isEmpty()))
+                {
+                	key = recordArray[0] ;
+            	    if (!report.containsKey(key))
+            	    	report.put(key, new Number[fileNames.size()]) ;
+            	    
+            	    Number[] valueArray = report.get(key).clone() ;
+                //if (recordArray.length > 1)
+                {   
+                    valueArray[fileIndex] = Double.valueOf(recordArray[3]) ;
+                    report.put(key, valueArray) ;
+                }
+                //else
+                  //  report.put(key, new String[0]) ;
+
+                    record = fileReader.readLine() ;
+                    if (record != null)
+                        recordArray = record.split(COMMA) ;
+                    else
+                    	recordArray = new String[] {} ;
+            
+                }
+                fileReader.close() ;
+
+        	}
+        }
+        catch ( Exception e )
+        {
+        	LOGGER.severe(e.toString()) ;
+        	return false ;
+        }
+        
+        // Prepare to write merged file to disk
+        fileName = fileNames.get(0) ;
+        //fileName = fileName.substring(0, fileName.indexOf(CSV)) ;
+        
+        return WRITE_CSV(report, firstLine[0], new String[] {firstLine[1]}, "Merged" + reportName, fileName, folderPath) ;
+    }
 
     /**
      * Read .csv file and return its contents as a HashMap where String maps to 
@@ -3784,8 +3869,8 @@ public class Reporter {
     {
         ConfigLoader.load();
         //String folderPath = "/scratch/is14/mw7704/prepsti/output/to2025/" ;
-        String folderPath = "output/long_sims/" ;
-        //String folderPath = "output/to2025/" ;
+        //String folderPath = "output/long_sims/" ;
+        String folderPath = "output/to2025/" ;
         //String folderPath = "data_files/" ;
         //String folderPath = "output/" ;
         //String folderPath = "output/prep/" ;
@@ -3794,35 +3879,40 @@ public class Reporter {
         //"from2007seek27fPop40000Cycles5475","from2007seek27gPop40000Cycles5475","from2007seek27hPop40000Cycles5475","from2007seek27iPop40000Cycles5475","from2007seek27jPop40000Cycles5475"} ;
     
         //String prefix = "to2019noAdjustCondom" ;
-        //String prefix = "to2025screen185prepto2019noAdjustCondom" ;
         //String prefix = "to2019newScreenA" ;
         //String prefix = "to2019serosortA" ;
-        //String prefix = "to2025screen78prepto2019noAdjustCondom" ;
-        String prefix = "to2030prep78screen12probto2019noAdjustCondom" ;
-        //String prefix = "to2025prepNoScreen" ;
-        //String prefix = "to2025constantto2019noAdjustCondom" ;
-        //String prefix = "from2015to2025prepNoScreento2019noAdjustCondom" ;
+        //String prefix = "to2025screen216prepto2019noAdjustCondom" ;
+        //String prefix = "to2030prep154screen2plusfrom2015to2019early2Prepto2019noAdjustCondom" ;
+        //String prefix = "to2030prep123screen1plusto2019noAdjustCondom" ;
+        //String prefix = "from2015to2019early1Prepto2019noAdjustCondom" ;
+        //String prefix = "from2015to2025noPrepto2019noAdjustCondom" ;
+        //String prefix = "from2015to2025constantto2019noAdjustCondom" ;
+        String prefix = "to2025prepNoScreen" ; // to2019noAdjustCondom" ;
         //String prefix = "from2015to2025screenNoPrepto2019noAdjustCondom" ;
         //String prefix = "from2015to2025constantto2019noAdjustCondom" ; 
         //String suffix = "" ;
         //String suffix = "Pop40000Cycles5110" ;
-        String suffix = "Pop40000Cycles4015" ;
+        //String suffix = "Pop40000Cycles1825" ;
+        //String suffix = "Pop40000Cycles4015" ;
+        String suffix = "Pop40000Cycles7300" ;
         //String suffix = "Pop40000Cycles14965" ;
         //String suffix = "Pop40000Cycles2190" ;
+        String reportName = "condomUseReport" ;
         ArrayList<String> simNameList = new ArrayList<String>() ;
-        //String letter2 = "A" ;
-        //for (String letter2 : new String[] {"A","B","C","D","E","F","G","H","I","J"})
-    	//for (String letter0 : new String[] {"a","b","c","d","e","f","g","h","i","j"})
-        //	for (String letter1 : new String[] {"a","b","c","d","e","f","g","h","i","j"})
-        //		simNameList.add(prefix + letter2 + letter0 + letter1 + suffix) ;
+        String letter2 = "C" ;
+        //for (String letter2 : new String[] {"A","B","C"}) // ,"D","E","F","G","H","I","J"})
+    	for (String letter0 : new String[] {"a","b","c","d","e","f","g","h","i","j"})
+        	for (String letter1 : new String[] {"a","b","c","d","e","f","g","h","i","j"})
+        		simNameList.add(prefix + letter2 + letter0 + letter1 + suffix) ;
 
     	//for (String letter50 : new String[] {"Eje","Eia","Iii","Aic","Hhe","Fdf","Fde","Def","Eac","Gib","Bfa","Aac","Bag","Dfg"})
-        for (String letter50 : new String[] {"Eje","Ajh","Fjh","Ibh","Eja","Jha","Hjc","Adg","Hhb","Ibd","Cah","Edj","Dhc","Feh","Dbc","Ddd","Jcg","Dif","Iae","Eci","Gfi","Fah","Djh","Dea","Bde","Cfa","Ghf","Adc","Jbg","Gbc","Jjh","Afb","Jbc","Faj","Dbd","Agj","Edb","Eia","Iii","Aic","Hhe","Fdf","Fde","Def","Eac","Gib","Bfa","Aac","Bag","Dfg"})
-                    simNameList.add(prefix + letter50 + suffix) ;
+        //for (String letter50 : new String[] {"Eje","Ajh","Fjh","Ibh","Eja","Jha","Hjc","Adg","Hhb","Ibd","Cah","Edj","Dhc","Feh","Dbc","Ddd","Jcg","Dif","Iae","Eci","Gfi","Fah","Djh","Dea","Bde","Cfa","Ghf","Adc","Jbg","Gbc","Jjh","Afb","Jbc","Faj","Dbd","Agj","Edb","Eia","Iii","Aic","Hhe","Fdf","Fde","Def","Eac","Gib","Bfa","Aac","Bag","Dfg"})
+          //          simNameList.add(prefix + letter50 + suffix) ;
                     //simNameList.add(prefix + letter0 + letter1 + suffix) ;
         	
         String[] simNames = simNameList.toArray(new String[] {}) ;
-        //simNames = new String[] {"regularP6Risk47aaPop40000Cycles1825"} ;
+        
+        //MERGE_HASHMAP_CSV(simNameList,reportName,folderPath) ;
         
         //String[] simNames = new String[] {"newSortRisk12aPop40000Cycles1825"} ;
         //ArrayList<String> closestSimulations
@@ -3834,7 +3924,8 @@ public class Reporter {
         int cutoff = 50 ;
         //if (simNameList.size() < cutoff)
             cutoff = simNameList.size() ;
-        MULTI_WRITE_CSV(simNameList.subList(0, cutoff), "year", "all_true", "riskyIncidence_Prep", folderPath) ; // "C:\\Users\\MichaelWalker\\OneDrive - UNSW\\gonorrhoeaPrEP\\simulator\\PrEPSTI\\output\\prep\\") ; // 
+        //MULTI_WRITE_CSV(simNameList, "year", "been_tested", "beenTestedReport", folderPath) ; // "C:\\Users\\MichaelWalker\\OneDrive - UNSW\\gonorrhoeaPrEP\\simulator\\PrEPSTI\\output\\prep\\") ; // 
+        MULTI_WRITE_CSV(simNameList.subList(0, cutoff), "year", "all_false", "riskyIncidence_HIV", folderPath) ; // "C:\\Users\\MichaelWalker\\OneDrive - UNSW\\gonorrhoeaPrEP\\simulator\\PrEPSTI\\output\\prep\\") ; // 
         LOGGER.info(simNameList.subList(0, cutoff).toString()) ;
         // LOGGER.info(String.valueOf(cutoff) + " simulations included.") ;
         //PREPARE_GRAY_REPORT(simNames,folderPath,2007,2017) ;

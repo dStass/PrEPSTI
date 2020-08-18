@@ -590,13 +590,19 @@ public class Community {
         //Community.ADD_TIME_STAMP("after prev reports");
         // LOGGER.log(Level.INFO,"{0} {1}", new Object[] {"all", prevalenceReport.get(prevalenceReport.size() - 1)}) ;
 
+        int backYears = END_YEAR + 1 - START_YEAR ;
         HashMap<Comparable,String> incidenceReport = new HashMap<Comparable,String>() ;
         HashMap<Comparable,String> incidenceReportPrep = new HashMap<Comparable,String>() ;
         if (DYNAMIC)
         {
-            incidenceReport = screeningReporter.prepareYearsAtRiskIncidenceReport(siteNames, END_YEAR + 1 - START_YEAR, END_YEAR, "statusHIV") ;
-            incidenceReportPrep = screeningReporter.prepareYearsAtRiskIncidenceReport(siteNames, END_YEAR + 1 - START_YEAR, END_YEAR, "prepStatus") ;
+            incidenceReport = screeningReporter.prepareYearsAtRiskIncidenceReport(siteNames, backYears, END_YEAR, "statusHIV") ;
+            incidenceReportPrep = screeningReporter.prepareYearsAtRiskIncidenceReport(siteNames, backYears, END_YEAR, "prepStatus") ;
         }
+        //ArrayList<HashMap<Comparable,Number>> beenTestedReports = new ArrayList<HashMap<Comparable,Number>>() ;
+        //ArrayList<ArrayList<String>> condomUseReports = new ArrayList<ArrayList<String>>() ;
+        //beenTestedReports.add(screeningReporter.prepareYearsBeenTestedReport(backYears, 0, 0, END_YEAR)) ;
+        //condomUseReports.add(encounterReporter.prepareYearsCondomUseRecord(backYears, END_YEAR)) ;
+        
         //Community.ADD_TIME_STAMP("after incidence DYNAMIC");
 
                 
@@ -809,7 +815,7 @@ public class Community {
                 metaData.add(relationshipsReboot) ;
                 
                 // dump new metadata
-                rebootedSimName = simName + "REBOOT" + String.valueOf(fromCycle);
+                rebootedSimName = simName + "FROM" + String.valueOf(fromCycle);
                 rebootedFolderPath = Community.FILE_PATH;
 
                 // TODO: extract "test/" from CONFIG

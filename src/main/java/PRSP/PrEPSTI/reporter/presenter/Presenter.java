@@ -507,13 +507,13 @@ public class Presenter {
         //String folder = "output/test/" ;
         String folder = "data_files/" ;
         //String fileName = "incidence" ;
-        String property = "PrEP users - PrEP use 0.74" ;
-        //String property = "Overall - HIV negative" ;
+        //String property = "PrEP users - PrEP use 0.74" ;
+        String property = "Overall - HIV negative" ;
         String chartTitle = property ;
         // LOGGER.info(chartTitle) ;
         String[] legend ;
         // legend = args ;
-        legend = new String[] {" 78 days"," 92 days (standard)","106 days","123 days"} ; // ,"154 days","185 days"} ; //,"216 days"} ;    // 
+        legend = new String[] {" 78 days"," 92 days (standard)","106 days","123 days","154 days"} ; //,"185 days"} ; //,"216 days"} ;    // 
         //legend = new String[] {"screening no PrEP","PrEP no screening","no PrEP","constant"} ;
         //PREP_PROBABILITY_ARRAY = new double[] {0.39,0.46,0.53,0.60,0.67,0.74} ; // 2013 to 2019
         // gonoGoneWild header  
@@ -1343,16 +1343,21 @@ public class Presenter {
      * @param xLabel
      * @param legend
      */
-    protected void plotShadedHashMapStringCI(HashMap<String,HashMap<String,String[]>> report, String yLabel, String xLabel, String[] legend) {
+    protected void plotShadedHashMapStringCI(HashMap<String,HashMap<String,String[]>> report, String yLabel, String xLabel, String[] legend) 
+    {
         // Extract data from reportArray
         XYIntervalSeriesCollection xyIntervalSeriesCollection = parseReportHashMapError(report, legend) ;
 
-        setDrawError(true);
+        Boolean drawShadedRegion = ConfigLoader.getMethodVariableBoolean("presenter", "plotShadedHashMapStringCI", "drawShadedRegion") ;
+        
+        
+        setDrawError(false) ;
         setDrawPoints(true);
-
-
-        // setErrorType(ERROR_INTERVALS);
-        setErrorType(SHADED_REGION);
+        
+        if (drawShadedRegion)
+            setErrorType(SHADED_REGION) ;
+        else
+        	setErrorType(ERROR_INTERVALS);
             
         // Send data to be processed and presented
         chart_awt.plotLineChart(chartTitle,xyIntervalSeriesCollection, yLabel, xLabel, legend) ;
@@ -2045,11 +2050,13 @@ public class Presenter {
      * If set to false -> graph will not draw points
      * @param val
      */
-    public void setDrawPoints(boolean val) {
+    public void setDrawPoints(boolean val) 
+    {
         this.drawPoints = val;
     }
 
-    public void setDrawError(boolean val) {
+    public void setDrawError(boolean val) 
+    {
         this.drawError = val;
     }
 
@@ -2444,7 +2451,8 @@ public class Presenter {
          * @param yLabel
          * @param xLabel 
          */
-        private void plotLineChart(String chartTitle, XYDataset dataset, String yLabel, String xLabel, String[] legend) {
+        private void plotLineChart(String chartTitle, XYDataset dataset, String yLabel, String xLabel, String[] legend) 
+        {
 
             boolean showLegend = !(legend[0].isEmpty()) ;
 

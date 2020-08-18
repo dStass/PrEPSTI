@@ -552,18 +552,18 @@ public class Relationship {
             if ((URETHRA.equals(site0.toString()) && (RECTUM.equals(site1.toString()))) 
                     || (URETHRA.equals(site1.toString())&& RECTUM.equals(site0.toString())))
             {   
-                sbReport.append("condom: ");
+                sbReport.append("condom:");
                 // report += "condom:" ;
                 
                 if (Agent.USE_CONDOM(agent0, agent1, relationship))
                 {
                     infectProbability *= (1.0 - CONDOM_EFFECT) ;
-                    sbReport.append("true");
+                    sbReport.append("true ");
                     // report += "true " ;
                 }
                 else 
                 {
-                    sbReport.append("false");
+                    sbReport.append("false ");
                     // report += "false " ;
                 }
             }
