@@ -598,6 +598,7 @@ public class Community {
         HashMap<Comparable<?>,String> incidenceReportPrep = new HashMap<Comparable<?>,String>() ;
         HashMap<Comparable<?>,String> trueIncidenceReport = new HashMap<Comparable<?>,String>() ;
         HashMap<Comparable<?>,String> trueIncidenceReportPrep = new HashMap<Comparable<?>,String>() ;
+
         if (DYNAMIC)
         {
         	if (atRisk)
@@ -841,7 +842,7 @@ public class Community {
                 metaData.add(relationshipsReboot) ;
                 
                 // dump new metadata
-                rebootedSimName = simName + "$" + String.valueOf(fromCycle);
+                rebootedSimName = simName + "FROM" + String.valueOf(fromCycle);
                 rebootedFolderPath = Community.FILE_PATH;
 
                 // TODO: extract "test/" from CONFIG

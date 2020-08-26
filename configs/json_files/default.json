@@ -10,12 +10,12 @@
         "NAME_ROOT" : "master1",
         "MAX_CYCLES" : "11",
         "POPULATION" : "40000",
+        "REBOOT_SIMULATION" : "oldParams31cPop40000Cycles2920",
         "COMMENT" : "Debug midway reboot",
         "DYNAMIC" : "true",
-        "REBOOT_SIMULATION" : "to2019testPrEPscreen1c",
-        "REBOOT_FROM_CYCLE" : "9",
-        "START_YEAR" : "2015",
-        "END_YEAR" : "2025",
+        "REBOOT_FROM_CYCLE" : "-1",
+        "START_YEAR" : "2008",
+        "END_YEAR" : "2019",
         "methods" : {
             "interveneCommunity" : {
                 "startCycle" : "1"

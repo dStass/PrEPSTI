@@ -279,7 +279,8 @@ public class MSM extends Agent {
         	MSM msm =(MSM) agent ;
         	if (msm.getStatusHIV())
         	    newScreenCycle = msm.sampleGamma(shapePositive, SCALE_POSITIVE, 1.0) ;
-        	else if (msm.getPrepStatus()) // && msm.getPrepScreen())
+
+        	else if (msm.getPrepStatus() && msm.getPrepScreen())
         		newScreenCycle = msm.sampleGamma(PREP_SCREEN_SHAPE, PREP_SCREEN_SCALE, 1.0) + PREP_SCREEN_DISPLACEMENT ;    // 61 + msm.sampleGamma(SHAPE_PREP, scalePrep, 1.0) ; //
         	else    // HIV-negative either not on PrEP or not following PrEP screening guidelines
         		newScreenCycle = msm.sampleGamma(shapeNegative, scaleNegative, 1.0) ; 
