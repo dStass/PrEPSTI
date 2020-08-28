@@ -71,9 +71,9 @@ public class MSM extends Agent {
     static double PROPORTION_HIV = 0.092 ;
     
     /** The probability of disclosing HIV status if HIV positive */
-    static double PROBABILITY_DISCLOSE_POSITIVE_HIV = 0.296 ;    // 0.2 ; // 0.286 ; // 2010 VALUE // 0.2 ; // 
+    static double PROBABILITY_DISCLOSE_POSITIVE_HIV = 0.201 ; // 0.296 ;    // 0.2 ; // 0.286 ; // 2010 VALUE // 0.2 ; // 
     /** The probability of disclosing HIV status if HIV negative */
-    static double PROBABILITY_DISCLOSE_NEGATIVE_HIV = 0.205 ;    // 0.18 ; // 0.239 ; // 2010 VALUE // 
+    static double PROBABILITY_DISCLOSE_NEGATIVE_HIV = 0.175 ; // 0.205 ;    // 0.18 ; // 0.239 ; // 2010 VALUE // 
     /** Probability of serosorting if HIV positive (2017) */
     static double PROBABILITY_POSITIVE_SERO_SORT = 0.59 ;
     /** Probability of serosorting if HIV negative (2017) */
@@ -114,7 +114,7 @@ public class MSM extends Agent {
         String methodName = "" ;
         
 
-        Boolean reinitScreenCycle = ConfigLoader.getMethodVariableBoolean("MSM", "REINIT", "reinitScreenCycle") ;
+        Boolean reinitScreenCycle = ConfigLoader.getMethodVariableBoolean("msm", "REINIT", "reinitScreenCycle") ;
         
         try
         {
@@ -1687,7 +1687,7 @@ public class MSM extends Agent {
     /** Transmission probabilities per sexual contact from Urethra to Rectum */
     static double URETHRA_TO_RECTUM = 0.95 ; //  0.85 ; 
     /** Transmission probabilities sexual contact from Urethra to Pharynx. */
-    static double URETHRA_TO_PHARYNX = 0.30 ; // 0.25 ; // 0.50 ; 
+    static double URETHRA_TO_PHARYNX = 0.35 ; // 0.25 ; // 0.50 ; 
     /** Transmission probabilities sexual contact from Rectum to Urethra. */
     static double RECTUM_TO_URETHRA = 0.010 ; // 0.009 ; // 0.015 ; // 0.010 ;
     /** Transmission probabilities sexual contact from Rectum to Pharynx. */
@@ -1895,23 +1895,23 @@ public class MSM extends Agent {
     }
     
     	
-    static int SAFE_ODDS = 514 ; // 468 ;
+    static int SAFE_ODDS = 468 ; // 514 ; // 468 ;
     // Odds of an MSM being riskyMSM
-    static int RISKY_ODDS = 293 ; // 290 ;
+    static int RISKY_ODDS = 290 ; // 293 ; // 290 ;
     // Sum of safeOdds and riskyOdds
     static int TOTAL_ODDS = RISKY_ODDS + SAFE_ODDS ;
 //        int[] newSafeOdds = new int[] {468,514,471,501,469,465,444,473,440,424,307} ;
 //       int[] newRiskyOdds = new int[] {290,293,369,345,331,340,364,350,362,409,520} ;
 
-    static double SAFE_ODDS_CASUAL = 514 ; // 468 ;
+    static double SAFE_ODDS_CASUAL = 468 ; // 514 ; // 468 ;
     // Odds of an MSM being riskyMSM
-    static double RISKY_ODDS_CASUAL = 293 ; // 290 ;
+    static double RISKY_ODDS_CASUAL = 290 ; // 293 ; // 290 ;
     // Sum of safeOdds and riskyOdds
     static double TOTAL_ODDS_CASUAL = RISKY_ODDS_CASUAL + SAFE_ODDS_CASUAL ;
     
     static double SAFE_ODDS_REGULAR = 300 ;    // 300 ;
     // Odds of an MSM being riskyMSM
-    static double RISKY_ODDS_REGULAR = 540 ;    // 568 ;
+    static double RISKY_ODDS_REGULAR = 568 ; // 540 ;    // 568 ;
     // Sum of safeOdds and riskyOdds
     static double TOTAL_ODDS_REGULAR = RISKY_ODDS_REGULAR + SAFE_ODDS_REGULAR ;
 
@@ -1950,7 +1950,7 @@ public class MSM extends Agent {
      */
     final void initStatus()
     {
-    	initStatus(1) ;
+    	initStatus(0) ;
     }
     
     /**
@@ -2739,8 +2739,8 @@ public class MSM extends Agent {
     protected void initScreenCycle(double rescale)
     {
     	
-    	double cdfNegative = CDF_NEGATIVE[1] ;
-    	double cdfPositive = CDF_POSITIVE[1] ;
+    	//double cdfNegative = CDF_NEGATIVE[1] ;
+    	//double cdfPositive = CDF_POSITIVE[1] ;
     	
         if (getPrepStatus())
             setScreenCycle((sampleGamma(31,1,1)) + 61) ;
@@ -2749,9 +2749,9 @@ public class MSM extends Agent {
             //int firstScreenCycle = (int) new GammaDistribution(7,55).sample() ; 
             //setScreenCycle(firstScreenCycle) ;  // 49.9% screen within a year 2016
             if (statusHIV)
-            	setScreenCycle(sampleTriangular(cdfPositive, TRIANGULAR_LOWER)) ;    // setScreenCycle(sampleGamma(5.81,71,rescale)) ;  // setScreenCycle(sampleGamma(6,71,rescale)) ;  // 41% screen within a year
+            	setScreenCycle(sampleGamma(5.81,71,rescale)) ;  // setScreenCycle(sampleGamma(6,71,rescale)) ;  // 41% screen within a year // setScreenCycle(sampleTriangular(cdfPositive, TRIANGULAR_LOWER)) ;    // 
             else
-            	setScreenCycle(sampleTriangular(cdfNegative, TRIANGULAR_LOWER)) ;    // setScreenCycle(sampleGamma(5.91,85.5,rescale)) ;  // setScreenCycle(sampleGamma(6,85.5,rescale)) ;  // 26% screen within a year
+            	setScreenCycle(sampleGamma(5.91,85.5,rescale)) ;  // setScreenCycle(sampleGamma(6,85.5,rescale)) ;  // 26% screen within a year // setScreenCycle(sampleTriangular(cdfNegative, TRIANGULAR_LOWER)) ;    // 
             
         }
         // Randomly set timer for first STI screen 
@@ -2773,7 +2773,7 @@ public class MSM extends Agent {
     /**
      * Initialises screenCycle from a Gamma distribution to determine how often 
      * an MSM is screened, and then starts the cycle in a random place so that 
-     * not every MSM gets screened at the same time. The shape parameter remains 
+     * not every MSM gets screened at the same time. the shape parameter remains 
      * unchanged.
      * @param rescale - The factor to rescale screenCycle by
      * @param ignorePrep - Whether to reInit PrEP users
@@ -2822,8 +2822,8 @@ public class MSM extends Agent {
      * Initialises screenCycle from a Gamma distribution to determine how often 
      * an MSM is screened, and then starts the cycle in a random place so that 
      * not every MSM gets screened at the same time.
-     * @param shape - The factor to reshape screenCycle by
-     * @param scale - The factor to rescale screenCycle by
+     * @param rescale - The factor to reshape screenCycle by
+     * @param rescale - The factor to rescale screenCycle by
      * @param ignorePrep - Whether to reInit PrEP users
      */
     protected int reInitScreenCycle(double shape, double scale, boolean ignorePrep)
@@ -2883,9 +2883,9 @@ public class MSM extends Agent {
         // Values up to 2018
         //double[] prepProbabilityArray = new double[] {0.011,0.014,0.014,0.039,0.139,0.204,0.204} ;
         // Most recent
-        double[] prepProbabilityArray = new double[] {0.011,0.014,0.017,0.049,0.167,0.239,0.310  // 2013 to 2019
+        double[] prepProbabilityArray = new double[] {0.011,0.014,0.017,0.049,0.167,0.239,0.310} ;  // 2013 to 2019
             //    ,0.39,0.46,0.53,0.60,0.67,0.74    // 2020 to 2025
-        } ;
+        //} ;
         if (year >= prepProbabilityArray.length)
             year = prepProbabilityArray.length - 1 ;
         

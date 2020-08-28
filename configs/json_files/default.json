@@ -1,20 +1,20 @@
 {   
     "paths": {
-        "REBOOT_PATH" : "output/test/",
+        "REBOOT_PATH" : "output/",
         "REPORT_PATH" : "reports/",
         "DATA_PATH" : "data_files/"
     },
 
     "community" : {
         "FILE_PATH" : "output/",
-        "NAME_ROOT" : "to2019testhiv2p0corr4B",
+        "NAME_ROOT" : "to2019test_merge_branch",
         "MAX_CYCLES" : "14",
         "POPULATION" : "40000",
-        "COMMENT" : "",
+        "COMMENT" : "Testing merge_branch",
         "DYNAMIC" : "true",
         "REBOOT_SIMULATION" : "oldParams31cPop40000Cycles2920",
         "REBOOT_FROM_CYCLE" : "-1",
-        "START_YEAR" : "2007",
+        "START_YEAR" : "2008",
         "END_YEAR" : "2019",
         "methods" : {
             "interveneCommunity" : {

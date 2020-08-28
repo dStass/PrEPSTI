@@ -373,8 +373,7 @@ public class ConfigLoader {
         JSONObject methodsJSON = (JSONObject) jsonObject.get("methods");
         if (methodsJSON == null) return null;
         HashMap <String, HashMap> methodToVariablesMapHashMap = ConfigLoader.convertJSONObjectToHashMap_StringToNewHashMap(methodsJSON);
-        for (String methodName : methodToVariablesMapHashMap.keySet()) 
-        {
+        for (String methodName : methodToVariablesMapHashMap.keySet()) {
             JSONObject methodVariablesJSON = (JSONObject) methodsJSON.get(methodName);
             HashMap <String, String> methodVariablesToValues = ConfigLoader.convertJSONObjectToHashMap_StringToString(methodVariablesJSON);
             methodToVariablesMapHashMap.put(methodName, methodVariablesToValues);

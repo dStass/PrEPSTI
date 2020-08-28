@@ -959,7 +959,7 @@ public class Community {
         int startYear = START_YEAR - 2007 ;
 
         // No more burn-in if starting at a later date than 2007
-        if (startYear > 0)
+        if (startYear > 1)
             startCycle = 0 ;
         
         if ((cycle < startCycle))
@@ -1316,11 +1316,6 @@ public class Community {
             if (agent == null) return;
             for (Relationship relationship : agent.getCurrentRelationships())
             {
-                // WARNING: May cause future problems with hetero couples
-                // Does agent have lower agentId than partner
-                // Avoid checking relationship twice by accessing only through the 
-                // agent with the lower agentId
-                
                 if (agent != relationship.getLowerIdAgent())
                     continue ;
             
