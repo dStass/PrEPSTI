@@ -71,9 +71,9 @@ public class MSM extends Agent {
     static double PROPORTION_HIV = 0.092 ;
     
     /** The probability of disclosing HIV status if HIV positive */
-    static double PROBABILITY_DISCLOSE_POSITIVE_HIV = 0.201 ; // 0.296 ;    // 0.2 ; // 0.286 ; // 2010 VALUE // 0.2 ; // 
+    static double PROBABILITY_DISCLOSE_POSITIVE_HIV = 0.2 ; //  0.201 ; // 0.296 ;    // 0.2 ; // 0.286 ; // 2010 VALUE // 0.2 ; // 
     /** The probability of disclosing HIV status if HIV negative */
-    static double PROBABILITY_DISCLOSE_NEGATIVE_HIV = 0.175 ; // 0.205 ;    // 0.18 ; // 0.239 ; // 2010 VALUE // 
+    static double PROBABILITY_DISCLOSE_NEGATIVE_HIV = 0.18 ; // 0.175 ; // 0.205 ;    // 0.18 ; // 0.239 ; // 2010 VALUE // 
     /** Probability of serosorting if HIV positive (2017) */
     static double PROBABILITY_POSITIVE_SERO_SORT = 0.59 ;
     /** Probability of serosorting if HIV negative (2017) */
@@ -1981,7 +1981,7 @@ public class MSM extends Agent {
         //  initInfectedStatus(startAge) ;    // MSM generated at outset, represent initial population
 
         // Sets whether disclosesHIV, allowing for statusHIV
-        double probabilityDiscloseHIV = getProbabilityDiscloseHIV() ;
+        double probabilityDiscloseHIV = getProbabilityDiscloseHIV()[year] ;
         // Sero -sorting and -positioning status'
         initSeroStatus(probabilityDiscloseHIV, year) ;
         
@@ -3031,11 +3031,11 @@ public class MSM extends Agent {
      * HIV positive MSM are more likely to disclose the statusHIV
      * @return (Double) probability of disclosing statusHIV
      */
-    protected double getProbabilityDiscloseHIV()
+    protected double[] getProbabilityDiscloseHIV()
     {
         if (getStatusHIV())
-            return POSITIVE_DISCLOSE_PROBABILITY[0] ;
-        return NEGATIVE_DISCLOSE_PROBABILITY[0] ;
+            return POSITIVE_DISCLOSE_PROBABILITY ;
+        return NEGATIVE_DISCLOSE_PROBABILITY ;
     }
     
     public double getProbabilityPrep() 
