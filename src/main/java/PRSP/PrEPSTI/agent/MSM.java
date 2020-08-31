@@ -2749,9 +2749,9 @@ public class MSM extends Agent {
             //int firstScreenCycle = (int) new GammaDistribution(7,55).sample() ; 
             //setScreenCycle(firstScreenCycle) ;  // 49.9% screen within a year 2016
             if (statusHIV)
-            	setScreenCycle(sampleGamma(5.81,71,rescale)) ;  // setScreenCycle(sampleGamma(6,71,rescale)) ;  // 41% screen within a year // setScreenCycle(sampleTriangular(cdfPositive, TRIANGULAR_LOWER)) ;    // 
+            	setScreenCycle(sampleGamma(6.0,71,rescale)) ;  // setScreenCycle(sampleGamma(6,71,rescale)) ;  // 41% screen within a year // setScreenCycle(sampleTriangular(cdfPositive, TRIANGULAR_LOWER)) ;    // 
             else
-            	setScreenCycle(sampleGamma(5.91,85.5,rescale)) ;  // setScreenCycle(sampleGamma(6,85.5,rescale)) ;  // 26% screen within a year // setScreenCycle(sampleTriangular(cdfNegative, TRIANGULAR_LOWER)) ;    // 
+            	setScreenCycle(sampleGamma(6.0,85.5,rescale)) ;  // setScreenCycle(sampleGamma(6,85.5,rescale)) ;  // 26% screen within a year // setScreenCycle(sampleTriangular(cdfNegative, TRIANGULAR_LOWER)) ;    // 
             
         }
         // Randomly set timer for first STI screen 
