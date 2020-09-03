@@ -855,8 +855,8 @@ public abstract class Agent {
     
     protected int reInitScreenCycle(double rescale)
     {
-        screenCycle = (int) Math.ceil(rescale * getScreenCycle()) ;
-        //setScreenCycle(RAND.nextInt(getScreenCycle()) + 1) ;
+        int newScreenCycle = (int) Math.ceil(rescale * getScreenCycle()) ;
+        //setScreenTime(RAND.nextInt(getScreenCycle()) + 1) ;
         return screenCycle ;
     }
     
@@ -1345,8 +1345,10 @@ public abstract class Agent {
         site.setInfectionTime(infectionTime) ;
     }
 
-    /** screenTime setter().
-     * @param time */
+    /** 
+     * screenTime setter().
+     * @param time 
+     */
     public void setScreenTime(int time)
     {
         screenTime = time ;

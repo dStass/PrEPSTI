@@ -71,9 +71,9 @@ public class MSM extends Agent {
     static double PROPORTION_HIV = 0.092 ;
     
     /** The probability of disclosing HIV status if HIV positive */
-    static double PROBABILITY_DISCLOSE_POSITIVE_HIV = 0.201 ; // 0.296 ;    // 0.2 ; // 0.286 ; // 2010 VALUE // 0.2 ; // 
+    static double PROBABILITY_DISCLOSE_POSITIVE_HIV = 0.2 ; //  0.201 ; // 0.296 ;    // 0.2 ; // 0.286 ; // 2010 VALUE // 0.2 ; // 
     /** The probability of disclosing HIV status if HIV negative */
-    static double PROBABILITY_DISCLOSE_NEGATIVE_HIV = 0.175 ; // 0.205 ;    // 0.18 ; // 0.239 ; // 2010 VALUE // 
+    static double PROBABILITY_DISCLOSE_NEGATIVE_HIV = 0.18 ; // 0.175 ; // 0.205 ;    // 0.18 ; // 0.239 ; // 2010 VALUE // 
     /** Probability of serosorting if HIV positive (2017) */
     static double PROBABILITY_POSITIVE_SERO_SORT = 0.59 ;
     /** Probability of serosorting if HIV negative (2017) */
@@ -246,7 +246,7 @@ public class MSM extends Agent {
     static double SHAPE_PREP = 2.7 ;
    
     /** Scale parameter for gamma distribution of PrEP-users' screening periods */
-    static double[] SCALE_PREP = new double[] { 70, 70, 81.0, 63.5, 54.0, 56.1, 56.1 } ;
+    static double[] SCALE_PREP = new double[] { 70, 81.0, 63.5, 54.0, 56.1, 56.1 } ;
    
     /**
      * Adjusts per year the screening period.
@@ -276,7 +276,7 @@ public class MSM extends Agent {
         	MSM msm =(MSM) agent ;
         	if (msm.getStatusHIV())
         	    newScreenCycle = msm.sampleGamma(shapePositive, SCALE_POSITIVE, 1.0) ;
-        	else if (msm.getPrepStatus() && msm.getPrepScreen())
+        	else if (msm.getPrepStatus() ) //&& msm.getPrepScreen())
         		newScreenCycle = msm.sampleGamma(PREP_SCREEN_SHAPE, PREP_SCREEN_SCALE, 1.0) + PREP_SCREEN_DISPLACEMENT ;    // 62 + msm.sampleGamma(SHAPE_PREP, scalePrep, 1.0) ; //
         	else    // HIV-negative either not on PrEP or not following PrEP screening guidelines
         		newScreenCycle = msm.sampleGamma(shapeNegative, scaleNegative, 1.0) ; 
@@ -324,7 +324,7 @@ public class MSM extends Agent {
         	MSM msm =(MSM) agent ;
         	if (msm.getStatusHIV())
         		newScreenCycle = msm.sampleTriangular(cdfPositive, TRIANGULAR_LOWER) ;
-        	else if (msm.getPrepStatus() && msm.getPrepScreen())
+        	else if (msm.getPrepStatus()) // && msm.getPrepScreen())
         		newScreenCycle = msm.sampleTriangular(77, 92, 107) ;
         	else    // HIV-negative either not on PrEP or not following PrEP screening guidelines
         		newScreenCycle = msm.sampleTriangular(cdfNegative, TRIANGULAR_LOWER) ; 
@@ -339,7 +339,7 @@ public class MSM extends Agent {
     }
     
     
-    static double[] PREP_PROBABILITY_ARRAY = new double[] {0.011,0.014,0.017,0.049,0.167,0.239,0.310  // 2013 to 2019
+    static double[] PREP_PROBABILITY_ARRAY = new double[] {0.0, 0.011,0.014,0.017,0.049,0.167,0.239,0.310  // 2013 to 2019
     //    ,0.39,0.46,0.53,0.60,0.67,0.74    // 2020 to 2025
     } ;
     
@@ -368,14 +368,15 @@ public class MSM extends Agent {
     	
     	HashMap<String,String> record = new HashMap<String,String>() ;
     	
-    	year = year - 6 ;
-    	if (year < 0)
+    	if (year < 6)
     		return sbReport.toString() ;
     	
-    	double newProbability = GET_YEAR(PREP_PROBABILITY_ARRAY,year) ;
-    	double oldProbability = GET_YEAR(PREP_PROBABILITY_ARRAY,year) ;
+    	year = year - 5 ;
     	
-    	double probabilityRisky = RISKY_ODDS/(RISKY_ODDS + SAFE_ODDS) ;
+    	double newProbability = GET_YEAR(PREP_PROBABILITY_ARRAY,year) ;
+    	double oldProbability = GET_YEAR(PREP_PROBABILITY_ARRAY,year-1) ;
+    	
+    	double probabilityRisky = RISKY_ODDS_CASUAL/(RISKY_ODDS_CASUAL + SAFE_ODDS_CASUAL) ;
     	probabilityRisky *= GET_HIV_RISKY_CORRELATION(false) ;
     	
     	double changeProbability ;
@@ -418,6 +419,7 @@ public class MSM extends Agent {
                     {
                     	msm.prepStatus = newStatus ;
                     	record.put("prepStatus",Reporter.ADD_REPORT_VALUE(newStatus)) ;
+                    	msm.prepScreen = newStatus ;
                     	record.put("prepScreen",Reporter.ADD_REPORT_VALUE(msm.prepScreen)) ;
                     	sbReport.append(Reporter.ADD_REPORT_PROPERTY(String.valueOf(msm.getAgentId()), record.toString())) ;
                     	record.clear() ;
@@ -470,7 +472,7 @@ public class MSM extends Agent {
             if (msm.statusHIV)
             {
             	newProbability = newPositiveProbability ;
-            	oldProbability = oldNegativeProbability ;
+            	oldProbability = oldPositiveProbability ;
             }
             else
             {
@@ -546,7 +548,7 @@ public class MSM extends Agent {
             if (msm.statusHIV)
             {
             	newProbability = newPositiveProbability ;
-            	oldProbability = oldNegativeProbability ;
+            	oldProbability = oldPositiveProbability ;
             }
             else
             {
@@ -622,7 +624,7 @@ public class MSM extends Agent {
             if (msm.statusHIV)
             {
             	newProbability = newPositiveProbability ;
-            	oldProbability = oldNegativeProbability ;
+            	oldProbability = oldPositiveProbability ;
             }
             else
             {
@@ -1388,7 +1390,7 @@ public class MSM extends Agent {
             if (RAND.nextDouble() < riskyProbability * hivFactor) 
                 riskyStatusRegular = true ;
             
-            scaleProbabilityUseCondomRegular((safe * initTotal)/(initSafe * total)) ;
+            //scaleProbabilityUseCondomRegular((safe * initTotal)/(initSafe * total)) ;
             
             
             // RISKY_CASUAL
@@ -1405,7 +1407,7 @@ public class MSM extends Agent {
             if (RAND.nextDouble() < riskyProbability * hivFactor) 
                 riskyStatusCasual = true ;
             
-            scaleProbabilityUseCondomCasual((safe * initTotal)/(initSafe * total)) ;
+            //scaleProbabilityUseCondomCasual((safe * initTotal)/(initSafe * total)) ;
             
             if (riskyStatusCasual && (!statusHIV))
                 reinitPrepStatus(year, riskyProbability * hivFactor) ;
@@ -1981,7 +1983,7 @@ public class MSM extends Agent {
         //  initInfectedStatus(startAge) ;    // MSM generated at outset, represent initial population
 
         // Sets whether disclosesHIV, allowing for statusHIV
-        double probabilityDiscloseHIV = getProbabilityDiscloseHIV() ;
+        double probabilityDiscloseHIV = getProbabilityDiscloseHIV()[year] ;
         // Sero -sorting and -positioning status'
         initSeroStatus(probabilityDiscloseHIV, year) ;
         
@@ -2749,9 +2751,9 @@ public class MSM extends Agent {
             //int firstScreenCycle = (int) new GammaDistribution(7,55).sample() ; 
             //setScreenCycle(firstScreenCycle) ;  // 49.9% screen within a year 2016
             if (statusHIV)
-            	setScreenCycle(sampleGamma(5.81,71,rescale)) ;  // setScreenCycle(sampleGamma(6,71,rescale)) ;  // 41% screen within a year // setScreenCycle(sampleTriangular(cdfPositive, TRIANGULAR_LOWER)) ;    // 
+            	setScreenCycle(sampleGamma(6.0,71,rescale)) ;  // setScreenCycle(sampleGamma(6,71,rescale)) ;  // 41% screen within a year // setScreenCycle(sampleTriangular(cdfPositive, TRIANGULAR_LOWER)) ;    // 
             else
-            	setScreenCycle(sampleGamma(5.91,85.5,rescale)) ;  // setScreenCycle(sampleGamma(6,85.5,rescale)) ;  // 26% screen within a year // setScreenCycle(sampleTriangular(cdfNegative, TRIANGULAR_LOWER)) ;    // 
+            	setScreenCycle(sampleGamma(6.0,85.5,rescale)) ;  // setScreenCycle(sampleGamma(6,85.5,rescale)) ;  // 26% screen within a year // setScreenCycle(sampleTriangular(cdfNegative, TRIANGULAR_LOWER)) ;    // 
             
         }
         // Randomly set timer for first STI screen 
@@ -3031,11 +3033,11 @@ public class MSM extends Agent {
      * HIV positive MSM are more likely to disclose the statusHIV
      * @return (Double) probability of disclosing statusHIV
      */
-    protected double getProbabilityDiscloseHIV()
+    protected double[] getProbabilityDiscloseHIV()
     {
         if (getStatusHIV())
-            return POSITIVE_DISCLOSE_PROBABILITY[0] ;
-        return NEGATIVE_DISCLOSE_PROBABILITY[0] ;
+            return POSITIVE_DISCLOSE_PROBABILITY ;
+        return NEGATIVE_DISCLOSE_PROBABILITY ;
     }
     
     public double getProbabilityPrep() 
