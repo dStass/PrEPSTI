@@ -7,7 +7,7 @@
 
     "community" : {
         "FILE_PATH" : "output/",
-        "NAME_ROOT" : "merge_branch4",
+        "NAME_ROOT" : "testScalePrEP3c",
         "MAX_CYCLES" : "14",
         "POPULATION" : "40000",
         "COMMENT" : "Testing merge_branch",
