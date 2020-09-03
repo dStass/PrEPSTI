@@ -123,8 +123,7 @@ public class Presenter {
     private String lineGraphErrorType = ERROR_INTERVALS;
     private boolean drawPoints = false ;  // draw each individual point for a line graph true by default
     private boolean drawError = false ;
-    private boolean xLogarithmic = false ;
-    private boolean yLogarithmic = false ;
+    private boolean insetLegend = true ;  // determines whether the legend is inseted into 
 
     static final java.util.logging.Logger LOGGER = java.util.logging.Logger.getLogger("presenter") ;
     
@@ -2065,14 +2064,6 @@ public class Presenter {
         return this.drawError;
     }
 
-    public void setXLogarithmic(boolean val) {
-        this.xLogarithmic = val;
-    }
-
-    public void setYLogarithmic(boolean val) {
-        this.yLogarithmic = val;
-    }
-
     public void setErrorType(String val) {
         this.lineGraphErrorType = val;
     }
@@ -2455,9 +2446,6 @@ public class Presenter {
         private void plotLineChart(String chartTitle, XYDataset dataset, String yLabel, String xLabel, String[] legend) 
         {
 
-            // Handle legend
-            boolean insetLegend = false ;
-
             boolean showLegend = (legend[0].isEmpty() || insetLegend) ? false : true ;
 
             // define lineChart and set error renderer
@@ -2596,10 +2584,10 @@ public class Presenter {
                 if (insetLegend)
                 {
                     LegendTitle lt = new LegendTitle(lineChart.getXYPlot());
-                    lt.setItemFont(new Font("Dialog", Font.PLAIN, 9));
+                    lt.setItemFont(legendFont);
                     lt.setBackgroundPaint(new Color(200, 200, 255, 100));
                     lt.setFrame(new BlockBorder(Color.white));
-                    lt.setPosition(RectangleEdge.BOTTOM);
+                    lt.setPosition(RectangleEdge.RIGHT);
                     XYTitleAnnotation ta = new XYTitleAnnotation(0.98, 0.02, lt, RectangleAnchor.BOTTOM_RIGHT);
                     lineChart.getXYPlot().addAnnotation(ta);
 
