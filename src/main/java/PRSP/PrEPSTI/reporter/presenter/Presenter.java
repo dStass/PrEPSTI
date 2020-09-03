@@ -18,7 +18,7 @@ import java.awt.Toolkit;
 import java.awt.font.TextAttribute;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.text.DecimalFormat;
+import java.text.DecimalFormat ;
 
 import org.jfree.chart.*;
 import org.jfree.chart.ui.ApplicationFrame;

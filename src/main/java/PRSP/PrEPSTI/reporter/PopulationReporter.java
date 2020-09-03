@@ -172,7 +172,7 @@ public class PopulationReporter extends Reporter {
         float t1 = System.nanoTime();
 
         Community.RECORD_METHOD_TIME("PopulationReporter.agentIdSorted", t1 - t0);
-        System.out.println("agentIdSorted=" + (t1 - t0) / 1_000_000_000);
+        //System.out.println("agentIdSorted=" + (t1 - t0) / 1_000_000_000);
         return sortedHashMap ;
     }
     

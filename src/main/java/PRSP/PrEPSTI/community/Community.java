@@ -137,8 +137,8 @@ public class Community {
     // Logger
     static final java.util.logging.Logger LOGGER = java.util.logging.Logger.getLogger("reporter") ;
 	private static final String[] RELATIONSHIP_CLAZZ_NAMES = new String[] {"Casual","Regular","Monogomous"};
-    public static ArrayList<String[]> timeStamps = null;
-    public static ConcurrentHashMap<String, Float> methodsTimeStamp = null;
+    static ArrayList<String[]> timeStamps = null;
+    private static ConcurrentHashMap<String, Float> methodsTimeStamp = null;
     static Long timeInitial = null;
 
 
@@ -615,8 +615,22 @@ public class Community {
         //EncounterReporter encounterReporter = new EncounterReporter("Agent to Agent",community.encounterReport) ;
         //encounterReporter = new EncounterReporter(Community.SIM_NAME,Community.FILE_PATH) ;
         
-        // commented out:
         String finalAtRiskString = screeningReporter.prepareFinalAtRiskIncidentsRecord(siteNames, 0, "statusHIV");
+        
+        // commented out:
+        // String[] finalAtRiskArray = finalAtRiskString.split(" ");
+        // int total = 4;
+        // String hivStatusDifferences = "";
+        // for (int i = 0; i < total; ++i)
+        // {   
+        //     String[] falseProperty = finalAtRiskArray[i].split(":");
+        //     String[] trueProperty = finalAtRiskArray[i + total].split(":");
+        //     hivStatusDifferences += trueProperty[0] + "-" + falseProperty[0] + ": " + String.valueOf(Float.valueOf(trueProperty[1]) - Float.valueOf(falseProperty[1])) + "\n";
+        // }
+        // LOGGER.info("by HIV-status " + finalAtRiskString) ;
+        // LOGGER.info("differences:\n" + hivStatusDifferences) ;
+
+
         LOGGER.info("by HIV-status " + finalAtRiskString) ;
         //LOGGER.info("Incidence " + encounterReporter.prepareFinalIncidenceRecord(new String[] {"Pharynx","Rectum","Urethra"}, 0, 0, 365, MAX_CYCLES).toString());
         // LOGGER.info("Incidence " + encounterReporter.prepareSortedFinalIncidenceRecord(siteNames, 0, 0, 365, MAX_CYCLES, "statusHIV").toString());

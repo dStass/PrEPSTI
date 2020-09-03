@@ -71,9 +71,9 @@ public class MSM extends Agent {
     static double PROPORTION_HIV = 0.092 ;
     
     /** The probability of disclosing HIV status if HIV positive */
-    static double PROBABILITY_DISCLOSE_POSITIVE_HIV = 0.296 ;    // 0.2 ; // 0.286 ; // 2010 VALUE // 0.2 ; // 
+    static double PROBABILITY_DISCLOSE_POSITIVE_HIV = 0.201 ; // 0.296 ;    // 0.2 ; // 0.286 ; // 2010 VALUE // 0.2 ; // 
     /** The probability of disclosing HIV status if HIV negative */
-    static double PROBABILITY_DISCLOSE_NEGATIVE_HIV = 0.205 ;    // 0.18 ; // 0.239 ; // 2010 VALUE // 
+    static double PROBABILITY_DISCLOSE_NEGATIVE_HIV = 0.175 ; // 0.205 ;    // 0.18 ; // 0.239 ; // 2010 VALUE // 
     /** Probability of serosorting if HIV positive (2017) */
     static double PROBABILITY_POSITIVE_SERO_SORT = 0.59 ;
     /** Probability of serosorting if HIV negative (2017) */
@@ -114,7 +114,7 @@ public class MSM extends Agent {
         String methodName = "" ;
         
 
-        Boolean reinitScreenCycle = ConfigLoader.getMethodVariableBoolean("MSM", "REINIT", "reinitScreenCycle") ;
+        Boolean reinitScreenCycle = ConfigLoader.getMethodVariableBoolean("msm", "REINIT", "reinitScreenCycle") ;
         
         try
         {
@@ -1895,23 +1895,23 @@ public class MSM extends Agent {
     }
     
     	
-    static int SAFE_ODDS = 514 ; // 468 ;
+    static int SAFE_ODDS = 468 ; // 514 ; // 468 ;
     // Odds of an MSM being riskyMSM
-    static int RISKY_ODDS = 293 ; // 290 ;
+    static int RISKY_ODDS = 290 ; // 293 ; // 290 ;
     // Sum of safeOdds and riskyOdds
     static int TOTAL_ODDS = RISKY_ODDS + SAFE_ODDS ;
 //        int[] newSafeOdds = new int[] {468,514,471,501,469,465,444,473,440,424,307} ;
 //       int[] newRiskyOdds = new int[] {290,293,369,345,331,340,364,350,362,409,520} ;
 
-    static double SAFE_ODDS_CASUAL = 514 ; // 468 ;
+    static double SAFE_ODDS_CASUAL = 468 ; // 514 ; // 468 ;
     // Odds of an MSM being riskyMSM
-    static double RISKY_ODDS_CASUAL = 293 ; // 290 ;
+    static double RISKY_ODDS_CASUAL = 290 ; // 293 ; // 290 ;
     // Sum of safeOdds and riskyOdds
     static double TOTAL_ODDS_CASUAL = RISKY_ODDS_CASUAL + SAFE_ODDS_CASUAL ;
     
     static double SAFE_ODDS_REGULAR = 300 ;    // 300 ;
     // Odds of an MSM being riskyMSM
-    static double RISKY_ODDS_REGULAR = 540 ;    // 568 ;
+    static double RISKY_ODDS_REGULAR = 568 ; // 540 ;    // 568 ;
     // Sum of safeOdds and riskyOdds
     static double TOTAL_ODDS_REGULAR = RISKY_ODDS_REGULAR + SAFE_ODDS_REGULAR ;
 
@@ -2739,8 +2739,8 @@ public class MSM extends Agent {
     protected void initScreenCycle(double rescale)
     {
     	
-    	double cdfNegative = CDF_NEGATIVE[1] ;
-    	double cdfPositive = CDF_POSITIVE[1] ;
+    	//double cdfNegative = CDF_NEGATIVE[1] ;
+    	//double cdfPositive = CDF_POSITIVE[1] ;
     	
         if (getPrepStatus())
             setScreenCycle((sampleGamma(31,1,1)) + 61) ;
@@ -2749,9 +2749,9 @@ public class MSM extends Agent {
             //int firstScreenCycle = (int) new GammaDistribution(7,55).sample() ; 
             //setScreenCycle(firstScreenCycle) ;  // 49.9% screen within a year 2016
             if (statusHIV)
-            	setScreenCycle(sampleTriangular(cdfPositive, TRIANGULAR_LOWER)) ;    // setScreenCycle(sampleGamma(5.81,71,rescale)) ;  // setScreenCycle(sampleGamma(6,71,rescale)) ;  // 41% screen within a year
+            	setScreenCycle(sampleGamma(5.81,71,rescale)) ;  // setScreenCycle(sampleGamma(6,71,rescale)) ;  // 41% screen within a year // setScreenCycle(sampleTriangular(cdfPositive, TRIANGULAR_LOWER)) ;    // 
             else
-            	setScreenCycle(sampleTriangular(cdfNegative, TRIANGULAR_LOWER)) ;    // setScreenCycle(sampleGamma(5.91,85.5,rescale)) ;  // setScreenCycle(sampleGamma(6,85.5,rescale)) ;  // 26% screen within a year
+            	setScreenCycle(sampleGamma(5.91,85.5,rescale)) ;  // setScreenCycle(sampleGamma(6,85.5,rescale)) ;  // 26% screen within a year // setScreenCycle(sampleTriangular(cdfNegative, TRIANGULAR_LOWER)) ;    // 
             
         }
         // Randomly set timer for first STI screen 
