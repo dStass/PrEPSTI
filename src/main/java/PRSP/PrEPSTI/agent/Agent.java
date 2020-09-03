@@ -4,25 +4,29 @@
 package PRSP.PrEPSTI.agent;
 
 import PRSP.PrEPSTI.community.*;
+import PRSP.PrEPSTI.configloader.ConfigLoader;
+import PRSP.PrEPSTI.mdll.MDLL;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 
-import PRSP.PrEPSTI.reporter.Reporter;
-import PRSP.PrEPSTI.site.*;
+import PRSP.PrEPSTI.reporter.Reporter ;
+import PRSP.PrEPSTI.site.* ;
 
-import java.util.Random;
+import java.util.Random ;
 
 //import com.sun.media.jfxmedia.logging.Logger;
 import java.lang.reflect.*;
 
+
 import java.util.ArrayList;
-import java.util.Set;
+import java.util.Set ;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.logging.Level;
-import org.apache.commons.math3.distribution.GammaDistribution;
+import org.apache.commons.math3.distribution.GammaDistribution ;
+import org.apache.commons.math3.distribution.TriangularDistribution ;
 import static PRSP.PrEPSTI.reporter.Reporter.AGENTID ;
 
 /**
@@ -102,15 +106,15 @@ public abstract class Agent {
     }
     
     /** String representation of "true". */
-    static String TRUE = "true" ;
+    static final String TRUE = "true" ;
     /** String representation of "false". */
-    static String FALSE = "false" ;
+    static final String FALSE = "false" ;
     /** String representation of "Monogomous". */
-    static String MONOGOMOUS = "Monogomous" ;
+    static final String MONOGOMOUS = "Monogomous" ;
     /** String representation of "Regular". */
-    static String REGULAR = "Regular" ;
+    static final String REGULAR = "Regular" ;
     /** String representation of "Casual". */
-    static String CASUAL = "Casual" ;
+    static final String CASUAL = "Casual" ;
     
     // agentId of next Agent to be created, current number created so far
     static public int NB_AGENTS_CREATED = 0 ;
@@ -142,28 +146,10 @@ public abstract class Agent {
     {
         String report = "" ;
         //boolean successful = true ;
-        String change = "change" ;
         String methodName = "" ;
-        
-        
         //TODO: Automate detection of MSM subClass with reflect
         // Update MSM variables
         report += MSM.REINIT(agentList, year) ;
-        
-        try
-        {
-            // Needs to be called after MSM.REINIT() specifically MSM.REINIT_RISK_ODDS()
-            // due to its updating prepStatus.
-            methodName = "screen" ;
-            report += Reporter.ADD_REPORT_PROPERTY(change, methodName) ;
-            report += REINIT_SCREEN_CYCLE(agentList, year) ;
-
-        }
-        catch ( Exception e )
-        {
-            LOGGER.severe(e.toString() + " in method " + methodName) ;
-            //return false ;
-        }
         
         return report.concat("!") ;
     }
@@ -183,10 +169,10 @@ public abstract class Agent {
     }
     
     /**
-     * Tests, given by per 1000 per year, from 2007-2018
+     * Men tested per 1000 per year, from 2007-2018
      * Table 14 ARTB 2018
      */
-    static double[] TEST_RATES = {333,340,398,382,383,382,391,419,445,499,488,488,488} ;
+    static double[] TEST_RATES = {333,340,398,382,383,382,391,419,445,499,488,488} ;
     
     /**
      * Adjusts per year the screening period.
@@ -194,7 +180,7 @@ public abstract class Agent {
      * @param (int) year
      * @throws Exception 
      */
-    static protected String REINIT_SCREEN_CYCLE(ArrayList<Agent> agentList, int year) throws Exception
+    static protected String REINIT_SCREEN_CYCLE_AGENT(ArrayList<Agent> agentList, int year) throws Exception
     {
         StringBuilder report = new StringBuilder() ; // "" ;
         //double[] testRates = new double[] {333,340,398,382,383,382,391,419,445,499,488,488,488} ;
@@ -207,16 +193,20 @@ public abstract class Agent {
           //  year = TEST_RATES.length - 1 ;
         
         double testBase ;
-        //testBase = testRates[0] ;
+        double testBasePositive = TEST_RATES[0] ;
         testBase = GET_YEAR(TEST_RATES,year-1) ;
-        
+
         double ratio = testBase/GET_YEAR(TEST_RATES,year) ;
+        double ratioPositive = Math.sqrt(testBasePositive/GET_YEAR(TEST_RATES,year)) ;
         for (Agent agent : agentList)
         {
-            newScreenCycle = ((MSM) agent).reInitScreenCycle(ratio) ;
+        	if (((MSM) agent).getStatusHIV())
+        	    newScreenCycle = ((MSM) agent).reInitScreenCycle(ratioPositive) ;
+        	else
+        	    newScreenCycle = agent.reInitScreenCycle(ratio) ;
             if (newScreenCycle < 0)
             	continue ;
-            report.append(Reporter.ADD_REPORT_PROPERTY(String.valueOf(agent.agentId), agent.screenCycle)) ;
+            report.append(Reporter.ADD_REPORT_PROPERTY(String.valueOf(agent.agentId), newScreenCycle)) ;
         }
         return report.toString() ;
     }
@@ -236,8 +226,6 @@ public abstract class Agent {
 
     // current partners
     private ArrayList<Integer> currentPartnerIds = new ArrayList<Integer>() ;
-    // private HashSet<Integer> currentPartnerIdSet = new HashSet<Integer>();
-
 
     private ArrayList<Relationship> currentRelationships 
             = new ArrayList<Relationship>() ;
@@ -352,7 +340,7 @@ public abstract class Agent {
      * @param simName
      * @return
      */
-    static public ArrayList<Agent> REBOOT_AGENTS(String simName) {
+    static public MDLL<Agent> REBOOT_AGENTS(String simName) {
         return REBOOT_AGENTS(FOLDER_PATH, simName);
     }
 
@@ -361,9 +349,11 @@ public abstract class Agent {
      * @param simName 
      * @return  
      */
-    static public ArrayList<Agent> REBOOT_AGENTS(String folderPath, String simName)
+    static public MDLL<Agent> REBOOT_AGENTS(String folderPath, String simName)
     {
-        ArrayList<Agent> agents = new ArrayList<Agent>() ;
+        float t0 = System.nanoTime();
+        // ArrayList<Agent> agents = new ArrayList<Agent>() ;
+        MDLL<Agent> agentsMDLL = new MDLL<Agent>();
         String SITE = "Site:" ;
         
         // Needed if rebootFile == false
@@ -402,6 +392,10 @@ public abstract class Agent {
         //int daysPerYear = 365 ;
         
         //ArrayList deadAgentIds = new ArrayList<Object>() ; // Get ArrayList of dead Agents so we don't waste time reading their data
+
+        // Which scenario are we running, if any?
+        Boolean scenarioScreenPositive = ConfigLoader.getMethodVariableBoolean("agent", "REBOOT_AGENTS", "scenarioScreenPositive") ;
+        Boolean scenarioScreenPrep = ConfigLoader.getMethodVariableBoolean("agent", "REBOOT_AGENTS", "scenarioScreenPrep") ;
         
         // Reboot saved Agent data 
         int maxAgentId = 0 ;
@@ -411,6 +405,7 @@ public abstract class Agent {
             if (birthList.isEmpty()) 
                 continue ;
             ArrayList<String> properties = Reporter.IDENTIFY_PROPERTIES(birthList.get(0).substring(0, birthList.get(0).indexOf(SITE))) ;
+            
             
             for (String birth : birthList)
             {
@@ -429,7 +424,17 @@ public abstract class Agent {
                     if (maxAgentId < newAgent.getAgentId())
                         maxAgentId = newAgent.getAgentId() ;
                     newAgent.clearInfection();
-                    agents.add(newAgent) ;
+                    // agents.add(newAgent) ;
+                    agentsMDLL.add(newAgent.getAgentId(), newAgent);
+                    
+                    // Reboot screencycle here when testing it
+                    if (scenarioScreenPositive)
+                        if (newAgent.getStatusHIV())
+                            newAgent.rebootScreenCycle(2020, 1.1, 1.0) ;
+                    
+                    if (scenarioScreenPrep)
+                        if (newAgent.getPrepStatus())
+                            newAgent.rebootScreenCycle(2020, 1.1, 1.0) ;
                     
                     // Reload infections
                     infectionString = birth ;
@@ -521,8 +526,12 @@ public abstract class Agent {
             }
         }
         NB_AGENTS_CREATED = maxAgentId + 1;
+
+        long t1 = System.nanoTime();
+        Community.RECORD_METHOD_TIME("Agent.REBOOT_AGENTS", t1 - t0);
         
-        return agents ;
+        // return agents ;
+        return agentsMDLL;
     }
     
     /**
@@ -742,12 +751,6 @@ public abstract class Agent {
     {
             return currentPartnerIds ;
     }
-
-    // public HashSet<Integer> getCurrentPartnerIdSet()
-    // {
-    //         return currentPartnerIdSet;
-    // }
-    
     
     /**
      * 
@@ -848,14 +851,63 @@ public abstract class Agent {
     
     protected int reInitScreenCycle(double rescale)
     {
-        int newScreenCycle = (int) Math.ceil(rescale * getScreenCycle()) ;
-        setScreenCycle(RAND.nextInt(getScreenCycle()) + 1) ;
+        screenCycle = (int) Math.ceil(rescale * getScreenCycle()) ;
+        //setScreenCycle(RAND.nextInt(getScreenCycle()) + 1) ;
         return screenCycle ;
     }
-
+    
+    protected int reInitScreenCycle(double reshape, double rescale)
+    {
+    	return reInitScreenCycle(reshape * rescale) ;
+    }
+    
     protected int sampleGamma(double shape, double scale, double rescale)
     {
-        return (int) new GammaDistribution(shape,scale * rescale).sample() ;
+    	return sampleGamma(shape, scale, 1.0, rescale) ;
+    }
+
+
+    protected int sampleGamma(double shape, double scale, double reshape, double rescale)
+    {
+        return (int) new GammaDistribution(shape * reshape,scale * rescale).sample() ;
+    }
+    
+    protected int sampleGamma(double shape, double scale)
+    {
+        return (int) new GammaDistribution(shape,scale).sample() ;
+    }
+    
+    protected double triangularUpper(double cdf, double lower)
+    {
+    	return triangularMode(cdf, lower, 365.0) - lower + 365.0 ;
+    } 
+    
+    protected double triangularUpper(double cdf, double lower, double x)
+    {
+    	return triangularMode(cdf, lower, x) - lower + x ;
+    }
+    
+    protected double triangularMode(double cdf, double lower)
+    {
+    	return triangularMode(cdf, lower, 365.0) ;
+    } 
+    
+    protected double triangularMode(double cdf, double lower, double x)
+    {
+    	double modeCDF = lower*(2*cdf - 1) + x*(1 - cdf) ;
+    	return modeCDF/cdf ;
+    }
+    
+    protected int sampleTriangular(double cdf, double lower)
+    {
+    	double mode = triangularMode(cdf, lower) ;
+    	double upper = triangularUpper(cdf, lower) ;
+    	return sampleTriangular(lower, mode, upper) ;
+    }
+    
+    protected int sampleTriangular(double lower, double mode, double upper)
+    {
+        return (int) new TriangularDistribution(lower,mode,upper).sample() ;
     }
     
     /**
@@ -932,7 +984,7 @@ public abstract class Agent {
     public String getCensusReport()
     {   
         StringBuilder sbCensusReport = new StringBuilder();
-        String censusReport = "" ;
+        String censusReport ;
         sbCensusReport.append(Reporter.ADD_REPORT_PROPERTY("agentId",agentId)) ;
         sbCensusReport.append(Reporter.ADD_REPORT_PROPERTY("agent",agent)) ;
         sbCensusReport.append(Reporter.ADD_REPORT_PROPERTY("age",getAge())) ;  // Reporter.ADD_REPORT_PROPERTY("startAge", getAge()) ;
@@ -1539,18 +1591,26 @@ public abstract class Agent {
      * @param (String) relationshipClazzName
      * @return (boolean)
      */
-    public boolean seekRelationship(String relationshipClazzName)
+    public boolean seekRelationship(String relationshipClassName)
     {
-        if (inMonogomous)
-            if (RAND.nextDouble() > infidelity) 
-                return false ;
-        if (CASUAL.equals(relationshipClazzName))
-            return (RAND.nextDouble() < seekRelationshipProbability(CASUAL)) ;
-        else if (REGULAR.equals(relationshipClazzName))
-            return (RAND.nextDouble() < seekRelationshipProbability(REGULAR)) ;
-        else if (0 == currentRelationships.size())   // Seeking Monogomous Relationship
-            return (RAND.nextDouble() < seekRelationshipProbability(MONOGOMOUS)) ;
-        return false ;
+        if (inMonogomous && RAND.nextDouble() > infidelity) return false ;
+        else switch (relationshipClassName) {
+            // special case for monogomous, return false if agent already has a partner
+            case MONOGOMOUS: if (currentRelationships.size() > 0) return false ;
+            
+            // return seekRelationshipProbability for that relationship class
+            default: return (RAND.nextDouble() < seekRelationshipProbability(relationshipClassName)) ;
+        }
+        // if (inMonogomous)
+        //     if (RAND.nextDouble() > infidelity) 
+        //         return false ;
+        // if (CASUAL.equals(relationshipClazzName))
+        //     return (RAND.nextDouble() < seekRelationshipProbability(CASUAL)) ;
+        // else if (REGULAR.equals(relationshipClazzName))
+        //     return (RAND.nextDouble() < seekRelationshipProbability(REGULAR)) ;
+        // else if (0 == currentRelationships.size())   // Seeking Monogomous Relationship
+        //     return (RAND.nextDouble() < seekRelationshipProbability(MONOGOMOUS)) ;
+        // return faldse ;
     }
     
     /**
@@ -1612,7 +1672,6 @@ public abstract class Agent {
 
         currentRelationships.add(relationship) ;
         currentPartnerIds.add(partnerId) ;
-        // currentPartnerIdSet.add(partnerId);
         nbRelationships++ ;
 
         updateAvailable() ;
@@ -1765,32 +1824,33 @@ public abstract class Agent {
     {
         diminishLowerAgentId(relationship) ;
         // Leave specific relationship subclass
-        
         this.pickLeaveRelationship(relationship);
-
-        // try
-        // {
-        //     String leaveMethodName = "leave" + relationship.getRelationship() ;
-        //     Method leaveRelationshipMethod = Agent.class.getMethod(leaveMethodName, Relationship.class) ;
-        //     leaveRelationshipMethod.invoke(this, relationship) ;
-        // }
-        // catch ( IllegalAccessException iae)
-        // {
-        //     LOGGER.severe(iae.getLocalizedMessage());
-        // }
-        // catch ( InvocationTargetException ite )
-        // {
-        //     LOGGER.severe(ite.getLocalizedMessage());
-        // }
-        // catch ( NoSuchMethodException nsme )
-        // {
-        //     LOGGER.severe(nsme.getLocalizedMessage()) ;
-        // }
+        
+        /*
+         * try
+        
+        {
+            String leaveMethodName = "leave" + relationship.getRelationship() ;
+            Method leaveRelationshipMethod = Agent.class.getMethod(leaveMethodName, Relationship.class) ;
+            leaveRelationshipMethod.invoke(this, relationship) ;
+        }
+        catch ( IllegalAccessException iae)
+        {
+            LOGGER.severe(iae.getLocalizedMessage());
+        }
+        catch ( InvocationTargetException ite )
+        {
+            LOGGER.severe(ite.getLocalizedMessage());
+        }
+        catch ( NoSuchMethodException nsme )
+        {
+            LOGGER.severe(nsme.getLocalizedMessage()) ;
+        }
+        */
 
         int partnerId = relationship.getPartnerId(agentId) ;
         int partnerIndex = currentPartnerIds.indexOf(partnerId) ;
         currentPartnerIds.remove(partnerIndex) ;
-        // currentPartnerIdSet.remove(partnerId);
         int relationshipIndex = currentRelationships.indexOf(relationship) ;
         currentRelationships.remove(relationshipIndex) ;
         Relationship.DIMINISH_NB_RELATIONSHIPS() ;
@@ -1897,17 +1957,15 @@ public abstract class Agent {
         Relationship relationship ;
         
         int startIndex = (nbRelationships - 1) ;
-        // String record = "" ;
-        StringBuilder sbRecord = new StringBuilder();
+        StringBuilder sbRecord = new StringBuilder() ;
         for (int relationshipIndex = startIndex ; relationshipIndex >= 0 ; 
                 relationshipIndex-- )
         {
             relationship = currentRelationships.get(relationshipIndex) ;
             Agent agentLowerId = relationship.getLowerIdAgent() ;
-            // record += agentLowerId.endRelationship(relationship) ;
-            sbRecord.append(agentLowerId.endRelationship(relationship));
+            sbRecord.append(agentLowerId.endRelationship(relationship)) ;
         }
-        Relationship.APPEND_DEATH_RECORD(sbRecord.toString());
+        Relationship.APPEND_DEATH_RECORD(sbRecord.toString()) ;
     }
 	
     /**

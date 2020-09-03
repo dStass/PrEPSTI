@@ -7,12 +7,12 @@
 
     "community" : {
         "FILE_PATH" : "output/",
-        "NAME_ROOT" : "to2019testhiv2p0corr4A",
+        "NAME_ROOT" : "to2019test_merge_branch",
         "MAX_CYCLES" : "14",
         "POPULATION" : "40000",
-        "COMMENT" : "",
+        "COMMENT" : "Testing merge_branch",
         "DYNAMIC" : "true",
-        "REBOOT_SIMULATION" : "",
+        "REBOOT_SIMULATION" : "oldParams31cPop40000Cycles2920",
         "REBOOT_FROM_CYCLE" : "-1",
         "START_YEAR" : "2007",
         "END_YEAR" : "2019",
@@ -21,6 +21,15 @@
                 "startCycle" : "1"
             }
         }
+    },
+
+    "agent" : {
+          "methods": {
+              "REBOOT_AGENTS" : {
+                  "scenarioScreenPrep" : "false",
+                  "scenarioScreenPositive" : "false"
+              }
+          }
     },
 
     "msm" : {
@@ -33,6 +42,9 @@
             },
             "REINIT_RISK_CASUAL" : {
                 "prepHasTests" : "true"
+            },
+            "REINIT" : {
+                "reinitScreenCycle" : "true"
             }
         }
     },

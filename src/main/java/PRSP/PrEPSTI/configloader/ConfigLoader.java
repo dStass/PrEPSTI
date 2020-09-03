@@ -6,6 +6,7 @@ package PRSP.PrEPSTI.configloader;
 import java.io.* ;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Collections;
 
 // JSON imports:
@@ -28,6 +29,10 @@ import PRSP.PrEPSTI.reporter.presenter.Presenter;
  * @author David
  */
 public class ConfigLoader {
+
+    private ConfigLoader() {
+        throw new IllegalStateException("ConfigLoader class");
+    }
 
     // debug
     public static boolean DEBUG;
@@ -88,15 +93,13 @@ public class ConfigLoader {
      * @author dstass
      */
     private static void readProperties() {
-        String SPLIT_ON = "=";
+        String splitOn = "=";
         HashMap<String, String> readProperties = new HashMap<String, String>();
-        BufferedReader reader;
-        try {
-            reader = new BufferedReader(new FileReader(ConfigLoader.PROPERTIES_FILE_PATH));
+        try (BufferedReader reader = new BufferedReader(new FileReader(ConfigLoader.PROPERTIES_FILE_PATH))) {
             String line = reader.readLine();
             while (line != null) {
                 // extract and split each line about '=' symbol
-                String[] lineSplit = line.split(SPLIT_ON);
+                String[] lineSplit = line.split(splitOn);
 
                 // extract key/value pair and add to our hashmap
                 String lineKey = lineSplit[0];
@@ -111,18 +114,17 @@ public class ConfigLoader {
         }
 
         // save information to CONFIG_PATH and CONFIG_FILE
-        for (String key : readProperties.keySet()) {
-            switch (key) {
+        for (Map.Entry<String,String> entry : readProperties.entrySet()) {
+            switch (entry.getKey()) {
                 case "filepath":
-                    ConfigLoader.CONFIG_PATH = readProperties.get(key);
+                    ConfigLoader.CONFIG_PATH = entry.getValue();
                     break;
                 case "filename":
-                    ConfigLoader.CONFIG_FILE = readProperties.get(key);
+                    ConfigLoader.CONFIG_FILE = entry.getValue();
                     break;
                 default: break;
             }
         }
-
     }
 
 
@@ -161,6 +163,7 @@ public class ConfigLoader {
         ConfigLoader.loadConfigLoaderSettings();
         ConfigLoader.loadCommunity();
         ConfigLoader.loadPaths();
+        ConfigLoader.loadAgent();
         ConfigLoader.loadMSM();
         ConfigLoader.loadReporter();
         ConfigLoader.loadPresenter();
@@ -224,10 +227,10 @@ public class ConfigLoader {
         if (REBOOT_SIMULATION != null) Community.REBOOT_SIMULATION = REBOOT_SIMULATION;
 
         String REBOOT_FROM_CYCLE = (String) communityJSON.get("REBOOT_FROM_CYCLE");
-        if (REBOOT_FROM_CYCLE != null && REBOOT_FROM_CYCLE.length() != 0) Community.REBOOT_FROM_CYCLE = REBOOT_FROM_CYCLE;
+        if (REBOOT_FROM_CYCLE != null && REBOOT_FROM_CYCLE.length() != 0) Community.LOADED_REBOOT_FROM_CYCLE = Integer.parseInt(REBOOT_FROM_CYCLE) ;
 
         // load methods:
-        loadMethodVariablesHashMap("community", communityJSON);
+        loadMethodVariablesHashMap("community", communityJSON) ;
     }
 
 
@@ -260,6 +263,34 @@ public class ConfigLoader {
             Reporter.DATA_FOLDER = dataPath;
             Presenter.FOLDER_PATH = dataPath;
         }
+    }
+
+
+    /**
+     * handles loading Agent default values
+     * contains default variables inside methods
+     * will implement a hashmap inside Agent class to extract this info
+     */
+    private static void loadAgent() {
+        JSONObject agentJSON = (JSONObject) ConfigLoader.loadedJSON.get("agent");
+        if (agentJSON == null) return;
+
+        // set group sex event size and HIV risky correlation
+        //String reinitScreenCycleStr = (String) agentJSON.get("REINIT");
+        //if (reinitScreenCycleStr != null)
+          //  MSM.GROUP_SEX_EVENT_SIZE = Boolean.parseBoolean(reinitScreenCycleStr);
+        
+        //String hivRiskyCorrelation = (String) msmJSON.get("HIV_RISKY_CORRELATION");
+        //if (hivRiskyCorrelation != null) 
+          //  MSM.HIV_RISKY_CORRELATION = Double.parseDouble(hivRiskyCorrelation);
+
+        // load function methods - set MSM.METHOD_CONFIG
+        // in the json file under MSM, there is methods : { ... }
+        // this will contain function_name -> {} pairs where {} contains 
+        // key-value pairs signifying what variables should be set to
+        // this converts from JSON format to a Java HashMap
+        // for easy access from within the MSM class (remove the need to deal with JSONObjects)
+        loadMethodVariablesHashMap("agent", agentJSON);
     }
 
 
@@ -340,16 +371,13 @@ public class ConfigLoader {
 
     private static HashMap<String, HashMap> getMethodsHashMapFromJSONObject(JSONObject jsonObject) {
         JSONObject methodsJSON = (JSONObject) jsonObject.get("methods");
-
         if (methodsJSON == null) return null;
-
         HashMap <String, HashMap> methodToVariablesMapHashMap = ConfigLoader.convertJSONObjectToHashMap_StringToNewHashMap(methodsJSON);
-            for (HashMap.Entry<String, HashMap> entry : methodToVariablesMapHashMap.entrySet()) {
-                String methodName = entry.getKey();
-                JSONObject methodVariablesJSON = (JSONObject) methodsJSON.get(methodName);
-                HashMap <String, String> methodVariablesToValues = ConfigLoader.convertJSONObjectToHashMap_StringToString(methodVariablesJSON);
-                methodToVariablesMapHashMap.put(methodName, methodVariablesToValues);
-            }
+        for (String methodName : methodToVariablesMapHashMap.keySet()) {
+            JSONObject methodVariablesJSON = (JSONObject) methodsJSON.get(methodName);
+            HashMap <String, String> methodVariablesToValues = ConfigLoader.convertJSONObjectToHashMap_StringToString(methodVariablesJSON);
+            methodToVariablesMapHashMap.put(methodName, methodVariablesToValues);
+        }
 
         // TODO: if nothing inside methods
         return methodToVariablesMapHashMap;

@@ -8,12 +8,13 @@ import PRSP.PrEPSTI.community.Community;
 import PRSP.PrEPSTI.configloader.ConfigLoader;
 //import community.* ;
 
-import java.io.* ;
+import java.io.*;
 
 import java.lang.reflect.*;
-import java.util.ArrayList ;
+import java.util.ArrayList;
 //import java.util.Arrays;
-import java.util.Set ;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.Collections;
 import java.util.* ;
 import java.util.HashMap ;
@@ -47,6 +48,7 @@ public class Reporter {
      * reportName maps to report.
      */
     static protected HashMap<String,Object> REPORT_LIST = new HashMap<String,Object>() ;
+
     
     /**
      * Clears REPORT_LIST so that fresh ones can be generated for the next simulation.
@@ -55,6 +57,7 @@ public class Reporter {
     {
         REPORT_LIST.clear() ;
     }
+
     
     /** Whether to automatically save reports */
     public static boolean WRITE_REPORT;
@@ -122,12 +125,13 @@ public class Reporter {
     
     public static final String ADD_REPORT_PROPERTY(String label, String value)
     {
-        StringBuilder sb = new StringBuilder();
-        sb.append(ADD_REPORT_LABEL(label));
-        sb.append(value);
-        sb.append(" ");
-        // String report = ADD_REPORT_LABEL(label) ;
-        return sb.toString() ;
+    	// StringBuilder sb = new StringBuilder();
+        // sb.append(ADD_REPORT_LABEL(label));
+        // sb.append(value);
+        // sb.append(" ");
+        // // String report = ADD_REPORT_LABEL(label) ;
+        // return sb.toString() ;
+        return ADD_REPORT_LABEL(label) + value + " ";
     }
         
     public static final String ADD_REPORT_PROPERTY(String label)
@@ -137,9 +141,14 @@ public class Reporter {
         
     public static final String ADD_REPORT_PROPERTY(String label, Object value)
     {
-        return ADD_REPORT_PROPERTY(label, String.valueOf(value));
+        return ADD_REPORT_PROPERTY(label, String.valueOf(value)) ;
     }
-     
+    
+    public static final String ADD_REPORT_VALUE(Object value)
+    {
+        return String.valueOf(value) + " " ;
+    }
+    
     /**
      * Avoid having to add ":" whenever the index of a property name is needed.
      * Used when startIndex is zero or not given
@@ -1213,6 +1222,7 @@ public class Reporter {
      * @return
      */
     public String HASHMAP_TO_STRING(HashMap<String, String> report, String[] properties) {
+        float t0 = System.nanoTime();
         String toReturn = "";
         Set<String> keySet = report.keySet();
         for (String property : properties) {
@@ -1220,6 +1230,8 @@ public class Reporter {
                 toReturn += property + ":" + report.get(property) + " ";
             }
         }
+        float t1 = System.nanoTime();
+        Community.RECORD_METHOD_TIME("Reporter.HASHMAP_TO_STRING", t1 - t0);
         return toReturn.trim();
     }
     
@@ -1235,6 +1247,7 @@ public class Reporter {
      */
     static protected int GET_BACK_CYCLES(int backYears, int backMonths, int backDays, int maxCycles)
     {
+        float t0 = System.nanoTime();
         int backCycles ;
         
         // Don't go further back than records allow.
@@ -1257,6 +1270,9 @@ public class Reporter {
             backCycles = maxCycles ;
             LOGGER.warning("Tried to go back more days than records allow.") ;
         }
+
+        float t1 = System.nanoTime();
+        Community.RECORD_METHOD_TIME("Reporter.GET_BACK_CYCLES(y,m,d,maxCycles)", t1 - t0);
         
         return backCycles ;
     }
@@ -1835,7 +1851,7 @@ public class Reporter {
     }
     
     /**
-     * Stores a (HashMap of ArrayList or Object) report as a csv file for other packages to read.
+     * Stores a (HashMap of Numbers) report as a csv file for other packages to read.
      * @param report 
      * @param categoryName 
      * @param scoreNames 
@@ -1867,7 +1883,7 @@ public class Reporter {
     }
     
     /**
-     * Stores a (HashMap of ArrayList or Object) report as a csv file for other packages to read.
+     * Stores a (HashMap of Array of Numbers) report as a csv file for other packages to read.
      * @param report 
      * @param categoryName 
      * @param scoreNames 
@@ -2038,7 +2054,7 @@ public class Reporter {
         Integer[] priorScoreIndices = new Integer[2] ;
         
         // Set up header
-        String firstLine = "mean" + COMMA ;
+        String firstLine = "median" + COMMA ;
         firstLine += "lower" + COMMA;
         firstLine += "upper" + COMMA;
 
@@ -2118,7 +2134,11 @@ public class Reporter {
                     // Select SPACE immediately before "="
                     spaceIndex = fileLine.lastIndexOf(SPACE, keyIndex) ;
                     
+                    if (Integer.valueOf(categoryValue) < 2015)
+                    	continue ;
+                    
                     // Initialise fileLine for Each categoryValue with "categoryValue"
+                    
                     if (!outputReport.containsKey(categoryValue))
                     {
                         String initCategoryValue = categoryValue ;
@@ -2435,6 +2455,175 @@ public class Reporter {
 
     
     /**
+     * Extracts item at index and returns it in nbCopies = 3 copies.
+     * Imitates the form of extractYValueAndRange() given above.
+     * @param csvHashMap
+     * @param itemIndex
+     * @return
+     */
+    public static HashMap<String, String[]> extractYValueAndRange(HashMap<Comparable, String[]> csvHashMap, int itemIndex) 
+    {
+        HashMap<String, String[]> toReturn = new HashMap<String, String[]>();
+    
+        int nbCopies = 3 ;
+
+        String[] toExtract = new String[nbCopies] ;
+
+        for (Comparable key : csvHashMap.keySet()) 
+        {
+            String[] keyValue = csvHashMap.get(key);
+            String keyValueString ;
+            if (itemIndex < keyValue.length)
+            	keyValueString = keyValue[itemIndex] ;
+            else
+            	continue ;
+
+            for (int index = 0 ; index < nbCopies ; index++ )
+            {
+            	LOGGER.log(Level.INFO,"first:{0} index:{1} value:{2}", (Object[]) keyValue) ;
+            	LOGGER.info(String.valueOf(keyValue.length) + " " + String.valueOf(key)) ;
+            	toExtract[index] = keyValueString ;
+            }
+
+            toReturn.put(key.toString(), toExtract.clone());
+        }
+
+        return toReturn;
+    }
+
+    
+    /**
+     * Sums residuals between the simulations given by simNames and the data in file
+     * referenceFileName and sorts simNames accordingly.
+     * Assumes that categoryName heads the first column.
+     * @param simNames
+     * @param categoryName
+     * @param scoreNames
+     * @param weight
+     * @param reportName
+     * @param referenceFileName
+     * @param folderPath
+     * @return
+     */
+    static public ArrayList<String> CLOSEST_SIMULATIONS(ArrayList<String> simNames, String categoryName, String[] scoreNames, double[] weight, String reportName, String folderPath, String referenceFileName, String referenceFolder)
+    {
+        ArrayList<String> sortedSimNames = new ArrayList<String>() ;
+
+        HashMap<Double,ArrayList<String>> comparisonReport = new HashMap<Double,ArrayList<String>>() ;
+
+        // Read in data to compare against
+        HashMap<Comparable,String[]> referenceReport = READ_CSV_STRING(referenceFileName, referenceFolder) ;
+        ArrayList<String> dataScoreNames = new ArrayList<String>() ;
+        LOGGER.info(referenceReport.keySet().toString());
+        Collections.addAll(dataScoreNames, referenceReport.get(categoryName)) ;
+        String dataSuffix = "_wild" ;
+        //int scoreIndex = dataScoreNames.indexOf(scoreName + dataSuffix) ;
+        // These are to read in values from referenceReport
+        String[] referenceValues ;
+        String referenceValue ;
+        double totalResidual = 0.0 ;
+
+        for (String simulationName : simNames)
+        {
+            try
+            {
+                BufferedReader fileReader
+                    = new BufferedReader(new FileReader(folderPath + reportName + "_" + simulationName + ".txt")) ;
+
+                // Read input file of simulationName
+                String fileLine = "" ; // fileReader.readLine() ;
+                String fileLine2 = fileReader.readLine() ;
+
+                while (fileLine2 != null)    // Read last line of file
+                {
+                    fileLine = fileLine2 ;
+                    fileLine2 = fileReader.readLine() ;
+                }
+                fileReader.close() ;
+
+                Double scoreValue ;
+                Double residualSum = 0.0 ;
+
+                //ArrayList<String> keyValues = new ArrayList<String>() ;
+                int paramIndex = fileLine.indexOf("{",10) ;
+                if (paramIndex < 0)
+                    paramIndex = 0 ;
+
+                int keyIndex = fileLine.indexOf("=",paramIndex) ;
+                int spaceIndex = paramIndex ;
+                int keyIndex2 ;
+
+                //while (fileLine != null)
+                while (keyIndex < fileLine.length())
+                {
+                    String categoryValue = fileLine.substring(spaceIndex + 1, keyIndex).strip() ;
+                    keyIndex2 = fileLine.indexOf("=",keyIndex + 1) ;
+                    if (keyIndex2 < 0)
+                        keyIndex2 = fileLine.length() ;
+                    String scoreString = fileLine.substring(keyIndex, keyIndex2) ;
+
+                    keyIndex = keyIndex2 ;
+
+                    // Select SPACE immediately before "="
+                    spaceIndex = fileLine.lastIndexOf(SPACE, keyIndex) ;
+
+                    // Initialise fileLine for Each categoryValue with "categoryValue"
+                    if (!referenceReport.containsKey(categoryValue))
+                        continue ;
+                    referenceValues = referenceReport.get(categoryValue) ;
+                    for (int weightIndex = 0 ; weightIndex < weight.length ; weightIndex++ )
+                    {
+                    String scoreName = scoreNames[weightIndex] ;
+                    int scoreIndex = dataScoreNames.indexOf(scoreName + dataSuffix) ;
+
+                    scoreValue = Double.valueOf(EXTRACT_VALUE(scoreName,scoreString)) ;
+                    //LOGGER.log(Level.INFO, "year:{0} score:{1}", new Object[] {categoryValue,scoreString});
+
+
+                    // Initialise fileLine for Each categoryValue with "categoryValue"
+                    if (referenceValues.length <= (scoreIndex + 1))
+                        continue ;
+
+                    //LOGGER.info("referenceValues " + categoryValue);
+                    // Check we have a comparison for categoryValue
+                    referenceValue = referenceValues[scoreIndex] ;
+                    if (referenceValue.isEmpty())
+                        continue ;
+                    Double referenceDouble = Double.valueOf(referenceValue) ;
+                    residualSum += weight[weightIndex] * Math.pow(referenceDouble - scoreValue, 2) ;
+                }
+                }
+                if (!comparisonReport.containsKey(residualSum))
+                    comparisonReport.put(residualSum,new ArrayList<String>()) ;
+                comparisonReport.get(residualSum).add(simulationName) ;
+                totalResidual += residualSum ;
+                //LOGGER.info(comparisonReport.toString()) ;
+            }
+            catch ( Exception e )
+            {
+                LOGGER.info(e.toString());
+                LOGGER.info(simulationName) ;
+                //simNames.remove(simIndex) ;
+            }
+
+        }
+        // Sort keySet to get simNames in order of lowest sum-of-squares
+        ArrayList<Double> sortedResidualSums = new ArrayList<Double>(comparisonReport.keySet()) ;
+        Collections.sort(sortedResidualSums) ;
+        
+        //LOGGER.info(sortedResidualSums.toString());
+
+        LOGGER.info(String.valueOf(totalResidual)) ;
+        for (Double residual : sortedResidualSums)
+            for (String simName : comparisonReport.get(residual))
+                sortedSimNames.add(simName) ;
+
+        return sortedSimNames ;
+
+    }
+
+
+    /**
      * Sums residuals between the simulations given by simNames and the data in file
      * referenceFileName and sorts simNames accordingly.
      * Assumes that categoryName heads the first column.
@@ -2573,10 +2762,11 @@ public class Reporter {
                     = new BufferedReader(new FileReader(folderPath + fileName + CSV)) ;
             
             // Get first line
-            String record = fileReader.readLine() ;
+            String record = fileReader.readLine().substring(1) ;
 
             // Skip rowsToSkip number of lines:
-            for (int i = 0; i < rowsToSkip; ++i) {
+            for (int i = 0; i < rowsToSkip; ++i) 
+            {
                 record = fileReader.readLine();
             }
 
@@ -3094,7 +3284,10 @@ public class Reporter {
     
     public Reporter(String simname, String fileName)
     {
+        float t0 = System.nanoTime();
         initReporter(simname, fileName) ;
+        float t1 = System.nanoTime();
+        Community.RECORD_METHOD_TIME("Reporter.CONSTRUCTOR", t1 - t0);
     }
 
     /**
@@ -3498,11 +3691,12 @@ public class Reporter {
     }
 
     /**
-     * Reads all lines upto Relationship.BURNIN
-     * seperate key:value pairs
+     * 
+     * Reads all lines up to Relationship.BURNIN
+     * separate key:value pairs
      * save this into a hashmap of type hashmap<str, long>
      */
-    public static HashMap<String, Long> parseInformationFromMetadata(String fileName, String filePath) {
+    public static HashMap<String, Long> PARSE_INFORMATION_FROM_METADATA(String fileName, String filePath) {
         HashMap<String, Long> toReturn = new HashMap<String, Long>();
         BufferedReader reader;
         String STOP_READING = "Relationship.BURNIN_COMMENCE:";
@@ -3531,26 +3725,24 @@ public class Reporter {
         return toReturn;
     }
 
-
     /**
-     * 
-     * @param originalPath
-     * @param originalFileName
-     * @param newPath
-     * @param newFileName
-     * @param modifications
-     */
+    * @param originalPath
+    * @param originalFileName
+    * @param newPath
+    * @param newFileName
+    * @param modifications
+    */
     public static void DUPLICATE_METADATA_WITH_MODIFIED_PROPERTIES
         (String originalPath, String originalFileName, String newPath,
         String newFileName, HashMap<String, String> modifications)
     {
-        originalFileName = originalPath + originalFileName + "-METADATA.txt";
+    	originalFileName = originalPath + originalFileName + "-METADATA.txt";
         newFileName = newPath + newFileName + "-METADATA.txt";
         DUPLICATE_FILE_WITH_MODIFIED_PROPERTIES(originalFileName, newFileName, modifications);
     }
 
     /**
-     * duplicate two files, modifyinh each key-value paired lines separated by ':'
+     * duplicate two files, modifying each key-value paired lines separated by ':'
      * based on a given hashmap of modifications
      * @param originalFile
      * @param newFile
@@ -3606,35 +3798,58 @@ public class Reporter {
     {
         ConfigLoader.load();
         //String folderPath = "/scratch/is14/mw7704/prepsti/output/to2025/" ;
-        String folderPath = "output/to2025/" ;
+        String folderPath = "output/long_sims/" ;
+        //String folderPath = "output/to2025/" ;
         //String folderPath = "data_files/" ;
+        //String folderPath = "output/" ;
         //String folderPath = "output/prep/" ;
         //String folderPath = "output/prePrEP/" ;
         //String[] simNames = new String[] {"from2007seek27aPop40000Cycles5475","from2007seek27bPop40000Cycles5475","from2007seek27cPop40000Cycles5475","from2007seek27dPop40000Cycles5475","from2007seek27ePop40000Cycles5475",
         //"from2007seek27fPop40000Cycles5475","from2007seek27gPop40000Cycles5475","from2007seek27hPop40000Cycles5475","from2007seek27iPop40000Cycles5475","from2007seek27jPop40000Cycles5475"} ;
     
-        String prefix = "to2025screen0p9prepto2019hiv2p0corr4" ;
-        //String prefix = "from2015to2025linearPrep23" ;
-        String suffix = "Pop40000Cycles2190" ;
+        //String prefix = "to2019noAdjustCondom" ;
+        //String prefix = "to2025screen185prepto2019noAdjustCondom" ;
+        //String prefix = "to2019newScreenA" ;
+        //String prefix = "to2019serosortA" ;
+        //String prefix = "to2025screen78prepto2019noAdjustCondom" ;
+        String prefix = "to2030prep78screen12probto2019noAdjustCondom" ;
+        //String prefix = "to2025prepNoScreen" ;
+        //String prefix = "to2025constantto2019noAdjustCondom" ;
+        //String prefix = "from2015to2025prepNoScreento2019noAdjustCondom" ;
+        //String prefix = "from2015to2025screenNoPrepto2019noAdjustCondom" ;
+        //String prefix = "from2015to2025constantto2019noAdjustCondom" ; 
+        //String suffix = "" ;
+        //String suffix = "Pop40000Cycles5110" ;
+        String suffix = "Pop40000Cycles4015" ;
+        //String suffix = "Pop40000Cycles14965" ;
+        //String suffix = "Pop40000Cycles2190" ;
         ArrayList<String> simNameList = new ArrayList<String>() ;
-        //String letter0 = "a" ;
-        //for (String letter0 : new String[] {"a","b","c","d","e","f","g","h","i","j"})
-            //for (String letter1: new String[] {"Ebi","Dbc","Eje","Hji","Jce","Iae","Iad","Cfi","Fjc","Chh","Bci","Dhj","Bhi","Ibe","Keg","Kjc","Kbh","Fag","Jad","Bfd","Idg","Keh","Ggb","Dee","Ghh","Dac","Dgd","Fab","Hdh","Ibg","Fcc","Ghd","Hfa","Fci","Ifd","Gfd","Hje","Eei","Hhb","Aah","Gdh","Bjh","Cbf","Dcg","Ifc","Kej","Ajc","Fii","Hfb","Cdd"}) 
-            	for (String letter50 : new String[] {"Fgc","Bbc","Idh","Jii","Hcb","Djc","Ecg","Aha","Jgh","Ifi","Jcf","Cgj","Jfh","Dhf","Bce","Egj","Ehi","Aaa","Gfi","Gbf","Hih","Gga","Ccg","Jfc","Fid","Hdb","Iie","Jib","Fhb","Ahh","Eig","Hji","Jia","Dbf","Jic","Ddi","Dji","Aii","Agi","Bdh","Jhf","Ceb","Aac","Beh","Jfj","Baa","Eff","Ffh","Jeb","Bih"})
+        //String letter2 = "A" ;
+        //for (String letter2 : new String[] {"A","B","C","D","E","F","G","H","I","J"})
+    	//for (String letter0 : new String[] {"a","b","c","d","e","f","g","h","i","j"})
+        //	for (String letter1 : new String[] {"a","b","c","d","e","f","g","h","i","j"})
+        //		simNameList.add(prefix + letter2 + letter0 + letter1 + suffix) ;
+
+    	//for (String letter50 : new String[] {"Eje","Eia","Iii","Aic","Hhe","Fdf","Fde","Def","Eac","Gib","Bfa","Aac","Bag","Dfg"})
+        for (String letter50 : new String[] {"Eje","Ajh","Fjh","Ibh","Eja","Jha","Hjc","Adg","Hhb","Ibd","Cah","Edj","Dhc","Feh","Dbc","Ddd","Jcg","Dif","Iae","Eci","Gfi","Fah","Djh","Dea","Bde","Cfa","Ghf","Adc","Jbg","Gbc","Jjh","Afb","Jbc","Faj","Dbd","Agj","Edb","Eia","Iii","Aic","Hhe","Fdf","Fde","Def","Eac","Gib","Bfa","Aac","Bag","Dfg"})
                     simNameList.add(prefix + letter50 + suffix) ;
-        
+                    //simNameList.add(prefix + letter0 + letter1 + suffix) ;
+        	
         String[] simNames = simNameList.toArray(new String[] {}) ;
         //simNames = new String[] {"regularP6Risk47aaPop40000Cycles1825"} ;
         
         //String[] simNames = new String[] {"newSortRisk12aPop40000Cycles1825"} ;
         //ArrayList<String> closestSimulations
-        // simNameList = CLOSEST_SIMULATIONS(simNameList, "year", "all_false", "riskyIncidence_HIV", folderPath, "gonoGoneWild", "data_files/") ;
-        // LOGGER.info(String.valueOf(simNameList.size()) + " simulations included.") ;
-        //MULTI_WRITE_CSV(simNameList, "condomUse", folderPath) ; // "C:\\Users\\MichaelWalker\\OneDrive - UNSW\\gonorrhoeaPrEP\\simulator\\PrEPSTI\\output\\prep\\") ; // 
+        String[] scoreNames = new String[] {"all_false","all_true"} ;
+        double[] weight = new double[] {1,1/12.25} ;
+        //simNameList = CLOSEST_SIMULATIONS(simNameList,"year",scoreNames,weight,"riskyIncidence_Prep",folderPath,"gonoGoneWild","data_files/") ;
+        LOGGER.info(String.valueOf(simNameList.size()) + " simulations included.") ;
+        //MULTI_WRITE_CSV(simNameList, "condomUse", folderPath) ; // "C:\\Users\\MichaelWalker\\OneDrive - UNSW\\gonorrhoeaPrEP\\simulator\\PrEPSTI\\output\\prep\\") ; //
         int cutoff = 50 ;
-        if (simNameList.size() < cutoff)
+        //if (simNameList.size() < cutoff)
             cutoff = simNameList.size() ;
-        MULTI_WRITE_CSV(simNameList.subList(0, cutoff), "year", "all_false", "riskyIncidence_HIV", folderPath) ; // "C:\\Users\\MichaelWalker\\OneDrive - UNSW\\gonorrhoeaPrEP\\simulator\\PrEPSTI\\output\\prep\\") ; // 
+        MULTI_WRITE_CSV(simNameList.subList(0, cutoff), "year", "all_true", "riskyIncidence_Prep", folderPath) ; // "C:\\Users\\MichaelWalker\\OneDrive - UNSW\\gonorrhoeaPrEP\\simulator\\PrEPSTI\\output\\prep\\") ; // 
+        LOGGER.info(simNameList.subList(0, cutoff).toString()) ;
         // LOGGER.info(String.valueOf(cutoff) + " simulations included.") ;
         //PREPARE_GRAY_REPORT(simNames,folderPath,2007,2017) ;
     }
@@ -3664,13 +3879,13 @@ public class Reporter {
 
         // generate our reboot census
         HashMap<Integer, String> populationCensusUpToCycle = populationReporter.prepareCensusReport(cycleToGenerateReportUpTo, screeningReporter);
-        
+
 
         // extract agent census data and write to internal metadata
         // sort agents by id
         TreeSet<Integer> sortedAgentKeySet = new TreeSet<Integer>();
         sortedAgentKeySet.addAll(populationCensusUpToCycle.keySet());
-        
+
         // add rebooted agent data to metadata
         metaLabels.add("Agents") ;
         String agentsReboot = "" ;
@@ -3687,21 +3902,21 @@ public class Reporter {
 
         // extract relationship data and write to internal metadata
         HashMap<Integer, String> relationshipRecordHashMap = relationshipReporter.prepareRelationshipRecordHashMap(cycleToGenerateReportUpTo);
-        
+
         TreeSet<Integer> sortedRelationshipKeySet = new TreeSet<Integer>();
         sortedRelationshipKeySet.addAll(relationshipRecordHashMap.keySet());
-        
+
         // add rebooted relationship data to metadata
         metaLabels.add("Relationships") ;
         String relationshipsReboot = "" ;
         for (Integer relationshipId : sortedRelationshipKeySet)
             relationshipsReboot += relationshipRecordHashMap.get(relationshipId) + ' ' ;
         metaData.add(relationshipsReboot) ;
-        
+
         // dump new metadata
         String rebootedSimName = simName + "$" + String.valueOf(rebootCycle);
         String rebootedFolderPath = Community.FILE_PATH;
-        
+
         // rebootPathAndNames.put("rebootedSimName", rebootedSimName);
         // rebootPathAndNames.put("rebootedFolderPath", rebootedFolderPath);
         rebootData.put("metaLabels", metaLabels);
@@ -3709,9 +3924,7 @@ public class Reporter {
 
         return rebootData;
     }
-
-
-    /**
+/**
      * Object to read saved File output and feed it to Reporter
      */
     private class Reader
@@ -3894,6 +4107,9 @@ public class Reporter {
          */
         private ArrayList<String> getBackCyclesReport(int backCycles, int endCycle)
         {
+            // System.out.println("getBackCyclesReport(" + backCycles + "," + endCycle + ")");
+            float t0 = System.nanoTime();
+
             ArrayList<String> outputList = new ArrayList<String>() ;
             int cycleFileIndex ;
             try
@@ -3960,9 +4176,15 @@ public class Reporter {
                 LOGGER.severe(e.toString());
                 assert(2 < 0) ;
             }
-            return outputList ;
+
+            float t1 = System.nanoTime();
+            Community.RECORD_METHOD_TIME("Reporter.getBackCyclesReport(backCycles,endCycles)", t1 - t0);
+            
+            return outputList;
         }
-                
+
+
+
         /**
          * Reads backwards through the files. Used when only last backCycles are 
          * of interest.
