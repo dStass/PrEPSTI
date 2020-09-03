@@ -213,11 +213,11 @@ public class Relationship {
         //RelationshipReporter relationshipReporter = new RelationshipReporter(simName,"/srv/scratch/z3524276/prepsti/output/test/") ;
         //RelationshipReporter relationshipReporter = new RelationshipReporter(simName,"/short/is14/mw7704/prepsti/output/year2007/") ;
         
-        HashMap<Object,String[]> relationshipAgentReport 
+        HashMap<Comparable<?>,String[]> relationshipAgentReport 
                 = relationshipReporter.prepareRelationshipAgentReport() ;
         
         String[] relationshipClassNames = new String[] {"Regular","Monogomous"} ; // "Casual",
-        HashMap<Comparable,HashMap<Comparable,ArrayList<Comparable>>> relationshipsRecord 
+        HashMap<Comparable<?>,HashMap<Comparable<?>,ArrayList<Comparable<?>>>> relationshipsRecord 
                 = relationshipReporter.prepareAgentRelationshipsRecord(relationshipClassNames, 0, 0, 1) ;
         ArrayList<Object> currentRelationshipIds = new ArrayList<Object>() ;
         String[] agentIds = new String[2] ;
@@ -228,8 +228,8 @@ public class Relationship {
         {
             for (String relationshipName : relationshipClassNames)
             {
-                Class relationshipClazz = Class.forName("PRSP.PrEPSTI.community.".concat(relationshipName)) ;
-                for (ArrayList<Comparable> relationshipIdList : relationshipsRecord.get(relationshipName).values())
+                Class<?> relationshipClazz = Class.forName("PRSP.PrEPSTI.community.".concat(relationshipName)) ;
+                for (ArrayList<Comparable<?>> relationshipIdList : relationshipsRecord.get(relationshipName).values())
                 {
                     for (Object relationshipId : relationshipIdList)
                     {
@@ -244,7 +244,7 @@ public class Relationship {
                             else if (agents.get(agentIndex).getAgentId() == Integer.valueOf(agentIds[1]))
                                 agentIndex1 = agentIndex ;
                         }
-                        Relationship relationship = (Relationship) relationshipClazz.newInstance();
+                        Relationship relationship = (Relationship) relationshipClazz.getDeclaredConstructor().newInstance();
                         relationship.addAgents(agents.get(agentIndex0), agents.get(agentIndex1)) ;
                         nbRelationships++ ;
                     }
@@ -575,18 +575,18 @@ public class Relationship {
             if ((URETHRA.equals(site0.toString()) && (RECTUM.equals(site1.toString()))) 
                     || (URETHRA.equals(site1.toString())&& RECTUM.equals(site0.toString())))
             {   
-                sbReport.append("condom: ");
+                sbReport.append("condom:");
                 // report += "condom:" ;
                 
                 if (Agent.USE_CONDOM(agent0, agent1, relationship))
                 {
                     infectProbability *= (1.0 - CONDOM_EFFECT) ;
-                    sbReport.append("true");
+                    sbReport.append("true ");
                     // report += "true " ;
                 }
                 else 
                 {
-                    sbReport.append("false");
+                    sbReport.append("false ");
                     // report += "false " ;
                 }
             }

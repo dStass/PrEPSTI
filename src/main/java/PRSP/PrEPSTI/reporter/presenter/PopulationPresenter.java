@@ -74,7 +74,7 @@ public class PopulationPresenter extends Presenter{
      */
     public void plotDeathsPerCycle()
     {
-        ArrayList<ArrayList<Comparable>> deathsPerCycle = reporter.prepareDeathsPerCycleReport() ;
+        ArrayList<ArrayList<Comparable<?>>> deathsPerCycle = reporter.prepareDeathsPerCycleReport() ;
         
         plotEventsPerCycle("Deaths",deathsPerCycle) ;
         
@@ -85,7 +85,7 @@ public class PopulationPresenter extends Presenter{
      */
     public void plotBirthsPerCycle()
     {
-        ArrayList<ArrayList<Comparable>> agentBirthReport = reporter.prepareAgentBirthReport() ;
+        ArrayList<ArrayList<Comparable<?>>> agentBirthReport = reporter.prepareAgentBirthReport() ;
         // ArrayList<String> deathsPerCycle = prepareDeathsPerCycle() ;
         
         plotEventsPerCycle("Births",agentBirthReport) ;
@@ -97,7 +97,7 @@ public class PopulationPresenter extends Presenter{
      */
     public void plotAgeAtDeath()
     {
-        HashMap<Comparable,Number> ageAtDeathReport = reporter.prepareAgeAtDeathReport() ;
+        HashMap<Comparable<?>,Number> ageAtDeathReport = reporter.prepareAgeAtDeathReport() ;
       // logger.log(level.info,"{0}",ageAtDeathReport) ;
         plotHashMap("Age", "Number of deaths", binHashMap(ageAtDeathReport,"Nb_of_deaths") ) ;
     }

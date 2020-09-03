@@ -217,7 +217,7 @@ public class SortPresenter extends Presenter {
         HashMap<Object,HashMap<Comparable,Number>> ageNumberEnteredRelationshipRecord 
                 = reporter.prepareAgeNumberEnteredRelationshipRecord(relationshipClassNames) ;
         
-        HashMap<Comparable,Number[]> invertedHashMap 
+        HashMap<Comparable<?>,Number[]> invertedHashMap 
                 = Reporter.INVERT_HASHMAP_ARRAY(ageNumberEnteredRelationshipRecord,relationshipClassNames) ;
         
             

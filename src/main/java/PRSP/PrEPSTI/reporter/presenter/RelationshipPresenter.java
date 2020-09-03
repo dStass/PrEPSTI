@@ -95,8 +95,8 @@ public class RelationshipPresenter extends Presenter{
      */
     public void plotNewRelationshipsPerCycle()
     {
-        ArrayList<ArrayList<Comparable>> relationshipCommenceReport = reporter.prepareRelationshipCommenceReport() ;
-        ArrayList<ArrayList<Comparable>> submitReport = new ArrayList<ArrayList<Comparable>>() ;
+        ArrayList<ArrayList<Comparable<?>>> relationshipCommenceReport = reporter.prepareRelationshipCommenceReport() ;
+        ArrayList<ArrayList<Comparable<?>>> submitReport = new ArrayList<ArrayList<Comparable<?>>>() ;
         for (int index = 1 ; index < relationshipCommenceReport.size() ; index++)
             submitReport.add(relationshipCommenceReport.get(index)) ;
         plotEventsPerCycle("New relationships",submitReport) ;
@@ -109,8 +109,8 @@ public class RelationshipPresenter extends Presenter{
      */
     public void plotNewRelationshipsPerCycle(String[] relationshipClazzes)
     {
-        ArrayList<ArrayList<Comparable>> relationshipCommenceReport = reporter.prepareRelationshipCommenceReport(relationshipClazzes) ;
-        ArrayList<ArrayList<Comparable>> submitReport = new ArrayList<ArrayList<Comparable>>() ;
+        ArrayList<ArrayList<Comparable<?>>> relationshipCommenceReport = reporter.prepareRelationshipCommenceReport(relationshipClazzes) ;
+        ArrayList<ArrayList<Comparable<?>>> submitReport = new ArrayList<ArrayList<Comparable<?>>>() ;
         for (int index = 1 ; index < relationshipCommenceReport.size() ; index++)
             submitReport.add(relationshipCommenceReport.get(index)) ;
         plotEventsPerCycle("New relationships",submitReport) ;
@@ -122,8 +122,8 @@ public class RelationshipPresenter extends Presenter{
      */
     public void plotBreakupsPerCycle()
     {
-        ArrayList<ArrayList<Comparable>> relationshipBreakupReport = reporter.prepareRelationshipBreakupReport() ;
-        ArrayList<ArrayList<Comparable>> submitReport = new ArrayList<ArrayList<Comparable>>() ;
+        ArrayList<ArrayList<Comparable<?>>> relationshipBreakupReport = reporter.prepareRelationshipBreakupReport() ;
+        ArrayList<ArrayList<Comparable<?>>> submitReport = new ArrayList<ArrayList<Comparable<?>>>() ;
         for (int index = 2 ; index < relationshipBreakupReport.size() ; index++)
             submitReport.add(relationshipBreakupReport.get(index)) ;
         
@@ -141,7 +141,7 @@ public class RelationshipPresenter extends Presenter{
      */
     private void plotNumberAgentsEnteredRelationshipYears(String[] relationshipClassNames, int backYears, int backMonths, int backDays, int lastYear)
     {
-        HashMap<Comparable,Number[]> numberAgentsEnteredRelationshipYears
+        HashMap<Comparable<?>,Number[]> numberAgentsEnteredRelationshipYears
         = reporter.prepareNumberAgentsEnteredRelationshipYears(relationshipClassNames, backYears, backMonths, backDays, lastYear) ;
 
         plotHashMap("Year", relationshipClassNames, numberAgentsEnteredRelationshipYears) ;
@@ -175,7 +175,7 @@ public class RelationshipPresenter extends Presenter{
      */
     private void plotNumberRelationships(String[] relationshipClassNames, int backYears, int backMonths, int backDays, int endCycle)
     {
-        HashMap<Comparable,Number> proportionRelationshipsReport 
+        HashMap<Comparable<?>,Number> proportionRelationshipsReport 
                 = reporter.prepareProportionRelationshipsReport(relationshipClassNames, backYears, backMonths, backDays, endCycle) ;
         
         plotHashMap("class of relationship","proportion of agents",proportionRelationshipsReport) ;
@@ -191,7 +191,7 @@ public class RelationshipPresenter extends Presenter{
      */
     private void plotNumberAgentsEnteredRelationship(String[] relationshipClassNames, int backYears, int backMonths, int backDays)
     {
-        HashMap<Comparable,Number> numberAgentsEnteredRelationshipReport 
+        HashMap<Comparable<?>,Number> numberAgentsEnteredRelationshipReport 
         = reporter.prepareNumberAgentsEnteredRelationshipReport(relationshipClassNames, backYears, backMonths, backDays) ;
     
         String timePeriod = GET_TIME_PERIOD_STRING(backYears, backMonths, backDays) ;
@@ -245,7 +245,7 @@ public class RelationshipPresenter extends Presenter{
     {
         //(HashMap) relationshipClassName maps to mean number of
         // Relationships of given class per agentId involved in during given time period).
-        HashMap<Comparable,Number> agentRelationshipsMean
+        HashMap<Comparable<?>,Number> agentRelationshipsMean
             = reporter.prepareAgentRelationshipsMean(relationshipClassNames, backYears, backMonths, backDays) ;
         
         String timePeriod = GET_TIME_PERIOD_STRING(backYears, backMonths, backDays) ;
@@ -264,7 +264,7 @@ public class RelationshipPresenter extends Presenter{
      */
     private void plotAgentRelationshipsMeanYears(String[] relationshipClassNames, int backYears, int backMonths, int backDays, int lastYear) 
     {
-        HashMap<Comparable,Number[]> agentRelationshipsMeanYears
+        HashMap<Comparable<?>,Number[]> agentRelationshipsMeanYears
             = reporter.prepareAgentRelationshipsMeanYears(relationshipClassNames, backYears, backMonths, backDays, lastYear) ; 
         
         //String timePeriod = GET_TIME_PERIOD_STRING(backYears, backMonths, backDays) ;
@@ -277,7 +277,7 @@ public class RelationshipPresenter extends Presenter{
      */
     public void plotRelationshipLength()
     {
-        HashMap<Comparable,Number> relationshipLengthReport = reporter.prepareLengthAtBreakupReport() ;
+        HashMap<Comparable<?>,Number> relationshipLengthReport = reporter.prepareLengthAtBreakupReport() ;
         
         // Comment out if Casual Relationships are to be included
         relationshipLengthReport.remove(1) ;
@@ -300,10 +300,10 @@ public class RelationshipPresenter extends Presenter{
      */
     public void plotCumulativeRelationships(int nbRelationships, String[] relationshipClassNames, int backYears, int backMonths, int backDays)
     {
-        HashMap<Comparable,Number> output = new HashMap<Comparable,Number>() ;
+        HashMap<Comparable<?>,Number> output = new HashMap<Comparable<?>,Number>() ;
         
         // A snapshot of how many agentIds have more had how many or more Relationships
-        HashMap<Comparable,HashMap<Comparable,Number>> cumulativeRelationshipRecord 
+        HashMap<Comparable<?>,HashMap<Comparable<?>,Number>> cumulativeRelationshipRecord 
                 = reporter.prepareCumulativeRelationshipRecord(nbRelationships, relationshipClassNames, backYears, backMonths, backDays) ;
         
         Number outputEntry ;
@@ -327,10 +327,10 @@ public class RelationshipPresenter extends Presenter{
     public void plotCumulativeRelationships(String[] relationshipClassNames, int backYears, int backMonths, int backDays)
     {
         // A snapshot of how many agentIds have more had how many or more Relationships
-        HashMap<Comparable,HashMap<Comparable,Number>> cumulativeRelationshipRecord 
+        HashMap<Comparable<?>,HashMap<Comparable<?>,Number>> cumulativeRelationshipRecord 
                 = reporter.prepareCumulativeRelationshipRecord(-1,relationshipClassNames, backYears, backMonths, backDays) ;
         
-        HashMap<Comparable,Number[]> invertedHashMap 
+        HashMap<Comparable<?>,Number[]> invertedHashMap 
                 = Reporter.INVERT_HASHMAP_LIST(cumulativeRelationshipRecord,relationshipClassNames) ;
         
         plotSpline("Cumulative number of partners","Number of agents",invertedHashMap,relationshipClassNames) ;
@@ -355,7 +355,7 @@ public class RelationshipPresenter extends Presenter{
         else
             relationshipClassNames = new String[] {relationshipClassName} ;
         // A snapshot of how many agentIds have more had how many or more Relationships
-        HashMap<Comparable,HashMap<Comparable,Number>> cumulativeRelationshipRecord 
+        HashMap<Comparable<?>,HashMap<Comparable<?>,Number>> cumulativeRelationshipRecord 
                 = reporter.prepareCumulativeRelationshipRecord(-1, relationshipClassNames, backYears, backMonths, backDays) ;
         
         //HashMap<Object,Number[]> invertedHashMap 
@@ -375,14 +375,14 @@ public class RelationshipPresenter extends Presenter{
      */
     public void plotRecentRelationshipsReport(String[] relationshipClassNames, int backYears, int backMonths, int backDays)
     {
-        HashMap<Comparable,HashMap<Comparable,Number>> recentRelationshipsReport 
+        HashMap<Comparable<?>,HashMap<Comparable<?>,Number>> recentRelationshipsReport 
                 = reporter.prepareRecentRelationshipsReport(relationshipClassNames, backYears, backMonths, backDays) ;
         
         String[] relationshipClassNewNames = Arrays.copyOf(relationshipClassNames,relationshipClassNames.length + 1) ;
         relationshipClassNewNames[relationshipClassNames.length] = "total" ;
         //recentRelationshipsReport.remove("total") ;
         
-        HashMap<Comparable,Number[]> invertedHashMap 
+        HashMap<Comparable<?>,Number[]> invertedHashMap 
                 = Reporter.INVERT_HASHMAP_LIST(recentRelationshipsReport,relationshipClassNewNames) ;
         // LOGGER.info(invertedHashMap.toString());
         
@@ -393,7 +393,7 @@ public class RelationshipPresenter extends Presenter{
                 + String.valueOf(backMonths) + " months " 
                 + String.valueOf(backDays) + " days " ;
         
-        HashMap<Comparable,Number[]> binnedReport = binHashMap(invertedHashMap, relationshipClassNewNames) ;
+        HashMap<Comparable<?>,Number[]> binnedReport = binHashMap(invertedHashMap, relationshipClassNewNames) ;
         // LOGGER.info(reporter.getFolderPath());
         Reporter.WRITE_CSV(binnedReport, chartTitle, relationshipClassNewNames, "nb_Relationships", simName, reporter.getFolderPath()) ;
         plotHashMap("partners in " + timePeriod,relationshipClassNewNames,binnedReport) ;
@@ -433,7 +433,7 @@ public class RelationshipPresenter extends Presenter{
      */
     public void plotAgentGapReport()
     {
-        HashMap<Comparable,Number> agentGapReport = reporter.prepareAgentGapReport() ;
+        HashMap<Comparable<?>,Number> agentGapReport = reporter.prepareAgentGapReport() ;
         
         plotHashMap("Agent Ids","Days between relationships",agentGapReport) ;
     }
@@ -441,7 +441,7 @@ public class RelationshipPresenter extends Presenter{
     
     public void plotCumulativeRelationshipGaps()
     {
-        HashMap<Comparable,Number> cumulativeRelationshipGapRecord = reporter.prepareRelationshipCumulativeGapRecord() ;
+        HashMap<Comparable<?>,Number> cumulativeRelationshipGapRecord = reporter.prepareRelationshipCumulativeGapRecord() ;
         
         plotHashMap("Length of relationship gap","Cumulative distribution",cumulativeRelationshipGapRecord) ;
     }

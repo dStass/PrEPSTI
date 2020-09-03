@@ -360,6 +360,8 @@ public class ConfigLoader {
 
         String FIGURE_HEIGHT = (String) presenterJSON.get("FIGURE_HEIGHT");
         if (FIGURE_HEIGHT != null) Presenter.FIGURE_HEIGHT = Integer.parseInt(FIGURE_HEIGHT);
+        
+        loadMethodVariablesHashMap("presenter", presenterJSON) ;
     }
 
 
@@ -371,10 +373,12 @@ public class ConfigLoader {
 
     private static HashMap<String, HashMap> getMethodsHashMapFromJSONObject(JSONObject jsonObject) {
         JSONObject methodsJSON = (JSONObject) jsonObject.get("methods");
-        if (methodsJSON == null) return null;
+        if (methodsJSON == null)
+        	return null;
+        
         HashMap <String, HashMap> methodToVariablesMapHashMap = ConfigLoader.convertJSONObjectToHashMap_StringToNewHashMap(methodsJSON);
         for (String methodName : methodToVariablesMapHashMap.keySet()) {
-            JSONObject methodVariablesJSON = (JSONObject) methodsJSON.get(methodName);
+        	JSONObject methodVariablesJSON = (JSONObject) methodsJSON.get(methodName);
             HashMap <String, String> methodVariablesToValues = ConfigLoader.convertJSONObjectToHashMap_StringToString(methodVariablesJSON);
             methodToVariablesMapHashMap.put(methodName, methodVariablesToValues);
         }
