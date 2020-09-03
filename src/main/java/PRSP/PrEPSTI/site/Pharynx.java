@@ -15,7 +15,7 @@ public class Pharynx extends Site {
 
     // Constants that vary according to Site subclass
     /** Probability of initial gonorrhoea infection */
-    static double INITIAL = 0.010 ; // 0.040 ; // 0.045 ; 
+    static double INITIAL = 0.040 ; // 0.045 ; 
 
     /** Probability of positive symptomatic status if infected */
     static double SYMPTOMATIC_PROBABILITY = 0.0 ; // 0.40 ;
@@ -25,14 +25,9 @@ public class Pharynx extends Site {
      */
     private static int INFECTION_DURATION = 7 * 12 ; // 12 ;
     
-    /**
-     * Probability of seeking treatment in a given cycle if infected with 
-     * gonorrhoea.
-     */
-    static double TREATMENT_PROBABILITY = 0.4 ; // 0.3 ;
-    
-    /** Days between STI screens in the absence of symptoms. */
-    private int screenCycle = 160 ;
+
+    /** Days between asymptomatic STI screens . */
+    private int screenCycle ;
     
     /** Cycles remaining until next STI screen. */
     private int screenTime ;
