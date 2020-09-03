@@ -573,6 +573,10 @@ public abstract class Agent {
                 testProperty = property ;
                 //LOGGER.info(testProperty) ;
                 valueString = Reporter.EXTRACT_VALUE(property, census) ;
+                if (valueString.endsWith(",") || valueString.endsWith("}")) {
+                    valueString = valueString.substring(0, valueString.length() - 2);
+                }
+
                 
                 for (Class agentClazz : clazzFields.keySet())
                     for (Field field : clazzFields.get(agentClazz))
