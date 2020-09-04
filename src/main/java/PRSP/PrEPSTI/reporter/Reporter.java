@@ -1,11 +1,11 @@
 /**
  * 
  */
-package PRSP.PrEPSTI.reporter ;
+package PRSP.PrEPSTI.reporter;
 
-import PRSP.PrEPSTI.agent.MSM ;
-import PRSP.PrEPSTI.community.Community ;
-import PRSP.PrEPSTI.configloader.ConfigLoader ;
+import PRSP.PrEPSTI.agent.MSM;
+import PRSP.PrEPSTI.community.Community;
+import PRSP.PrEPSTI.configloader.ConfigLoader;
 //import community.* ;
 
 import java.io.*;

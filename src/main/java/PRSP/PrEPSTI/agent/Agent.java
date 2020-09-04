@@ -436,15 +436,6 @@ public abstract class Agent {
                         if (newAgent.getPrepStatus())
                             newAgent.rebootScreenCycle(2020, 1.1, 1.0) ;
                     
-                    // Reboot screencycle here when testing it
-                    if (scenarioScreenPositive)
-                        if (newAgent.getStatusHIV())
-                            newAgent.rebootScreenCycle(2020, 1.1, 1.0) ;
-                    
-                    if (scenarioScreenPrep)
-                        if (newAgent.getPrepStatus())
-                            newAgent.rebootScreenCycle(2020, 1.1, 1.0) ;
-                    
                     // Reload infections
                     infectionString = birth ;
                     
@@ -864,8 +855,8 @@ public abstract class Agent {
     
     protected int reInitScreenCycle(double rescale)
     {
-        screenCycle = (int) Math.ceil(rescale * getScreenCycle()) ;
-        //setScreenCycle(RAND.nextInt(getScreenCycle()) + 1) ;
+        int newScreenCycle = (int) Math.ceil(rescale * getScreenCycle()) ;
+        //setScreenTime(RAND.nextInt(getScreenCycle()) + 1) ;
         return screenCycle ;
     }
     
