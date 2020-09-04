@@ -508,7 +508,7 @@ public class Presenter {
         String folder = "data_files/" ;
         //String fileName = "incidence" ;
         //String property = "PrEP users - PrEP use 0.31" ;
-        String property = "Overall - HIV negative (PrEP use 0.31)" ;
+        String property = "Overall - HIV negative (PrEP use grows linearly)" ;
         String chartTitle = property ;
         // LOGGER.info(chartTitle) ;
         String[] legend ;
