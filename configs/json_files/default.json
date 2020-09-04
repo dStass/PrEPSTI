@@ -1,21 +1,21 @@
 {   
     "paths": {
-        "REBOOT_PATH" : "output/",
+        "REBOOT_PATH" : "output/prep/",
         "REPORT_PATH" : "reports/",
         "DATA_PATH" : "data_files/"
     },
 
     "community" : {
-        "FILE_PATH" : "output/",
-        "NAME_ROOT" : "testScalePrEP3c",
-        "MAX_CYCLES" : "14",
+        "FILE_PATH" : "output/test/",
+        "NAME_ROOT" : "master1",
+        "MAX_CYCLES" : "11",
         "POPULATION" : "40000",
-        "COMMENT" : "Testing merge_branch",
+        "COMMENT" : "Debug midway reboot",
         "DYNAMIC" : "true",
-        "REBOOT_SIMULATION" : "oldParams31cPop40000Cycles2920",
-        "REBOOT_FROM_CYCLE" : "-1",
-        "START_YEAR" : "2007",
-        "END_YEAR" : "2019",
+        "REBOOT_SIMULATION" : "to2019testPrEPscreen1c",
+        "REBOOT_FROM_CYCLE" : "9",
+        "START_YEAR" : "2015",
+        "END_YEAR" : "2025",
         "methods" : {
             "interveneCommunity" : {
                 "startCycle" : "1"
@@ -24,7 +24,7 @@
     },
 
     "agent" : {
-          "methods": {
+          "methods" : {
               "REBOOT_AGENTS" : {
                   "scenarioScreenPrep" : "false",
                   "scenarioScreenPositive" : "false"
@@ -64,7 +64,12 @@
             "pharyngeal_gone_wild" 
         ],
         "FIGURE_WIDTH" : "1280",
-        "FIGURE_HEIGHT": "1280"
+        "FIGURE_HEIGHT": "1280",
+        "methods" : {
+            "plotShadedHashMapStringCI" : {
+                "drawShadedRegion" : "false"
+            }
+        }      
     },
 
     "config_loader" : {

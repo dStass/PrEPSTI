@@ -24,6 +24,7 @@ import org.jfree.chart.*;
 import org.jfree.chart.ui.ApplicationFrame;
 import org.jfree.chart.plot.*;
 import org.jfree.chart.axis.*;
+import org.jfree.chart.block.BlockBorder;
 import org.jfree.chart.ui.RectangleAnchor;
 import org.jfree.chart.ui.RectangleEdge;
 import org.jfree.chart.ui.RectangleInsets;
@@ -122,8 +123,7 @@ public class Presenter {
     private String lineGraphErrorType = ERROR_INTERVALS;
     private boolean drawPoints = false ;  // draw each individual point for a line graph true by default
     private boolean drawError = false ;
-    private boolean xLogarithmic = false ;
-    private boolean yLogarithmic = false ;
+    private boolean insetLegend = true ;  // determines whether the legend is inseted into 
 
     static final java.util.logging.Logger LOGGER = java.util.logging.Logger.getLogger("presenter") ;
     
@@ -214,7 +214,7 @@ public class Presenter {
      * @param readScores - (String[]) valueTypes given in new report
      * @return (DefaultCategoryDataset) dataset with new data from report
      */
-    static public DefaultCategoryDataset EXPAND_DATASET(DefaultCategoryDataset dataset, HashMap<Comparable,Number[]> report, String[] readScores )
+    static public DefaultCategoryDataset EXPAND_DATASET(DefaultCategoryDataset dataset, HashMap<Comparable<?>,Number[]> report, String[] readScores )
     {
         Number[] scoreValueArray ;
         for (Object key : report.keySet())
@@ -251,7 +251,7 @@ public class Presenter {
      * @param readScores - (String[]) valueTypes given in new report
      * @return (DefaultCategoryDataset) dataset with new data from report
      */
-    static public XYSeriesCollection EXPAND_DATASET(XYSeriesCollection xySeriesCollection, HashMap<Comparable,Number[]> report, String[] readScores)
+    static public XYSeriesCollection EXPAND_DATASET(XYSeriesCollection xySeriesCollection, HashMap<Comparable<?>,Number[]> report, String[] readScores)
     {
         Number[] scoreValueArray ;
         Number categoryValue ;
@@ -367,9 +367,9 @@ public class Presenter {
      * @param fileName
      * @return (HashMap) Report (Object) key maps to (Number) value
      */
-    static HashMap<Comparable,Number[]> READ_HASHMAP_NUMBER_ARRAY_CSV(String fileName)
+    static HashMap<Comparable<?>,Number[]> READ_HASHMAP_NUMBER_ARRAY_CSV(String fileName)
     {
-        HashMap<Comparable,Number[]> hashMapNumberArray = new HashMap<Comparable,Number[]>() ;
+        HashMap<Comparable<?>,Number[]> hashMapNumberArray = new HashMap<Comparable<?>,Number[]>() ;
         
         String fileHeader ;
         String[] arrayHeader  = new String[] {} ;
@@ -441,12 +441,12 @@ public class Presenter {
      */
     public static boolean MEAN_HASHMAP_NUMBER_ARRAY_CSV(String[] fileNames)
     {
-        HashMap<Comparable,Number[]> meanHashMapNumberArray = new HashMap<Comparable,Number[]>() ;
+        HashMap<Comparable<?>,Number[]> meanHashMapNumberArray = new HashMap<Comparable<?>,Number[]>() ;
         
         Number[] entries ;
         String fileHeader = "" ;
         String[] arrayHeader ;
-        ArrayList<HashMap<Comparable,Number[]>> meanHashMapList = new ArrayList<HashMap<Comparable,Number[]>>() ;
+        ArrayList<HashMap<Comparable<?>,Number[]>> meanHashMapList = new ArrayList<HashMap<Comparable<?>,Number[]>>() ;
         
         try
         {
@@ -464,16 +464,16 @@ public class Presenter {
         for (String fileName : fileNames)
             meanHashMapList.add(READ_HASHMAP_NUMBER_ARRAY_CSV(fileName)) ;
         
-        HashMap<Comparable,Number[]> hashMap0 = meanHashMapList.get(0) ;
+        HashMap<Comparable<?>,Number[]> hashMap0 = meanHashMapList.get(0) ;
         int entryLength = hashMap0.get(hashMap0.keySet().toArray()[0]).length ;
         Number[] sumEntry = Arrays.copyOf(new Number[] {0.0}, entryLength) ;
         
-        for (Comparable key : hashMap0.keySet())
+        for (Comparable<?> key : hashMap0.keySet())
             meanHashMapNumberArray.put(key, sumEntry) ;
         
         // Add all entries
-        for (HashMap<Comparable,Number[]> hashMap : meanHashMapList)
-            for (Comparable key : hashMap.keySet())
+        for (HashMap<Comparable<?>,Number[]> hashMap : meanHashMapList)
+            for (Comparable<?> key : hashMap.keySet())
             {
                 entries = hashMap.get(key) ;
                 sumEntry = meanHashMapNumberArray.get(key) ;
@@ -483,7 +483,7 @@ public class Presenter {
             }
         
         // Divide to find mean
-        for (Comparable key : meanHashMapNumberArray.keySet())
+        for (Comparable<?> key : meanHashMapNumberArray.keySet())
         {
             entries = meanHashMapNumberArray.get(key) ;
             for (int index = 0 ; index < sumEntry.length ; index++ )
@@ -507,13 +507,13 @@ public class Presenter {
         //String folder = "output/test/" ;
         String folder = "data_files/" ;
         //String fileName = "incidence" ;
-        String property = "PrEP users - PrEP use 0.74" ;
-        //String property = "Overall - HIV negative" ;
+        //String property = "PrEP users - PrEP use 0.31" ;
+        String property = "Overall - HIV negative (PrEP use 0.31)" ;
         String chartTitle = property ;
         // LOGGER.info(chartTitle) ;
         String[] legend ;
         // legend = args ;
-        legend = new String[] {" 78 days"," 92 days (standard)","106 days","123 days"} ; // ,"154 days","185 days"} ; //,"216 days"} ;    // 
+        legend = new String[] {" 78 days"," 92 days (standard)","106 days","123 days","154 days"} ; //,"185 days"} ; //,"216 days"} ;    // 
         //legend = new String[] {"screening no PrEP","PrEP no screening","no PrEP","constant"} ;
         //PREP_PROBABILITY_ARRAY = new double[] {0.39,0.46,0.53,0.60,0.67,0.74} ; // 2013 to 2019
         // gonoGoneWild header  
@@ -621,8 +621,8 @@ public class Presenter {
         int recordLength = 0 ;
         
         // Yet to determine if Array or single Number
-        HashMap<Comparable,Number> hashMapNumber = new HashMap<Comparable,Number>() ;
-        HashMap<Comparable,Number[]> hashMapArray = new HashMap<Comparable,Number[]>() ;
+        HashMap<Comparable<?>,Number> hashMapNumber = new HashMap<Comparable<?>,Number>() ;
+        HashMap<Comparable<?>,Number[]> hashMapArray = new HashMap<Comparable<?>,Number[]>() ;
         
         try
         {
@@ -696,7 +696,7 @@ public class Presenter {
      * @param hashMapReport
      * @return (PolynomialSplineFunction[]) 
      */
-    protected PolynomialSplineFunction[] generateFunctions(HashMap<Comparable,Number[]> hashMapReport)
+    protected PolynomialSplineFunction[] generateFunctions(HashMap<Comparable<?>,Number[]> hashMapReport)
     {
         int valueLength = 0 ;
         for (Number[] value : hashMapReport.values())
@@ -794,9 +794,9 @@ public class Presenter {
      * @param scoreName (redundant)
      * @return HashMap with keyValues() binned.
      */
-    public HashMap<Comparable,Number> binHashMap(HashMap<Comparable,Number> unbinned, String scoreName)
+    public HashMap<Comparable<?>,Number> binHashMap(HashMap<Comparable<?>,Number> unbinned, String scoreName)
     {
-        HashMap<Comparable,Number> binned = new HashMap<Comparable,Number>() ;
+        HashMap<Comparable<?>,Number> binned = new HashMap<Comparable<?>,Number>() ;
         
         // Find keys in order
         ArrayList<Object> categoryEntry = new ArrayList<Object>() ;
@@ -874,9 +874,9 @@ public class Presenter {
      * @param scoreNames
      * @return HashMap with keyValues() binned.
      */
-    public HashMap<Comparable,Number[]> binHashMap(HashMap<Comparable,Number[]> unbinned, String[] scoreNames)
+    public HashMap<Comparable<?>,Number[]> binHashMap(HashMap<Comparable<?>,Number[]> unbinned, String[] scoreNames)
     {
-        HashMap<Comparable,Number[]> binned = new HashMap<Comparable,Number[]>() ;
+        HashMap<Comparable<?>,Number[]> binned = new HashMap<Comparable<?>,Number[]>() ;
         
         // Find keys in order
         ArrayList<Object> categoryEntry = new ArrayList<Object>() ;
@@ -1023,7 +1023,7 @@ public class Presenter {
      * @param yLabel
      * @param hashMapArray 
      */
-    protected void plotNetwork(String xLabel, String yLabel, ArrayList<HashMap<Comparable,ArrayList<Comparable>>> hashMapArray)
+    protected void plotNetwork(String xLabel, String yLabel, ArrayList<HashMap<Comparable<?>,ArrayList<Comparable<?>>>> hashMapArray)
     {
         chart_awt.callPlotNetwork(chartTitle, hashMapArray, xLabel, yLabel) ;
     }
@@ -1050,7 +1050,7 @@ public class Presenter {
      * @param scoreName
      * @param reportArray 
      */
-    protected void multiPlotSpline(String categoryName, String scoreName, HashMap<Comparable,Number[]> reportArray)
+    protected void multiPlotSpline(String categoryName, String scoreName, HashMap<Comparable<?>,Number[]> reportArray)
     {
         plotSpline(categoryName, scoreName, reportArray, new String[] {""}) ;
     }
@@ -1061,7 +1061,7 @@ public class Presenter {
      * @param scoreName
      * @param reportArray (HashMap) Report to be plotted.
      */
-    protected void plotSpline(String categoryName, String scoreName, HashMap<Comparable,Number[]> reportArray, String[] legend)
+    protected void plotSpline(String categoryName, String scoreName, HashMap<Comparable<?>,Number[]> reportArray, String[] legend)
     {
         //LOGGER.info("callPlotChart()") ;
         // Extract data from reportArray
@@ -1084,7 +1084,7 @@ public class Presenter {
     
     protected void plotSpline(String categoryName, String scoreName, HashMap<Comparable,Number> reportArray)
     {
-        HashMap<Comparable,Number[]> newReportArray = new HashMap<Comparable,Number[]>() ;
+        HashMap<Comparable<?>,Number[]> newReportArray = new HashMap<Comparable<?>,Number[]>() ;
         
         for ( Comparable key : reportArray.keySet())
             newReportArray.put(key, new Number[] {reportArray.get(key)}) ;
@@ -1234,7 +1234,7 @@ public class Presenter {
         //chart_awt.callStackedPlotChart(chartTitle,categoryEntry, (ArrayList<ArrayList<Number>>) scoreData, scoreNames.toArray(new String[scoreNames.size()]),"Year") ;
     }
     
-    protected void plotHashMapScatter(String categoryName, String scoreName, HashMap<Comparable,ArrayList<Comparable>> hashMapReport )
+    protected void plotHashMapScatter(String categoryName, String scoreName, HashMap<Comparable<?>,ArrayList<Comparable<?>>> hashMapReport )
     {
         chart_awt.callPlotScatterPlot(chartTitle, hashMapReport, scoreName, categoryName) ;
     }
@@ -1263,9 +1263,9 @@ public class Presenter {
      * @param scoreName
      * @param hashMapReport 
      */
-    protected void plotHashMap(String categoryName, String scoreName, HashMap<Comparable,Number> hashMapReport ) 
+    protected void plotHashMap(String categoryName, String scoreName, HashMap<Comparable<?>,Number> hashMapReport ) 
     {
-        HashMap<Comparable,Number[]> newHashMapReport = new HashMap<Comparable,Number[]>() ;
+        HashMap<Comparable<?>,Number[]> newHashMapReport = new HashMap<Comparable<?>,Number[]>() ;
         
         for (Comparable key : hashMapReport.keySet())
             newHashMapReport.put(key, new Number[] {hashMapReport.get(key)}) ;
@@ -1280,7 +1280,7 @@ public class Presenter {
      * @param scoreNames
      * @param hashMapReport
      */
-    protected void plotHashMap(String categoryName, String[] scoreNames, HashMap<Comparable,Number[]> hashMapReport )
+    protected void plotHashMap(String categoryName, String[] scoreNames, HashMap<Comparable<?>,Number[]> hashMapReport )
     {
         LOGGER.severe("plotHashMap()") ;
         //ArrayList<String> categoryInteger = new ArrayList<String>() ;
@@ -1327,7 +1327,7 @@ public class Presenter {
         
         if (PLOT_FILE)
         {
-            HashMap<Comparable,Number[]> dataReport = READ_HASHMAP_NUMBER_ARRAY_CSV(FILENAME) ;
+            HashMap<Comparable<?>,Number[]> dataReport = READ_HASHMAP_NUMBER_ARRAY_CSV(FILENAME) ;
             xySeriesCollection = EXPAND_DATASET(xySeriesCollection,dataReport, DATA_SCORE) ;
             
         }
@@ -1343,16 +1343,21 @@ public class Presenter {
      * @param xLabel
      * @param legend
      */
-    protected void plotShadedHashMapStringCI(HashMap<String,HashMap<String,String[]>> report, String yLabel, String xLabel, String[] legend) {
+    protected void plotShadedHashMapStringCI(HashMap<String,HashMap<String,String[]>> report, String yLabel, String xLabel, String[] legend) 
+    {
         // Extract data from reportArray
         XYIntervalSeriesCollection xyIntervalSeriesCollection = parseReportHashMapError(report, legend) ;
 
-        setDrawError(true);
+        Boolean drawShadedRegion = ConfigLoader.getMethodVariableBoolean("presenter", "plotShadedHashMapStringCI", "drawShadedRegion") ;
+        
+        
+        setDrawError(false) ;
         setDrawPoints(true);
-
-
-        // setErrorType(ERROR_INTERVALS);
-        setErrorType(SHADED_REGION);
+        
+        if (drawShadedRegion)
+            setErrorType(SHADED_REGION) ;
+        else
+        	setErrorType(ERROR_INTERVALS);
             
         // Send data to be processed and presented
         chart_awt.plotLineChart(chartTitle,xyIntervalSeriesCollection, yLabel, xLabel, legend) ;
@@ -1462,12 +1467,12 @@ public class Presenter {
      * @param reportArray (ArrayList(ArrayListObject)) 
      * @return (String[]) Each entry is String.valueOf(the number of entries in each entry of reportArray)
      */
-    protected ArrayList<String> prepareEventsPerCycle(String scoreName, ArrayList<ArrayList<Comparable>> reportArray)
+    protected ArrayList<String> prepareEventsPerCycle(String scoreName, ArrayList<ArrayList<Comparable<?>>> reportArray)
     {
         ArrayList<String> eventsPerCycle = new ArrayList<String>() ;
         scoreName += ":" ;
         
-        for (ArrayList<Comparable> report : reportArray)
+        for (ArrayList<Comparable<?>> report : reportArray)
         {
             eventsPerCycle.add(scoreName + Integer.toString(report.size()) + " ") ;
         }
@@ -1501,7 +1506,7 @@ public class Presenter {
         chart_awt.plotBarChart(chartTitle, dataset, yLabel, xLabel) ;
     }            
     
-    public void plotEventsPerCycle(String scoreName, ArrayList<ArrayList<Comparable>> reportArray)
+    public void plotEventsPerCycle(String scoreName, ArrayList<ArrayList<Comparable<?>>> reportArray)
     {
         ArrayList<String> eventsPerCycle = prepareEventsPerCycle(scoreName,reportArray) ;
         
@@ -1567,9 +1572,9 @@ public class Presenter {
      * @return (HashMap) unsortedKey maps to (Number[]) values in order determined by 
      * looping through keySet.
      */
-    public HashMap<Comparable,Number[]> prepareSortedHashMap(HashMap<Comparable,HashMap<Comparable,Number>> sortedHashMap)
+    public HashMap<Comparable<?>,Number[]> prepareSortedHashMap(HashMap<Comparable,HashMap<Comparable,Number>> sortedHashMap)
     {
-        HashMap<Comparable,Number[]> plottingHashMap = new HashMap<Comparable,Number[]>() ;
+        HashMap<Comparable<?>,Number[]> plottingHashMap = new HashMap<Comparable<?>,Number[]>() ;
         
         HashMap<Comparable,Number> subHashMap ;
         
@@ -2045,24 +2050,18 @@ public class Presenter {
      * If set to false -> graph will not draw points
      * @param val
      */
-    public void setDrawPoints(boolean val) {
+    public void setDrawPoints(boolean val) 
+    {
         this.drawPoints = val;
     }
 
-    public void setDrawError(boolean val) {
+    public void setDrawError(boolean val) 
+    {
         this.drawError = val;
     }
 
     public boolean getDrawCI() {
         return this.drawError;
-    }
-
-    public void setXLogarithmic(boolean val) {
-        this.xLogarithmic = val;
-    }
-
-    public void setYLogarithmic(boolean val) {
-        this.yLogarithmic = val;
     }
 
     public void setErrorType(String val) {
@@ -2098,7 +2097,7 @@ public class Presenter {
          * @param yLabel
          * @param xLabel 
          */
-        private void callPlotNetwork(String chartTitle, ArrayList<HashMap<Comparable,ArrayList<Comparable>>> networkData, 
+        private void callPlotNetwork(String chartTitle, ArrayList<HashMap<Comparable<?>,ArrayList<Comparable<?>>>> networkData, 
                 String yLabel, String xLabel)
         {
             XYSeriesCollection dataset = createHubDataset(networkData) ;
@@ -2172,7 +2171,7 @@ public class Presenter {
          * @param yLabel
          * @param xLabel 
          */
-        private void callPlotScatterPlots(String chartTitle, ArrayList<HashMap<Comparable,ArrayList<Comparable>>> dataArray, String yLabel, String xLabel)
+        private void callPlotScatterPlots(String chartTitle, ArrayList<HashMap<Comparable<?>,ArrayList<Comparable<?>>>> dataArray, String yLabel, String xLabel)
         {
             XYSeriesCollection dataset = createScatterPlotDataset(dataArray, chartTitle) ;
             plotScatterPlot(chartTitle, dataset, yLabel, xLabel) ;
@@ -2185,7 +2184,7 @@ public class Presenter {
          * @param yLabel
          * @param xLabel 
          */
-        private void callPlotScatterPlot(String chartTitle, HashMap<Comparable,ArrayList<Comparable>> dataHashMap, String yLabel, String xLabel)
+        private void callPlotScatterPlot(String chartTitle, HashMap<Comparable<?>,ArrayList<Comparable<?>>> dataHashMap, String yLabel, String xLabel)
         {
             XYSeriesCollection dataset = createScatterPlotDataset(dataHashMap, chartTitle) ;
             plotScatterPlot(chartTitle, dataset, yLabel, xLabel) ;
@@ -2224,7 +2223,7 @@ public class Presenter {
             if (PLOT_FILE)
             {
                 // Data from file
-                HashMap<Comparable,Number[]> dataReport = READ_HASHMAP_NUMBER_ARRAY_CSV(FILENAME) ;
+                HashMap<Comparable<?>,Number[]> dataReport = READ_HASHMAP_NUMBER_ARRAY_CSV(FILENAME) ;
               // logger.log(level.info, "{0}", dataReport);
                 // Match categories to input file
                 if (readInputFile && (categoryList.size() > dataReport.size()))
@@ -2444,9 +2443,10 @@ public class Presenter {
          * @param yLabel
          * @param xLabel 
          */
-        private void plotLineChart(String chartTitle, XYDataset dataset, String yLabel, String xLabel, String[] legend) {
+        private void plotLineChart(String chartTitle, XYDataset dataset, String yLabel, String xLabel, String[] legend) 
+        {
 
-            boolean showLegend = !(legend[0].isEmpty()) ;
+            boolean showLegend = (legend[0].isEmpty() || insetLegend) ? false : true ;
 
             // define lineChart and set error renderer
             JFreeChart lineChart = ChartFactory.createXYLineChart(chartTitle,xLabel,
@@ -2578,22 +2578,25 @@ public class Presenter {
             // domainAxis.setTickUnit(new NumberTickUnit(500));
 
             // draw legend
-            boolean insetLegend = false ;
+            
             if (!legend[0].isEmpty()) {
                 LegendTitle plotLegend = lineChart.getLegend() ;
-                if (!insetLegend)
-                    plotLegend.setPosition(RectangleEdge.RIGHT);
+                if (insetLegend)
+                {
+                    LegendTitle lt = new LegendTitle(lineChart.getXYPlot());
+                    lt.setItemFont(legendFont);
+                    lt.setBackgroundPaint(new Color(200, 200, 255, 100));
+                    lt.setFrame(new BlockBorder(Color.white));
+                    lt.setPosition(RectangleEdge.RIGHT);
+                    XYTitleAnnotation ta = new XYTitleAnnotation(0.98, 0.02, lt, RectangleAnchor.BOTTOM_RIGHT);
+                    lineChart.getXYPlot().addAnnotation(ta);
+
+                    // code snippet from GrahamA's solution at:
+                    // https://stackoverflow.com/questions/11320360/embed-the-legend-into-the-plot-area-of-jfreechart
+                }
                 else
                 {
-                    //LegendTitle lt = new LegendTitle(plot);
-                    plotLegend.setItemFont(new Font("Dialog", Font.PLAIN, 9));
-                    plotLegend.setBackgroundPaint(new Color(200, 200, 255, 100));
-                    //plotLegend.setFrame(new BlockBorder(Color.white));
-                    //plotLegend.setPosition(RectangleEdge.BOTTOM);
-                    XYTitleAnnotation ta = new XYTitleAnnotation(0.98, 0.02, plotLegend,RectangleAnchor.BOTTOM_RIGHT);
-
-                    //ta.setMaxWidth(0.48);
-                    lineChart.getXYPlot().addAnnotation(ta);
+                    plotLegend.setPosition(RectangleEdge.RIGHT);
                 }
             }
 
@@ -2657,7 +2660,7 @@ public class Presenter {
             rangeAxis.setTickLabelFont(tickRangeFont);
             
             // legend
-            lineChart.getLegend().setItemFont(legendFont);
+            if (showLegend) lineChart.getLegend().setItemFont(legendFont);
             
             
             displayChart(lineChart) ;
@@ -2682,6 +2685,7 @@ public class Presenter {
                 int series = this.randIntInRangeInclusive(0, numSeries - 1);
                 int itemCount = dataset.getItemCount(series);
 
+                if (itemCount == 0) continue;
                 // randomly select an item
                 int item = this.randIntInRangeInclusive(0, itemCount - 1);
 
@@ -3186,12 +3190,12 @@ public class Presenter {
          * @param plotTitle
          * @return 
          */
-        private XYSeriesCollection createScatterPlotDataset(ArrayList<HashMap<Comparable,ArrayList<Comparable>>> hashMapArrayList, 
+        private XYSeriesCollection createScatterPlotDataset(ArrayList<HashMap<Comparable<?>,ArrayList<Comparable<?>>>> hashMapArrayList, 
                 String plotTitle)
         {
             XYSeriesCollection scatterPlotDataset = new XYSeriesCollection() ;
             String seriesTitle ;
-            HashMap<Comparable,ArrayList<Comparable>> hashMap ;
+            HashMap<Comparable<?>,ArrayList<Comparable<?>>> hashMap ;
                 
             for (int index = 0 ; index < hashMapArrayList.size() ; index++ )
             {
@@ -3209,7 +3213,7 @@ public class Presenter {
          * @param plotTitle
          * @return (XYSeriesCollection) 
          */
-        private XYSeriesCollection createScatterPlotDataset(HashMap<Comparable,ArrayList<Comparable>> agentToAgentHashMap, String plotTitle)
+        private XYSeriesCollection createScatterPlotDataset(HashMap<Comparable<?>,ArrayList<Comparable<?>>> agentToAgentHashMap, String plotTitle)
         {
             return new XYSeriesCollection(createScatterPlotSeries(agentToAgentHashMap,plotTitle)) ;
         }
@@ -3220,7 +3224,7 @@ public class Presenter {
          * @param seriesTitle
          * @return (XYSeries) with entires suitable for XYPlot.
          */
-        private XYSeries createScatterPlotSeries(HashMap<Comparable,ArrayList<Comparable>> agentToAgentHashMap, String seriesTitle)
+        private XYSeries createScatterPlotSeries(HashMap<Comparable<?>,ArrayList<Comparable<?>>> agentToAgentHashMap, String seriesTitle)
         {
             XYSeries scatterPlotDataset = new XYSeries(seriesTitle) ;
             for (Object positiveAgent : agentToAgentHashMap.keySet())
@@ -3235,14 +3239,14 @@ public class Presenter {
          * @param hubTitle
          * @return 
          */
-        private XYSeriesCollection createHubDataset(ArrayList<HashMap<Comparable,ArrayList<Comparable>>> cycleToAgentArray)
+        private XYSeriesCollection createHubDataset(ArrayList<HashMap<Comparable<?>,ArrayList<Comparable<?>>>> cycleToAgentArray)
         {
             XYSeriesCollection hubSeriesCollection = new XYSeriesCollection() ;
             HashMap<Object,Number> lastInfected = new HashMap<Object,Number>() ;
             
             for (int cycle = 0 ; cycle < cycleToAgentArray.size() ; cycle++ )
             {
-                HashMap<Comparable,ArrayList<Comparable>> agentToAgentHashMap = cycleToAgentArray.get(cycle) ;
+                HashMap<Comparable<?>,ArrayList<Comparable<?>>> agentToAgentHashMap = cycleToAgentArray.get(cycle) ;
                 for (Object transmitterId : agentToAgentHashMap.keySet())
                 {
                     String seriesTitle = "cycle" + String.valueOf(cycle) 
@@ -3251,7 +3255,7 @@ public class Presenter {
             
                     if (!lastInfected.containsKey(transmitterId))
                         lastInfected.put(transmitterId, 0) ;
-                    ArrayList<Comparable> toAgentArray = agentToAgentHashMap.get(transmitterId) ;
+                    ArrayList<Comparable<?>> toAgentArray = agentToAgentHashMap.get(transmitterId) ;
                     //LOGGER.log(Level.INFO, "{0}", toAgentArray ) ;
                     hubSeries = generateHub((Number) transmitterId, lastInfected.get(transmitterId), toAgentArray, cycle, hubSeries) ;
                     for (Object receiverId : toAgentArray)
@@ -3278,7 +3282,7 @@ public class Presenter {
          * @param nodeCycle
          * @return (XYSeries) with additional nodes showing transmissions in cycle nodeCycle from Agent hubId infected in cycle hubCycle.
          */
-        private XYSeries generateHub(Number hubId, Number hubCycle, ArrayList<Comparable> hubArray, Number nodeCycle, XYSeries hubSeries)
+        private XYSeries generateHub(Number hubId, Number hubCycle, ArrayList<Comparable<?>> hubArray, Number nodeCycle, XYSeries hubSeries)
         {
             for (Object nodeId : hubArray)
                 hubSeries = generateHubNode(hubId, hubCycle, (Number) nodeId, nodeCycle, hubSeries) ;

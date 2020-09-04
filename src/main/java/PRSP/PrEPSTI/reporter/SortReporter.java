@@ -91,11 +91,11 @@ public class SortReporter extends Reporter {
      * TODO: Sort out Object vs String both here and related Methods.
      * @return HashMap of records sorted according to values.
      */
-    public HashMap<Object,HashMap<Comparable,ArrayList<Comparable>>> prepareReceiveSortPrepStatusRecord(String[] values)
+    public HashMap<Object,HashMap<Comparable<?>,ArrayList<Comparable<?>>>> prepareReceiveSortPrepStatusRecord(String[] values)
     {
-        HashMap<Comparable,ArrayList<Comparable>> transmissionRecord = ((EncounterReporter) unsortedReporter).prepareAgentToAgentRecord() ;
+        HashMap<Comparable<?>,ArrayList<Comparable<?>>> transmissionRecord = ((EncounterReporter) unsortedReporter).prepareAgentToAgentRecord() ;
         
-        HashMap<Comparable,ArrayList<Comparable>> sortingReport = ((PopulationReporter) sortingReporter).sortPrepStatus() ;
+        HashMap<Comparable<?>,ArrayList<Comparable<?>>> sortingReport = ((PopulationReporter) sortingReporter).sortPrepStatus() ;
         
         //String[] values = new String[] {TRUE, FALSE} ;
         
@@ -118,20 +118,20 @@ public class SortReporter extends Reporter {
 
         // key:age value:ArrayList of new Relationships for each Agent, sums to 
         //total number of new Relationships formed by that age.
-        HashMap<Object,HashMap<Comparable,ArrayList<Comparable>>> ageEnteredRelationshipRecord 
-                = new HashMap<Object,HashMap<Comparable,ArrayList<Comparable>>>() ;
+        HashMap<Object,HashMap<Comparable<?>,ArrayList<Comparable<?>>>> ageEnteredRelationshipRecord 
+                = new HashMap<Object,HashMap<Comparable<?>,ArrayList<Comparable<?>>>>() ;
         for (String relationshipClassName : relationshipClassNames)
-            ageEnteredRelationshipRecord.put(relationshipClassName, new HashMap<Comparable,ArrayList<Comparable>>()) ;
+            ageEnteredRelationshipRecord.put(relationshipClassName, new HashMap<Comparable<?>,ArrayList<Comparable<?>>>()) ;
         
         //key:agentId value: Age for final record in report or at death
         HashMap<Object,Integer> sortAgeRecord = ((PopulationReporter) sortingReporter).sortAgeRecord() ;
         
         // Each record is a HashMap indicating new relationshipIds for relevant (key) Agents
-        ArrayList<HashMap<Comparable,HashMap<Comparable,ArrayList<Comparable>>>> agentsEnteredRelationshipReport 
+        ArrayList<HashMap<Comparable<?>,HashMap<Comparable<?>,ArrayList<Comparable<?>>>>> agentsEnteredRelationshipReport 
                 = ((RelationshipReporter) unsortedReporter).prepareAgentsEnteredRelationshipReport(relationshipClassNames) ;
         
         // Find Relationships entered by Agents with given final age.
-        for (HashMap<Comparable,HashMap<Comparable,ArrayList<Comparable>>> enteredRelationshipRecord : agentsEnteredRelationshipReport)
+        for (HashMap<Comparable<?>,HashMap<Comparable<?>,ArrayList<Comparable<?>>>> enteredRelationshipRecord : agentsEnteredRelationshipReport)
             for (Object relationshipClassName : enteredRelationshipRecord.keySet())
                 for (Object agentId : enteredRelationshipRecord.get(relationshipClassName).keySet())
                     ageEnteredRelationshipRecord.put(relationshipClassName,
@@ -141,7 +141,7 @@ public class SortReporter extends Reporter {
         for (Object relationshipClassName : ageEnteredRelationshipRecord.keySet())
             for (Comparable ageKey : ageEnteredRelationshipRecord.get(relationshipClassName).keySet())
             {
-                ArrayList<Comparable> ageRecord = ageEnteredRelationshipRecord.get(relationshipClassName).get(ageKey) ;
+                ArrayList<Comparable<?>> ageRecord = ageEnteredRelationshipRecord.get(relationshipClassName).get(ageKey) ;
                 //LOGGER.log(Level.INFO, "ageKey:{0} ageRecord:{1}", new Object[] {ageKey,ageRecord});
 
                 // Count Agents of final age ageKey 
@@ -195,7 +195,7 @@ public class SortReporter extends Reporter {
             referencePopulation += screenSortAgentNewPartnersReport.get(binIndex).size() ;
         
         // Report of agentIds maps to number of incidents in given time
-        HashMap<Comparable,Number> sortAgentIncidentReport 
+        HashMap<Comparable<?>,Number> sortAgentIncidentReport 
                 = prepareSortAgentIncidentsReport(backYears, backMonths, backDays) ;
         // HashMap (binned) numbers of new Relationships maps to total incidence
         // of all corresponding agentIds
@@ -267,7 +267,7 @@ public class SortReporter extends Reporter {
         double referencePopulation = sortAgentConcurrencyReport.get(0).size() ;
         
         // Report of agentIds maps to number of incidents in given time
-        HashMap<Comparable,Number> sortAgentIncidentReport 
+        HashMap<Comparable<?>,Number> sortAgentIncidentReport 
                 = prepareSortAgentIncidentsReport(backYears, backMonths, backDays) ; // Removed binSize=1
         // HashMap (binned) numbers of new Relationships maps to total incidence
         // of all corresponding agentIds
@@ -318,20 +318,20 @@ public class SortReporter extends Reporter {
      * @param backDays
      * @return report where agentId maps to incidents in the last backYears. backMonths and backDays
      */
-    public HashMap<Comparable,Number> prepareSortAgentIncidentsReport(int backYears, int backMonths, int backDays)
+    public HashMap<Comparable<?>,Number> prepareSortAgentIncidentsReport(int backYears, int backMonths, int backDays)
     {
-        HashMap<Comparable,Number> agentIncidenceCount = new HashMap<Comparable,Number>() ;
+        HashMap<Comparable<?>,Number> agentIncidenceCount = new HashMap<Comparable<?>,Number>() ;
         
         
         int finalRecordNb = Integer.valueOf(sortingReporter.getMetaDatum("Community.MAX_CYCLES")) - 1 ;
         int recordIndex = finalRecordNb ;    // TODO: Generalize to arbitrary recordIndex.
         
         // transmitting agentId maps to receiving agentId maps to (ArrayList) cycle of infection
-        HashMap<Comparable,HashMap<Comparable,ArrayList<Comparable>>> agentToAgentReport = ((EncounterReporter) unsortedReporter).prepareAgentToAgentReport() ;
+        HashMap<Comparable<?>,HashMap<Comparable<?>,ArrayList<Comparable<?>>>> agentToAgentReport = ((EncounterReporter) unsortedReporter).prepareAgentToAgentReport() ;
         // Inverts to Cycle maps to infecting agentId maps to (ArrayList) infected AgentIds
-        HashMap<Comparable,HashMap<Comparable,ArrayList<Comparable>>> invertedHashMap = EncounterReporter.INVERT_HASHMAP_HASHMAP(agentToAgentReport) ;
+        HashMap<Comparable<?>,HashMap<Comparable<?>,ArrayList<Comparable<?>>>> invertedHashMap = EncounterReporter.INVERT_HASHMAP_HASHMAP(agentToAgentReport) ;
         
-        ArrayList<ArrayList<Comparable>> unsortedReport = ((EncounterReporter) unsortedReporter).prepareReceiveCountReport(invertedHashMap) ;
+        ArrayList<ArrayList<Comparable<?>>> unsortedReport = ((EncounterReporter) unsortedReporter).prepareReceiveCountReport(invertedHashMap) ;
         
         // New partners per agentId
 
@@ -352,7 +352,7 @@ public class SortReporter extends Reporter {
         // Count new relationships for each Agent over past backYears years
         for (int cycle = 0 ; cycle < backCycles ; cycle++)
         {
-            ArrayList<Comparable> receivingAgentIds = unsortedReport.get(recordIndex - cycle) ;
+            ArrayList<Comparable<?>> receivingAgentIds = unsortedReport.get(recordIndex - cycle) ;
             for (Comparable agentId : receivingAgentIds)
                 agentIncidenceCount = INCREMENT_HASHMAP(agentId,agentIncidenceCount) ;
         }
@@ -472,7 +472,7 @@ public class SortReporter extends Reporter {
         ArrayList<ArrayList<Comparable>> sortingReport = ((RelationshipReporter) sortingReporter).prepareAgentCommenceReport() ;
         
         // New partners per agentId
-        HashMap<Comparable,Number> agentCommenceCount = new HashMap<Comparable,Number>() ;
+        HashMap<Comparable<?>,Number> agentCommenceCount = new HashMap<Comparable<?>,Number>() ;
 
         // Modify backYears if necessary so you don't go past beginning of simulation
         if (daysPerYear*backYears > recordIndex)

@@ -1,26 +1,42 @@
+* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+START OF DOCUMENTATION
+* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
 @author: David Stiasny
 @date: 05/08/2020
 @contact: dstiasny@outlook.com
-@GitHub: dStass
+@GitHub: dStass [https://github.com/dStass]
+@contracted period: 03/03/2020 - 12/08/2020
 
 
-
+* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 Index
-- Section 1: MDLL ............................................................. line   13
-- Section 2: Concurrency ...................................................... line  100
-  - Section 2a: package ....................................................... line  100
-  - Section 2b: multithreading location ....................................... line  100
-- Section 3: Simulation Reboot ................................................ line  150
-- Section 4: Build: Ant and Maven ............................................. line  200
-- Section 5: Plots: Shaded and Interval ....................................... line  250
-- Section 6: Configuration files .............................................. line  300
-- Section 7: Other miscellaneous fixes......................................... line  320
-  - Section 7a: StringBuilder and StringBuffer ................................ line  350
+* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
+- Section 1: MDLL ............................................................. line   31
+- Section 2: Concurrency ...................................................... line  161
+  - Section 2a: package ....................................................... line  164
+  - Section 2b: multithreading location ....................................... line  173
+- Section 3: Simulation Reboot (at a given cycle) ............................. line  193
+- Section 4: Build: Ant, Maven and dependencies ............................... line  261
+- Section 5: JFreeChart: Shaded and Interval Plots ............................ line  295
+- Section 6: Configuration files .............................................. line  346
+- Section 7: Other miscellaneous topics ....................................... line  422
+  - Section 7a: StringBuilder and StringBuffer ................................ line  425
+  - Section 7b: Runtime analysis .............................................. line  444
+  - Section 7c: Headless detection and chart generation on a supercomputer .... line  498
+  - Section 7d: Chart colours ................................................. line  517
 
-Section 1: MDLL
-- MDLL (Mapped Doubly-Linked List) is a data structure that combines two sub data 
-  tructures (map and a doubly-linked list)
+* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Section 1: MDLL (Mapped Doubly-Linked List)
+* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+Motivation:
+- An alternate data structure which combines a doubly-linked list and a Hashmap, it
+  is able to preserve insertion order and have the special properties of constant time
+  insertion, retrieval and removal.
+- It is used in place of a list to store agents for significant speed gain.
+- Each agent added must have a unique key associated (such as its id)
 
 Supported operations:
 
@@ -136,14 +152,14 @@ Supported operations:
 Where it is used in this project:
   - maintaining a collection of current agents in the simmulation inside Community
     (replaces ArrayList<Agent>)
-  - used in generateRelationships() for significance speed gain
+  - used in generateRelationships() for significant runtime reduction
 
 Note: This uses significantly more memory than using a standard list
 
 
-
+* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 Section 2: Concurrency
-
+* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
 Section 2a: package PRSP.PrEPSTI.concurrency;
 - contains two static methods to convert:
@@ -161,8 +177,8 @@ Section 2b: Where multithreading is used in this application
   record
 - ScreeningReporter.prepareYearsAtRiskIncidenceReport(): parallelised on backYears,
   generating each year's report in parallel
-- ScreeningReporter.prepareRawAgentSiteReport(): parallelised on each agent when looking
-  at their infections
+- ScreeningReporter.prepareRawAgentSiteReport(): parallelised on each agent when
+looking at their infections
 
 Note: currently does not support nested maps with other data structures, such as:
 HashMap<K1, HashMap<K2, ArrayList<T>>>
@@ -173,7 +189,9 @@ due to concurrency isues.
 This can be done using the methods outlined in section 2a.
 
 
+* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 Section 3: Simulation Reboot (at a given cycle)
+* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
 The application allows the user to restart a simulation at a particular cycle as
 an extension to the previous functionality.
@@ -239,9 +257,10 @@ Duplicates the -METADATA file with modified MAX_CYCLES using the method:
 - Reporter.DUPLICATE_METADATA_WITH_MODIFIED_PROPERTIES
 
 
-
+* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 Section 4: Build files with Ant and project migration to Maven post working from
 home due to Covid-19
+* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
 Notable changes:
 
@@ -272,16 +291,139 @@ To modify build source, modify mainClass field in build.properties.
 This changes which file in which the main method exists. 
 
 
+* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Section 5: JFreeChart: Shaded and Interval Plots 
+* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
-Section 5: Plots with shading and error intervals
+Some modifications have been done to JFreeChart and graphical abilities of this project.
+
+1. JFreeChart has been upgraded to version 1.5.0 and no longer require to be compiled
+   It exists as a .jar file within the /lib folder
+
+2. Main settings for charts can be found in Presenter.java under
+   "LINE GRAPH DRAWING INFO"
+
+They include:
+- lineGraphErrorType: this can be set to either ERROR_INTERVALS or SHADED_REGION
+  - ERROR_INTERVALS:  if this is set, charts with error intervals will display BARS
+                      indicating the range at a particular point
+  - SHADED_REGION:    in a similar way, this will display shaded regions of error instead
+
+- drawPoints: this boolean will dictate whether particular points are drawn, generally
+              good when the user wants to plot points at yearly intervals,
+              this is less desirable for line charts plotting at daily intervals
+
+- drawError: this dictates whether or not error bars or shaded regions are drawn
+
+3. Line charts:
+- The type of renderer used is dependent on lineGraphErrorType from above, it will be
+  set to:
+  - XYErrorRenderer: if error intervals are being plotted
+  - XYDeviationRenderer: otherwise (this is used for shaded regions)
+- Other graphical changes such as font, colour, etc can be found in Presenter
+  under plotLineChart()
+- Some settings will change based on whether the domain contains only integer values,
+  this is identified in isDomainInteger(XYDataset) by randomly sampling three points
+  and checking whether they are all integers.
+
+4. Bar charts:
+- Some minor changes to plotting features such as colours, etc. have been implemented.
+- changes can be viewed at plotBarChart()
+
+5. ScreeningPresenter.plotMedianAndRangeFromCSVFileNames()
+- This method receives a list of filenames and a legend (amongst a few other parameters)
+  and plots the first three columns in those files where:
+  - column 1: indicates a particular y-value to plot
+  - column 2: indicates the lower error bound
+  - column 3: indicates the upper error bound
+- Each row indicates an x-value and they are all evenly spaced
+- Each fileName will indicate a different property to be plotted on the same chart
+- The index of each fileName corresponds to a legend item at the same index in the
+  legends array
 
 
+* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Section 6: Configuration files
+* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+Class introduced: ConfigLoader
+
+This class is with static methods is used to load a specific .json configuration file
+as described in the config.properties file
+
+Calling ConfigLoader.load() will do three things:
+1. Reads config.properties and extracts a path and file for the correct configuration
+   file to be read.
+
+2. Read the specified .json file from step 1 using the package simple-json
+
+3. Sets the required information into the variables specified into variables in different
+   classes.
+
+Layout:
+
+A typical config.json file should have the following variables pointing to dictionaries:
+- paths
+- community
+- agent
+- reporter
+- presenter
+- config_loader
+
+Each of these fields represent a class, with the exception of 'paths'.
+
+Within each dictionary, there will be a collection of key-value pairs.
+If the key is NOT named "methods", then it is assumed the key is a variable
+of the class it appears under.
+Otherwise, for each key-value pairs under "methods", the key represents the name of
+a methodunder that class.
+Within each of these, there is a collection of key-value pairs that represent variables
+that can be extracted by the getMethodVariable{Type} methods.
+
+Pick the appropriate {Type} for the correct type to be extracted,
+such as String or Boolean. A sample subsection of config.json:
+- {
+-   agent : {
+-     "FILE_PATH" : "somePath",
+-     "methods" : {
+-       "interveneCommunity" : {
+-         "startCycle" = "1"
+-       }
+-     }
+-   }
+- }
+
+ConfigLoader.load() will set Agent.FILE_PATH to "somePath" and
+when interveneCommunity() is called, the user can extract startCycle by calling the
+appropropriate getMethodVariable{Type} method such as:
+- int startCycle = ConfigLoader.getMethodVariableInteger("community",
+-                                                        "interveneCommunity",
+-                                                        "startCycle");
+
+Note: Currently there is no separation between overloaded methods of the same name with
+different argument types. A workaround is to name the methods slightly different with
+arguments and call them accordingly. An example would be:
+- getMethodVariableInteger("community", "interveneCommunity(int, float)", "startCycle")
+
+Note: Saving static variable directly to classes is accomplished by hard-coded methods:
+- loadPaths(),
+- loadCommunity(),
+- etc. 
+
+For new variables, the user will have to modify these methods slightly to take those
+into account.
+
+Note: It has not been taken into account in the scenario where "methods" : { ... }
+is empty within the curly brackets,if no method variables are required,
+omit "methods" entirely from the .json configuration files.
 
 
+* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+Section 7: Other miscellaneous topics
+* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
-Section 7: Other miscellaneous fixes and additions
+Section 7a: StringBuilder and StringBuffer
 
-7a) StringBuilder and StringBuffer
 Many places in the code-base utilises StringBuilder and StringBuffer with the former
 being the preferred choice. This effectively replaces concatenating strings or using
 the += operator for string operations. This was implemented to reduce time taken to 
@@ -294,6 +436,93 @@ The differences between both:
 - StringBuffer: Slower but can be used to append strings concurrently
   - use when MULTI-THREADING
 
-Apply a final .toString() to convert a StringBuilder/StringBuffer object into a String
+A final .toString() statement is applied to convert a StringBuilder/StringBuffer object 
+into a String
 
 
+Section 7b: Runtime analysis
+
+There is code in the background that measures how long methods take to run by the use
+of the method:
+- Community.RECORD_METHOD_TIME(String name, float time)
+
+How the user can use this is by first measuring the system time when a method first starts
+and then again at the end of the method, saving them into t0 and t1 variables respectively.
+The user can then call the method:
+- Community.RECORD_METHOD_TIME("methodName", t1 - t0);
+
+This will record the time difference every time the method is called and saved under
+the name "methodName".
+
+No initialisation on the user's part is necessary as RECORD_METHOD_TIME handles this.
+
+Note: At the current time, this method does not distinguish where RECORD_METHOD_TIME is
+called from and solely relies on "methodName" to identify where the time difference is to
+be saved. Consequently, if the user is measuring the time difference between two methods
+of the same name in different classes and only declares the method name, this will lead to
+the time differences combined together under the one name.
+
+Good practice when calling RECORD_METHOD_TIME is to specify exactly the class names for
+methodName, such as:
+- Community.RECORD_METHOD_TIME("classA.methodName(param1), t1-t0)
+- Community.RECORD_METHOD_TIME("classA.classB.methodName(param1, param2), t1-t0)
+- etc.
+
+Everything is then stored in Community.methodTimeStamp (which itself is a hashmap).
+
+The user is able to then print the desired time records at the end of the application,
+such as the following script sample:
+- System.out.println("\n\nTime taken for each methods:");
+- RECORD_METHOD_TIME("TOTAL", System.nanoTime() - timeInitial);
+- HashMap<String, Float> methodPercentages = FINALISE_METHOD_TIME();
+- ArrayList<String> keys = new ArrayList<String>(Community.methodsTimeStamp.keySet());
+- Collections.sort(keys);
+- for (String s : keys) {
+-     System.out.println("- " + methodPercentages.get(s) * 100 + "% : " + s + " -> "
+-                             + Community.methodsTimeStamp.get(s) / 1_000_000_000 + "s");
+- }
+- System.out.println("Completed");
+
+Note: FINALISE_METHOD_TIME() will add a total time taken for all recorded methods, this is
+not to be mistaken for the entire duration of the simulation unless the user records the
+time taken for all methods without any double counting. It will also populate the hashmap
+methodPercentages, with the proper % of time taken by dividing each individual time over
+the total calculated.
+
+Note: Care must be taken as double counting is possible, an example being if the user
+measures the time taken for method A and B to run, where method B is called by method A.
+This will effectively add the duration of method B into method A.
+Currently the implementation does not handle any double counting fix.
+
+
+Section 7c: Detecting headless state and generating charts on a supercomputer
+
+Headless state detection for running this package on an HPC
+- the method detectHPC() will detect whether the current state of the application is
+  headless, in this context, it means that graphical output does not exists.
+- if a headless state is detected, a warning message will be displayed when displaying
+  a generated chart, otherwise a graphical window will launch. This occurs when launching
+  the application on a laptop or a computer with a monitor.
+
+- Important: For this package to run on a supercomputer, the user must add the
+  the following script prior to submitting a job:
+  - unset DISPLAY
+  This is used to set the environment's headless state to true, which then gets verified
+  using detectHPC()
+
+- Note: This has been tested and works on macOS, Windows 10 and the linux version
+        running on Katana and Gadi.
+
+
+Section 7d: Chart colours
+
+Different colours used in charts can be specified in configuration .json files under
+"colours" as a list of RGB sub-lists.
+
+The user can extract this list from ConfigLoader.getColours() to get them in that
+particular order or getColoursShuffled() to get a shuffled list.
+
+
+* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+END OF DOCUMENTATION
+* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
