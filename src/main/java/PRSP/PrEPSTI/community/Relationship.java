@@ -1,6 +1,8 @@
 package PRSP.PrEPSTI.community;
 
-import PRSP.PrEPSTI.agent.* ;
+import PRSP.PrEPSTI.agent.*;
+import PRSP.PrEPSTI.mdll.MDLL;
+
 import java.io.BufferedReader;
 
 //import java.io.File;
@@ -80,7 +82,7 @@ public class Relationship {
     static String PHARYNX = "Pharynx" ;
     
     static public String DEATH_RECORD = "death:" ;
-    static public StringBuilder SB_DEATH_RECORD = new StringBuilder("death:");
+    static public StringBuffer SB_DEATH_RECORD = new StringBuffer("death:");
 
     static public String BURNIN_COMMENCE = "clear:" ;
     static public String BURNIN_BREAKUP = "" ;
@@ -99,7 +101,7 @@ public class Relationship {
     {
         String output ;
         output = SB_DEATH_RECORD.toString() ;
-        SB_DEATH_RECORD = new StringBuilder("death:") ;
+        SB_DEATH_RECORD = new StringBuffer("death:") ;
         return output ;
     }
     
@@ -264,7 +266,7 @@ public class Relationship {
      * @param agents
      * @return
      */
-    static public int REBOOT_RELATIONSHIPS(String simName, ArrayList<Agent> agents) {
+    static public int REBOOT_RELATIONSHIPS(String simName, MDLL<Agent> agents) {
         return REBOOT_RELATIONSHIPS(FOLDER_PATH, simName, agents);
     }
 
@@ -275,12 +277,23 @@ public class Relationship {
      * @param agents
      * @return 
      */
-    static public int REBOOT_RELATIONSHIPS(String folderPath, String simName, ArrayList<Agent> agents)
+    static public int REBOOT_RELATIONSHIPS(String folderPath, String simName, MDLL<Agent> agentsMDLL)
     {
+        float t0 = System.nanoTime();
         NB_RELATIONSHIPS = 0 ;        
         String relationshipRecord  = "" ;
         Integer relationshipId ;
-        ArrayList<Integer> currentRelationshipIds = new ArrayList<Integer>() ;
+
+
+        HashSet<Integer> currentRelationshipIds = new HashSet<Integer>() ;
+
+        // optimisation:
+        // HashMap<Integer, Agent> agentMapping = new HashMap<Integer, Agent>();
+        // for (Agent agent : agentsMDLL) {
+        //     agentMapping.put(agent.getAgentId(), agent);
+        // }
+
+        
         
         String rebootFileName = simName.concat("-REBOOT.txt") ;
         //ArrayList<String> nameArray = new ArrayList<String>() ;
@@ -298,12 +311,12 @@ public class Relationship {
                 }
             }
             fileReader.close() ;
-            String agentId0 ;
-            String agentId1 ;
+            // String agentId0 ;
+            // String agentId1 ;
             int agentIndex0 = 0 ;
             int agentIndex1 = 0 ;
-            int agentsFound ;
-            int agentIndex ;
+            // int agentsFound ;
+            // int agentIndex ;
             String relationshipClazzName ;
 
             ArrayList<String> relationshipIdList = Reporter.EXTRACT_ARRAYLIST(relationshipRecord, Reporter.RELATIONSHIPID) ;
@@ -318,34 +331,38 @@ public class Relationship {
                 }
                 currentRelationshipIds.add(relationshipId) ;
 
-                agentId0 = Reporter.EXTRACT_VALUE(Reporter.AGENTID0, relationshipString) ;
-                agentId1 = Reporter.EXTRACT_VALUE(Reporter.AGENTID1, relationshipString) ;
+                String agentId0 = Reporter.EXTRACT_VALUE(Reporter.AGENTID0, relationshipString) ;
+                String agentId1 = Reporter.EXTRACT_VALUE(Reporter.AGENTID1, relationshipString) ;
+
+                Agent agent0 = agentsMDLL.get(Integer.valueOf(agentId0));
+                Agent agent1 = agentsMDLL.get(Integer.valueOf(agentId1));
 
                 // Add Agents of correct agentId
-                agentsFound = 0 ;
-                agentIndex = 0 ;
-                //for (int agentIndex = 0 ; agentIndex < agents.size() ; agentIndex++ )
-                while (agentsFound < 2)
-                {
-                    if (agents.get(agentIndex).getAgentId() == Integer.valueOf(agentId0))
-                    {
-                        agentIndex0 = agentIndex ;
-                        agentsFound++ ;
-                    }
-                    else if (agents.get(agentIndex).getAgentId() == Integer.valueOf(agentId1))
-                    {
-                        agentIndex1 = agentIndex ;
-                        agentsFound++ ;
-                    }
-                    agentIndex++ ;
-                }
+                // agentsFound = 0 ;
+                // agentIndex = 0 ;
+                // //for (int agentIndex = 0 ; agentIndex < agents.size() ; agentIndex++ )
+                // while (agentsFound < 2)
+                // {
+                //     if (agents.get(agentIndex).getAgentId() == Integer.valueOf(agentId0))
+                //     {
+                //         agentIndex0 = agentIndex ;
+                //         agentsFound++ ;
+                //     }
+                //     else if (agents.get(agentIndex).getAgentId() == Integer.valueOf(agentId1))
+                //     {
+                //         agentIndex1 = agentIndex ;
+                //         agentsFound++ ;
+                //     }
+                //     agentIndex++ ;
+                // }
 
                 // Find Relationship Class and create Relationship
-                relationshipClazzName = Reporter.EXTRACT_VALUE("relationship", relationshipString) ;
-                Class relationshipClazz = Class.forName("PRSP.PrEPSTI.community.".concat(relationshipClazzName)) ;
+                String relationshipClassName = Reporter.EXTRACT_VALUE("relationship", relationshipString) ;
+                Relationship relationship = Relationship.GET_RELATIONSHIP_FROM_CLASS_NAME(relationshipClassName);
+                // Class relationshipClazz = Class.forName("PRSP.PrEPSTI.community.".concat(relationshipClazzName)) ;
 
-                Relationship relationship = (Relationship) relationshipClazz.getDeclaredConstructor().newInstance() ;
-                relationship.addAgents(agents.get(agentIndex0), agents.get(agentIndex1)) ;
+                // Relationship relationship = (Relationship) relationshipClazz.getDeclaredConstructor().newInstance() ;
+                relationship.addAgents(agent0, agent1) ;
                 NB_RELATIONSHIPS++ ;
                 relationship.setRelationshipId(relationshipId) ;
             }
@@ -356,6 +373,11 @@ public class Relationship {
             LOGGER.severe(e.toString()) ;
         }
         NB_RELATIONSHIPS_CREATED = 1 + ((Integer) Collections.max(new HashSet(currentRelationshipIds))) ;
+
+
+        long t1 = System.nanoTime();
+        Community.RECORD_METHOD_TIME("Relationship.REBOOT_RELATIONSHIPS", t1 - t0);
+
         return NB_RELATIONSHIPS ;
     }
     
@@ -494,6 +516,7 @@ public class Relationship {
      */
     final protected String encounter() 
     {
+        float t0 = System.nanoTime();
         String report = "" ;
         StringBuilder sbReport = new StringBuilder();
         double infectProbability ;
@@ -598,6 +621,9 @@ public class Relationship {
                 // report += Reporter.ADD_REPORT_PROPERTY("transmission", Boolean.toString(agent0.receiveInfection(infectProbability,site0))) ; 
             }
         }
+
+        float t1 = System.nanoTime();
+        Community.RECORD_METHOD_TIME("Relationship.encounter()", t1-t0);
         
         report = sbReport.toString();
         return report ;   	

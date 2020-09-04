@@ -3,8 +3,9 @@
  */
 package PRSP.PrEPSTI.agent;
 
-import PRSP.PrEPSTI.community.* ;
+import PRSP.PrEPSTI.community.*;
 import PRSP.PrEPSTI.configloader.ConfigLoader;
+import PRSP.PrEPSTI.mdll.MDLL;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -339,7 +340,7 @@ public abstract class Agent {
      * @param simName
      * @return
      */
-    static public ArrayList<Agent> REBOOT_AGENTS(String simName) {
+    static public MDLL<Agent> REBOOT_AGENTS(String simName) {
         return REBOOT_AGENTS(FOLDER_PATH, simName);
     }
 
@@ -348,9 +349,11 @@ public abstract class Agent {
      * @param simName 
      * @return  
      */
-    static public ArrayList<Agent> REBOOT_AGENTS(String folderPath, String simName)
+    static public MDLL<Agent> REBOOT_AGENTS(String folderPath, String simName)
     {
-        ArrayList<Agent> agents = new ArrayList<Agent>() ;
+        float t0 = System.nanoTime();
+        // ArrayList<Agent> agents = new ArrayList<Agent>() ;
+        MDLL<Agent> agentsMDLL = new MDLL<Agent>();
         String SITE = "Site:" ;
         
         // Needed if rebootFile == false
@@ -421,7 +424,17 @@ public abstract class Agent {
                     if (maxAgentId < newAgent.getAgentId())
                         maxAgentId = newAgent.getAgentId() ;
                     newAgent.clearInfection();
-                    agents.add(newAgent) ;
+                    // agents.add(newAgent) ;
+                    agentsMDLL.add(newAgent.getAgentId(), newAgent);
+                    
+                    // Reboot screencycle here when testing it
+                    if (scenarioScreenPositive)
+                        if (newAgent.getStatusHIV())
+                            newAgent.rebootScreenCycle(2020, 1.1, 1.0) ;
+                    
+                    if (scenarioScreenPrep)
+                        if (newAgent.getPrepStatus())
+                            newAgent.rebootScreenCycle(2020, 1.1, 1.0) ;
                     
                     // Reboot screencycle here when testing it
                     if (scenarioScreenPositive)
@@ -522,8 +535,12 @@ public abstract class Agent {
             }
         }
         NB_AGENTS_CREATED = maxAgentId + 1;
+
+        long t1 = System.nanoTime();
+        Community.RECORD_METHOD_TIME("Agent.REBOOT_AGENTS", t1 - t0);
         
-        return agents ;
+        // return agents ;
+        return agentsMDLL;
     }
     
     /**
@@ -565,6 +582,10 @@ public abstract class Agent {
                 testProperty = property ;
                 //LOGGER.info(testProperty) ;
                 valueString = Reporter.EXTRACT_VALUE(property, census) ;
+                if (valueString.endsWith(",") || valueString.endsWith("}")) {
+                    valueString = valueString.substring(0, valueString.length() - 2);
+                }
+
                 
                 for (Class agentClazz : clazzFields.keySet())
                     for (Field field : clazzFields.get(agentClazz))
@@ -1333,8 +1354,10 @@ public abstract class Agent {
         site.setInfectionTime(infectionTime) ;
     }
 
-    /** screenTime setter().
-     * @param time */
+    /** 
+     * screenTime setter().
+     * @param time 
+     */
     public void setScreenTime(int time)
     {
         screenTime = time ;

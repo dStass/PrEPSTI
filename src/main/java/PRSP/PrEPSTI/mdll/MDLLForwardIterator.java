@@ -17,7 +17,7 @@ public class MDLLForwardIterator<T> implements MDLLIterator<T>{
         return true;
     }
 
-    public T getNextAndIterate() {
+    public T next() {
         this.curr = this.curr.getNext();
         if (this.curr.getId().equals(MDLL.LAST_ID)) return null;
         return this.curr.getObject();

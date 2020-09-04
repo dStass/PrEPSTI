@@ -1438,7 +1438,7 @@ public class MSM extends Agent {
             // extract agents that seroSort
             seroSortMDLL = new MDLL<MSM>() ;
             while (iterator.hasNext()) {
-                MSM msm = (MSM) iterator.getNextAndIterate() ;
+                MSM msm = (MSM) iterator.next() ;
                 boolean boolSeroSort = msm.getSeroSort(relationshipClassName) ;
                 if (boolSeroSort) seroSortMDLL.add(msm.getAgentId(), msm) ;    
             }
@@ -1447,12 +1447,12 @@ public class MSM extends Agent {
             MDLLIterator<MSM> seroBackwardIterator = seroSortMDLL.getBackwardIterator() ;
             while (seroBackwardIterator.hasNext())
             {
-                MSM msm0 = seroBackwardIterator.getNextAndIterate() ;
+                MSM msm0 = seroBackwardIterator.next() ;
                 relationshipAgentMDLL.remove(msm0.getAgentId()) ;
                 MDLLForwardIterator<Agent> relationshipForwardIterator = relationshipAgentMDLL.getForwardIterator() ;
                 while (relationshipForwardIterator.hasNext())
                 {
-                    MSM msm1 = (MSM) relationshipForwardIterator.getNextAndIterate() ;
+                    MSM msm1 = (MSM) relationshipForwardIterator.next() ;
                     if (msm1.statusHIV != msm0.statusHIV)
                         continue ;
                     
@@ -1473,7 +1473,7 @@ public class MSM extends Agent {
                     {
                         seroBackwardIterator.iterateBack() ;
                         seroSortMDLL.remove(msm1.getAgentId()) ;
-                        seroBackwardIterator.getNextAndIterate() ;
+                        seroBackwardIterator.next() ;
                     }
                     
                     Relationship relationship = Relationship.GET_RELATIONSHIP_FROM_CLASS_NAME(relationshipClassName) ;
@@ -1489,7 +1489,7 @@ public class MSM extends Agent {
             MDLLBackwardIterator<Agent> outerRelationshipBackwardIterator = relationshipAgentMDLL.getBackwardIterator() ;
             while (outerRelationshipBackwardIterator.hasNext())
             {
-                MSM msm0 = (MSM) outerRelationshipBackwardIterator.getNextAndIterate() ;
+                MSM msm0 = (MSM) outerRelationshipBackwardIterator.next() ;
 
                 // break when outer iterator is at the end
                 if (outerRelationshipBackwardIterator.hasNext() == false)
@@ -1499,7 +1499,7 @@ public class MSM extends Agent {
                 MDLLBackwardIterator<Agent> innerRelationshipBackwardIterator = relationshipAgentMDLL.getBackwardIterator(msm0.getAgentId()) ;
                 while (innerRelationshipBackwardIterator.hasNext())
                 {
-                    MSM msm1 = (MSM) innerRelationshipBackwardIterator.getNextAndIterate() ;
+                    MSM msm1 = (MSM) innerRelationshipBackwardIterator.next() ;
 
                     if (msm1.statusHIV != msm0.statusHIV) // First two ArrayList are serosorters
                         continue ;
@@ -1545,10 +1545,10 @@ public class MSM extends Agent {
         MDLLForwardIterator<Agent> agentForwardIterator = agentMDLL.getForwardIterator() ;
         while (agentForwardIterator.hasNext())
         {
-            Agent currAgent = (Agent) agentForwardIterator.getNextAndIterate() ;
+            Agent currAgent = (Agent) agentForwardIterator.next() ;
             MSM msm = (MSM) currAgent ;
             if (msm.seekRelationship(relationshipClassName))
-                seekingAgentMDLL.add(String.valueOf(msm.getAgentId()), msm) ;
+                seekingAgentMDLL.add(msm.getAgentId(), msm) ;
         }
         
 

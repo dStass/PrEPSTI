@@ -17,9 +17,12 @@ import PRSP.PrEPSTI.reporter.presenter.*;
 
 import PRSP.PrEPSTI.configloader.ConfigLoader;
 import PRSP.PrEPSTI.mdll.MDLL;
+import PRSP.PrEPSTI.mdll.MDLLForwardIterator;
+import PRSP.PrEPSTI.mdll.MDLLNode;
 
 import java.util.Random;
 import java.util.TreeSet;
+import java.util.concurrent.ConcurrentHashMap;
 import java.lang.reflect.*;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -91,7 +94,8 @@ public class Community {
     static Random RAND = new Random(RANDOM_SEED) ;
     
     /** Agents in population */
-    private ArrayList<Agent> agents = new ArrayList<Agent>() ;
+    // private ArrayList<Agent> agents = new ArrayList<Agent>() ;
+    private MDLL<Agent> agentsMDLL = new MDLL<Agent>();
     
     /** 
      * Agents in population who have not yet changed to current yearly parameter settings.
@@ -133,12 +137,16 @@ public class Community {
     // Logger
     static final java.util.logging.Logger LOGGER = java.util.logging.Logger.getLogger("reporter") ;
 	private static final String[] RELATIONSHIP_CLAZZ_NAMES = new String[] {"Casual","Regular","Monogomous"};
-    static ArrayList<String[]> timeStamps = null;
+    public static ArrayList<String[]> timeStamps = null;
+    public static ConcurrentHashMap<String, Float> methodsTimeStamp = null;
     static Long timeInitial = null;
 
 
     public static void main(String[] args) {
         timeStamps = new ArrayList<String[]>();
+        methodsTimeStamp = new ConcurrentHashMap<String, Float>();
+
+
         timeInitial = System.nanoTime();
 
         Community.timeStamps.add(new String[] {"initialTime", String.valueOf(0)});
@@ -277,6 +285,8 @@ public class Community {
         // Establish Community of Agents for simulation
         LOGGER.info(SIM_NAME);
         Community community = new Community(REBOOT_SIMULATION, REBOOT_FROM_CYCLE) ;
+        
+
         Community.ADD_TIME_STAMP("new community created");
 
         // Establish conditions for specific simulation questions
@@ -314,7 +324,7 @@ public class Community {
             // relationshipRecordsArrayList.add(Relationship.BURNIN_COMMENCE);
 
 
-            for (Agent agent : community.agents)
+            for (Agent agent : community.agentsMDLL)
             {
                 for (Relationship relationship : agent.getCurrentRelationships())
                 {
@@ -438,7 +448,7 @@ public class Community {
             timeProInf += (System.nanoTime() - t1);
             
             //deathRecord = cycleString
-            int deltaPopulation = community.agents.size() ;  // Current population
+            int deltaPopulation = community.agentsMDLL.size() ;  // Current population
             
             //LOGGER.info("death");
             t1 = System.nanoTime();
@@ -451,7 +461,7 @@ public class Community {
             // relationshipRecord += Relationship.READ_DEATH_RECORD() ;
             
             // How many births to maintain population?
-            deltaPopulation = deltaPopulation - community.agents.size() ;
+            deltaPopulation = deltaPopulation - community.agentsMDLL.size() ;
 
             t1 = System.nanoTime();
             community.submitRecords(sbRelationshipRecord.toString(),encounterRecord,screeningRecord,sbPopulationRecord.toString()) ;  // 
@@ -619,7 +629,6 @@ public class Community {
         
         //Community.ADD_TIME_STAMP("after incidence DYNAMIC");
 
-                
         //String finalPrevalencesRecord = screeningReporter.prepareFinalPrevalencesSortedRecord(siteNames, "statusHIV") ;
         //LOGGER.log(Level.INFO, "prevalence {0}", finalPrevalencesRecord) ;
         
@@ -698,11 +707,39 @@ public class Community {
         */
         long timeFinal = System.nanoTime();
         float timeRan = (timeFinal - timeInitial)/  1000000000f;
-        LOGGER.info("Task completed in " + String.valueOf(timeRan)) ;
+        LOGGER.info("Task completed in " + String.valueOf(timeRan));
+
+        // System.out.println("\n\nTime taken for each methods:");
+        // RECORD_METHOD_TIME("TOTAL", System.nanoTime() - timeInitial);
+        // HashMap<String, Float> methodPercentages = FINALISE_METHOD_TIME();
+        // ArrayList<String> keys = new ArrayList<String>(Community.methodsTimeStamp.keySet());
+        // Collections.sort(keys);
+        // for (String s : keys) {
+        //     System.out.println("- " + methodPercentages.get(s) * 100 + "% : " + s + " -> " + Community.methodsTimeStamp.get(s) / 1_000_000_000 + "s");
+        // }
+        // System.out.println("DONE");
     }
  
     public static void ADD_TIME_STAMP(String name) {
         Community.timeStamps.add(new String[] {name, String.valueOf((System.nanoTime() - timeInitial)/1000000000f)});
+    }
+
+    public static void RECORD_METHOD_TIME(String name, float time) {
+        if (!Community.methodsTimeStamp.containsKey(name)) {
+            float zero = 0;
+            Community.methodsTimeStamp.put(name, zero);
+        }
+        Community.methodsTimeStamp.put(name, Community.methodsTimeStamp.get(name) + time);
+    }
+
+    public static HashMap<String, Float> FINALISE_METHOD_TIME() {
+        HashMap<String, Float> toReturn = new HashMap<String, Float>();
+        for (String name : Community.methodsTimeStamp.keySet()) {
+            if (name.equals("TOTAL")) continue;
+            toReturn.put(name, Community.methodsTimeStamp.get(name) / Community.methodsTimeStamp.get("TOTAL"));
+        }
+        toReturn.put("TOTAL", (float) 1.0);
+        return toReturn;
     }
     
     /**
@@ -779,6 +816,7 @@ public class Community {
      */
     public Community(String simName, int fromCycle)
     {
+        long t1 = System.nanoTime();
         if (simName.isEmpty())
             initialiseCommunity();
         else
@@ -786,9 +824,12 @@ public class Community {
             String rebootedSimName = simName;
             String rebootedFolderPath = ConfigLoader.REBOOT_PATH;
             if (fromCycle >= 0) {
+                double tbefore = System.nanoTime();
                 PopulationReporter populationReporter = new PopulationReporter(simName, ConfigLoader.REBOOT_PATH);
                 RelationshipReporter relationshipReporter = new RelationshipReporter(simName, ConfigLoader.REBOOT_PATH);
                 ScreeningReporter screeningReporter = new ScreeningReporter(simName, ConfigLoader.REBOOT_PATH);
+                double tafter = System.nanoTime();
+                Community.ADD_TIME_STAMP("new reports: " + (tafter - tbefore) / 1_000_000_000 + "s");
                 
                 // generate the exact pseudorandom sequence for agent birth days
                 // rebootRandomSeeds(rebootedFolderPath, rebootedSimName) ;
@@ -805,23 +846,28 @@ public class Community {
                  *      AGENTS     *
                  * * * * * * * * * */
 
+                tbefore = System.nanoTime();
+
                 // generate our reboot census
                 HashMap<Integer, String> populationCensusUpToCycle = populationReporter.prepareCensusReport(cycleToGenerateReportUpTo, screeningReporter);
-                
+                tafter = System.nanoTime();
+                Community.ADD_TIME_STAMP("after prepareCensusReport: " + (tafter - tbefore) / 1_000_000_000 + "s");
 
                 // extract agent census data and write to internal metadata
-                // sort agents by id
-                TreeSet<Integer> sortedAgentKeySet = new TreeSet<Integer>();
-                sortedAgentKeySet.addAll(populationCensusUpToCycle.keySet());
                 
+                // DEBUG: sort agents by id
+                // TreeSet<Integer> sortedAgentKeySet = new TreeSet<Integer>();
+                // sortedAgentKeySet.addAll(populationCensusUpToCycle.keySet());
+
+
                 // add rebooted agent data to metadata
                 metaLabels.add("Agents") ;
-                String agentsReboot = "" ;
-                for (Integer agentId : sortedAgentKeySet) {
+                StringBuilder sbAgentsReboot = new StringBuilder();
+                for (Integer agentId : populationCensusUpToCycle.keySet()) {
                     String newAgentRecord = populationCensusUpToCycle.get(agentId);
-                    agentsReboot += newAgentRecord;
+                    sbAgentsReboot.append(newAgentRecord);
                 }
-                metaData.add(agentsReboot) ;
+                metaData.add(sbAgentsReboot.toString()) ;
 
 
                 /* * * * * * * * * *
@@ -829,17 +875,23 @@ public class Community {
                  * * * * * * * * * */
 
                 // extract relationship data and write to internal metadata
+                tbefore = System.nanoTime();
                 HashMap<Integer, String> relationshipRecordHashMap = relationshipReporter.prepareRelationshipRecordHashMap(cycleToGenerateReportUpTo);
+                tafter = System.nanoTime();
+                Community.ADD_TIME_STAMP("after prepareRelationshipRecordHashMap: " + (tafter - tbefore) / 1_000_000_000 + "s");
                 
-                TreeSet<Integer> sortedRelationshipKeySet = new TreeSet<Integer>();
-                sortedRelationshipKeySet.addAll(relationshipRecordHashMap.keySet());
-                
+                // DEBUG: sort relationships by id
+                // TreeSet<Integer> sortedRelationshipKeySet = new TreeSet<Integer>();
+                // sortedRelationshipKeySet.addAll(relationshipRecordHashMap.keySet());
+
                 // add rebooted relationship data to metadata
                 metaLabels.add("Relationships") ;
-                String relationshipsReboot = "" ;
-                for (Integer relationshipId : sortedRelationshipKeySet)
-                    relationshipsReboot += relationshipRecordHashMap.get(relationshipId) + ' ' ;
-                metaData.add(relationshipsReboot) ;
+                StringBuilder sbRelationshipReboot = new StringBuilder();
+                for (Integer relationshipId : relationshipRecordHashMap.keySet()) {
+                    sbRelationshipReboot.append(relationshipRecordHashMap.get(relationshipId));
+                    sbRelationshipReboot.append(' ');
+                }
+                metaData.add(sbRelationshipReboot.toString()) ;
                 
                 // dump new metadata
                 rebootedSimName = simName + "FROM" + String.valueOf(fromCycle);
@@ -856,20 +908,23 @@ public class Community {
 
             rebootRandomSeeds(rebootedFolderPath, rebootedSimName) ;
             // this.agents = Agent.REBOOT_AGENTS(ConfigLoader.REBOOT_PATH, simName) ;
-            this.agents = Agent.REBOOT_AGENTS(rebootedFolderPath, rebootedSimName);
+            this.agentsMDLL = Agent.REBOOT_AGENTS(rebootedFolderPath, rebootedSimName);
             StringBuilder sbInitialRecord = new StringBuilder();
 
             this.initialRecord = "" ; 
-            for (Agent agent : agents)
+            for (Agent agent : agentsMDLL)
                 sbInitialRecord.append(agent.getCensusReport());
                 // initialRecord += agent.getCensusReport() ;
             sbInitialRecord.append("!");
             // initialRecord.concat("!") ;
             this.initialRecord = sbInitialRecord.toString();
             
-            Relationship.REBOOT_RELATIONSHIPS(rebootedFolderPath, rebootedSimName, agents) ;
+            Relationship.REBOOT_RELATIONSHIPS(rebootedFolderPath, rebootedSimName, agentsMDLL) ;
             scribe = new Scribe(SIM_NAME, new String[] {"relationship","encounter","screening", "population"}) ;
         }
+
+        long t2 = System.nanoTime();
+        Community.RECORD_METHOD_TIME("Community.newCommunity", t2 - t1);
     }
 
     /**
@@ -896,7 +951,8 @@ public class Community {
             MSM newAgent = generateAgent(-1) ;  //new MSM(-1) ;
             //newAgent.setPrepStatus(false) ;
             
-            agents.add(newAgent) ;
+            // agents.add(newAgent) ;
+            agentsMDLL.add(newAgent.getAgentId(), newAgent);
 
             // Record newAgent for later reporting
             // initialRecord = newAgent.getCensusReport() + initialRecord ;
@@ -959,7 +1015,8 @@ public class Community {
         String report = "" ;
         if ((year - startYear) * 365 == (cycle - startCycle))    // Things to do at the start of each year
         {
-        	unchangedAgents = (ArrayList<Agent>) agents.clone() ;
+            // unchangedAgents = (ArrayList<Agent>) agents.clone() ;
+            unchangedAgents = agentsMDLL.toArrayList();
             unchangedIndex1 = unchangedAgents.size() ;
         }
         else
@@ -967,7 +1024,9 @@ public class Community {
           //  unchangedAgents.retainAll(agents) ;    // Remove dead Agents
           
         // Choose Agents to change that day
-        ArrayList<Agent> changeAgents = new ArrayList<Agent>() ;
+        // ArrayList<Agent> changeAgents = new ArrayList<Agent>() ;
+        HashMap<Integer, Agent> changeAgentsHashMap = new HashMap<Integer, Agent>();
+        // HashMap<String, Agent> changeAgentsHash
         
         // How many Agents?
         int nbChangeAgents = AGENTS_PER_DAY ;
@@ -975,8 +1034,37 @@ public class Community {
         if (unchangedIndex1 < AGENTS_PER_DAY)    // Clean the leftovers  
             nbChangeAgents = unchangedIndex1 ;
         unchangedIndex0 = unchangedIndex1 - nbChangeAgents ;
+
+
+
+        // changeAgents.addAll(unchangedAgents.subList(unchangedIndex0, unchangedIndex1)) ;
+        for (int i = unchangedIndex0; i < unchangedIndex1; ++i) {
+            changeAgentsHashMap.put(unchangedAgents.get(i).getAgentId(), unchangedAgents.get(i));
+        }
         
-        changeAgents.addAll(unchangedAgents.subList(unchangedIndex0, unchangedIndex1)) ;
+        // keep ids we want to remove to a list
+        ArrayList<Integer> removeIds = new ArrayList<Integer>();
+        for (Integer agentId : changeAgentsHashMap.keySet()) {
+            if (!agentsMDLL.contains(agentId)) {
+                removeIds.add(agentId);
+            }
+        }
+
+        // remove agents
+        for (Integer agentId : removeIds) {
+            changeAgentsHashMap.remove(agentId);
+        }
+
+        // retained agents
+        ArrayList<Agent> changeAgents = new ArrayList<Agent>() ;
+        for (Integer agentId : changeAgentsHashMap.keySet()) {
+            Agent agent = changeAgentsHashMap.get(agentId);
+            changeAgents.add(agent);
+        }
+
+
+        
+
 
         //int changeIndex ;
         //for (int index = 0 ; index < nbChangeAgents ; index++ )
@@ -993,7 +1081,7 @@ public class Community {
         
         //unchangedAgents.removeAll(changeAgents) ;
 
-        changeAgents.retainAll(agents) ;
+        // changeAgents.retainAll(agents) ;
         // Make changes
         report += Agent.REINIT(changeAgents, year) ;
         
@@ -1028,19 +1116,20 @@ public class Community {
     {
         //String report = "" ;
         float t1 = System.nanoTime();
-        ArrayList<Agent> availableAgents = (ArrayList<Agent>) agents.clone() ;
+        // ArrayList<Agent> availableAgents = agentsMDLL.toArrayList() ;
         // ArrayList<Agent> availableAgents = agents;
-        MDLL<Agent> availableMDLL = new MDLL<Agent>();
+        MDLL<Agent> availableMDLL = agentsMDLL.returnShuffled();
         
-        Collections.shuffle(availableAgents, RAND) ;
-        for (Agent a : availableAgents) availableMDLL.add(String.valueOf(a.getAgentId()), a);
+        // Collections.shuffle(availableAgents, RAND) ;
+        // for (Agent a : availableAgents) availableMDLL.add(a.getAgentId(), a);
 
         // System.out.println("timeClone + timeShuffle = " + String.valueOf((System.nanoTime() - t1)/1000000000f));
         String[] relationshipClazzNames ;
         // relationshipClazzNames = new String[] {"Casual","Regular","Monogomous"} ;
         relationshipClazzNames = Community.RELATIONSHIP_CLAZZ_NAMES;
-        t1 = System.nanoTime();
         String toReturn = MSM.GENERATE_RELATIONSHIPS(availableMDLL, relationshipClazzNames) ;
+        float t2 = System.nanoTime();
+        Community.RECORD_METHOD_TIME("Community.generateRelationships", t2 - t1);
         // System.out.println("generateTime = " + String.valueOf((System.nanoTime() - t1)/1000000000f));
         return toReturn;
 
@@ -1088,7 +1177,7 @@ public class Community {
 
         // Collect Agents willing to join an orgy
         // TODO: Check RiskyMSM only to save time
-        for (Agent agent : agents)
+        for (Agent agent : agentsMDLL)
            if (agent.joinGroupSexEvent(null))
                 gseAgents.add((Agent) agent) ;    // Agent agrees to join orgy
 
@@ -1139,7 +1228,7 @@ public class Community {
     private void ageOneDay()
     {
         //String record = "" ;
-        for (Agent agent : agents)
+        for (Agent agent : agentsMDLL)
             agent.ageOneDay() ;
     }
 
@@ -1150,7 +1239,7 @@ public class Community {
     private String getCensus()
     {
         String record = "" ;
-        for (Agent agent : agents )
+        for (Agent agent : agentsMDLL)
         {
             record += agent.getCensusReport() ;
         }
@@ -1189,7 +1278,8 @@ public class Community {
         {
             newAgent = generateAgent(0) ; // MSM.BIRTH_MSM(0) ;
             newAgent.update(Math.floorDiv(cycle, 365)) ;
-            agents.add(newAgent) ;
+            // agentsMDLL.add(newAgent) ;
+            agentsMDLL.add(newAgent.getAgentId(), newAgent);
             sbRecord.append(newAgent.getCensusReport());
             // record += newAgent.getCensusReport() ;
             //currentPopulation++ ;
@@ -1208,26 +1298,44 @@ public class Community {
      */
     private String grimReaper()
     {
-    	StringBuilder sbRecord = new StringBuilder();
+    	StringBuffer sbRecord = new StringBuffer();
         sbRecord.append("death:");
         // String record = "death:" ;
         
-        ArrayList<Agent> newAgentsList = new ArrayList<Agent>();
+        // ArrayList<Agent> newAgentsList = new ArrayList<Agent>();
+        // MDLL<Agent> newAgentsMDLL = new MDLL<Agent>();
+        // MDLLForwardIterator<Agent> agentsMDLLForwardIterator = agentsMDLL.getForwardIterator();
         //for (int agentIndex = agents.size() - 1 ; agentIndex >= 0 ; agentIndex-- )
-        for (Agent agent : agents)
-        {
-            //agent = agents.get(agentIndex) ; 
-            if (agent.grimReaper())
-            {
-                //agents.remove(agent) ;
+        // while (agentsMDLLForwardIterator.hasNext())
+        // {
+        //     Agent agent  = agentsMDLLForwardIterator.next();
+        //     //agent = agents.get(agentIndex) ; 
+        //     if (agent.grimReaper())
+        //     {
+        //         //agents.remove(agent) ;
+        //         sbRecord.append(Reporter.ADD_REPORT_PROPERTY("agentId", agent.getAgentId())) ;
+        //         agentsMDLLForwardIterator.iterateBack();
+
+        //         agentsMDLL.remove(agent.getAgentId());
+        //         //record += Reporter.ADD_REPORT_PROPERTY("age", agent.getAge()) ;
+        //         //currentPopulation-- ;
+        //     }
+        //     else 
+        //         // newAgentsList.add(agent) ;
+        //         newAgentsMDLL.add(agent.getAgentId(), agent);
+        // }
+        HashMap<Integer, Agent> toRemove = new HashMap<Integer, Agent>();
+        for (Agent agent : agentsMDLL) {
+
+            if (agent.grimReaper()) {
                 sbRecord.append(Reporter.ADD_REPORT_PROPERTY("agentId", agent.getAgentId())) ;
-                //record += Reporter.ADD_REPORT_PROPERTY("age", agent.getAge()) ;
-                //currentPopulation-- ;
+                toRemove.put(agent.getAgentId(), agent);
             }
-            else 
-                newAgentsList.add(agent) ;
         }
-        agents = newAgentsList ;
+
+        for (Integer agentId : toRemove.keySet()) {
+            agentsMDLL.remove(agentId);
+        }
 
         return sbRecord.toString() ;
     }
@@ -1239,56 +1347,86 @@ public class Community {
      * description of each sexual contact returned by Relationship.encounter()
      */
     private String runEncounters()
-    {
-        StringBuilder sbRecord = new StringBuilder();
-        //ArrayList<Relationship> currentRelationships ;
-        
-        // LOGGER.info("nb relationships: " + relationships.size());
-        for (Agent agent : agents)
-        {
+    {   
+        float t0 = System.nanoTime();
+        StringBuffer stringBufferRecord = new StringBuffer();
+
+        // parallelised retrieval of elements
+        agentsMDLL.getStream().parallel().forEach( agent -> {
+
+            // Agent agent = agentsMDLL.getInternalMap().get(agentId).getObject();
+            if (agent == null) return;
             for (Relationship relationship : agent.getCurrentRelationships())
             {
-                // WARNING: May cause future problems with hetero couples
-                // Does agent have lower agentId than partner
-                // Avoid checking relationship twice by accessing only through the 
-                // agent with the lower agentId
-                // TODO: Incorporate this into Agent.Method()
-                //int agentId = agent.getAgentId() ;
-                //int partnerId = relationship.getPartnerId(agentId) ;
-                
                 if (agent != relationship.getLowerIdAgent())
                     continue ;
-                //try
+            
+                if (RAND.nextDouble() < relationship.getEncounterProbability()) 
                 {
-                    if (RAND.nextDouble() < relationship.getEncounterProbability()) 
-                    {
-                        String newRecord = Reporter.ADD_REPORT_PROPERTY(Reporter.RELATIONSHIPID, relationship.getRelationshipId()) 
-                                         + relationship.encounter() ;
-                        sbRecord.append(newRecord);
-                    }
-                    //System.out.println(record);
+                    String newRecord = Reporter.ADD_REPORT_PROPERTY(Reporter.RELATIONSHIPID, relationship.getRelationshipId()) 
+                                        + relationship.encounter() ;
+                    stringBufferRecord.append(newRecord);
                 }
-                /*catch (NoSuchMethodException nsme)
-                {
-                    LOGGER.severe(nsme.getLocalizedMessage());
-                    sbRecord.append(nsme.toString());
-                    // record += nsme.toString(); //  .getMessage() ;
-                }
-                catch (InvocationTargetException ite)
-                {
-                    LOGGER.severe(ite.getLocalizedMessage());
-                    //record += ite.getMessage() ;
-                }
-                catch (IllegalAccessException iae)
-                {
-                    LOGGER.severe(iae.getLocalizedMessage());
-                    // record += iae.getMessage() ;
-                    sbRecord.append(iae.getMessage());
-                }*/
             }
-        }
-        return sbRecord.toString() ;
+        });
+        // }
+
+        float t1 = System.nanoTime();
+        Community.RECORD_METHOD_TIME("Community.runEncounters", t1-t0);
+        return stringBufferRecord.toString() ;
     }
+    
+    // private String runEncounters()
+    // {
+    //     StringBuilder sbRecord = new StringBuilder();
+    //     //ArrayList<Relationship> currentRelationships ;
+        
+    //     // LOGGER.info("nb relationships: " + relationships.size());
+    //     for (Agent agent : agents)
+    //     {
+    //         for (Relationship relationship : agent.getCurrentRelationships())
+    //         {
+    //             // WARNING: May cause future problems with hetero couples
+    //             // Does agent have lower agentId than partner
+    //             // Avoid checking relationship twice by accessing only through the 
+    //             // agent with the lower agentId
+    //             // TODO: Incorporate this into Agent.Method()
+    //             //int agentId = agent.getAgentId() ;
+    //             //int partnerId = relationship.getPartnerId(agentId) ;
+                
+    //             if (agent != relationship.getLowerIdAgent())
+    //                 continue ;
+    //             //try
+    //             {
+    //                 if (RAND.nextDouble() < relationship.getEncounterProbability()) 
+    //                 {
+    //                     String newRecord = Reporter.ADD_REPORT_PROPERTY(Reporter.RELATIONSHIPID, relationship.getRelationshipId()) 
+    //                                      + relationship.encounter() ;
+    //                     sbRecord.append(newRecord);
+    //                 }
+    //                 //System.out.println(record);
+    //             }
+    //             /*catch (NoSuchMethodException nsme)
+    //             {
+    //                 LOGGER.severe(nsme.getLocalizedMessage());
+    //                 sbRecord.append(nsme.toString());
+    //                 // record += nsme.toString(); //  .getMessage() ;
+    //             }
+    //             catch (InvocationTargetException ite)
+    //             {
+    //                 LOGGER.severe(ite.getLocalizedMessage());
+    //                 //record += ite.getMessage() ;
+    //             }
+    //             catch (IllegalAccessException iae)
+    //             {
+    //                 LOGGER.severe(iae.getLocalizedMessage());
+    //                 // record += iae.getMessage() ;
+    //                 sbRecord.append(iae.getMessage());
+    //             }*/
+    //         }
+    //     }
+    //     return sbRecord.toString() ;
+    // }
 
     /**
      * Loops through relationships and probabilistically chooses to end them.
@@ -1304,7 +1442,7 @@ public class Community {
         ArrayList<Relationship> currentRelationships ;
         Relationship relationship ;
 
-        for (Agent agent : agents)
+        for (Agent agent : agentsMDLL)
         {
             currentRelationships = agent.getCurrentRelationships() ;
             for (int relationshipIndex = (currentRelationships.size() - 1) ; relationshipIndex >= 0 ; 
@@ -1363,7 +1501,7 @@ public class Community {
         int anyInfected = 0 ;
         //long startTime = System.nanoTime() ;
 
-        for (Agent agent : agents)
+        for (Agent agent : agentsMDLL)
         {
             // record += agent.progressSitesInfection(cycle)
             //LOGGER.log(Level.INFO,"infected:{0}",agent.getAgentId());
@@ -1458,7 +1596,7 @@ public class Community {
         //int testedIndex ;
         //long startTime = System.nanoTime() ;
 
-        for (Agent agent : agents)
+        for (Agent agent : agentsMDLL)
         {
             agentRecord = "" ; 
             treat = false ;
@@ -1601,7 +1739,7 @@ public class Community {
         metaLabels.add("Community.POPULATION") ;
         metaData.add(Community.POPULATION) ;
         metaLabels.add("total_nb_agents") ;
-        metaData.add(agents.size()) ;
+        metaData.add(agentsMDLL.size()) ;
         metaLabels.add("Community.MAX_CYCLES") ;
         metaData.add(Community.MAX_CYCLES) ;
         metaLabels.add("Community.REBOOT_SEED") ;
@@ -1678,11 +1816,11 @@ public class Community {
         metaLabels.add("Agents") ;
         // String agentsReboot = "" ;
 
-        if (ConfigLoader.DEBUG) {
-            // sort agents by id
-            Collections.sort(agents, (a1, a2) -> { return a1.getAgentId() > a2.getAgentId() ? 1 : -1;});
-        }
-        for (Agent agent : agents) {
+        // if (ConfigLoader.DEBUG) {
+        //     // sort agents by id
+        //     Collections.sort(agents, (a1, a2) -> { return a1.getAgentId() > a2.getAgentId() ? 1 : -1;});
+        // }
+        for (Agent agent : agentsMDLL) {
             // agentsReboot += agent.getRebootData() ;
             // agentsRebootArrayList.add(agent.getRebootData());
             sbAgent.append(agent.getRebootData());
@@ -1696,7 +1834,7 @@ public class Community {
 
         // sort relationships by id
         ArrayList<Relationship> relationships = new ArrayList<Relationship>();
-        for (Agent agent : agents) {
+        for (Agent agent : agentsMDLL) {
             for (Relationship relationship : agent.getCurrentRelationships())
                 if (relationship.getLowerIdAgent() == agent) {
                     if (ConfigLoader.DEBUG) relationships.add(relationship);
@@ -1758,7 +1896,7 @@ public class Community {
                     relationship.setRelationshipId(Integer.valueOf(relationshipId)) ;
                     agentId0 = Integer.valueOf(Reporter.EXTRACT_VALUE(Reporter.AGENTID0,boundedString)) ;
                     agentId1 = Integer.valueOf(Reporter.EXTRACT_VALUE(Reporter.AGENTID1,boundedString)) ;
-                    relationship.addAgents(agents.get(agentId0), agents.get(agentId1)) ;
+                    relationship.addAgents(agentsMDLL.get(agentId0), agentsMDLL.get(agentId1)) ;
                     
                 }
                 catch ( Exception e )

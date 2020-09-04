@@ -17,7 +17,7 @@ public class MDLLBackwardIterator<T> implements MDLLIterator<T>{
         return true;
     }
 
-    public T getNextAndIterate() {
+    public T next() {
         this.curr = this.curr.getPrev();
         if (this.curr.getId().equals(MDLL.HEAD_ID)) return null;
         return this.curr.getObject();

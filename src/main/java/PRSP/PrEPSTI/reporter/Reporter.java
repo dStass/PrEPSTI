@@ -8,19 +8,20 @@ import PRSP.PrEPSTI.community.Community ;
 import PRSP.PrEPSTI.configloader.ConfigLoader ;
 //import community.* ;
 
-import java.io.* ;
+import java.io.*;
 
 import java.lang.reflect.*;
-import java.util.ArrayList ;
+import java.util.ArrayList;
 //import java.util.Arrays;
-import java.util.Set ;
+import java.util.Set;
+//import java.util.concurrent.ConcurrentHashMap;    // Redundant 31/08/2020
 import java.util.Collections;
 import java.util.* ;
 import java.util.HashMap ;
 
 import java.util.logging.Level;
 
-import org.apache.commons.math3.stat.descriptive.moment.Mean;
+//import org.apache.commons.math3.stat.descriptive.moment.Mean ;    // Redundant 31/08/2020
 
 //import org.jfree.chart.* ;
 
@@ -47,6 +48,7 @@ public class Reporter {
      * reportName maps to report.
      */
     static protected HashMap<String,Object> REPORT_LIST = new HashMap<String,Object>() ;
+
     
     /**
      * Clears REPORT_LIST so that fresh ones can be generated for the next simulation.
@@ -55,6 +57,7 @@ public class Reporter {
     {
         REPORT_LIST.clear() ;
     }
+
     
     /** Whether to automatically save reports */
     public static boolean WRITE_REPORT;
@@ -122,12 +125,13 @@ public class Reporter {
     
     public static final String ADD_REPORT_PROPERTY(String label, String value)
     {
-    	StringBuilder sb = new StringBuilder();
-        sb.append(ADD_REPORT_LABEL(label));
-        sb.append(value);
-        sb.append(" ");
-        // String report = ADD_REPORT_LABEL(label) ;
-        return sb.toString() ;
+    	// StringBuilder sb = new StringBuilder();
+        // sb.append(ADD_REPORT_LABEL(label));
+        // sb.append(value);
+        // sb.append(" ");
+        // // String report = ADD_REPORT_LABEL(label) ;
+        // return sb.toString() ;
+        return ADD_REPORT_LABEL(label) + value + " ";
     }
         
     public static final String ADD_REPORT_PROPERTY(String label)
@@ -1218,6 +1222,7 @@ public class Reporter {
      * @return
      */
     public String HASHMAP_TO_STRING(HashMap<String, String> report, String[] properties) {
+        float t0 = System.nanoTime();
         String toReturn = "";
         Set<String> keySet = report.keySet();
         for (String property : properties) {
@@ -1225,6 +1230,8 @@ public class Reporter {
                 toReturn += property + ":" + report.get(property) + " ";
             }
         }
+        float t1 = System.nanoTime();
+        Community.RECORD_METHOD_TIME("Reporter.HASHMAP_TO_STRING", t1 - t0);
         return toReturn.trim();
     }
     
@@ -1240,6 +1247,7 @@ public class Reporter {
      */
     static protected int GET_BACK_CYCLES(int backYears, int backMonths, int backDays, int maxCycles)
     {
+        float t0 = System.nanoTime();
         int backCycles ;
         
         // Don't go further back than records allow.
@@ -1262,6 +1270,9 @@ public class Reporter {
             backCycles = maxCycles ;
             LOGGER.warning("Tried to go back more days than records allow.") ;
         }
+
+        float t1 = System.nanoTime();
+        Community.RECORD_METHOD_TIME("Reporter.GET_BACK_CYCLES(y,m,d,maxCycles)", t1 - t0);
         
         return backCycles ;
     }
@@ -3374,7 +3385,10 @@ public class Reporter {
     
     public Reporter(String simname, String fileName)
     {
+        float t0 = System.nanoTime();
         initReporter(simname, fileName) ;
+        float t1 = System.nanoTime();
+        Community.RECORD_METHOD_TIME("Reporter.CONSTRUCTOR", t1 - t0);
     }
 
     /**
@@ -4203,6 +4217,9 @@ public class Reporter {
          */
         private ArrayList<String> getBackCyclesReport(int backCycles, int endCycle)
         {
+            // System.out.println("getBackCyclesReport(" + backCycles + "," + endCycle + ")");
+            float t0 = System.nanoTime();
+
             ArrayList<String> outputList = new ArrayList<String>() ;
             int cycleFileIndex ;
             try
@@ -4269,9 +4286,15 @@ public class Reporter {
                 LOGGER.severe(e.toString());
                 assert(2 < 0) ;
             }
-            return outputList ;
+
+            float t1 = System.nanoTime();
+            Community.RECORD_METHOD_TIME("Reporter.getBackCyclesReport(backCycles,endCycles)", t1 - t0);
+            
+            return outputList;
         }
-                
+
+
+
         /**
          * Reads backwards through the files. Used when only last backCycles are 
          * of interest.
