@@ -2793,7 +2793,7 @@ public class MSM extends Agent {
     /**
      * Initialises screenCycle from a Gamma distribution to determine how often 
      * an MSM is screened, and then starts the cycle in a random place so that 
-     * not every MSM gets screened at the same time. the shape parameter remains 
+     * not every MSM gets screened at the same time. The shape parameter remains 
      * unchanged.
      * @param rescale - The factor to rescale screenCycle by
      * @param ignorePrep - Whether to reInit PrEP users
